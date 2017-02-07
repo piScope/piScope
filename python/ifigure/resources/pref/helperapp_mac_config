@@ -1,0 +1,9 @@
+version = 2.11
+ext = 'pdf,ps'
+pdf =  'open -a /Applications/Adobe\ Reader.app {0}'
+ps  = 'open -a /Applications/Preview.app {0}'
+editor  = '{bin}/start_emacs_mac.sh {0} &'
+gs = '/opt/local/bin/gs'
+ps2pdf = '/opt/local/bin/ps2pdf'
+convert = '/usr/local/bin/convert'
+use_editor = False

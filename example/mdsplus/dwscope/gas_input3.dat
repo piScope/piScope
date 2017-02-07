@@ -1,0 +1,205 @@
+Scope.geometry: 937x680+954+428
+Scope.title: "Gas Input"//$shot
+Scope.icon_name: "Gas Input"
+Scope.title_event: X_ray_pha_incaa16
+Scope.print_file: sys$login:dwscope.ps
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: 134898680
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.experiment: spectroscopy
+Scope.global_1_1.shot: current_shot('cmod')
+Scope.global_1_1.default_node: \SPECTROSCOPY::TOP
+Scope.global_1_1.xmin: -2
+Scope.global_1_1.xmax: 9
+Scope.global_1_1.event: x_ray_pha_incaa16
+Scope.global_1_1.global_defaults: -144257
+Scope.rows_in_column_1: 11
+
+Scope.plot_1_1.height: 54
+Scope.plot_1_1.x: _t=dim_of(\plen_cside)
+Scope.plot_1_1.y: _c_side=smooth1d(data(\plen_cside),31)
+Scope.plot_1_1.ymin: -5
+Scope.plot_1_1.ymax: 45
+Scope.plot_1_1.title: 'B-Main MKS (Torr-l)'//$shot
+Scope.plot_1_1.global_defaults: -642057
+
+Scope.plot_2_1.height: 54
+Scope.plot_2_1.x: dim_of(\plen_bsidel)
+Scope.plot_2_1.y: smooth1d(data(\plen_bsidel),31)|||
+Scope.plot_2_1.ymin: -.5
+Scope.plot_2_1.ymax: 5
+Scope.plot_2_1.title: 'B-Side-Lower MKS (Torr-l)'//$shot
+Scope.plot_2_1.label: INPUT_11
+Scope.plot_2_1.global_defaults: -117761
+
+Scope.plot_3_1.height: 54
+Scope.plot_3_1.x: dim_of(\plen_bsideU)
+Scope.plot_3_1.y: _b_sideu=smooth1d(data(\plen_bsideu),31)
+Scope.plot_3_1.ymin: -.5
+Scope.plot_3_1.ymax: 5
+Scope.plot_3_1.title: 'B-Side-Upper MKS (Torr-l)'//$shot
+Scope.plot_3_1.label: INPUT_11
+Scope.plot_3_1.global_defaults: -117761
+
+Scope.plot_4_1.height: 54
+Scope.plot_4_1.x: dim_of(\plen_btop)
+Scope.plot_4_1.y: _b_top=smooth1d(data(\plen_btop),31)|||
+Scope.plot_4_1.ymin: -.5
+Scope.plot_4_1.ymax: 5
+Scope.plot_4_1.title: 'B-Top MKS (Torr-l)'//$shot
+Scope.plot_4_1.label: INPUT_11
+Scope.plot_4_1.global_defaults: -117761
+
+Scope.plot_5_1.height: 54
+Scope.plot_5_1.x: dim_of(\plen_jbot_hi)
+Scope.plot_5_1.y: _hbot=smooth1d(data(\plen_jbot_hi),31)
+Scope.plot_5_1.ymin: -.5
+Scope.plot_5_1.ymax: 5
+Scope.plot_5_1.title: 'H-Bottom Hi MKS (Torr-l)'//$shot
+Scope.plot_5_1.label: INPUT_11
+Scope.plot_5_1.global_defaults: -117761
+
+Scope.plot_6_1.height: 54
+Scope.plot_6_1.x: dim_of(\plen_jbot_lo)
+Scope.plot_6_1.y: _hbotlo=smooth1d(data(\plen_jbot_lo),31)
+Scope.plot_6_1.ymin: -.5
+Scope.plot_6_1.ymax: 5
+Scope.plot_6_1.title: 'J-Bottom Lo MKS (Torr-l)'//$shot
+Scope.plot_6_1.label: INPUT_11
+Scope.plot_6_1.global_defaults: -117761
+
+Scope.plot_7_1.height: 54
+Scope.plot_7_1.experiment: cmod
+Scope.plot_7_1.default_node: \EDGE::GAS_NINJA
+Scope.plot_7_1.y: _ninja=plen_bot,_ninja2=_ninja[_t],|||_ninjas=make_signal(data(_ninja),*,data(dim_of(_ninja))) ,|||_csides=make_signal(data(\plen_cside),*,data(dim_of(\plen_cside))) ,|||_ninja3=sig_resample(_ninjas,_csides)|||/* The above kludge is necessary because the plenum "signals" are malformed in the tree*/
+Scope.plot_7_1.ymin: -2
+Scope.plot_7_1.ymax: 40
+Scope.plot_7_1.event: GAS_INCAA_02
+Scope.plot_7_1.title: "NINJA Gas Input (torr-l) "//$shot
+Scope.plot_7_1.global_defaults: -773761
+
+Scope.plot_8_1.height: 54
+Scope.plot_8_1.experiment: cmod
+Scope.plot_8_1.default_node: \EDGE::GAS_NINJA
+Scope.plot_8_1.y: _ninjatop=plen_top,_ninja2top=_ninjatop[_t],|||_ninjastop=make_signal(data(_ninjatop),*,data(dim_of(_ninjatop))) ,|||_csides=make_signal(data(\plen_cside),*,data(dim_of(\plen_cside))) ,|||_ninja3top=sig_resample(_ninjastop,_csides)|||/* The above kludge is necessary because the plenum "signals" are malformed in the tree*/
+Scope.plot_8_1.ymin: -2
+Scope.plot_8_1.ymax: 40
+Scope.plot_8_1.event: GAS_INCAA_02
+Scope.plot_8_1.title: "NINJA Gas Input (torr-l) "//$shot
+Scope.plot_8_1.global_defaults: -773761
+
+Scope.plot_9_1.height: 54
+Scope.plot_9_1.x: _t=dim_of(\plen_bdiv)
+Scope.plot_9_1.y: _bdiv=smooth1d(data(\plen_bdiv),1)
+Scope.plot_9_1.ymin: -5
+Scope.plot_9_1.ymax: 45
+Scope.plot_9_1.title: 'B-Div MKS (Torr-l)'//$shot
+Scope.plot_9_1.global_defaults: -642057
+
+Scope.plot_10_1.height: 54
+Scope.plot_10_1.x: _t=dim_of(\plen_hdiv)
+Scope.plot_10_1.y: _hdiv=smooth1d(data(\plen_hdiv),1)
+Scope.plot_10_1.ymin: -5
+Scope.plot_10_1.ymax: 45
+Scope.plot_10_1.title: 'H-div MKS (Torr-l)'//$shot
+Scope.plot_10_1.global_defaults: -642057
+
+Scope.plot_11_1.height: 60
+Scope.plot_11_1.x: dim_of(\plen_cside)
+Scope.plot_11_1.y: _c_side+_b_sideu+_b_top+_hbot+_ninja3+_ninja3top
+Scope.plot_11_1.ymin: -5
+Scope.plot_11_1.ymax: 80
+Scope.plot_11_1.title: 'Total Injected (Torr-l)'//$shot
+Scope.plot_11_1.global_defaults: -642057
+Scope.rows_in_column_2: 10
+
+Scope.plot_1_2.height: 60
+Scope.plot_1_2.x.grid_lines: 0
+Scope.plot_1_2.y.grid_lines: 0
+Scope.plot_1_2.y: \piezo_cside
+Scope.plot_1_2.ymin: -1
+Scope.plot_1_2.ymax: 10
+Scope.plot_1_2.title: "(PG3) C-Side Piezo /10"//$shot
+Scope.plot_1_2.global_defaults: 132064
+
+Scope.plot_2_2.height: 60
+Scope.plot_2_2.x.grid_lines: 0
+Scope.plot_2_2.y.grid_lines: 0
+Scope.plot_2_2.y: \piezo_bsidel
+Scope.plot_2_2.ymin: -1
+Scope.plot_2_2.ymax: 10
+Scope.plot_2_2.title: "(PG1) B-Side-Lower Piezo /10"//$shot
+Scope.plot_2_2.global_defaults: 132064
+
+Scope.plot_3_2.height: 60
+Scope.plot_3_2.x.grid_lines: 0
+Scope.plot_3_2.y.grid_lines: 0
+Scope.plot_3_2.y: \piezo_bsideu
+Scope.plot_3_2.ymin: -1
+Scope.plot_3_2.ymax: 10
+Scope.plot_3_2.title: "(PG2) B-Side-Upper  Piezo/10"//$shot
+Scope.plot_3_2.global_defaults: 132064
+
+Scope.plot_4_2.height: 60
+Scope.plot_4_2.x.grid_lines: 0
+Scope.plot_4_2.y.grid_lines: 0
+Scope.plot_4_2.y: \piezo_btop
+Scope.plot_4_2.title: "(PG4) B-Top Piezo /10"//$shot
+Scope.plot_4_2.global_defaults: 132064
+
+Scope.plot_5_2.height: 60
+Scope.plot_5_2.x.grid_lines: 0
+Scope.plot_5_2.y.grid_lines: 0
+Scope.plot_5_2.y: \piezo_jbot
+Scope.plot_5_2.ymin: -1
+Scope.plot_5_2.ymax: 10
+Scope.plot_5_2.title: "(PG5) H-Bottom Piezo /10"//$shot
+Scope.plot_5_2.global_defaults: 132064
+
+Scope.plot_6_2.height: 60
+Scope.plot_6_2.x.grid_lines: 0
+Scope.plot_6_2.y.grid_lines: 0
+Scope.plot_6_2.y: \piezo_bdiv
+Scope.plot_6_2.ymin: -1
+Scope.plot_6_2.ymax: 10
+Scope.plot_6_2.title: "(PG6) Bdiv Piezo /10"//$shot
+Scope.plot_6_2.global_defaults: 132064
+
+Scope.plot_7_2.height: 60
+Scope.plot_7_2.x.grid_lines: 0
+Scope.plot_7_2.y.grid_lines: 0
+Scope.plot_7_2.y: \piezo_hdiv
+Scope.plot_7_2.ymin: -1
+Scope.plot_7_2.ymax: 10
+Scope.plot_7_2.title: "(PG7) H-Div Piezo /10"//$shot
+Scope.plot_7_2.global_defaults: 132064
+
+Scope.plot_8_2.height: 60
+Scope.plot_8_2.experiment: edge
+Scope.plot_8_2.x: dim_of(\e_top_mks)
+Scope.plot_8_2.y: _d=4.06*data(\e_top_mks),_e_top_mks=smooth1d(_d,15),
+Scope.plot_8_2.event: GAS_INCAA_01
+Scope.plot_8_2.title: "4060 x E-top MKS (torr-l) "//$shot
+Scope.plot_8_2.global_defaults: -724617
+
+Scope.plot_9_2.height: 60
+Scope.plot_9_2.experiment: edge
+Scope.plot_9_2.x: dim_of(\g_side_mks)
+Scope.plot_9_2.y: _d=4.06*data(\g_side_mks),_g_side_mks=smooth1d(_d,15),
+Scope.plot_9_2.event: GAS_INCAA_01
+Scope.plot_9_2.title: "4060 x G-Side MKS (torr-l) "//$shot
+Scope.plot_9_2.global_defaults: -724617
+
+Scope.plot_10_2.height: 62
+Scope.plot_10_2.experiment: edge
+Scope.plot_10_2.x: dim_of(\e_top_mks_s)
+Scope.plot_10_2.y: _d=4.06*data(\e_top_mks_s),_e_top_mks_s=smooth1d(_d,15),
+Scope.plot_10_2.xmin: 0
+Scope.plot_10_2.xmax: 350
+Scope.plot_10_2.event: GAS_INCAA_03
+Scope.plot_10_2.title: "4060 x E-top MKS slow (torr-l) "//$shot
+Scope.plot_10_2.global_defaults: -736905
+Scope.vpane_1: 500

@@ -1,0 +1,142 @@
+Scope.geometry: 758x569+496+189
+Scope.title: "BUS Rogowskis"//$shot
+Scope.icon_name: Bus Rog
+Scope.title_event: BUSLV_L8212_1
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: 135024168
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 3
+Scope.global_1_1.experiment: ENGINEERING
+Scope.global_1_1.shot: current_shot("cmod")
+Scope.global_1_1.default_node: \engineering::top.power_system
+Scope.global_1_1.xmin: -2
+Scope.global_1_1.xmax: 3
+Scope.global_1_1.event: BUSLV_L8212_1
+Scope.global_1_1.title: "BUS ROGOWSKIS"//$SHOT
+Scope.global_1_1.global_defaults: -209793
+Scope.rows_in_column_1: 6
+
+Scope.plot_1_1.height: 76
+Scope.plot_1_1.y: .TF:bus_r_cur
+Scope.plot_1_1.title: "TF Rogow"//$SHOT
+Scope.plot_1_1.label: TF
+Scope.plot_1_1.global_defaults: 144256
+
+Scope.plot_2_1.height: 76
+Scope.plot_2_1.y: .OH1:BUS_R_CUR
+Scope.plot_2_1.title: "OH1 Rogow"
+Scope.plot_2_1.label: OH1
+Scope.plot_2_1.global_defaults: 144256
+
+Scope.plot_3_1.height: 76
+Scope.plot_3_1.y: .OH2_U:bus_r_cur
+Scope.plot_3_1.ymin: -25000
+Scope.plot_3_1.ymax: 25000
+Scope.plot_3_1.title: "OH2_U BUS ROGOW"
+Scope.plot_3_1.label: OH2_U
+Scope.plot_3_1.global_defaults: 144256
+
+Scope.plot_4_1.height: 76
+Scope.plot_4_1.y: .OH2_L:bus_r_cur
+Scope.plot_4_1.title: "OH2_L Rogow"
+Scope.plot_4_1.label: OH2_L
+Scope.plot_4_1.global_defaults: 144256
+
+Scope.plot_5_1.height: 76
+Scope.plot_5_1.y: .EF1_U:bus_R_cur
+Scope.plot_5_1.title: "EF1_U ROGOW"
+Scope.plot_5_1.label: EF1_U
+Scope.plot_5_1.global_defaults: 144256
+
+Scope.plot_6_1.height: 119
+Scope.plot_6_1.y: .ef1_L:bus_R_CUR
+Scope.plot_6_1.title: "EF1_L ROGOW"
+Scope.plot_6_1.label: EF1_L
+Scope.plot_6_1.global_defaults: 144256
+Scope.rows_in_column_2: 6
+
+Scope.plot_1_2.height: 76
+Scope.plot_1_2.y: .ef2_U:bus_r_cur
+Scope.plot_1_2.title: "EF2_U Rogow"
+Scope.plot_1_2.label: EF2_U
+Scope.plot_1_2.global_defaults: 144256
+
+Scope.plot_2_2.height: 76
+Scope.plot_2_2.y: .ef2_L:bus_R_cur
+Scope.plot_2_2.title: "EF2_L ROGOW"
+Scope.plot_2_2.label: ef2_L
+Scope.plot_2_2.global_defaults: 144256
+
+Scope.plot_3_2.height: 76
+Scope.plot_3_2.y: .ef3:U_bus_R_CUR
+Scope.plot_3_2.title: "EF3_U Rogow"
+Scope.plot_3_2.label: EF3_U
+Scope.plot_3_2.global_defaults: 144256
+
+Scope.plot_4_2.height: 76
+Scope.plot_4_2.y: .ef3:L_bus_r_cur
+Scope.plot_4_2.title: "EF3_L Rogow"
+Scope.plot_4_2.label: ef3_L
+Scope.plot_4_2.global_defaults: 144256
+
+Scope.plot_5_2.height: 76
+Scope.plot_5_2.y: .ef4:U_bus_R_cur
+Scope.plot_5_2.title: "EF4_U ROGOW"
+Scope.plot_5_2.label: ef4_U
+Scope.plot_5_2.global_defaults: 144256
+
+Scope.plot_6_2.height: 119
+Scope.plot_6_2.y: .ef4:L_bus_R_CUR
+Scope.plot_6_2.title: "EF4_L ROGOW"
+Scope.plot_6_2.label: ef4_L
+Scope.plot_6_2.global_defaults: 144256
+Scope.rows_in_column_3: 6
+
+Scope.plot_1_3.height: 76
+Scope.plot_1_3.y: .efC:U_bus_r_cur
+Scope.plot_1_3.title: "EFC_U Rogow"
+Scope.plot_1_3.label: efC_U
+Scope.plot_1_3.global_defaults: 144256
+
+Scope.plot_2_3.height: 76
+Scope.plot_2_3.y: .efC:L_bus_R_cur
+Scope.plot_2_3.title: "EFC_L ROGOW"
+Scope.plot_2_3.label: efC_L
+Scope.plot_2_3.global_defaults: 144256
+
+Scope.plot_3_3.height: 76
+Scope.plot_3_3.y: .TF:bus_r_cur/27700.
+Scope.plot_3_3.title: "Toroidal Field (T)"//$SHOT
+Scope.plot_3_3.label: TF
+Scope.plot_3_3.global_defaults: 144256
+
+Scope.plot_4_3.height: 76
+Scope.plot_4_3.experiment: magnetics
+Scope.plot_4_3.y: \ip
+Scope.plot_4_3.title: "Plasma Current"//$shot
+Scope.plot_4_3.global_defaults: 274807
+
+Scope.plot_5_3.height: 76
+Scope.plot_5_3.experiment: spectroscopy
+Scope.plot_5_3.default_node: \spectroscopy::top
+Scope.plot_5_3.x: dim_of (\Z_METER_F_TAN)
+Scope.plot_5_3.y: \z_meter_f_tan
+Scope.plot_5_3.ymin: -.1
+Scope.plot_5_3.ymax: 2
+Scope.plot_5_3.event: spectroscopy_trcf
+Scope.plot_5_3.title: "Single Channel Z_Meter "//$shot
+Scope.plot_5_3.label: incaa16
+Scope.plot_5_3.global_defaults: 799091
+
+Scope.plot_6_3.height: 119
+Scope.plot_6_3.experiment: spectroscopy
+Scope.plot_6_3.default_node: \top
+Scope.plot_6_3.y: \spectroscopy::top.uvis:ha_2_bright
+Scope.plot_6_3.title: " H alpha C side"//$shot
+Scope.plot_6_3.label: h_alpha_c_side
+Scope.plot_6_3.global_defaults: -723585
+Scope.vpane_1: 333
+Scope.vpane_2: 666

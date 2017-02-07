@@ -1,0 +1,22 @@
+version = 1.23
+file
+action = "scope({1})"
+ext = "^.*\.dat"
+use = True
+action_txt = "Open by Scope"
+name = "dwscope"
+end
+file
+action = "obj = {top}.add_model({top}.get_next_name('model')).add_std_modelmodule('efit_gfile', src={1});obj.rename('gfile');obj.call_method('onLoadFile', file = {1});obj.call_method('onPlotEq')"
+ext = "^g[0-9]*\.[0-9]*"
+use = True
+action_txt = "Load to model tree"
+name = "EFIT-gfile"
+end
+file
+action = "obj = {top}.add_model({top}.get_next_name('model')).add_std_modelmodule('netcdf4',src={1});obj.rename('ncfile');obj.call_method('onLoadFile', file={1})"
+ext = "^.*\.(nc|ncdf)"
+use = True
+action_txt = "Load to model tree"
+name = "netcdf"
+end

@@ -1,0 +1,553 @@
+Scope.geometry: 1102x791+1966+347
+Scope.title: "MLR Overview"//$shot
+Scope.icon_name: BigScope
+Scope.title_event: mag_traq
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: p114
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 4
+Scope.global_1_1.experiment: cmod
+Scope.global_1_1.shot: current_shot('cmod')
+Scope.global_1_1.xmin: -.03
+Scope.global_1_1.xmax: 2.0
+Scope.global_1_1.global_defaults: -12674
+Scope.rows_in_column_1: 14
+
+Scope.plot_1_1.update: 0
+Scope.plot_1_1.update: 0
+Scope.plot_1_1.experiment: mhd
+Scope.plot_1_1.default_node: \magnetics::top
+Scope.plot_1_1.x: dim_of(_v)
+Scope.plot_1_1.y: _v=smooth1d(\analysis::top.mflux:v0,50)
+Scope.plot_1_1.event: vacbrbz
+Scope.plot_1_1.title: 'Loop Voltage'//$shot
+Scope.plot_1_1.label: Vloop
+Scope.plot_1_1.global_defaults: 257
+
+Scope.plot_2_1.update: 0
+Scope.plot_2_1.update: 0
+Scope.plot_2_1.experiment: magnetics
+Scope.plot_2_1.y: \magnetics::ip*1.0e-3|||
+Scope.plot_2_1.xmin: -.03
+Scope.plot_2_1.xmax: 1.9
+Scope.plot_2_1.event: MAG_TRAQ
+Scope.plot_2_1.title: "I_p"//$shot
+Scope.plot_2_1.label: I_p
+Scope.plot_2_1.global_defaults: 256
+
+Scope.plot_3_1.update: 0
+Scope.plot_3_1.update: 0
+Scope.plot_3_1.experiment: magnetics
+Scope.plot_3_1.y: \magnetics::Bt|||
+Scope.plot_3_1.xmin: -.03
+Scope.plot_3_1.xmax: 1.9
+Scope.plot_3_1.event: MAG_TRAQ
+Scope.plot_3_1.title: "Bt"//$shot
+Scope.plot_3_1.label: Bt
+Scope.plot_3_1.global_defaults: 257
+
+Scope.plot_4_1.height: 50
+Scope.plot_4_1.experiment: mhd
+Scope.plot_4_1.default_node: \analysis::efit
+Scope.plot_4_1.y: \ANALYSIS::EFIT_AEQDSK:QPSIB
+Scope.plot_4_1.event: efit_done
+Scope.plot_4_1.title: "EFIT q_95"//$shot
+Scope.plot_4_1.label: q95
+Scope.plot_4_1.global_defaults: -723585
+
+Scope.plot_5_1.height: 50
+Scope.plot_5_1.experiment: mhd
+Scope.plot_5_1.default_node: \analysis::efit
+Scope.plot_5_1.y: \efit_aeqdsk:ssep
+Scope.plot_5_1.ymin: -5.0
+Scope.plot_5_1.ymax: 5.0
+Scope.plot_5_1.event: efit_done
+Scope.plot_5_1.title: "SSEP (cm) "//$shot
+Scope.plot_5_1.label: OLEFT
+Scope.plot_5_1.global_defaults: -248449
+
+Scope.plot_6_1.height: 50
+Scope.plot_6_1.experiment: analysis
+Scope.plot_6_1.x: dim_of(_sig,1)
+Scope.plot_6_1.y: _sig=\ANALYSIS::EFIT_AEQDSK:ZSEPS,|||_sig=_sig[0,*]|||
+Scope.plot_6_1.xmin: 0.5
+Scope.plot_6_1.xmax: 1.5
+Scope.plot_6_1.title: "Lower ZSEPS"
+Scope.plot_6_1.global_defaults: -654465
+
+Scope.plot_7_1.update: 0
+Scope.plot_7_1.update: 0
+Scope.plot_7_1.experiment: electrons
+Scope.plot_7_1.y: \top.tci.results:nL_04
+Scope.plot_7_1.ymin: 0
+Scope.plot_7_1.ymax: 3.e20
+Scope.plot_7_1.event: tci_write
+Scope.plot_7_1.title: "Density n_e.L(4)" // $shot 
+Scope.plot_7_1.label: Ne_04
+Scope.plot_7_1.global_defaults: 257
+
+Scope.plot_8_1.update: 0
+Scope.plot_8_1.update: 0
+Scope.plot_8_1.show_mode: 2
+Scope.plot_8_1.experiment: electrons
+Scope.plot_8_1.default_node: \electrons::top.yag
+Scope.plot_8_1.x: dim_of(\thom_midpln:ne_t)
+Scope.plot_8_1.y: \thom_midpln:ne_t
+Scope.plot_8_1.xmax: 1.6
+Scope.plot_8_1.ymin: 0
+Scope.plot_8_1.ymax: 3.e20
+Scope.plot_8_1.event: yag_temps_ready
+Scope.plot_8_1.title: "Thomson Ne(+1.5)"//$SHOT
+Scope.plot_8_1.label: Ne_04
+Scope.plot_8_1.global_defaults: -261770
+
+Scope.plot_9_1.height: 50
+Scope.plot_9_1.experiment: cmod
+Scope.plot_9_1.y: _tci_chan=4,|||_rc3 =make_signal(transpose_mat(data(\analysis::efit_aeqdsk:rco2v))[*,_tci_chan-1]/100.,*,\analysis::efit_aeqdsk:time),||| _nlchan=getnci("\\electrons::top.tci.results:nl_0"//text(_tci_chan,1),"record"), |||/* _nl4=\electrons::top.tci.results:nl_04,*/|||_tne=dim_of(_nlchan),|||_lsamp=sig_resample(_rc3,_nlchan),|||/* _n4=make_signal(_nl4/_lsamp,*,_tne), */||| make_signal(_nlchan/_lsamp,*,_tne)|||
+Scope.plot_9_1.event: efit_done
+Scope.plot_9_1.title: "nebar("//text(_tci_chan,2)//")"//$shot
+Scope.plot_9_1.global_defaults: -212618
+
+Scope.plot_10_1.update: 0
+Scope.plot_10_1.update: 0
+Scope.plot_10_1.show_mode: 2
+Scope.plot_10_1.experiment: electrons
+Scope.plot_10_1.x: _t
+Scope.plot_10_1.y: _t=dim_of(\ELECTRONS::TOP.YAG_EDGETS.RESULTS:NE:PED_HEIGHT),|||_top=\ELECTRONS::TOP.YAG_EDGETS.RESULTS:NE:PED_HEIGHT,|||_base=\ELECTRONS::TOP.YAG_EDGETS.RESULTS:NE:PED_B,|||_ped=(_top+_base)
+Scope.plot_10_1.title: "Ped Dens (m^-3)"//$shot
+Scope.plot_10_1.global_defaults: -724105
+
+Scope.plot_11_1.height: 50
+Scope.plot_11_1.experiment: cmod
+Scope.plot_11_1.y: _pres=\ENGINEERING::TOP.TORVAC.BEFORE:PRESBLOW,|||_trace=\SPECTROSCOPY::TOP.X_RAY_PHA:INCAA16:GAS_B_SD_LO
+Scope.plot_11_1.xmin: 0
+Scope.plot_11_1.xmax: 1.5
+Scope.plot_11_1.title: 'B-Side Lower '//_pres
+Scope.plot_11_1.global_defaults: -211585
+
+Scope.plot_12_1.height: 50
+Scope.plot_12_1.experiment: spectroscopy
+Scope.plot_12_1.y: smooth1d(\spectroscopy::top.x_ray_pha:incaa16:gas_b_bot,1)
+Scope.plot_12_1.xmin: -.03
+Scope.plot_12_1.xmax: 1.5
+Scope.plot_12_1.event: x_ray_pha_incaa16
+Scope.plot_12_1.title: "C Side Gas Puff"//$shot
+Scope.plot_12_1.label: A side gas
+Scope.plot_12_1.global_defaults: -261257
+
+Scope.plot_13_1.height: 50
+Scope.plot_13_1.experiment: cmod
+Scope.plot_13_1.y: _pres=\ENGINEERING::TOP.TORVAC.BEFORE:PRESJBOT,|||_trace=\SPECTROSCOPY::PIEZO_JBOT
+Scope.plot_13_1.xmin: 0
+Scope.plot_13_1.xmax: 1.5
+Scope.plot_13_1.title: 'H Bottom '//_pres
+Scope.plot_13_1.global_defaults: -211585
+
+Scope.plot_14_1.height: 61
+Scope.plot_14_1.step_plot: 1
+Scope.plot_14_1.experiment: edge
+Scope.plot_14_1.x: dim_of(\EDGE::GAS_CAMAC:NINJA_J221:OUTPUT_01)
+Scope.plot_14_1.y: _n1=\EDGE::GAS_CAMAC:NINJA_J221:OUTPUT_01
+Scope.plot_14_1.event: GAS_INCAA_01
+Scope.plot_14_1.title: "NINJA trigger #1 "//$shot
+Scope.plot_14_1.global_defaults: -724633
+Scope.rows_in_column_2: 13
+
+Scope.plot_1_2.update: 0
+Scope.plot_1_2.update: 0
+Scope.plot_1_2.step_plot: 1
+Scope.plot_1_2.experiment: spectroscopy
+Scope.plot_1_2.y: \SPECTROSCOPY::TWOPI_FOIL*1.e-6
+Scope.plot_1_2.ymin: -.1
+Scope.plot_1_2.event: twopi_camac_done
+Scope.plot_1_2.title: "2PI FOIL (MW)"//$shot  
+Scope.plot_1_2.label: Bolo 2pi foil
+Scope.plot_1_2.global_defaults: 274806
+
+Scope.plot_2_2.update: 0
+Scope.plot_2_2.update: 0
+Scope.plot_2_2.experiment: spectroscopy
+Scope.plot_2_2.y: _pradm=.bolometer.results.foil:main_power/1e6
+Scope.plot_2_2.xmin: -.1
+Scope.plot_2_2.xmax: 1.5
+Scope.plot_2_2.ymin: -.1
+Scope.plot_2_2.ymax: 1
+Scope.plot_2_2.event: pradmain_done
+Scope.plot_2_2.title: "PRAD CORE (MW)"//$shot
+Scope.plot_2_2.global_defaults: -260226
+
+Scope.plot_3_2.update: 0
+Scope.plot_3_2.update: 0
+Scope.plot_3_2.experiment: spectroscopy
+Scope.plot_3_2.y: _ff=3.0,\prad_2pi*_ff*1.e-3
+Scope.plot_3_2.ymin: -.1
+Scope.plot_3_2.ymax: 2.
+Scope.plot_3_2.event: twopi_camac_done
+Scope.plot_3_2.title: "2PI DIODE (MW) \n[ff="//_ff//"]  "//$shot
+Scope.plot_3_2.label: 2pi Bolo
+Scope.plot_3_2.global_defaults: -773250
+
+Scope.plot_4_2.update: 0
+Scope.plot_4_2.update: 0
+Scope.plot_4_2.experiment: spectroscopy
+Scope.plot_4_2.x: dim_of(_sig)
+Scope.plot_4_2.y: IF ($shot > 1070101001)_sig=.BOLOMETER.RESULTS.DIODE:PRAD_AXUV; ELSE _sig=.BOLOMETER.RESULTS.AXUV.MIDPLANE:PRAD_AXUV||||||
+Scope.plot_4_2.ymin: -.1
+Scope.plot_4_2.ymax: 2.
+Scope.plot_4_2.title: "PRAD CORE (DIODE) (MW)"//$shot
+Scope.plot_4_2.global_defaults: -773250
+
+Scope.plot_5_2.height: 54
+Scope.plot_5_2.experiment: spectroscopy
+Scope.plot_5_2.default_node: \SPECTROSCOPY::TOP.IMPSPEC.Ne.LINE0
+Scope.plot_5_2.x: dim_of(_br)
+Scope.plot_5_2.y: _lam=LAM,|||_label=LABEL,|||_br=BR
+Scope.plot_5_2.title: _label[0]//extract(0,13,(text(_lam[0])))//'  '//$shot
+Scope.plot_5_2.global_defaults: -69257
+
+Scope.plot_6_2.height: 54
+Scope.plot_6_2.experiment: spectroscopy
+Scope.plot_6_2.default_node: \SPECTROSCOPY::TOP.IMPSPEC.MO.LINE0
+Scope.plot_6_2.x: dim_of(_br)
+Scope.plot_6_2.y: _lam=LAM,|||_label=LABEL,|||_br=BR
+Scope.plot_6_2.event: impspec_mo_done
+Scope.plot_6_2.title: _label[0]//extract(0,13,(text(_lam[0])))//'  '//$shot
+Scope.plot_6_2.global_defaults: -200329
+
+Scope.plot_7_2.height: 54
+Scope.plot_7_2.show_mode: 2
+Scope.plot_7_2.experiment: spectroscopy
+Scope.plot_7_2.default_node: \SPECTROSCOPY::TOP.HIREX_SR.ANALYSIS
+Scope.plot_7_2.x: dim_of(Z:INT)
+Scope.plot_7_2.y: _loc = dim_of(Z:INT,1),|||_tmp = Z:INT,|||_sig=data(_tmp)[*,0]
+Scope.plot_7_2.title: "Ar XVII (z)"//$shot
+Scope.plot_7_2.global_defaults: -69257
+
+Scope.plot_8_2.update: 0
+Scope.plot_8_2.update: 0
+Scope.plot_8_2.show_mode: 2
+Scope.plot_8_2.experiment: electrons
+Scope.plot_8_2.default_node: \electrons::top.yag
+Scope.plot_8_2.x: dim_of(\thom_midpln:te_t)
+Scope.plot_8_2.y: \thom_midpln:te_t
+Scope.plot_8_2.xmax: 1.60
+Scope.plot_8_2.event: yag_temps_ready
+Scope.plot_8_2.title: "Thomson Te(+1.5)"//$shot
+Scope.plot_8_2.global_defaults: -261770
+
+Scope.plot_9_2.update: 0
+Scope.plot_9_2.update: 0
+Scope.plot_9_2.show_mode: 2
+Scope.plot_9_2.experiment: electrons
+Scope.plot_9_2.x: _t
+Scope.plot_9_2.y: _t=dim_of(\ELECTRONS::TOP.YAG_EDGETS.RESULTS:TE:PED_HEIGHT),|||_top=\ELECTRONS::TOP.YAG_EDGETS.RESULTS:TE:PED_HEIGHT,|||_base=\ELECTRONS::TOP.YAG_EDGETS.RESULTS:TE:PED_B,|||_ped=_top+_base
+Scope.plot_9_2.title: "Ped Temp (eV)"//$shot
+Scope.plot_9_2.global_defaults: -724105
+
+Scope.plot_10_2.height: 54
+Scope.plot_10_2.y: \ELECTRONS::TE_HRECE31
+Scope.plot_10_2.event: FRCECE_DTACQ32
+Scope.plot_10_2.title: 'SLOW Te #32'//$SHOT
+Scope.plot_10_2.label: TE_HRECE32
+Scope.plot_10_2.global_defaults: -198657
+
+Scope.plot_11_2.update: 0
+Scope.plot_11_2.update: 0
+Scope.plot_11_2.experiment: electrons
+Scope.plot_11_2.y: \ELECTRONS::gpc2_te0
+Scope.plot_11_2.event: aur1_done
+Scope.plot_11_2.title: 'ECE GPC2_T0'//$shot
+Scope.plot_11_2.label: ECE GPC_T0
+Scope.plot_11_2.global_defaults: -724194
+
+Scope.plot_12_2.update: 0
+Scope.plot_12_2.update: 0
+Scope.plot_12_2.experiment: electrons
+Scope.plot_12_2.y: \ELECTRONS::gpc_te8
+Scope.plot_12_2.event: aur1_done
+Scope.plot_12_2.title: 'ECE GPC_T8'//$shot
+Scope.plot_12_2.label: ECE GPC_T0
+Scope.plot_12_2.global_defaults: -724194
+
+Scope.plot_13_2.height: 67
+Scope.plot_13_2.experiment: edge
+Scope.plot_13_2.x: dim_of(\g_side_mks)
+Scope.plot_13_2.y: _d=4.06*data(\g_side_mks),_g_side_mks=smooth1d(_d,15),
+Scope.plot_13_2.xmin: 0.0
+Scope.plot_13_2.xmax: 2.0
+Scope.plot_13_2.event: GAS_INCAA_01
+Scope.plot_13_2.title: "4060 x G-Side MKS (torr-l) "//$shot
+Scope.plot_13_2.global_defaults: -736905
+Scope.rows_in_column_3: 13
+
+Scope.plot_1_3.height: 54
+Scope.plot_1_3.experiment: rf
+Scope.plot_1_3.y: \rf::RF_POWEr_net
+Scope.plot_1_3.xmin: -.03
+Scope.plot_1_3.xmax: 2.
+Scope.plot_1_3.ymin: -.1
+Scope.plot_1_3.ymax: 6.
+Scope.plot_1_3.event: rf_power_done
+Scope.plot_1_3.title: "RF Power (MW)"//$shot
+Scope.plot_1_3.label: RF_power
+Scope.plot_1_3.global_defaults: -784513
+
+Scope.plot_2_3.height: 54
+Scope.plot_2_3.experiment: rf
+Scope.plot_2_3.y: \rf::RF_POWER_j3
+Scope.plot_2_3.xmin: -.03
+Scope.plot_2_3.xmax: 1.7
+Scope.plot_2_3.ymin: -.1
+Scope.plot_2_3.ymax: 2.
+Scope.plot_2_3.event: rf_power_j3_done
+Scope.plot_2_3.title: "RF Power  J3 (MW)"//$shot
+Scope.plot_2_3.label: RF_power
+Scope.plot_2_3.global_defaults: -784513
+
+Scope.plot_3_3.height: 54
+Scope.plot_3_3.experiment: rf
+Scope.plot_3_3.y: \rf::RF_POWER_j4
+Scope.plot_3_3.xmin: -.03
+Scope.plot_3_3.xmax: 1.7
+Scope.plot_3_3.ymin: -.1
+Scope.plot_3_3.ymax: 2.
+Scope.plot_3_3.event: rf_power_j4_done
+Scope.plot_3_3.title: "RF Power J4 (MW)"//$shot
+Scope.plot_3_3.label: RF_power
+Scope.plot_3_3.global_defaults: -784513
+
+Scope.plot_4_3.height: 54
+Scope.plot_4_3.experiment: rf
+Scope.plot_4_3.y: \rf::RF_POWER_e
+Scope.plot_4_3.xmin: -.03
+Scope.plot_4_3.xmax: 1.7
+Scope.plot_4_3.ymin: -.1
+Scope.plot_4_3.ymax: 2.
+Scope.plot_4_3.event: rf_power_e_done
+Scope.plot_4_3.title: "RF Power E (MW)"//$shot
+Scope.plot_4_3.label: RF_power
+Scope.plot_4_3.global_defaults: -784513
+
+Scope.plot_5_3.height: 54
+Scope.plot_5_3.experiment: rf
+Scope.plot_5_3.y: \rf::RF_POWER_d
+Scope.plot_5_3.xmin: -.03
+Scope.plot_5_3.xmax: 1.7
+Scope.plot_5_3.ymin: -.1
+Scope.plot_5_3.ymax: 2.
+Scope.plot_5_3.event: rf_power_d_done
+Scope.plot_5_3.title: "RF Power D (MW)"//$shot
+Scope.plot_5_3.label: RF_power
+Scope.plot_5_3.global_defaults: -784513
+
+Scope.plot_6_3.height: 54
+Scope.plot_6_3.experiment: lh
+Scope.plot_6_3.y: \LH::TOP.RESULTS:NETPOW
+Scope.plot_6_3.xmin: -0.5
+Scope.plot_6_3.xmax: 2.5
+Scope.plot_6_3.title: "LH Net Power"//$shot
+Scope.plot_6_3.global_defaults: -785028
+
+Scope.plot_7_3.height: 54
+Scope.plot_7_3.experiment: analysis
+Scope.plot_7_3.default_node: \analysis::efit
+Scope.plot_7_3.x: dim_of(\ANALYSIS::EFIT_SSIBRY)
+Scope.plot_7_3.y: _vsurf =  deriv(smooth1d(\ANALYSIS::EFIT_SSIBRY,2))*$2pi ;|||_ip=abs(\ANALYSIS::EFIT_AEQDSK:CPASMA);|||_li = \analysis::efit_aeqdsk:ali;|||_L = _li*6.28*67.*1.e-9;|||_vi = _L*deriv(smooth1d(_ip,2));|||_poh=_ip*(_vsurf-_vi)/1.e6
+Scope.plot_7_3.ymin: -0.5
+Scope.plot_7_3.event: efit_done
+Scope.plot_7_3.title: "Poh (MW)"//$shot
+Scope.plot_7_3.label: Poh
+Scope.plot_7_3.global_defaults: -773761
+
+Scope.plot_8_3.update: 0
+Scope.plot_8_3.update: 0
+Scope.plot_8_3.y: \ANALYSIS::EFIT_AEQDSK:WPLASM
+Scope.plot_8_3.ymin: -1000
+Scope.plot_8_3.ymax: 1.2e5
+Scope.plot_8_3.event: efit_done
+Scope.plot_8_3.title: "WPLASM"
+Scope.plot_8_3.label: WPLASM
+Scope.plot_8_3.global_defaults: -247810
+
+Scope.plot_9_3.update: 0
+Scope.plot_9_3.update: 0
+Scope.plot_9_3.y: \ANALYSIS::EFIT_AEQDSK:OLEFT
+Scope.plot_9_3.event: EFIT_done
+Scope.plot_9_3.title: "LEFT Gap (cm)"//$shot
+Scope.plot_9_3.label: EFIT LGAP
+Scope.plot_9_3.global_defaults: -722946
+
+Scope.plot_10_3.update: 0
+Scope.plot_10_3.update: 0
+Scope.plot_10_3.y: \ANALYSIS::EFIT_AEQDSK:ORIGHT
+Scope.plot_10_3.ymin: 0
+Scope.plot_10_3.ymax: 2.5
+Scope.plot_10_3.event: efit_done
+Scope.plot_10_3.title: "RIGHT Gap (cm)"
+Scope.plot_10_3.label: EFIT RGAP
+Scope.plot_10_3.global_defaults: -772098
+
+Scope.plot_11_3.height: 54
+Scope.plot_11_3.show_mode: 2
+Scope.plot_11_3.experiment: spectroscopy
+Scope.plot_11_3.default_node: \SPECTROSCOPY::TOP.HIREX_SR.ANALYSIS
+Scope.plot_11_3.x: dim_of(Z:TI)
+Scope.plot_11_3.y: _loc = dim_of(Z:TI,1),|||_tmp = Z:TI,|||_sig=data(_tmp)[*,0]
+Scope.plot_11_3.title: "Z - TI, LOC: "//_loc[0]
+Scope.plot_11_3.global_defaults: -69257
+
+Scope.plot_12_3.update: 0
+Scope.plot_12_3.update: 0
+Scope.plot_12_3.show_mode: 2
+Scope.plot_12_3.y.grid_lines: 3
+Scope.plot_12_3.experiment: spectroscopy
+Scope.plot_12_3.x: dim_of(_hd)
+Scope.plot_12_3.y: _hd=\spectroscopy::balmer_h_to_d,_hd/(_hd+1)
+Scope.plot_12_3.event: h_to_d_done
+Scope.plot_12_3.title: "H to H+D Ratio"//$shot
+Scope.plot_12_3.global_defaults: -1048304
+
+Scope.plot_13_3.update: 0
+Scope.plot_13_3.update: 0
+Scope.plot_13_3.experiment: spectroscopy
+Scope.plot_13_3.x: dim_of(_sig)
+Scope.plot_13_3.y: _sig=\SPECTROSCOPY::TOP:FLIR_CAMERA.QFLUX_2D:PODIV/1.0e6||||||
+Scope.plot_13_3.ymin: -.1
+Scope.plot_13_3.ymax: 2.
+Scope.plot_13_3.title: "POWER TO O-DIV (MW)"//$shot
+Scope.plot_13_3.global_defaults: -773250
+Scope.rows_in_column_4: 13
+
+Scope.plot_1_4.update: 0
+Scope.plot_1_4.update: 0
+Scope.plot_1_4.experiment: spectroscopy
+Scope.plot_1_4.y: \spectroscopy::cii_c_bright
+Scope.plot_1_4.event: vis_fluct2_complete
+Scope.plot_1_4.title: "CII in mW/cm^2/sr"//$shot
+Scope.plot_1_4.label: CII
+Scope.plot_1_4.global_defaults: 353
+
+Scope.plot_2_4.height: 54
+Scope.plot_2_4.experiment: spectroscopy
+Scope.plot_2_4.x: dim_of(_sig1)
+Scope.plot_2_4.y: _sig1=smooth1d(\SPECTROSCOPY::TOP.VUV.VIS_SIGNALS:MCP_VIS_SIG3,5)
+Scope.plot_2_4.xmin: -0.5
+Scope.plot_2_4.xmax: 2.5
+Scope.plot_2_4.event: jhu_done
+Scope.plot_2_4.title: "He II (4-3) (VUV)"//$shot
+Scope.plot_2_4.label: H-alpha H-port
+Scope.plot_2_4.global_defaults: -736388
+
+Scope.plot_3_4.height: 54
+Scope.plot_3_4.experiment: spectroscopy
+Scope.plot_3_4.x: dim_of(_sig1)
+Scope.plot_3_4.y: _sig1=smooth1d(\SPECTROSCOPY::TOP.VUV.VIS_SIGNALS:MCP_VIS_SIG1,5),|||_sig2=\SPECTROSCOPY::HA_2_BRIGHT,|||_sig1
+Scope.plot_3_4.xmin: -0.5
+Scope.plot_3_4.xmax: 2.5
+Scope.plot_3_4.title: "H-alpha (VUV)"//$shot
+Scope.plot_3_4.label: H-alpha H-port
+Scope.plot_3_4.global_defaults: -736388
+
+Scope.plot_4_4.height: 54
+Scope.plot_4_4.experiment: spectroscopy
+Scope.plot_4_4.x: dim_of(_sig2)
+Scope.plot_4_4.y: _sig1=smooth1d(\SPECTROSCOPY::TOP.VUV.VIS_SIGNALS:MCP_VIS_SIG1,5),|||_sig2=\SPECTROSCOPY::HA_2_BRIGHT,|||_sig2
+Scope.plot_4_4.xmin: -0.5
+Scope.plot_4_4.xmax: 2.5
+Scope.plot_4_4.event: vis_fluct2_complete
+Scope.plot_4_4.title: "H-alpha (HA_2)"//$shot
+Scope.plot_4_4.label: H-alpha H-port
+Scope.plot_4_4.global_defaults: -736388
+
+Scope.plot_5_4.height: 54
+Scope.plot_5_4.show_mode: 2
+Scope.plot_5_4.experiment: spectroscopy
+Scope.plot_5_4.default_node: \SPECTROSCOPY::TOP.HIREX_SR.ANALYSIS
+Scope.plot_5_4.x: dim_of(M:INT)
+Scope.plot_5_4.y: _loc = dim_of(M:INT,1),|||_sig = M:INT
+Scope.plot_5_4.title: "Mo XXXIII"//$shot
+Scope.plot_5_4.global_defaults: -69257
+
+Scope.plot_6_4.update: 0
+Scope.plot_6_4.update: 0
+Scope.plot_6_4.experiment: xtomo
+Scope.plot_6_4.y: _arr="4",_chn="01",_name="\\xtomo::top.signals.array_"//_arr//":chord_"//_chn,build_path(_name)
+Scope.plot_6_4.event: xtomo_traq_2
+Scope.plot_6_4.title: "X-ray Array"//_arr//" Chord"//_chn//$shot
+Scope.plot_6_4.label: "Xtomo  Chord General
+Scope.plot_6_4.global_defaults: 257
+
+Scope.plot_7_4.update: 0
+Scope.plot_7_4.update: 0
+Scope.plot_7_4.experiment: xtomo
+Scope.plot_7_4.y: _arr="1",_chn="13",_name="\\xtomo::top.signals.array_"//_arr//":chord_"//_chn,build_path(_name)
+Scope.plot_7_4.event: xtomo_traq_2
+Scope.plot_7_4.title: "X-ray Array"//_arr//" Chord"//_chn//$shot
+Scope.plot_7_4.label: "Xtomo  Chord General
+Scope.plot_7_4.global_defaults: 257
+
+Scope.plot_8_4.update: 0
+Scope.plot_8_4.update: 0
+Scope.plot_8_4.experiment: cmod
+Scope.plot_8_4.y: \neuts_hards
+Scope.plot_8_4.event: neuts_done
+Scope.plot_8_4.title: "Hard X-ray/ Neutrons"//$shot
+Scope.plot_8_4.label: Hard X-ray/ Neutrons
+Scope.plot_8_4.global_defaults: -723073
+
+Scope.plot_9_4.update: 0
+Scope.plot_9_4.update: 0
+Scope.plot_9_4.experiment: particles
+Scope.plot_9_4.y: \top.neutrons.he_3_bank.results:he3_nrate_2
+Scope.plot_9_4.event: he3_bank_done
+Scope.plot_9_4.title: "Neutron Rate"//$shot
+Scope.plot_9_4.label: Neutron Ti
+Scope.plot_9_4.global_defaults: 257
+
+Scope.plot_10_4.height: 54
+Scope.plot_10_4.experiment: spectroscopy
+Scope.plot_10_4.x: dim_of(_sig2)
+Scope.plot_10_4.y: _tit="Z_AVE",|||_sig2=smooth1d(\z_ave,30),
+Scope.plot_10_4.ymin: 0.9
+Scope.plot_10_4.ymax: 6.0
+Scope.plot_10_4.event: x_ray_pha_incaa16
+Scope.plot_10_4.title: _tit//$shot
+Scope.plot_10_4.global_defaults: -248969
+
+Scope.plot_11_4.height: 54
+Scope.plot_11_4.show_mode: 2
+Scope.plot_11_4.experiment: spectroscopy
+Scope.plot_11_4.default_node: \SPECTROSCOPY::TOP.HIREX_SR.ANALYSIS
+Scope.plot_11_4.x: dim_of(Z:VEL)
+Scope.plot_11_4.y: _loc = dim_of(Z:VEL,1),|||_tmp = Z:VEL,|||_sig=data(_tmp)[*,0]
+Scope.plot_11_4.ymin: -100
+Scope.plot_11_4.ymax: 100
+Scope.plot_11_4.title: "Z - VEL, LOC: "//_loc[0]
+Scope.plot_11_4.global_defaults: -118409
+
+Scope.plot_12_4.height: 54
+Scope.plot_12_4.y.grid_lines: 6
+Scope.plot_12_4.experiment: dnb
+Scope.plot_12_4.default_node: \top
+Scope.plot_12_4.y: \I_beam
+Scope.plot_12_4.ymin: -1
+Scope.plot_12_4.ymax: 10.9
+Scope.plot_12_4.event: dnb_traq_done
+Scope.plot_12_4.title: "Beam current (A)"//$shot
+Scope.plot_12_4.global_defaults: -248449
+
+Scope.plot_13_4.height: 64
+Scope.plot_13_4.experiment: engineering
+Scope.plot_13_4.y: _cci=if_error(\engineering::top.power_system.correct_coil:bus_r_cur,|||\ENGINEERING::TOP.POWER_SYSTEM.CORRECT_COIL:CUR)
+Scope.plot_13_4.xmin: -.5
+Scope.plot_13_4.xmax: 2.5
+Scope.plot_13_4.event: buslv_tr16_2
+Scope.plot_13_4.title: "CORRECTION COIL CURRENT"//$SHOT
+Scope.plot_13_4.label: ALT_1
+Scope.plot_13_4.global_defaults: -212105
+Scope.vpane_1: 250
+Scope.vpane_2: 500
+Scope.vpane_3: 750

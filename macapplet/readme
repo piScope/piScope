@@ -1,0 +1,28 @@
+This folder is an attempt to make an applet using py2app.
+However, this does not work well yet.
+
+For now, a user can use launch_piScope.app, which is
+a apple script and made an app using Automator
+
+
+==== Old document ====
+How to make applet
+
+This directory contains files needed to an applet for MacOS.
+setup.py was made using py2app
+launch_piscope is automator applicaiton to launch piscope
+Presently, only alias mode works.
+
+1) run setup.py script 
+(alias mode) python2.7 setup.py py2app -A  --use-pythonpath
+
+2) to run piscope, do either one of followings
+   1) launch_piscope.app
+   2) Run the following from Terminal.app
+    ./dist/piscope.app/Contents/MacOS/piscope 
+   3) you can also click ./dist/piscope.app. However in this case, 
+      you need to click dock icon...somehow...
+
+3) external utilities
+   1) ghostscript, ps2pdf (in case of macport, sudo port install ghostscript)
+  

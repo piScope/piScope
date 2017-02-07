@@ -1,0 +1,98 @@
+00 Control 	IRST1 IRST2 IPEST NCYCLE NSKIPR NSKIPL IMOVIE
+01 Dimensions 	NX NZ ALX ALZ ISYM CCON IDATA
+02 Time step 	DTMINS DTMAXS DTFAC LRSWTCH IDENS IPRES IFUNC
+03 Numerical 	XLIM ZLIM XLIM2 FFAC NDIV ICIRC ISVD
+04 Surf. Ave. 	ISURF NPSI NSKIPSF TFMULT ALPHAR BETAR ITRMOD
+05 Limiter I 	XLIMA(I) ZLIMA(I) XLIMA(I+1) ZLIMA(I+1) XLIMA(I+2) ZLIM(I+2)
+06 Divertor 	IDIV PSIRAT X1SEP X2SEP Z1SEP Z2SEP NSEPMAX
+07 Impurities 	IIMP ILTE IMPBND IMPPEL AMGAS ZGAS NTHE
+08 Obs. pairs J 	XOBS(2J-1) ZOBS(2J-1) XOBS(2J) ZOBS(2J) NPLOTOBS
+09 Ext. coils N 	XCOIL(N) ZCOIL(N) IGROUPC(N) ATURNSC(N) RSCOILS(N) AINDC(N)
+10 Int. coils M 	XWIRE(M) ZWIRE(M) IGROUPW(M) ATURNSW(M) RSWIRES(M) CWICS(M)
+11 ACOEF ICO NCO 	ACOEF(ICO) . . .(ICO+1) . . . . . . . . .(ICO+4)
+12 Tranport	TEVV DCGS QSAW ZEFF IALPHA IBALSW ISAW
+13 Init. cond-1 	ALPHAG ALPHAP NEQMAX XPLAS ZPLAS GZERO QZERO
+14 Init. cond-2 	ISTART XZERIC AXIC ZZERIC BZIC
+15 Coil groups 	IGROUP GCUR(1) . . . . . . . . . . . . GCUR(6)
+16 Plasma curr. 	- PCUR(1) . . . . . . . . . . . . PCUR(6)
+17 Plasma press. 	- PPRES(1) . . . . . . . . . . . . PPRES(6)
+18 Timing 	- TPRO(1) . . . . . . . . . . . . TPRO(6)
+19 Feedback-1 	L NRFB(L) NFEEDO(L) FBFAC(L) FBCON(L) IDELAY(L) FBFACI(L)
+20 Feedback-2 	L TFBONS(L) TFBOFS(L) FBFAC1(L) FBFACD(L) IPEXT(L)
+21 Contour plot 	ICPLET ICPLGF ICPLWF ICPLPR ICPLBV ICPLUV ICPLXP
+22 Vector plot 	IVPLBP IVPLVI IVPLFR IVPLJP IVPLVC IVPLVT -
+23 Aux. heat 	- BEAMP(1) . . . . . . . . . . . . BEAMP(6)
+24 Density 	- RNORM(1) . . . . . . . . . . . . RNORM(6)
+25 Dep. prof. 	ABEAM DBEAM NEBEAM EBEAMKEV AMBEAM FRACPAR IBOOTST
+26 Anom. trans. 	- FBCHIA(1) . . . . . . . . . . . . FBCHIA(6)
+27 Tor. field 	- GZEROV(1) . . . . . . . . . . . . GZEROV(6)
+28 Loop volt. 	- VLOOPV(1) . . . . . . . . . . . . VLOOPV(6)
+29 PEST output 	- TPEST(1) . . . . . . . . . . . . TPEST(6)
+30 Mag. Axis(x) 	- XMAGO(1) . . . . . . . . . . . . XMAGO(6)
+31 Mag. Axis(z) 	- ZMAGO(1) . . . . . . . . . . . . ZMAGO(6)
+32 Divertor 	N XLPLATE(N) ZLPLATE(N) XRPLATE(N) ZRPLATE(N) FPLATE(N,1) FPLATE(N,2)
+33 Coil grp-2 	IGROUP RESGS( )
+34 TEVV(t) 	- TEVVO(1) . . . . . . . . . . . . TEVVO(6)
+35 FFAC(t) 	- FFACO(1) . . . . . . . . . . . . FFACO(6)
+36 ZEFF(t) 	- ZEFFV(1) . . . . . . . . . . . . ZEFFV(6)
+37 Volt group 	IGROUP GVOLT(1) . . . . . . . . . . . . GVOLT(6)
+38 LHDEP 	ILHCD VILIM FREQLH AION ZION CPROF IFK
+39 Ext. coil-2 	N DXCOIL(N) DZCOIL(N) FCU(N) FSS(N) TEMPC(N) CCICS(N)
+40 Noplot 	NOPLOT(1) . . . . . . . . . . . . . . . NOPLOT(7)
+41 Ripple 	IRIPPL NTFCOIL RIPMAX RTFCOIL NPITCH RIPMULT IRIPMOD
+42 Major rad. 	- RZERV(1) . . . . . . . . . . . . RZERV(6)
+43 Minor rad. 	- AZERV(1) . . . . . . . . . . . . AZERV(6)
+44 Ellipticity 	- EZERV(1) . . . . . . . . . . . . EZERV(6)
+45 Triangularity 	- DZERV(1) . . . . . . . . . . . . DZERV(6)
+46 LH heating 	- PLHAMP(1) . . . . . . . . . . . . PLHAMP(6)
+47 Dens. exp-1 	- ALPHARV(1) . . . . . . . . . . . . ALPHARV(6)
+48 Dens. exp-2 	- BETARV(1) . . . . . . . . . . . . BETARV(6)
+49 Multipole 	N MULTN(N) ROMULT(N) IGROUPM(N) ATURNSM(N)
+50 CD 	- FRACPAR(1) . . . . . . . . . . . . FRACPAR(6)
+51 alh 	- A(1) . . . . . . . . . . . . A(6)
+52 dlh 	- D(1) . . . . . . . . . . . . D(6)
+53 a1lh 	- A1(1) . . . . . . . . . . . . A1(6)
+54 a2lh 	- A2(1) . . . . . . . . . . . . A2(6)
+55 ac 	- AC(1) . . . . . . . . . . . . AC(6)
+56 dc 	- DC(1) . . . . . . . . . . . . DC(6)
+57 ac1 	- AC1(1) . . . . . . . . . . . . AC1(6)
+58 ac2 	- AC2(1) . . . . . . . . . . . . AC2(6)
+59 ICRH 	- PICRH(1) . . . . . . . . . . . . PICRH(6)
+60 Halo Temp 	- TH(1) . . . . . . . . . . . . TH(6)
+61 Halo Width 	- AH(1) . . . . . . . . . . . . AH(6)
+62 X-Shape point 	- XCON0(1) . . . . . . . . . . . . XCON0(6)
+63 Z-Shape point 	- ZCON0(1) . . . . . . . . . . . . ZCON0(6)
+64 Fast Wave J 	- FWCD(1) . . . . . . . . . . . . FWCD(6)
+65 ICRH power profile(A) 	- A(1) . . . . . . . . . . . . A(6)
+66 ICRH power profile(D) 	- D(1) . . . . . . . . . . . . D(6)
+67 ICRH power profile(A1) 	- A1(1) . . . . . . . . . . . . A1(6)
+68 ICRH power profile(A2) 	- A2(1) . . . . . . . . . . . . A2(6)
+69 ICRH current profile(A)	- A(1) . . . . . . . . . . . . A(6)
+70 ICRH current profile(D)	- D(1) . . . . . . . . . . . . D(6)
+71 ICRH current profile(A1)	- A1(1) . . . . . . . . . . . . A1(6)
+72 ICRH current profile(A2) 	- A2(1) . . . . . . . . . . . . A2(6)
+73 He conf. time 	- HEACT(1) . . . . . . . . . . . . HEACT(6)
+74 UFILE output 	- TUFILE(1) . . . . . . . . . . . . TUFILE(6)
+75 Sawtooth time 	- SAWTIME(1) . . . . . . . . . . . . SAWTIME(6)
+76 Anom. ion trans. 	- FBCHIIA(1) . . . . . . . . . . . . FBCHIIA(6)
+77 acoef(123)=qadd 	- qadd(1) . . . . . . . . . . . . qadd(6)
+78 acoef(3003)=fhmodel 	- fhmodei(1) . . . . . . . . . . . . fhmodei(6)
+79 acoef(3011)=pwidthc 	- pwidthc(1) . . . . . . . . . . . . pwidthc(6)
+80 acoef(3006)=chiped 	- chiped(1) . . . . . . . . . . . . chiped(6)
+81 acoef(3102)=tped 	- tped(1) . . . . . . . . . . . . tped(6)
+82 impurity fraction 	imptype frac(1) . . . . . . . . . . . . frac(6)
+83 acoef(3012)=nflag 	- nflag(1) . . . . . . . . . . . . nflag(6)
+84 acoef(3013)=expn1 	- expn1(1) . . . . . . . . . . . . expn1(6)
+85 acoef(3014)=expn2 	- expn2(1) . . . . . . . . . . . . expn2(6)
+86 acoef(3004)=firitb 	- firitb(1) . . . . . . . . . . . . firitb(6)
+87 acoef(3005)=secitb 	- secitb(1) . . . . . . . . . . . . secitb(6)
+88 acoef(881)=fracno 	- fracno(1) . . . . . . . . . . . . fracno(6)
+89 acoef(889)=newden 	- newden(1) . . . . . . . . . . . . newden(6)
+90 ECRH Power (MW) 	- PECRH(1) . . . . . . . . . . . . PECRH(6)
+91 ECCD Toroidal Current (MA) 	- ECCD(1) . . . . . . . . . . . . ECCD(6)
+92 Sh. Par. a (ECCD H&CD) 	- AECD(1) . . . . . . . . . . . . AECD(6)
+93 Sh. Par. d (ECCD H&CD) 	- DECD(1) . . . . . . . . . . . . DECD(6)
+94 Sh. Par. a1 (ECCD H&CD) 	- A1ECD(1) . . . . . . . . . . . . A1ECD(6)
+95 Sh. Par. a2 (ECCD H&CD) 	- A2ECD(1) . . . . . . . . . . . . A2ECD(6)
+99
+

@@ -1,0 +1,206 @@
+Scope.geometry: 803x866+207+83
+Scope.title: "GPC Raws"
+Scope.icon_name: "GPC Raws"
+Scope.title_event: 
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: lp
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.shot: current_shot("cmod")
+Scope.global_1_1.xmin: -0.1
+Scope.global_1_1.xmax: 2.0
+Scope.global_1_1.global_defaults: -12545
+Scope.rows_in_column_1: 12
+
+Scope.plot_1_1.height: 65
+Scope.plot_1_1.y.grid_lines: 3
+Scope.plot_1_1.experiment: electrons
+Scope.plot_1_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_1
+Scope.plot_1_1.event: AUR1_done
+Scope.plot_1_1.title: ' GPC Raw1'//$shot
+Scope.plot_1_1.global_defaults: -199905
+
+Scope.plot_2_1.height: 65
+Scope.plot_2_1.y.grid_lines: 3
+Scope.plot_2_1.experiment: electrons
+Scope.plot_2_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_2
+Scope.plot_2_1.event: AUR1_done
+Scope.plot_2_1.title: ' GPC Raw2'//$shot
+Scope.plot_2_1.global_defaults: -199905
+
+Scope.plot_3_1.height: 65
+Scope.plot_3_1.experiment: electrons
+Scope.plot_3_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_3
+Scope.plot_3_1.event: AUR1_done
+Scope.plot_3_1.title: 'GPC Raw 3'//$shot
+Scope.plot_3_1.global_defaults: -199905
+
+Scope.plot_4_1.height: 65
+Scope.plot_4_1.experiment: electrons
+Scope.plot_4_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_4
+Scope.plot_4_1.event: AUR1_done
+Scope.plot_4_1.title: 'GPC Raw 4'//$shot
+Scope.plot_4_1.global_defaults: -199905
+
+Scope.plot_5_1.height: 65
+Scope.plot_5_1.y.grid_lines: 2
+Scope.plot_5_1.experiment: electrons
+Scope.plot_5_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_5
+Scope.plot_5_1.event: AUR1_done
+Scope.plot_5_1.title: 'GPC Raw 5'//$shot
+Scope.plot_5_1.global_defaults: -199905
+
+Scope.plot_6_1.height: 65
+Scope.plot_6_1.experiment: electrons
+Scope.plot_6_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_1:INPUT_6
+Scope.plot_6_1.event: AUR1_DONE
+Scope.plot_6_1.title: 'GPC Raw 6'//$shot
+Scope.plot_6_1.global_defaults: -199905
+
+Scope.plot_7_1.height: 65
+Scope.plot_7_1.y.grid_lines: 3
+Scope.plot_7_1.experiment: electrons
+Scope.plot_7_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_2:INPUT_1
+Scope.plot_7_1.event: AUR2_done
+Scope.plot_7_1.title: 'Raw 7'//$shot
+Scope.plot_7_1.global_defaults: -199905
+
+Scope.plot_8_1.height: 65
+Scope.plot_8_1.y.grid_lines: 3
+Scope.plot_8_1.experiment: electrons
+Scope.plot_8_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_2:INPUT_2
+Scope.plot_8_1.event: AUR2_done
+Scope.plot_8_1.title: 'GPC Raw 8'//$shot
+Scope.plot_8_1.global_defaults: -199905
+
+Scope.plot_9_1.height: 65
+Scope.plot_9_1.y.grid_lines: 3
+Scope.plot_9_1.experiment: electrons
+Scope.plot_9_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_2:INPUT_3
+Scope.plot_9_1.event: AUR2_done
+Scope.plot_9_1.title: 'GPC Raw 9'//$shot
+Scope.plot_9_1.global_defaults: -199905
+
+Scope.plot_10_1.height: 65
+Scope.plot_10_1.y.grid_lines: 2
+Scope.plot_10_1.experiment: electrons
+Scope.plot_10_1.y: \ELECTRONS::TOP.ECE.HARDWARE:AUR14_2:INPUT_4
+Scope.plot_10_1.event: AUR2_done
+Scope.plot_10_1.title: 'GPC Raw 10 (test)'//$shot
+Scope.plot_10_1.global_defaults: -199905
+
+Scope.plot_11_1.height: 65
+Scope.plot_11_1.show_mode: 2
+Scope.plot_11_1.y.grid_lines: 2
+Scope.plot_11_1.experiment: ELECTRONS
+Scope.plot_11_1.default_node: \electrons::top.ece.results
+Scope.plot_11_1.x: dim_of(ece_tmax)
+Scope.plot_11_1.y: ece_tmax|||
+Scope.plot_11_1.event: ECE_results
+Scope.plot_11_1.title: "ECE Tmax"//$shot
+Scope.plot_11_1.global_defaults: -1036032
+
+Scope.plot_12_1.height: 69
+Scope.plot_12_1.x.grid_lines: 6
+Scope.plot_12_1.experiment: ELECTRONS
+Scope.plot_12_1.y: \ELECTRONS::ECE_RAW|||
+Scope.plot_12_1.event: ECE_RAW
+Scope.plot_12_1.title: "ECE RAW SIGNAL VS  TIME"//$shot
+Scope.plot_12_1.label: signal 2
+Scope.plot_12_1.global_defaults: -1036032
+Scope.rows_in_column_2: 11
+
+Scope.plot_1_2.height: 61
+Scope.plot_1_2.y.grid_lines: 2
+Scope.plot_1_2.experiment: magnetics
+Scope.plot_1_2.default_node: \magnetics::ip
+Scope.plot_1_2.x: dim_of(\magnetics::ip)
+Scope.plot_1_2.y: (\magnetics::ip/1.e6)*-1.
+Scope.plot_1_2.event: mag_traq
+Scope.plot_1_2.title: "PLASMA CURRENT (MA)"//$shot
+Scope.plot_1_2.label: signal_4
+Scope.plot_1_2.global_defaults: -773826
+
+Scope.plot_2_2.height: 65
+Scope.plot_2_2.experiment: electrons
+Scope.plot_2_2.y: \top.tci.results:nl_04			
+Scope.plot_2_2.ymin: -1.E19
+Scope.plot_2_2.event: tci_write
+Scope.plot_2_2.title: "nl_04"//$shot
+Scope.plot_2_2.global_defaults: -248449
+
+Scope.plot_3_2.height: 61
+Scope.plot_3_2.experiment: magnetics
+Scope.plot_3_2.x: dim_of(\MAGNETICS::BTOR)
+Scope.plot_3_2.y: \MAGNETICS::BTOR
+Scope.plot_3_2.event: mag_traq
+Scope.plot_3_2.title: 'Bt'//$shot
+Scope.plot_3_2.global_defaults: -199809
+
+Scope.plot_4_2.height: 65
+Scope.plot_4_2.experiment: analysis
+Scope.plot_4_2.y: \analysis::top:xray:zcentroid
+Scope.plot_4_2.ymin: -.1
+Scope.plot_4_2.ymax: .1 
+Scope.plot_4_2.event: xcentroid
+Scope.plot_4_2.title: "Xray Z Centroid"//$shot
+Scope.plot_4_2.global_defaults: -247937
+
+Scope.plot_5_2.height: 61
+Scope.plot_5_2.experiment: analysis
+Scope.plot_5_2.y: \analysis::top:xray:rcentroid
+Scope.plot_5_2.ymin: .6
+Scope.plot_5_2.ymax: .7 
+Scope.plot_5_2.event: xcentroid
+Scope.plot_5_2.title: "Xray R Centroid"//$shot
+Scope.plot_5_2.global_defaults: -247937
+
+Scope.plot_6_2.height: 65
+Scope.plot_6_2.experiment: rf
+Scope.plot_6_2.default_node: \rf::top.antenna.results
+Scope.plot_6_2.y: \rf::rf_power_net
+Scope.plot_6_2.event: rf_power_done
+Scope.plot_6_2.title: "RF Power"//$shot
+Scope.plot_6_2.global_defaults: -248449
+
+Scope.plot_7_2.height: 61
+Scope.plot_7_2.experiment: spectroscopy
+Scope.plot_7_2.y: \SPECTROSCOPY::TOP.VUV.MOLY_MON.ANALYSIS:CH_2
+Scope.plot_7_2.event: moly_anal
+Scope.plot_7_2.title: "Moly mon"//$shot
+Scope.plot_7_2.global_defaults: -247937
+
+Scope.plot_8_2.height: 65
+Scope.plot_8_2.experiment: analysis
+Scope.plot_8_2.default_node: \analysis::efit_aeqdsk
+Scope.plot_8_2.x: dim_of(rout)
+Scope.plot_8_2.y: _x=rout,_y=aout,_z=(_x+_y)/100.|||
+Scope.plot_8_2.event: efit_done
+Scope.plot_8_2.title: 'Rout from EFIT'//$shot
+Scope.plot_8_2.global_defaults: -249473
+
+Scope.plot_9_2.height: 61
+Scope.plot_9_2.experiment: spectroscopy
+Scope.plot_9_2.y: \prad_2pi/1.e3
+Scope.plot_9_2.event: spectroscopy_trcf
+Scope.plot_9_2.title: "2pi bolo"//$shot
+Scope.plot_9_2.global_defaults: -199809
+
+Scope.plot_10_2.height: 65
+Scope.plot_10_2.step_plot: 1
+Scope.plot_10_2.experiment: particles
+Scope.plot_10_2.x: dim_of(\PARTICLES::TOP.NPA.PCX:SCALER_2:CHANNEL_14)
+Scope.plot_10_2.y: \PARTICLES::TOP.NPA.PCX:SCALER_2:CHANNEL_14
+Scope.plot_10_2.title: "cx"//$shot
+Scope.plot_10_2.global_defaults: -200337
+
+Scope.plot_11_2.height: 156
+Scope.plot_11_2.experiment: electrons
+Scope.plot_11_2.y: \ELECTRONS::gpc_r9
+Scope.plot_11_2.event: gpc_batch_done
+Scope.plot_11_2.title: "GPC R9  " //$shot
+Scope.plot_11_2.global_defaults: -1035999
+Scope.vpane_1: 511

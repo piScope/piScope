@@ -1,0 +1,104 @@
+Scope.geometry: 533x730+74+238
+Scope.title: "Physics A Out  seg2 "//$shot
+Scope.icon_name: Phys  A Out
+Scope.title_event: dpcs_store_done
+Scope.print_file: dwscope.ps
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: lp
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.experiment: hybrid
+Scope.global_1_1.shot: current_shot('cmod')
+Scope.global_1_1.default_node: \hybrid::top.hardware.dpcs.signals
+Scope.global_1_1.x: _times
+Scope.global_1_1.xmin: 0.
+Scope.global_1_1.xmax: 2
+Scope.global_1_1.event: dpcs_store_done
+Scope.global_1_1.global_defaults: -147329
+Scope.rows_in_column_1: 8
+
+Scope.plot_1_1.height: 78
+Scope.plot_1_1.x: _times=dim_of(_LB,1)
+Scope.plot_1_1.y: _lb=\hybrid::top.hardware.dpcs:signals:a_out,|||(data(_lb)[0,*])/\DPCS::TOP.SEG_02:p_01:predictor:factor
+Scope.plot_1_1.title: "A 01 "//\DPCS::TOP.SEG_02:p_01:name
+Scope.plot_1_1.global_defaults: 144256
+
+Scope.plot_2_1.height: 78
+Scope.plot_2_1.y: (DATA(_LB)[1,*])/\DPCS::TOP.SEG_02:p_02:predictor:factor
+Scope.plot_2_1.title: "A Out 02"//\DPCS::TOP.SEG_02:p_02:name
+Scope.plot_2_1.global_defaults: 132992
+
+Scope.plot_3_1.height: 78
+Scope.plot_3_1.y: (DATA(_LB)[2,*])/\DPCS::TOP.SEG_02:p_03:predictor:factor
+Scope.plot_3_1.title: "A Out 03 "//\DPCS::TOP.SEG_02:p_03:name
+Scope.plot_3_1.global_defaults: 132992
+
+Scope.plot_4_1.height: 78
+Scope.plot_4_1.y: (DATA(_LB)[3,*])/\DPCS::TOP.SEG_02:p_04:predictor:factor
+Scope.plot_4_1.title: "A Out 04 "//\DPCS::TOP.SEG_02:p_04:name
+Scope.plot_4_1.global_defaults: 132992
+
+Scope.plot_5_1.height: 78
+Scope.plot_5_1.y: (DATA(_LB)[4,*])/\DPCS::TOP.SEG_02:p_05:predictor:factor
+Scope.plot_5_1.title: "A Out 05 "//\DPCS::TOP.SEG_02:p_05:name
+Scope.plot_5_1.global_defaults: 132992
+
+Scope.plot_6_1.height: 78
+Scope.plot_6_1.y: (DATA(_LB)[5,*])/\DPCS::TOP.SEG_02:p_06:predictor:factor
+Scope.plot_6_1.title: "A Out 06 "//\DPCS::TOP.SEG_02:p_06:name
+Scope.plot_6_1.global_defaults: 132992
+
+Scope.plot_7_1.height: 78
+Scope.plot_7_1.y: (DATA(_LB)[6,*])/\DPCS::TOP.SEG_02:p_07:predictor:factor
+Scope.plot_7_1.title: "A Out 07 "//\DPCS::TOP.SEG_02:p_07:name
+Scope.plot_7_1.global_defaults: 132992
+
+Scope.plot_8_1.height: 90
+Scope.plot_8_1.y: (DATA(_LB)[7,*])/\DPCS::TOP.SEG_02:p_08:predictor:factor
+Scope.plot_8_1.title: "A Out 08 "//\DPCS::TOP.SEG_02:p_08:name
+Scope.plot_8_1.global_defaults: 132992
+Scope.rows_in_column_2: 8
+
+Scope.plot_1_2.height: 78
+Scope.plot_1_2.y: (DATA(_LB)[8,*])/\DPCS::TOP.SEG_02:p_09:predictor:factor
+Scope.plot_1_2.title: "A Out 09 "//\DPCS::TOP.SEG_02:p_09:name
+Scope.plot_1_2.global_defaults: 132992
+
+Scope.plot_2_2.height: 78
+Scope.plot_2_2.y: (DATA(_LB)[9,*])/\DPCS::TOP.SEG_02:p_10:predictor:factor
+Scope.plot_2_2.event: CADF_11
+Scope.plot_2_2.title: "A Out 10 "//\DPCS::TOP.SEG_02:p_10:name
+Scope.plot_2_2.global_defaults: 132992
+
+Scope.plot_3_2.height: 78
+Scope.plot_3_2.y: (DATA(_LB)[10,*])/\DPCS::TOP.SEG_02:p_11:predictor:factor
+Scope.plot_3_2.title: "A Out 11 "//\DPCS::TOP.SEG_02:p_11:name
+Scope.plot_3_2.global_defaults: 132992
+
+Scope.plot_4_2.height: 78
+Scope.plot_4_2.y: (DATA(_LB)[11,*])/\DPCS::TOP.SEG_02:p_12:predictor:factor
+Scope.plot_4_2.title: "A Out 12 "//\DPCS::TOP.SEG_02:p_12:name
+Scope.plot_4_2.global_defaults: 132992
+
+Scope.plot_5_2.height: 78
+Scope.plot_5_2.y: (DATA(_LB)[12,*])/\DPCS::TOP.SEG_02:p_13:predictor:factor
+Scope.plot_5_2.title: "A Out 13 "//\DPCS::TOP.SEG_02:p_13:name
+Scope.plot_5_2.global_defaults: 132992
+
+Scope.plot_6_2.height: 78
+Scope.plot_6_2.y: (DATA(_LB)[13,*])/\DPCS::TOP.SEG_02:p_14:predictor:factor
+Scope.plot_6_2.title: "A Out 14 "//\DPCS::TOP.SEG_02:p_14:name
+Scope.plot_6_2.global_defaults: 132992
+
+Scope.plot_7_2.height: 78
+Scope.plot_7_2.y: (DATA(_LB)[14,*])/\DPCS::TOP.SEG_02:p_15:predictor:factor
+Scope.plot_7_2.title: "A Out 15 "//\DPCS::TOP.SEG_02:p_15:name
+Scope.plot_7_2.global_defaults: 132992
+
+Scope.plot_8_2.height: 90
+Scope.plot_8_2.y: (DATA(_LB)[15,*])/\DPCS::TOP.SEG_02:p_16:predictor:factor
+Scope.plot_8_2.title: "A Out 16 "//\DPCS::TOP.SEG_02:p_16:name
+Scope.plot_8_2.global_defaults: 132992
+Scope.vpane_1: 500

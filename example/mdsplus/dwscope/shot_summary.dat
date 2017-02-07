@@ -1,0 +1,285 @@
+Scope.geometry: 791x1031+1665+99
+Scope.title: 'Shot Summary' //$shot
+Scope.icon_name: shot_summary
+Scope.title_event: spectroscopy_trcf
+Scope.print_file: /user10/marmar/summ_20.ps
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: 135023840
+Scope.font: -Adobe-Helvetica-Medium-R-Normal--12-120-75-75-P-67-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.experiment: spectroscopy
+Scope.global_1_1.shot: current_shot("cmod")
+Scope.global_1_1.xmin: -.1
+Scope.global_1_1.xmax: 2.0
+Scope.global_1_1.event: spectroscopy_trcf 
+Scope.global_1_1.global_defaults: -209794
+Scope.rows_in_column_1: 14
+
+Scope.plot_1_1.height: 67
+Scope.plot_1_1.experiment: xtomo
+Scope.plot_1_1.default_node: \top.signals
+Scope.plot_1_1.y: .array_3:chord_20
+Scope.plot_1_1.event: xtomo_traq_2
+Scope.plot_1_1.title: "Soft X-ray diode "//$shot
+Scope.plot_1_1.label: central_softs
+Scope.plot_1_1.global_defaults: -199305
+
+Scope.plot_2_1.height: 67
+Scope.plot_2_1.y: \z_ave
+Scope.plot_2_1.ymin: 0
+Scope.plot_2_1.ymax: 5
+Scope.plot_2_1.event: zeff_done 
+Scope.plot_2_1.title: 'Line average "Zeff"'//$shot
+Scope.plot_2_1.label: Z_ave
+Scope.plot_2_1.global_defaults: -247817
+
+Scope.plot_3_1.height: 67
+Scope.plot_3_1.y: (\z_bright)
+Scope.plot_3_1.event: z_a14_1_done
+Scope.plot_3_1.title: "Z_Meter Brightness"//$shot
+Scope.plot_3_1.label: z_bright
+Scope.plot_3_1.global_defaults: 799730
+
+Scope.plot_4_1.height: 67
+Scope.plot_4_1.experiment: rf
+Scope.plot_4_1.y: \rf::rf_power_net
+Scope.plot_4_1.event: rf_power_done
+Scope.plot_4_1.title: "Net RF power"//$shot
+Scope.plot_4_1.label: RF_power
+Scope.plot_4_1.global_defaults: -199297
+
+Scope.plot_5_1.height: 67
+Scope.plot_5_1.experiment: electrons
+Scope.plot_5_1.y: \gpc2_te0
+Scope.plot_5_1.event: GPC2_te_DONE
+Scope.plot_5_1.title: "Te0 from GPC2"//$shot
+Scope.plot_5_1.label: Te0_GPC2
+Scope.plot_5_1.global_defaults: -723585
+
+Scope.plot_6_1.height: 67
+Scope.plot_6_1.experiment: spectroscopy
+Scope.plot_6_1.default_node: \top
+Scope.plot_6_1.x: dim_of(\nrootz,0)
+Scope.plot_6_1.y: _rnz=\SPECTROSCOPY::nrootz,|||_zeff=1.3,|||_rnz68=(data(_rnz)[*,1]),|||_rn68=_rnz68/sqrt(_zeff)|||
+Scope.plot_6_1.event: nrootz_done
+Scope.plot_6_1.title: "nrootz(0.68)"//$shot
+Scope.plot_6_1.label: nrootz 68  (time)
+Scope.plot_6_1.global_defaults: -724617
+
+Scope.plot_7_1.height: 67
+Scope.plot_7_1.step_plot: 1
+Scope.plot_7_1.experiment: spectroscopy
+Scope.plot_7_1.x: dim_of(\prad_2pi)
+Scope.plot_7_1.y: \prad_2pi*2*1000.
+Scope.plot_7_1.event: raw_axuv_edge_2_done
+Scope.plot_7_1.title: "2 PI Bolometer"//$shot  
+Scope.plot_7_1.label: prad_2pi
+Scope.plot_7_1.global_defaults: 799607
+
+Scope.plot_8_1.height: 67
+Scope.plot_8_1.show_mode: 2
+Scope.plot_8_1.experiment: electrons
+Scope.plot_8_1.y: \electrons::thom_midpln:ne_t
+Scope.plot_8_1.event: YAG_TEMPS_READY
+Scope.plot_8_1.title: "YAG Central ne"//$shot
+Scope.plot_8_1.label: ne0 YAG
+Scope.plot_8_1.global_defaults: -772745
+
+Scope.plot_9_1.height: 67
+Scope.plot_9_1.y: \cii_raw+.566 
+Scope.plot_9_1.event: h0_complete
+Scope.plot_9_1.title: "CII C-Port"  //$shot
+Scope.plot_9_1.label: cII_cport
+Scope.plot_9_1.global_defaults: 325631
+
+Scope.plot_10_1.height: 67
+Scope.plot_10_1.show_mode: 2
+Scope.plot_10_1.experiment: spectroscopy
+Scope.plot_10_1.x: dim_of(\SPECTROSCOPY::BALMER_H_TO_D)
+Scope.plot_10_1.y: _nhd=\SPECTROSCOPY::BALMER_H_TO_D,_nhd/(1.+_nhd)
+Scope.plot_10_1.event: h_to_d_done
+Scope.plot_10_1.title: "H/(H+D) from hada"//$shot
+Scope.plot_10_1.label: BALMER_H_TO_(H+D)
+Scope.plot_10_1.global_defaults: -724105
+
+Scope.plot_11_1.height: 67
+Scope.plot_11_1.experiment: spectroscopy
+Scope.plot_11_1.default_node: \top
+Scope.plot_11_1.y: \SPECTROSCOPY::DALSA_BRIGHT|||
+Scope.plot_11_1.event: dalsa_br_done
+Scope.plot_11_1.title: " dalsa_bright"//$shot
+Scope.plot_11_1.label: dalsa central bright
+Scope.plot_11_1.global_defaults: -724617
+
+Scope.plot_12_1.height: 67
+Scope.plot_12_1.show_mode: 2
+Scope.plot_12_1.experiment: spectroscopy
+Scope.plot_12_1.default_node: \top
+Scope.plot_12_1.y: \z_70_yag
+Scope.plot_12_1.ymin: 0
+Scope.plot_12_1.ymax: 5
+Scope.plot_12_1.event: z_70_yag_done
+Scope.plot_12_1.title: " z_70_yag"//$shot
+Scope.plot_12_1.label: z_70_yag
+Scope.plot_12_1.global_defaults: -772745
+
+Scope.plot_13_1.height: 67
+Scope.plot_13_1.show_mode: 2
+Scope.plot_13_1.experiment: spectroscopy
+Scope.plot_13_1.default_node: \top
+Scope.plot_13_1.y: \SPECTROSCOPY::nrootz_peak||||||
+Scope.plot_13_1.event: nrootz_done
+Scope.plot_13_1.title: "nrootz(0.68)/nrootz(.84)"//$shot
+Scope.plot_13_1.label: nrootz peak  (time)
+Scope.plot_13_1.global_defaults: -724617
+
+Scope.plot_14_1.height: 74
+Scope.plot_14_1.experiment: magnetics
+Scope.plot_14_1.default_node: \top
+Scope.plot_14_1.x: dim_of(\magnetics::ip)  
+Scope.plot_14_1.y: (\btor)
+Scope.plot_14_1.event: mag_traq
+Scope.plot_14_1.title: "B_t (Tesla)"//$shot
+Scope.plot_14_1.label: Toroidal Field
+Scope.plot_14_1.global_defaults: 12544
+Scope.rows_in_column_2: 15
+
+Scope.plot_1_2.height: 62
+Scope.plot_1_2.experiment: magnetics
+Scope.plot_1_2.default_node: \top
+Scope.plot_1_2.x: dim_of(\magnetics::ip)  
+Scope.plot_1_2.y: abs(\ip /1.e6)
+Scope.plot_1_2.event: mag_traq
+Scope.plot_1_2.title: "Ip (MA)"//$shot
+Scope.plot_1_2.global_defaults: 12544
+
+Scope.plot_2_2.height: 62
+Scope.plot_2_2.experiment: electrons
+Scope.plot_2_2.x: dim_of(\top.tci.results:nl_02)
+Scope.plot_2_2.y: \top.tci.results:nl_04
+Scope.plot_2_2.event: tci_write
+Scope.plot_2_2.title: "TCI n_e*l 4"//$shot 
+Scope.plot_2_2.label: nel2
+Scope.plot_2_2.global_defaults: -724618
+
+Scope.plot_3_2.height: 62
+Scope.plot_3_2.experiment: analysis
+Scope.plot_3_2.x: dim_of(\ANALYSIS::EFIT_AEQDSK:SIBDRY)
+Scope.plot_3_2.y: deriv(\ANALYSIS::EFIT_AEQDSK:SIBDRY)*$2pi
+Scope.plot_3_2.ymin: -1
+Scope.plot_3_2.ymax: 3
+Scope.plot_3_2.event: efit_done
+Scope.plot_3_2.title: "VSURF"//$shot
+Scope.plot_3_2.label: Vsurf_efit
+Scope.plot_3_2.global_defaults: -773761
+
+Scope.plot_4_2.height: 62
+Scope.plot_4_2.experiment: electrons
+Scope.plot_4_2.y: _ece=\ece_raw,_ec=\electrons::top.ece.results:ECE_TMAX,_ec
+Scope.plot_4_2.event: ece_results
+Scope.plot_4_2.title: "ECE central Te"//$shot
+Scope.plot_4_2.label: Te_0_ece
+Scope.plot_4_2.global_defaults: -200321
+
+Scope.plot_5_2.height: 62
+Scope.plot_5_2.experiment: analysis
+Scope.plot_5_2.y: \ANALYSIS::EFIT_AEQDSK:wplasm
+Scope.plot_5_2.event: efit_done
+Scope.plot_5_2.title: "wplasma efit"//$shot
+Scope.plot_5_2.label: wplasm efit
+Scope.plot_5_2.global_defaults: -773769
+
+Scope.plot_6_2.height: 62
+Scope.plot_6_2.show_mode: 2
+Scope.plot_6_2.experiment: electrons
+Scope.plot_6_2.y: \thom_midpln:te_t
+Scope.plot_6_2.event: YAG_TEMPS_READY
+Scope.plot_6_2.title: "YAG Central Te"//$shot
+Scope.plot_6_2.label: Te0 YAG
+Scope.plot_6_2.global_defaults: -723593
+
+Scope.plot_7_2.height: 62
+Scope.plot_7_2.experiment: cmod,engineering,spectroscopy
+Scope.plot_7_2.x: dim_of(\ENGINEERING::TOP.TORVAC.GAS.PVALVE_4:WAVEFORM)
+Scope.plot_7_2.y: smooth1d(\ENGINEERING::TOP.TORVAC.GAS.PVALVE_4:WAVEFORM,38)
+Scope.plot_7_2.event: \ENGINEERING::TOP
+Scope.plot_7_2.title: \ENGINEERING::TOP.TORVAC.GAS.PVALVE_4:LABEL//$shot
+Scope.plot_7_2.label: a-side valve prog
+Scope.plot_7_2.global_defaults: -200321
+
+Scope.plot_8_2.height: 62
+Scope.plot_8_2.experiment: spectroscopy
+Scope.plot_8_2.default_node: \top
+Scope.plot_8_2.y: \spectroscopy::top.uvis:ha_2_bright
+Scope.plot_8_2.event: ctop_complete2
+Scope.plot_8_2.title: " H alpha C side"//$shot
+Scope.plot_8_2.label: h_alpha_c_side
+Scope.plot_8_2.global_defaults: -723585
+
+Scope.plot_9_2.height: 62
+Scope.plot_9_2.show_mode: 1
+Scope.plot_9_2.experiment: spectroscopy
+Scope.plot_9_2.y: (\SPECTROSCOPY::TOP.HALPH_DALPH.HARDWARE:HA_DA_A14:INPUT_2)
+Scope.plot_9_2.event: ha_da_a14_done
+Scope.plot_9_2.title: "H-alpha/D-alpha amplified signal"//$shot
+Scope.plot_9_2.label: hada raw amplified
+Scope.plot_9_2.global_defaults: -723082
+
+Scope.plot_10_2.height: 62
+Scope.plot_10_2.show_mode: 2
+Scope.plot_10_2.experiment: spectroscopy
+Scope.plot_10_2.y: \SPECTROSCOPY::dopshift
+Scope.plot_10_2.event: h_to_d_done
+Scope.plot_10_2.title: "Doppler shift from hada (nm)"//$shot
+Scope.plot_10_2.label: BALMER doppler shift
+Scope.plot_10_2.global_defaults: -723082
+
+Scope.plot_11_2.height: 62
+Scope.plot_11_2.step_plot: 1
+Scope.plot_11_2.experiment: spectroscopy
+Scope.plot_11_2.y: \neuts_hards
+Scope.plot_11_2.event: raw_axuv_edge_2_done
+Scope.plot_11_2.title: "neuts_hards"//$shot  
+Scope.plot_11_2.label: prad_2pi
+Scope.plot_11_2.global_defaults: 800631
+
+Scope.plot_12_2.height: 62
+Scope.plot_12_2.experiment: particles
+Scope.plot_12_2.y: \PARTICLES::TOP.NEUTRONS.HE_3_BANK.RESULTS:HE3_NRATE_3
+Scope.plot_12_2.event: he3_bank_done
+Scope.plot_12_2.title: "He3 Neutron 3"//$shot
+Scope.plot_12_2.label: HE3_NRATE_2
+Scope.plot_12_2.global_defaults: -773761
+
+Scope.plot_13_2.height: 62
+Scope.plot_13_2.step_plot: 1
+Scope.plot_13_2.experiment: spectroscopy
+Scope.plot_13_2.y: \SPECTROSCOPY::TOP.BOLOMETER.RESULTS.MAIN:MAIN_POWER
+Scope.plot_13_2.event: raw_axuv_edge_2_done
+Scope.plot_13_2.title: "total radiated power (foil array)"//$shot  
+Scope.plot_13_2.label: prad_2pi
+Scope.plot_13_2.global_defaults: 799607
+
+Scope.plot_14_2.height: 62
+Scope.plot_14_2.experiment: electrons
+Scope.plot_14_2.x: dim_of(\gpc2_te0)
+Scope.plot_14_2.y: deriv(smooth1d(\gpc2_te0,20))
+Scope.plot_14_2.ymin: -10
+Scope.plot_14_2.ymax: 400
+Scope.plot_14_2.event: aur1_done
+Scope.plot_14_2.title: "deriv(Te0) from GPC2"//$shot
+Scope.plot_14_2.label: deriv(Te0_GPC)
+Scope.plot_14_2.global_defaults: -773761
+
+Scope.plot_15_2.height: 75
+Scope.plot_15_2.experiment: edge
+Scope.plot_15_2.y: \edge::top.gas.ratiomatic:F_side
+Scope.plot_15_2.ymin: -.01
+Scope.plot_15_2.ymax: .5
+Scope.plot_15_2.event: gas_incaa_01
+Scope.plot_15_2.title: "F-side Pressure, mtorr"//$shot
+Scope.plot_15_2.label: Calibrated P_o
+Scope.plot_15_2.global_defaults: -772738
+Scope.vpane_1: 500

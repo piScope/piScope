@@ -1,0 +1,11 @@
+version = 1.13
+worker = 'th'
+connection_type = 'direct'
+connection
+   server = 'cmodws60.psfc.mit.edu'
+   port = 10002
+end
+connection
+   server = 'cmodws59.psfc.mit.edu'
+   port = 10002
+end

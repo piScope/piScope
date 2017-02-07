@@ -1,0 +1,8 @@
+version = 1.62
+max_thread = 5
+keep_text_as_text = False
+image_dpi = 72
+hg_default_url = '~/hg_root'
+user_path = '~/python_lib'
+
+

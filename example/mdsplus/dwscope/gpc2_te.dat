@@ -1,0 +1,211 @@
+Scope.geometry: 899x731+273+153
+Scope.title: "GPC2 Temps"
+Scope.icon_name: "GPC2 Te"
+Scope.title_event: 
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: lp
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--17-120-100-100-P-91-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.shot: current_shot("CMOD")
+Scope.global_1_1.xmin: 0.
+Scope.global_1_1.xmax: 2.0
+Scope.global_1_1.global_defaults: -12545
+Scope.rows_in_column_1: 12
+
+Scope.plot_1_1.height: 51
+Scope.plot_1_1.experiment: electrons
+Scope.plot_1_1.default_node: \electrons::top.gpc_2
+Scope.plot_1_1.y: \ELECTRONS::GPC2_TE[*,1]
+Scope.plot_1_1.event: gpc2_te_done
+Scope.plot_1_1.title: 'GPC_2 Te 2'//$shot
+Scope.plot_1_1.global_defaults: -249473
+
+Scope.plot_2_1.height: 53
+Scope.plot_2_1.experiment: electrons
+Scope.plot_2_1.default_node: \electrons::top.gpc_2
+Scope.plot_2_1.y: \ELECTRONS::GPC2_TE[*,2]
+Scope.plot_2_1.event: gpc2_te_done
+Scope.plot_2_1.title: 'GPC_2 Te 3'//$shot
+Scope.plot_2_1.global_defaults: -249473
+
+Scope.plot_3_1.height: 51
+Scope.plot_3_1.experiment: electrons
+Scope.plot_3_1.default_node: \electrons::top.gpc_2
+Scope.plot_3_1.y: \ELECTRONS::GPC2_TE[*,3]
+Scope.plot_3_1.event: gpc2_te_done
+Scope.plot_3_1.title: 'GPC_2 Te 4'//$shot
+Scope.plot_3_1.global_defaults: -249473
+
+Scope.plot_4_1.height: 53
+Scope.plot_4_1.experiment: electrons
+Scope.plot_4_1.default_node: \electrons::top.gpc_2
+Scope.plot_4_1.y: \ELECTRONS::GPC2_TE[*,4]
+Scope.plot_4_1.event: gpc2_te_done
+Scope.plot_4_1.title: 'GPC_2 Te 5'//$shot
+Scope.plot_4_1.global_defaults: -249473
+
+Scope.plot_5_1.height: 51
+Scope.plot_5_1.y.grid_lines: 3
+Scope.plot_5_1.experiment: electrons
+Scope.plot_5_1.default_node: \electrons::top.gpc_2
+Scope.plot_5_1.y: \ELECTRONS::GPC2_TE[*,5]
+Scope.plot_5_1.event: gpc2_te_done
+Scope.plot_5_1.title: 'GPC_2 Te 6'//$shot
+Scope.plot_5_1.global_defaults: -249537
+
+Scope.plot_6_1.height: 53
+Scope.plot_6_1.experiment: electrons
+Scope.plot_6_1.default_node: \electrons::top.gpc_2
+Scope.plot_6_1.y: \ELECTRONS::GPC2_TE[*,6]
+Scope.plot_6_1.event: gpc2_te_done
+Scope.plot_6_1.title: 'GPC_2 Te 7'//$shot
+Scope.plot_6_1.global_defaults: -249473
+
+Scope.plot_7_1.height: 51
+Scope.plot_7_1.experiment: rf
+Scope.plot_7_1.default_node: \rf::top.antenna.results
+Scope.plot_7_1.y: \RF::RF_POWER_E
+Scope.plot_7_1.event: rf_power_done
+Scope.plot_7_1.title: "RF Power E"//$shot
+Scope.plot_7_1.global_defaults: -248449
+
+Scope.plot_8_1.height: 53
+Scope.plot_8_1.experiment: electrons
+Scope.plot_8_1.default_node: \electrons::top.gpc_2
+Scope.plot_8_1.y: \ELECTRONS::GPC2_TE[*,8]
+Scope.plot_8_1.event: gpc2_te_done
+Scope.plot_8_1.title: 'GPC_2 Te 9'//$shot
+Scope.plot_8_1.global_defaults: -249473
+
+Scope.plot_9_1.height: 51
+Scope.plot_9_1.experiment: electrons
+Scope.plot_9_1.default_node: \electrons::top.gpc_2
+Scope.plot_9_1.y: \ELECTRONS::GPC2_TE[*,9]
+Scope.plot_9_1.event: gpc2_te_done
+Scope.plot_9_1.title: 'GPC_2 Te 10'//$shot
+Scope.plot_9_1.global_defaults: -249473
+
+Scope.plot_10_1.height: 53
+Scope.plot_10_1.experiment: rf
+Scope.plot_10_1.default_node: \rf::top.antenna.results
+Scope.plot_10_1.y: \RF::RF_POWER_J3
+Scope.plot_10_1.event: rf_power_done
+Scope.plot_10_1.title: "RF Power J3"//$shot
+Scope.plot_10_1.global_defaults: -248449
+
+Scope.plot_11_1.height: 51
+Scope.plot_11_1.experiment: rf
+Scope.plot_11_1.default_node: \rf::top.antenna.results
+Scope.plot_11_1.y: \RF::RF_POWER_J4
+Scope.plot_11_1.event: rf_power_done
+Scope.plot_11_1.title: "RF Power J4"//$shot
+Scope.plot_11_1.global_defaults: -248449
+
+Scope.plot_12_1.height: 78
+Scope.plot_12_1.experiment: rf
+Scope.plot_12_1.default_node: \rf::top.antenna.results
+Scope.plot_12_1.y: \RF::RF_POWER_d
+Scope.plot_12_1.event: rf_power_done
+Scope.plot_12_1.title: "RF Power D"//$shot
+Scope.plot_12_1.global_defaults: -248449
+Scope.rows_in_column_2: 12
+
+Scope.plot_1_2.height: 51
+Scope.plot_1_2.experiment: electrons
+Scope.plot_1_2.default_node: \electrons::top.gpc_2
+Scope.plot_1_2.y: \ELECTRONS::GPC2_TE[*,10]
+Scope.plot_1_2.event: gpc2_te_done
+Scope.plot_1_2.title: 'GPC_2 Te 11'//$shot
+Scope.plot_1_2.global_defaults: -249473
+
+Scope.plot_2_2.height: 53
+Scope.plot_2_2.experiment: electrons
+Scope.plot_2_2.default_node: \electrons::top.gpc_2
+Scope.plot_2_2.y: \ELECTRONS::GPC2_TE[*,11]
+Scope.plot_2_2.event: gpc2_te_done
+Scope.plot_2_2.title: 'GPC_2 Te 12'//$shot
+Scope.plot_2_2.global_defaults: -249473
+
+Scope.plot_3_2.height: 51
+Scope.plot_3_2.experiment: electrons
+Scope.plot_3_2.default_node: \electrons::top.gpc_2
+Scope.plot_3_2.y: \ELECTRONS::GPC2_TE[*,12]
+Scope.plot_3_2.event: gpc2_te_done
+Scope.plot_3_2.title: 'GPC_2 Te 13'//$shot
+Scope.plot_3_2.global_defaults: -249473
+
+Scope.plot_4_2.height: 53
+Scope.plot_4_2.experiment: electrons
+Scope.plot_4_2.default_node: \electrons::top.gpc_2
+Scope.plot_4_2.y: \ELECTRONS::GPC2_TE[*,13]
+Scope.plot_4_2.event: gpc2_te_done
+Scope.plot_4_2.title: 'GPC_2 Te 14'//$shot
+Scope.plot_4_2.global_defaults: -249473
+
+Scope.plot_5_2.height: 51
+Scope.plot_5_2.experiment: electrons
+Scope.plot_5_2.default_node: \electrons::top.gpc_2
+Scope.plot_5_2.y: \ELECTRONS::GPC2_TE[*,14]
+Scope.plot_5_2.event: gpc2_te_done
+Scope.plot_5_2.title: 'GPC_2 Te 15'//$shot
+Scope.plot_5_2.global_defaults: -249473
+
+Scope.plot_6_2.height: 53
+Scope.plot_6_2.experiment: electrons
+Scope.plot_6_2.default_node: \electrons::top.gpc_2
+Scope.plot_6_2.y: \ELECTRONS::GPC2_TE[*,15]
+Scope.plot_6_2.event: gpc2_te_done
+Scope.plot_6_2.title: 'GPC_2 Te 16'//$shot
+Scope.plot_6_2.global_defaults: -249473
+
+Scope.plot_7_2.height: 51
+Scope.plot_7_2.experiment: electrons
+Scope.plot_7_2.default_node: \electrons::top.gpc_2
+Scope.plot_7_2.y: \ELECTRONS::GPC2_TE[*,16]
+Scope.plot_7_2.event: gpc2_te_done
+Scope.plot_7_2.title: "GPC_2 Te 17"//$shot
+Scope.plot_7_2.global_defaults: -249473
+
+Scope.plot_8_2.height: 53
+Scope.plot_8_2.experiment: electrons
+Scope.plot_8_2.default_node: \electrons::top.gpc_2
+Scope.plot_8_2.y: \ELECTRONS::GPC2_TE[*,17]
+Scope.plot_8_2.event: gpc2_te_done
+Scope.plot_8_2.title: "GPC_2 Te 18"//$shot
+Scope.plot_8_2.global_defaults: -249473
+
+Scope.plot_9_2.height: 51
+Scope.plot_9_2.experiment: electrons
+Scope.plot_9_2.default_node: \electrons::top.gpc_2
+Scope.plot_9_2.y: \ELECTRONS::GPC2_TE[*,18]
+Scope.plot_9_2.event: gpc2_te_done
+Scope.plot_9_2.title: "GPC_2 Te 19"//$shot
+Scope.plot_9_2.global_defaults: -249473
+
+Scope.plot_10_2.height: 53
+Scope.plot_10_2.y.grid_lines: 2
+Scope.plot_10_2.experiment: electrons
+Scope.plot_10_2.y: \gpc_t0
+Scope.plot_10_2.ymin: -0.1
+Scope.plot_10_2.event: AUR1_done
+Scope.plot_10_2.title: 'GPC T0'//$shot
+Scope.plot_10_2.label: 68599]
+Scope.plot_10_2.global_defaults: -249025
+
+Scope.plot_11_2.height: 51
+Scope.plot_11_2.experiment: rf
+Scope.plot_11_2.default_node: \rf::top.antenna.results
+Scope.plot_11_2.y: \rf::rf_power_net
+Scope.plot_11_2.event: rf_power_done
+Scope.plot_11_2.title: "RF Power"//$shot
+Scope.plot_11_2.global_defaults: -248449
+
+Scope.plot_12_2.height: 78
+Scope.plot_12_2.experiment: lh
+Scope.plot_12_2.y: \LH::TOP.RESULTS:NETPOW 
+Scope.plot_12_2.title: "Lower Hybrid Forward Power[kW]"//$shot
+Scope.plot_12_2.global_defaults: -68737
+Scope.vpane_1: 500

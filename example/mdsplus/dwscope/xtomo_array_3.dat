@@ -1,0 +1,110 @@
+Scope.geometry: 1090x849+240+92
+Scope.title: "Core X-ray Array 3"
+Scope.icon_name: "Array 3"
+Scope.title_event: xtomo_traq_3
+Scope.print_file: dwscope.ps
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: p114
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 4
+Scope.global_1_1.experiment: xtomo
+Scope.global_1_1.shot: current_shot("cmod")
+Scope.global_1_1.default_node: \top.brightnesses.array_3
+Scope.global_1_1.x: _timebase
+Scope.global_1_1.y: _chord=text(_index+1,2),|||if ((_index+1 lt 10), _chord="0"//text(_index+1,1)),|||_node="chord_"//_chord,|||_sig=build_path(_node),|||_timebase=dim_of(_sig),|||_baseline=mean(_sig,,_timebase lt 0.000),|||_sig=(_sig-_baseline)/1.e3
+Scope.global_1_1.xmin: -0.1
+Scope.global_1_1.xmax: 2.1
+Scope.global_1_1.event: xtomo_cpci_done
+Scope.global_1_1.title: "Chord_"//_chord//" (kW/m2)"//$shot
+Scope.global_1_1.global_defaults: -212865
+Scope.rows_in_column_1: 10
+
+Scope.plot_1_1.height: 76
+
+Scope.plot_2_1.height: 76
+
+Scope.plot_3_1.height: 76
+
+Scope.plot_4_1.height: 76
+
+Scope.plot_5_1.height: 76
+
+Scope.plot_6_1.height: 76
+
+Scope.plot_7_1.height: 76
+
+Scope.plot_8_1.height: 76
+
+Scope.plot_9_1.height: 76
+
+Scope.plot_10_1.height: 87
+Scope.rows_in_column_2: 10
+
+Scope.plot_1_2.height: 76
+
+Scope.plot_2_2.height: 76
+
+Scope.plot_3_2.height: 76
+
+Scope.plot_4_2.height: 76
+
+Scope.plot_5_2.height: 76
+
+Scope.plot_6_2.height: 76
+
+Scope.plot_7_2.height: 76
+
+Scope.plot_8_2.height: 76
+
+Scope.plot_9_2.height: 76
+
+Scope.plot_10_2.height: 87
+Scope.rows_in_column_3: 10
+
+Scope.plot_1_3.height: 76
+
+Scope.plot_2_3.height: 76
+
+Scope.plot_3_3.height: 76
+
+Scope.plot_4_3.height: 76
+
+Scope.plot_5_3.height: 76
+
+Scope.plot_6_3.height: 76
+
+Scope.plot_7_3.height: 76
+
+Scope.plot_8_3.height: 76
+
+Scope.plot_9_3.height: 76
+
+Scope.plot_10_3.height: 87
+Scope.rows_in_column_4: 10
+
+Scope.plot_1_4.height: 76
+
+Scope.plot_2_4.height: 76
+
+Scope.plot_3_4.height: 76
+
+Scope.plot_4_4.height: 76
+
+Scope.plot_5_4.height: 76
+
+Scope.plot_6_4.height: 76
+
+Scope.plot_7_4.height: 76
+
+Scope.plot_8_4.height: 76
+
+Scope.plot_9_4.height: 76
+Scope.plot_9_4.global_defaults: -67585
+
+Scope.plot_10_4.height: 87
+Scope.plot_10_4.global_defaults: -67585
+Scope.vpane_1: 250
+Scope.vpane_2: 500
+Scope.vpane_3: 750

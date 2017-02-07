@@ -1,0 +1,470 @@
+Scope.geometry: 888x848+662+58
+Scope.title: "New EFIT Scope  "//$expt//_shot=if_error(\shot,$shot)
+Scope.icon_name: "EFIT"
+Scope.title_event: EFIT_DONE
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: lp
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 4
+Scope.global_1_1.experiment: analysis
+Scope.global_1_1.shot: current_shot('cmod')
+Scope.global_1_1.event: efit_done
+Scope.global_1_1.global_defaults: -134017
+Scope.rows_in_column_1: 15
+
+Scope.plot_1_1.height: 50
+Scope.plot_1_1.y: \EFIT_AEQDSK:CPASMA
+Scope.plot_1_1.title: "CPASMA"
+Scope.plot_1_1.label: CPASMA
+Scope.plot_1_1.global_defaults: -83969
+
+Scope.plot_2_1.height: 50
+Scope.plot_2_1.y: \EFIT_AEQDSK:EOUT
+Scope.plot_2_1.ymin: .8
+Scope.plot_2_1.ymax: 2
+Scope.plot_2_1.title: "EOUT"
+Scope.plot_2_1.label: EOUT
+Scope.plot_2_1.global_defaults: -116737
+
+Scope.plot_3_1.height: 50
+Scope.plot_3_1.y: \EFIT_AEQDSK:AOUT
+Scope.plot_3_1.title: "AOUT"
+Scope.plot_3_1.label: AOUT
+Scope.plot_3_1.global_defaults: -67585
+
+Scope.plot_4_1.height: 50
+Scope.plot_4_1.y: \EFIT_AEQDSK:RMAGX
+Scope.plot_4_1.ymin: 60
+Scope.plot_4_1.ymax: 72
+Scope.plot_4_1.title: "RMAGX"
+Scope.plot_4_1.label: RMAGX
+Scope.plot_4_1.global_defaults: -116737
+
+Scope.plot_5_1.height: 50
+Scope.plot_5_1.y: \EFIT_AEQDSK:ZMAGX
+Scope.plot_5_1.title: "ZMAGX"
+Scope.plot_5_1.label: ZMAGX
+Scope.plot_5_1.global_defaults: -67585
+
+Scope.plot_6_1.height: 50
+Scope.plot_6_1.y: \EFIT_AEQDSK:BETAP
+Scope.plot_6_1.ymin: 0
+Scope.plot_6_1.ymax: 1
+Scope.plot_6_1.title: "BETAP"
+Scope.plot_6_1.label: BETAP
+Scope.plot_6_1.global_defaults: -116737
+
+Scope.plot_7_1.height: 50
+Scope.plot_7_1.y: \EFIT_AEQDSK:WPLASM
+Scope.plot_7_1.ymin: 0
+Scope.plot_7_1.title: "WPLASM"
+Scope.plot_7_1.label: WPLASM
+Scope.plot_7_1.global_defaults: -116737
+
+Scope.plot_8_1.height: 50
+Scope.plot_8_1.y: \EFIT_AEQDSK:CDFLUX
+Scope.plot_8_1.title: "Calculated Diamagnetic Flux (Wb)"
+Scope.plot_8_1.label: QOUT
+Scope.plot_8_1.global_defaults: -116737
+
+Scope.plot_9_1.height: 50
+Scope.plot_9_1.y: \EFIT_AEQDSK:ROUT
+Scope.plot_9_1.ymin: 55
+Scope.plot_9_1.ymax: 70
+Scope.plot_9_1.title: "ROUT"
+Scope.plot_9_1.label: OLEFS
+Scope.plot_9_1.global_defaults: -116737
+
+Scope.plot_10_1.height: 50
+Scope.plot_10_1.y: \EFIT_AEQDSK:ZOUT
+Scope.plot_10_1.ymin: -6
+Scope.plot_10_1.ymax: 4
+Scope.plot_10_1.title: "ZOUT"
+Scope.plot_10_1.label: OLEFS
+Scope.plot_10_1.global_defaults: -116737
+
+Scope.plot_11_1.height: 50
+Scope.plot_11_1.x: dim_of(\efit_aeqdsk:rseps,1)
+Scope.plot_11_1.y: _zs = \efit_aeqdsk:zseps,_zmin = minval(_zs,0,_zs < 0. & _zs > -60. ),|||_rs = \efit_aeqdsk:rseps,_rmin = merge(_rs[0,*],_rs[1,*],_zs[0,*] == _zmin),|||if_error(_rmin,0)
+Scope.plot_11_1.ymin: 50
+Scope.plot_11_1.ymax: 60
+Scope.plot_11_1.title: "R_XL"
+Scope.plot_11_1.label: RVSIN
+Scope.plot_11_1.global_defaults: -130057
+
+Scope.plot_12_1.height: 50
+Scope.plot_12_1.x: dim_of(\efit_aeqdsk:rseps,1)
+Scope.plot_12_1.y: _zx=\efit_aeqdsk:zseps,_zl=merge(_zx[0,*],_zx[1,*],(_zx[0,*]<0. & _zx[0,*]>-60.))
+Scope.plot_12_1.ymin: -45
+Scope.plot_12_1.ymax: -35
+Scope.plot_12_1.title: "Z_XL"
+Scope.plot_12_1.label: RVSIN
+Scope.plot_12_1.global_defaults: -130057
+
+Scope.plot_13_1.height: 50
+Scope.plot_13_1.show_mode: 1
+Scope.plot_13_1.x: \EFIT_AEQDSK:RVSIN
+Scope.plot_13_1.y: \EFIT_AEQDSK:ZVSIN
+Scope.plot_13_1.xmin: 40
+Scope.plot_13_1.xmax: 55
+Scope.plot_13_1.ymin: -60
+Scope.plot_13_1.ymax: -30
+Scope.plot_13_1.title: "Inner Strike Point"
+Scope.plot_13_1.label: RVSIN
+Scope.plot_13_1.global_defaults: -130057
+
+Scope.plot_14_1.height: 50
+Scope.plot_14_1.y: \EFIT_AEQDSK:RVSIN
+Scope.plot_14_1.ymin: 44
+Scope.plot_14_1.ymax: 54
+Scope.plot_14_1.title: "RVSIN"
+Scope.plot_14_1.label: RMAGX
+Scope.plot_14_1.global_defaults: -116737
+
+Scope.plot_15_1.height: 60
+Scope.plot_15_1.y: \EFIT_AEQDSK:ZVSIN
+Scope.plot_15_1.ymin: -60
+Scope.plot_15_1.ymax: -35
+Scope.plot_15_1.title: "ZVSIN"
+Scope.plot_15_1.label: RMAGX
+Scope.plot_15_1.global_defaults: -116737
+Scope.rows_in_column_2: 16
+
+Scope.plot_1_2.height: 47
+Scope.plot_1_2.y: \EFIT_AEQDSK:VOUT
+Scope.plot_1_2.title: "Volume (cm3)"
+Scope.plot_1_2.label: RVSIN
+Scope.plot_1_2.global_defaults: -68617
+
+Scope.plot_2_2.height: 47
+Scope.plot_2_2.y: \EFIT_AEQDSK:DOUTU
+Scope.plot_2_2.ymin: 0
+Scope.plot_2_2.title: "DOUTU"
+Scope.plot_2_2.label: RVSIN
+Scope.plot_2_2.global_defaults: -117769
+
+Scope.plot_3_2.height: 47
+Scope.plot_3_2.y: \EFIT_AEQDSK:DOUTL
+Scope.plot_3_2.ymin: 0
+Scope.plot_3_2.title: "DOUTL"
+Scope.plot_3_2.label: DOUTL
+Scope.plot_3_2.global_defaults: -116737
+
+Scope.plot_4_2.height: 47
+Scope.plot_4_2.x: dim_of(\EFIT_AEQDSK:SIMAGX)
+Scope.plot_4_2.y: -deriv(\EFIT_AEQDSK:SIMAGX)*$2pi
+Scope.plot_4_2.ymin: -5
+Scope.plot_4_2.ymax: 0
+Scope.plot_4_2.title: "Vaxis"
+Scope.plot_4_2.label: RVSIN
+Scope.plot_4_2.global_defaults: -117769
+
+Scope.plot_5_2.height: 47
+Scope.plot_5_2.experiment: analysis
+Scope.plot_5_2.y: \analysis::top:xray:zcentroid*100.
+Scope.plot_5_2.ymin: -5
+Scope.plot_5_2.ymax: 2
+Scope.plot_5_2.event: xcentroid
+Scope.plot_5_2.title: 'Xray centroid'//$shot
+Scope.plot_5_2.global_defaults: -248321
+
+Scope.plot_6_2.height: 47
+Scope.plot_6_2.y: \EFIT_FITOUT:SUMIF
+Scope.plot_6_2.title: "Vessel Currents"
+Scope.plot_6_2.label: SUMIF
+Scope.plot_6_2.global_defaults: -67585
+
+Scope.plot_7_2.height: 47
+Scope.plot_7_2.y: \EFIT_AEQDSK:ORIGHT
+Scope.plot_7_2.title: "RIGHT Gap (cm)"
+Scope.plot_7_2.label: OLEFT
+Scope.plot_7_2.global_defaults: -67585
+
+Scope.plot_8_2.height: 47
+Scope.plot_8_2.y: \EFIT_AEQDSK:OLEFT
+Scope.plot_8_2.title: "LEFT Gap (cm)"
+Scope.plot_8_2.label: OLEFT
+Scope.plot_8_2.global_defaults: -67585
+
+Scope.plot_9_2.height: 47
+Scope.plot_9_2.y: \EFIT_AEQDSK:OTOP
+Scope.plot_9_2.title: "TOP gap (cm)"
+Scope.plot_9_2.label: OLEFT
+Scope.plot_9_2.global_defaults: -67585
+
+Scope.plot_10_2.height: 47
+Scope.plot_10_2.y: \EFIT_AEQDSK:OBOTT
+Scope.plot_10_2.title: "BOTTOM Gap (cm)"
+Scope.plot_10_2.label: OLEFT
+Scope.plot_10_2.global_defaults: -67585
+
+Scope.plot_11_2.height: 47
+Scope.plot_11_2.x: dim_of(\efit_aeqdsk:rseps,1)
+Scope.plot_11_2.y: _zs = \efit_aeqdsk:zseps,_zmax = maxval(_zs,0,_zs > 0.  ),|||_rs = \efit_aeqdsk:rseps,_rmax = merge(_rs[0,*],_rs[1,*],_zs[0,*] == _zmax),|||if_error(_rmax,0)
+Scope.plot_11_2.ymin: 40.
+Scope.plot_11_2.ymax: 60
+Scope.plot_11_2.title: "R_XU"
+Scope.plot_11_2.label: RVSIN
+Scope.plot_11_2.global_defaults: -130057
+
+Scope.plot_12_2.height: 47
+Scope.plot_12_2.x: dim_of(\efit_aeqdsk:rseps,1)
+Scope.plot_12_2.y: _zx=\efit_aeqdsk:zseps,_zu=merge(_zx[0,*],_zx[1,*],(_zx[0,*]>0. ))
+Scope.plot_12_2.ymin: 25
+Scope.plot_12_2.ymax: 45
+Scope.plot_12_2.title: "Z_XU"
+Scope.plot_12_2.label: RVSIN
+Scope.plot_12_2.global_defaults: -130057
+
+Scope.plot_13_2.height: 47
+Scope.plot_13_2.show_mode: 1
+Scope.plot_13_2.x: \EFIT_AEQDSK:RVSOUT
+Scope.plot_13_2.y: \EFIT_AEQDSK:ZVSOUT
+Scope.plot_13_2.xmin: 60
+Scope.plot_13_2.xmax: 65
+Scope.plot_13_2.ymin: -60
+Scope.plot_13_2.ymax: -30
+Scope.plot_13_2.title: "Outer Strike Point"
+Scope.plot_13_2.label: RVSOUT
+Scope.plot_13_2.global_defaults: -130057
+
+Scope.plot_14_2.height: 47
+Scope.plot_14_2.y: \EFIT_AEQDSK:RVSOUT
+Scope.plot_14_2.ymin: 50
+Scope.plot_14_2.ymax: 66
+Scope.plot_14_2.title: "RVSOUT"
+Scope.plot_14_2.label: RMAGX
+Scope.plot_14_2.global_defaults: -116737
+
+Scope.plot_15_2.height: 47
+Scope.plot_15_2.y: \EFIT_AEQDSK:ZVSOUT
+Scope.plot_15_2.ymin: -61
+Scope.plot_15_2.ymax: -38
+Scope.plot_15_2.title: "ZVSOUT"
+Scope.plot_15_2.label: RMAGX
+Scope.plot_15_2.global_defaults: -116737
+
+Scope.plot_16_2.height: 53
+Scope.plot_16_2.default_node: \efit_aeqdsk
+Scope.plot_16_2.x: dim_of(s1)
+Scope.plot_16_2.y: _xmui=2e4*$2pi*bcentr*rcencm*cdflux/vout/bpolav^2,|||(s1 + s2*(1.-rttt/rcencm))/2.-_xmui
+Scope.plot_16_2.ymin: 0
+Scope.plot_16_2.ymax: 1
+Scope.plot_16_2.title: "sbbp"
+Scope.plot_16_2.global_defaults: -118273
+Scope.rows_in_column_3: 16
+
+Scope.plot_1_3.height: 47
+Scope.plot_1_3.y: \efit_aeqdsk:vertn
+Scope.plot_1_3.title: "Decay index"
+Scope.plot_1_3.global_defaults: -67585
+
+Scope.plot_2_3.height: 47
+Scope.plot_2_3.y: -(\efit_aeqdsk:xnnc)|||
+Scope.plot_2_3.ymin: -2
+Scope.plot_2_3.ymax: 2
+Scope.plot_2_3.title: "N/Ncrit"
+Scope.plot_2_3.global_defaults: -116737
+
+Scope.plot_3_3.height: 47
+Scope.plot_3_3.y: \efit_aeqdsk:qqmagx
+Scope.plot_3_3.title: "q0"
+Scope.plot_3_3.global_defaults: -116737
+
+Scope.plot_4_3.height: 47
+Scope.plot_4_3.y: \EFIT_AEQDSK:QSTA
+Scope.plot_4_3.ymin: 2
+Scope.plot_4_3.ymax: 10
+Scope.plot_4_3.title: "QSTA"
+Scope.plot_4_3.label: QOUT
+Scope.plot_4_3.global_defaults: -116737
+
+Scope.plot_5_3.height: 47
+Scope.plot_5_3.y: \efit_aeqdsk:ali
+Scope.plot_5_3.ymin: 0
+Scope.plot_5_3.ymax: 2.5
+Scope.plot_5_3.title: "l_i"
+Scope.plot_5_3.global_defaults: -116737
+
+Scope.plot_6_3.height: 47
+Scope.plot_6_3.y: \EFIT_AEQDSK:AREAO
+Scope.plot_6_3.title: "AREA (cm2)"
+Scope.plot_6_3.label: IP
+Scope.plot_6_3.global_defaults: -67585
+
+Scope.plot_7_3.height: 47
+Scope.plot_7_3.y: \EFIT_AEQDSK:QPSIB
+Scope.plot_7_3.title: "Qpsi (95%)"
+Scope.plot_7_3.label: TERROR
+Scope.plot_7_3.global_defaults: -116737
+
+Scope.plot_8_3.height: 47
+Scope.plot_8_3.y: \efit_aeqdsk:seplim
+Scope.plot_8_3.ymin: -1
+Scope.plot_8_3.ymax: 5
+Scope.plot_8_3.title: "DSEP"
+Scope.plot_8_3.global_defaults: -116737
+
+Scope.plot_9_3.height: 47
+Scope.plot_9_3.y: \efit_aeqdsk:ssep
+Scope.plot_9_3.ymin: -5
+Scope.plot_9_3.ymax: 5
+Scope.plot_9_3.title: "SSEP"
+Scope.plot_9_3.global_defaults: -116737
+
+Scope.plot_10_3.height: 47
+Scope.plot_10_3.x: dim_of(\EFIT_AEQDSK:SIBDRY)
+Scope.plot_10_3.y: -deriv(\EFIT_AEQDSK:SIBDRY)*$2pi
+Scope.plot_10_3.ymin: -3.
+Scope.plot_10_3.ymax: 1.
+Scope.plot_10_3.title: "VSURF"
+Scope.plot_10_3.label: PBINJ
+Scope.plot_10_3.global_defaults: -117761
+
+Scope.plot_11_3.height: 47
+Scope.plot_11_3.y: (\efit_aeqdsk:aaq1)/100.
+Scope.plot_11_3.ymin: 0
+Scope.plot_11_3.ymax: .1
+Scope.plot_11_3.title: "q=1 radius (m)"
+Scope.plot_11_3.global_defaults: -116737
+
+Scope.plot_12_3.height: 47
+Scope.plot_12_3.x: dim_of(\efit_aeqdsk:ali)
+Scope.plot_12_3.y: \efit_aeqdsk:ali * \efit_aeqdsk:bpolav^2 * 2e-4 * \efit_aeqdsk:vout / $mu0^2/\efit_aeqdsk:cpasma^2 /\efit_aeqdsk:rout
+Scope.plot_12_3.ymin: 0
+Scope.plot_12_3.ymax: 2.5
+Scope.plot_12_3.title: "l_i(3)"
+Scope.plot_12_3.global_defaults: -117761
+
+Scope.plot_13_3.height: 47
+Scope.plot_13_3.y: \efit_aeqdsk:cj1ave
+Scope.plot_13_3.event: efit_done
+Scope.plot_13_3.title: "CJ1AVE"
+Scope.plot_13_3.global_defaults: -199169
+
+Scope.plot_14_3.height: 47
+Scope.plot_14_3.x: dim_of(_beta)
+Scope.plot_14_3.y: _beta=\EFIT_AEQDSK:BETAt,|||_inorm=\efit_aeqdsk:cpasma/1.e6,|||_inorm=_inorm/(\efit_aeqdsk:aout/100.) / \efit_geqdsk:bcentr,|||_inorm =_inorm/\efit_aeqdsk:rcencm*\efit_aeqdsk:rout,|||_betan=_beta/_inorm |||
+Scope.plot_14_3.ymin: 0
+Scope.plot_14_3.title: "BETAN"
+Scope.plot_14_3.label: BETAN
+Scope.plot_14_3.global_defaults: -117761
+
+Scope.plot_15_3.height: 47
+Scope.plot_15_3.y: \efit_rmid[*,1.0]
+Scope.plot_15_3.ymin: .88
+Scope.plot_15_3.ymax: .91
+Scope.plot_15_3.title: "Redge"
+Scope.plot_15_3.global_defaults: -116737
+
+Scope.plot_16_3.height: 53
+Scope.plot_16_3.default_node: \efit_aeqdsk
+Scope.plot_16_3.x: dim_of(s1)
+Scope.plot_16_3.y: (s1/2. + s2/2.*(1.-rttt/rcencm)-s3)/(alpha-1.)
+Scope.plot_16_3.ymin: 0
+Scope.plot_16_3.ymax: 2
+Scope.plot_16_3.title: "sbli"
+Scope.plot_16_3.global_defaults: -118273
+Scope.rows_in_column_4: 13
+
+Scope.plot_1_4.height: 58
+Scope.plot_1_4.show_mode: 2
+Scope.plot_1_4.y: \EFIT_FITOUT:NITERA
+Scope.plot_1_4.title: "# Iterations"
+Scope.plot_1_4.label: RVSIN
+Scope.plot_1_4.global_defaults: -68617
+
+Scope.plot_2_4.height: 58
+Scope.plot_2_4.show_mode: 2
+Scope.plot_2_4.y: \EFIT_AEQDSK:TSAISQ
+Scope.plot_2_4.title: "CHISQ"
+Scope.plot_2_4.label: RVSIN
+Scope.plot_2_4.global_defaults: -68617
+
+Scope.plot_3_4.height: 58
+Scope.plot_3_4.y: \EFIT_AEQDSK:TERROR
+Scope.plot_3_4.ymin: 0
+Scope.plot_3_4.ymax: .02
+Scope.plot_3_4.title: "ERROR"
+Scope.plot_3_4.label: TERROR
+Scope.plot_3_4.global_defaults: -116737
+
+Scope.plot_4_4.height: 58
+Scope.plot_4_4.show_mode: 2
+Scope.plot_4_4.y: sum(\EFIT_AEQDSK:LFLAG,1)> 0
+Scope.plot_4_4.title: "Error in solution"
+Scope.plot_4_4.label: RVSOUT
+Scope.plot_4_4.global_defaults: -68617
+
+Scope.plot_5_4.height: 58
+Scope.plot_5_4.show_mode: 2
+Scope.plot_5_4.y: \EFIT_AEQDSK:LFLAG[*,20] > 0
+Scope.plot_5_4.title: "Error in betap"
+Scope.plot_5_4.label: RVSOUT
+Scope.plot_5_4.global_defaults: -68617
+
+Scope.plot_6_4.height: 58
+Scope.plot_6_4.show_mode: 2
+Scope.plot_6_4.y: \EFIT_AEQDSK:LFLAG[*,19] > 0
+Scope.plot_6_4.title: "Error in betap+li/2"
+Scope.plot_6_4.label: RVSOUT
+Scope.plot_6_4.global_defaults: -68617
+
+Scope.plot_7_4.height: 58
+Scope.plot_7_4.show_mode: 2
+Scope.plot_7_4.x: dim_of(\EFIT_AEQDSK:LFLAG)
+Scope.plot_7_4.y: (\EFIT_AEQDSK:LFLAG[*,13] > 0) | (\EFIT_AEQDSK:LFLAG[*,2] > 0)
+Scope.plot_7_4.title: "Error -- Unphysical pressure"
+Scope.plot_7_4.label: RVSOUT
+Scope.plot_7_4.global_defaults: -68617
+
+Scope.plot_8_4.height: 58
+Scope.plot_8_4.show_mode: 2
+Scope.plot_8_4.y: \EFIT_AEQDSK:LFLAG[*,18] > 0
+Scope.plot_8_4.title: "Error -- Unconverged Equilibrium"
+Scope.plot_8_4.label: RVSOUT
+Scope.plot_8_4.global_defaults: -68617
+
+Scope.plot_9_4.height: 58
+Scope.plot_9_4.show_mode: 2
+Scope.plot_9_4.y: \EFIT_AEQDSK:LFLAG[*,13] > 0
+Scope.plot_9_4.title: "Error -- Unphysical pressure"
+Scope.plot_9_4.label: RVSOUT
+Scope.plot_9_4.global_defaults: -68617
+
+Scope.plot_10_4.height: 58
+Scope.plot_10_4.show_mode: 2
+Scope.plot_10_4.y: \EFIT_AEQDSK:LFLAG[*,0] > 0
+Scope.plot_10_4.title: "Chi Square > 80."
+Scope.plot_10_4.label: RVSOUT
+Scope.plot_10_4.global_defaults: -68617
+
+Scope.plot_11_4.height: 58
+Scope.plot_11_4.show_mode: 1
+Scope.plot_11_4.x: _sh=shape(_y),replicate(ramp([1,_sh[1]]),0,_sh[0])
+Scope.plot_11_4.y: _y=\EFIT_GEQDSK:SAISIL
+Scope.plot_11_4.title: "SAISIL"
+Scope.plot_11_4.label: SAISIL
+Scope.plot_11_4.global_defaults: -68617
+
+Scope.plot_12_4.height: 58
+Scope.plot_12_4.show_mode: 1
+Scope.plot_12_4.x: _sh=shape(_y),replicate(ramp([1,_sh[1]]),0,_sh[0])
+Scope.plot_12_4.y: _y=\EFIT_GEQDSK:SAIMPI
+Scope.plot_12_4.title: "SAIMPI"
+Scope.plot_12_4.label: SAISIL
+Scope.plot_12_4.global_defaults: -68617
+
+Scope.plot_13_4.height: 68
+Scope.plot_13_4.show_mode: 1
+Scope.plot_13_4.x: _sh=shape(_y),replicate(ramp([1,_sh[1]]),0,_sh[0])
+Scope.plot_13_4.y: _y=\EFIT_GEQDSK:SAIFC
+Scope.plot_13_4.title: "SAIFC"
+Scope.plot_13_4.label: SAISIL
+Scope.plot_13_4.global_defaults: -68617
+Scope.vpane_1: 250
+Scope.vpane_2: 500
+Scope.vpane_3: 750

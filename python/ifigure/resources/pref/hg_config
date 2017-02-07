@@ -1,0 +1,4 @@
+version = 1.22
+connection
+   url = 'ssh://alc-software//software/hg_repositories/piscope'
+end

@@ -1,0 +1,201 @@
+Scope.geometry: 609x867+1282+311
+Scope.title: Confinement
+Scope.icon_name: "Conf"
+Scope.title_event: 
+Scope.print_file: SYS$LOGIN:DWSCOPE.PS
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: 135221456
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 2
+Scope.global_1_1.shot: current_shot("cmod")
+Scope.global_1_1.xmin: -.1
+Scope.global_1_1.xmax: 1.7
+Scope.global_1_1.event: mag_traq
+Scope.global_1_1.global_defaults: -144257
+Scope.rows_in_column_1: 10
+
+Scope.plot_1_1.height: 76
+Scope.plot_1_1.experiment: analysis
+Scope.plot_1_1.y: _wmhd=\ANALYSIS::EFIT_AEQDSK:wplasm/1.e6
+Scope.plot_1_1.event: efit_done
+Scope.plot_1_1.title: "Wmhd"//$shot
+Scope.plot_1_1.label: Wmhd
+Scope.plot_1_1.global_defaults: -773769
+
+Scope.plot_2_1.height: 76
+Scope.plot_2_1.show_mode: 1
+Scope.plot_2_1.experiment: efit01
+Scope.plot_2_1.y: _wmhd=\EFIT_AEQDSK:wplasm/1.e6
+Scope.plot_2_1.event: efit01_done
+Scope.plot_2_1.title: "Wmhd"//$shot
+Scope.plot_2_1.label: Wmhd
+Scope.plot_2_1.global_defaults: -773769
+
+Scope.plot_3_1.height: 76
+Scope.plot_3_1.experiment: rf
+Scope.plot_3_1.y: \rf::rf_power_net
+Scope.plot_3_1.event: rf_power_done
+Scope.plot_3_1.title: "Net forward power::"//$shot
+Scope.plot_3_1.label: P RF
+Scope.plot_3_1.global_defaults: -723585
+
+Scope.plot_4_1.height: 76
+Scope.plot_4_1.experiment: analysis
+Scope.plot_4_1.default_node: \analysis::efit
+Scope.plot_4_1.y: _vsurf = -deriv(\ANALYSIS::EFIT_aeqdsk:sibdry)*$2pi ;|||_t = dim_of(\analysis::efit_aeqdsk:sibdry);|||_ip=(\ANALYSIS::EFIT_AEQDSK:CPASMA);|||_li = \analysis::efit_aeqdsk:ali;|||_rmaj = \analysis::efit_aeqdsk:rout/100.;|||_L = _li/2*$mu0*_rmaj;|||_wpol=make_signal(.5*_L*_ip^2,*,_t);|||_wpdot = deriv(_wpol);|||_poh=make_signal((_ip*_vsurf-_wpdot)/1.e6,*,dim_of(\analysis::efit_ssibry))
+Scope.plot_4_1.ymin: -.5
+Scope.plot_4_1.ymax: 2
+Scope.plot_4_1.event: efit_done
+Scope.plot_4_1.title: "Poh (MW)"//$shot
+Scope.plot_4_1.label: Poh
+Scope.plot_4_1.global_defaults: -773761
+
+Scope.plot_5_1.height: 76
+Scope.plot_5_1.experiment: cmod,mhd,analysis,rf,electrons,lh
+Scope.plot_5_1.x: _tt
+Scope.plot_5_1.y: _tt = dim_of(\analysis::efit_ssibry)  ,|||_plh=if_error(MdsMisc->Resample:DSC(XD(\lh::top.results:netpow),XD(_tt))/1000.,0.)|||
+Scope.plot_5_1.ymin: -.01
+Scope.plot_5_1.ymax: 1
+Scope.plot_5_1.event: efit_done
+Scope.plot_5_1.title: "P_LH (MW)"//$shot
+Scope.plot_5_1.label: Ptot
+Scope.plot_5_1.global_defaults: -773761
+
+Scope.plot_6_1.height: 76
+Scope.plot_6_1.experiment: cmod,mhd,analysis,rf,electrons,lh
+Scope.plot_6_1.x: _tt
+Scope.plot_6_1.y: _tt = dim_of(\analysis::efit_ssibry)  ,|||_prf=MdsMisc->Resample:DSC(XD(\rf::rf_power_net),XD(_tt)),|||_ptot = if_error(_prfact,0.9)*_prf+_poh+_plh
+Scope.plot_6_1.ymin: -.01
+Scope.plot_6_1.ymax: 5
+Scope.plot_6_1.event: efit_done
+Scope.plot_6_1.title: "P total (MW)"//$shot
+Scope.plot_6_1.label: Ptot
+Scope.plot_6_1.global_defaults: -773761
+
+Scope.plot_7_1.height: 76
+Scope.plot_7_1.experiment: analysis
+Scope.plot_7_1.x: _t
+Scope.plot_7_1.y: _t = dim_of(\analysis::efit_ssibry)  ,|||_wmhd=\ANALYSIS::EFIT_AEQDSK:wplasm/1.e6,|||_dwdt=deriv(_wmhd)|||
+Scope.plot_7_1.event: efit_done
+Scope.plot_7_1.title: "dW/dt"//$shot
+Scope.plot_7_1.label: dW/dt
+Scope.plot_7_1.global_defaults: -773761
+
+Scope.plot_8_1.height: 76
+Scope.plot_8_1.experiment: cmod,mhd,analysis,rf,electrons,lh
+Scope.plot_8_1.x: _t
+Scope.plot_8_1.y: _t = dim_of(\analysis::efit_ssibry)  ,|||_wmhd=\ANALYSIS::EFIT_AEQDSK:wplasm/1.e6,|||_dwdt=deriv(_wmhd),||||||_ploss = _ptot-_dwdt|||
+Scope.plot_8_1.ymin: -.1
+Scope.plot_8_1.event: efit_done
+Scope.plot_8_1.title: "Ploss"//$shot
+Scope.plot_8_1.label: Ploss
+Scope.plot_8_1.global_defaults: -773761
+
+Scope.plot_9_1.height: 76
+Scope.plot_9_1.step_plot: 1
+Scope.plot_9_1.experiment: spectroscopy
+Scope.plot_9_1.y: \spectroscopy::top.bolometer.results.foil:main_power /1.e6
+Scope.plot_9_1.ymin: -.1
+Scope.plot_9_1.event: pradmain_done
+Scope.plot_9_1.title: "Bolometer"//$shot  
+Scope.plot_9_1.label: Prad Bolo Main
+Scope.plot_9_1.global_defaults: 274807
+
+Scope.plot_10_1.height: 85
+Scope.plot_10_1.experiment: cmod
+Scope.plot_10_1.x: _tt
+Scope.plot_10_1.y: _tt = dim_of(\analysis::efit_ssibry)  ,|||_prad=MdsMisc->Resample:DSC(XD(\spectroscopy::top.bolometer.results.foil:main_power /1.e6),XD(_tt)),|||_pnet=_ploss - _prad|||
+Scope.plot_10_1.ymin: -.01
+Scope.plot_10_1.ymax: 5
+Scope.plot_10_1.event: pradmain_done
+Scope.plot_10_1.title: "P Net (MW)"//$shot
+Scope.plot_10_1.label: Ptot
+Scope.plot_10_1.global_defaults: -773761
+Scope.rows_in_column_2: 8
+
+Scope.plot_1_2.height: 99
+Scope.plot_1_2.experiment: magnetics 
+Scope.plot_1_2.x: dim_of(\magnetics::ip)
+Scope.plot_1_2.y: _ip=\magnetics::ip/1.e6
+Scope.plot_1_2.event: mag_traq  
+Scope.plot_1_2.title: "Ip    "//$shot
+Scope.plot_1_2.label: Ip
+Scope.plot_1_2.global_defaults: 12544
+
+Scope.plot_2_2.height: 99
+Scope.plot_2_2.experiment: electrons
+Scope.plot_2_2.y: _dens = if_error(\top.tci.results.inversion:nebar_efit/1.e20,\top.tci.results:nl_04/1e20/.58)
+Scope.plot_2_2.ymin: -.2
+Scope.plot_2_2.ymax: 4.5
+Scope.plot_2_2.event: tci_invert
+Scope.plot_2_2.title: "nebar TCI"//$shot
+Scope.plot_2_2.label: nebar TCI 
+Scope.plot_2_2.global_defaults: -773249
+
+Scope.plot_3_2.height: 99
+Scope.plot_3_2.experiment: cmod,mhd,analysis,rf,electrons,lh
+Scope.plot_3_2.x: _t
+Scope.plot_3_2.y: _t = dim_of(\analysis::efit_ssibry)  ,|||_tau = _wmhd/(_poh+if_error(_prfact,0.9)*_prf+_plh-_dwdt)
+Scope.plot_3_2.ymin: -.01
+Scope.plot_3_2.ymax: .1
+Scope.plot_3_2.event: efit_done
+Scope.plot_3_2.title: "Tau MHD"//$shot
+Scope.plot_3_2.label: Tau MHD
+Scope.plot_3_2.global_defaults: -773761
+
+Scope.plot_4_2.height: 99
+Scope.plot_4_2.experiment: cmod,mhd,analysis,rf,electrons
+Scope.plot_4_2.x: _t
+Scope.plot_4_2.y: _t = dim_of(\analysis::efit_ssibry)  ,|||_r = \analysis::efit_aeqdsk:rout/100.,|||_a = \analysis::efit_aeqdsk:aout/100.,|||_kappa = \analysis::efit_aeqdsk:eout,|||_bt = abs(\analysis::efit_aeqdsk:btaxv) ,|||_ip = \analysis::efit_aeqdsk:cpasma/1.e6 ,|||_raw_den=if_error(\electrons::top.tci.results.inversion:nebar_efit,\electrons::top.tci.results:nl_04/.58),|||_dens=MdsMisc->Resample:DSC(XD(_raw_den/1.e20),XD(_t)),|||_tau98=.144*_dens^.41*2^.19*abs(_ip)^.93*_r^1.39*_a^.58*_kappa^.78*_bt^.15/(_ptot^.69),|||_tau89=.048*_dens^.1*2^.5*abs(_ip)^.85*_r^1.2*_a^.3*_kappa^.5*_bt^.2/(_ptot^.5)|||
+Scope.plot_4_2.ymin: -.005
+Scope.plot_4_2.ymax: .06
+Scope.plot_4_2.event: tci_invert
+Scope.plot_4_2.title: "Tau ITER89"//$shot
+Scope.plot_4_2.label: Tau ITER89
+Scope.plot_4_2.global_defaults: -773761
+
+Scope.plot_5_2.height: 99
+Scope.plot_5_2.experiment: cmod
+Scope.plot_5_2.x: _t
+Scope.plot_5_2.y: _taus=_tau89*(_tau89>1.e-3) + 1.e9*(_tau89< 1.e-3),|||_tau/_taus
+Scope.plot_5_2.ymin: -.1
+Scope.plot_5_2.ymax: 3
+Scope.plot_5_2.event: tci_invert
+Scope.plot_5_2.title: "H ITER89"//$shot
+Scope.plot_5_2.label: H ITER89
+Scope.plot_5_2.global_defaults: -773761
+
+Scope.plot_6_2.height: 99
+Scope.plot_6_2.experiment: cmod,mhd,analysis,rf,electrons
+Scope.plot_6_2.x: _t
+Scope.plot_6_2.y: _t = dim_of(\analysis::efit_ssibry) ,|||_r = \analysis::efit_aeqdsk:rout/100.,|||_a = \analysis::efit_aeqdsk:aout/100.,|||_kappa = \analysis::efit_aeqdsk:eout,|||_bt = abs(\analysis::efit_aeqdsk:btaxv) ,|||_ploss = _ptot-_dwdt,|||_ploss = _ploss*(_ploss>0) + 1.e9*(_ploss<0),|||_tau89=.048*_dens^.1*2^.5*abs(_ip)^.85*_r^1.2*_a^.3*_kappa^.5*_bt^.2/_ploss^.5
+Scope.plot_6_2.ymin: -.005
+Scope.plot_6_2.event: tci_invert
+Scope.plot_6_2.title: "Tau ITER89 (w Ploss)"//$shot
+Scope.plot_6_2.label: Tau ITER89 (PL)
+Scope.plot_6_2.global_defaults: -773769
+
+Scope.plot_7_2.height: 99
+Scope.plot_7_2.experiment: cmod
+Scope.plot_7_2.x: _t
+Scope.plot_7_2.y: _taus=_tau89*(_tau89>1.e-3) + 1.e9*(_tau89< 1.e-3),|||_tau/_taus
+Scope.plot_7_2.ymin: -.1
+Scope.plot_7_2.ymax: 3
+Scope.plot_7_2.event: tci_invert
+Scope.plot_7_2.title: "H ITER89"//$shot
+Scope.plot_7_2.label: H ITER89
+Scope.plot_7_2.global_defaults: -773761
+
+Scope.plot_8_2.height: 80
+Scope.plot_8_2.experiment: cmod
+Scope.plot_8_2.x: _t
+Scope.plot_8_2.y: _taus98=_tau98*(_tau98>1.e-3) + 1.e9*(_tau98< 1.e-3),|||_tau/_taus98
+Scope.plot_8_2.ymin: -.1
+Scope.plot_8_2.ymax: 1.3
+Scope.plot_8_2.event: tci_invert
+Scope.plot_8_2.title: "H ITER98y2"//$shot
+Scope.plot_8_2.label: H ITER89
+Scope.plot_8_2.global_defaults: -773761
+Scope.vpane_1: 500

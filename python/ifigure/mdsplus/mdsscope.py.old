@@ -1,0 +1,1802 @@
+#
+#         dwscope implementation on piscope
+#
+#         2014 02 02  version 1-beta
+#              02 09  shot number, shot number histroy save
+#                     fig_mdsbook is made.
+#                     any book opend by mdsscope is converted
+#                     to fig_mdsbook so that save data does not
+#                     make a huge file. Also, when mdsscoe 
+#                     closes a book, it delete all plot data.
+#                     
+#         TODO : evaluate range by TDI?
+#                clean up variable reset routine
+#                optimize session runner loop 
+#
+#
+#*******************************************  
+#     Copyright(c) 2012- S.Shiraiwa
+#*******************************************
+__author__ = "Syun'ichi Shiraiwa"
+__copyright__ = "Copyright, S. Shiraiwa, PiScope Project"
+__credits__ = ["Syun'ichi Shiraiwa"]
+__version__ = "1.0"
+__maintainer__ = "Syun'ichi Shiraiwa"
+__email__ = "shiraiwa@psfc.mit.edu"
+__status__ = "beta"
+
+import wx, sys, time, weakref, logging, threading, Queue, os, shutil, numpy, traceback
+import multiprocessing as mp
+#import wx.aui as aui
+import ifigure
+import ifigure.events
+import ifigure.utils.cbook as cbook
+
+#from ifigure.widgets.canvas.ifigure_canvas import ifigure_canvas
+from ifigure.widgets.property_editor import property_editor
+from ifigure.widgets.panel_checkbox import PanelCheckbox
+from ifigure.widgets.statusbar import StatusBar, StatusBarSimple
+import ifigure.widgets.dialog as dialog
+
+#from ifigure.mto.fig_book import FigBook
+#from ifigure.mto.fig_page import FigPage
+#from ifigure.mto.fig_axes import FigAxes
+from ifigure.mdsplus.fig_mds import FigMds, MDSJobSet
+from ifigure.mdsplus.fig_mdsdata import FigMdsData
+from ifigure.mto.figobj_param import FigobjParam, FigobjData
+from ifigure.widgets.book_viewer import BookViewerFrame
+
+import ifigure.mdsplus.mdsplusr as remote_mds
+
+from ifigure.utils.setting_parser import iFigureSettingParser as SettingParser
+from ifigure.mdsplus.mds_sp_worker_pool import MDSSPWorkerPool
+from ifigure.mdsplus.mds_mp_worker_pool import MDSMPWorkerPool
+from ifigure.mdsplus.fig_mds import build_init_local_global_session
+from ifigure.mdsplus.fig_mds import build_current_shot_session
+from ifigure.mdsplus.fig_mds import build_connect_session
+from ifigure.mdsplus.event_listener import MDSSCOPE_EVT_MDSEVENT
+
+from ifigure.widgets.at_wxthread import at_wxthread
+
+#
+#  debug setting
+#
+import ifigure.utils.debug as debug
+debug.debug_default_level = 1
+dprint1, dprint2, dprint3 = debug.init_dprints('MDSScope')
+
+# number of global config
+n_global = 4
+# number of scopes
+scope_count = 0
+# session_runner
+mds_thread = None
+mds_num_worker = 5
+def print_threaderror(txt):
+    for line in txt:
+        dprint1(str(line)+'\n')
+def print_threadoutput(txt):
+    print txt
+
+class MDSWorkerPool(object):
+      '''
+      A layer to absorb the difference bretween
+      subprocessing worker and multiprocessing worker
+      '''
+      pool = None
+      def __init__(self, *args):
+      # c_type = direct|proxy
+      # w_type = subprocess|multiprocessing
+          if MDSWorkerPool.pool is None:
+               if len(args) == 2:
+                   c_type = args[0]
+                   w_type = args[1]
+               else: return
+               num_worker = mds_num_worker
+               print 'starting '+ str(num_worker) + ' workers'
+               if w_type == 'mp':
+                    MDSWorkerPool.pool = MDSMPWorkerPool(num_worker, 
+                                                *c_type)
+               if w_type == 'sp':
+                    MDSWorkerPool.pool = MDSSPWorkerPool(num_worker, 
+                                                *c_type)
+      @classmethod
+      def reset(cls):
+          if cls.pool is not None:
+             cls.pool.terminate_all()
+             cls.pool = None
+      def is_any_worker_alive(cls):
+          if cls.pool is not None: return cls.pool.is_any_alive()
+          return False           
+      @classmethod
+      def is_workerstarted(cls):
+          return cls.pool is not None
+
+
+def CleanMDSWorkerPool():
+    MDSWorkerPool().reset()
+
+lock = threading.Lock()
+class SessionRunner(threading.Thread):
+   def __init__(self, queue, aqueue, *args, **kargs):
+       '''
+       queue : message queue used to communicate with main thread
+       type : subprocess | multiprocessing
+       '''
+       super(SessionRunner, self).__init__(*args, **kargs)
+       self.queue = queue
+       self.aqueue = aqueue
+       self._finished = True
+   def run(self, *args, **kargs):
+       ss = True
+       while ss:
+           job = self.queue.get(True)
+           if job.n == 'stop':
+                #MDSWorkerPool.reset()
+                ss = False
+                return
+           elif job.n == 'run':
+                lock.acquire()
+                self.run_session(job.p[0], job.p[1], job.p[2], job.p[3], job.p[4])
+                lock.release()
+                self.queue.task_done()
+
+   def run_session(self, ana, link, viewer, func, nomode_change):
+       def get_ana_ready_to_start(waiting_ana, flag, w_id, w_rec):
+           if not w_id in w_rec: w_rec[w_id] = []
+           if flag == (True, True, True): return 0
+           ### w_rec[w_id]  = [(ipage, ishot, isec). ...]
+           ### check if which job can be run by w_id
+           #print w_rec
+           for k, ana in enumerate(waiting_ana):
+               for r in w_rec[w_id]:
+                   if (ana.ipage == r[0] and 
+                       ana.ishot == r[1] and 
+                       ana.isec  == r[2]): break
+                   if (ana.ipage == r[0] and 
+                       ana.ishot == r[1] and 
+                       not flag[2]): break
+                   if (ana.ipage == r[0] and 
+                       not flag[1]  and 
+                       not flag[2]): break
+                   if (not flag[0]  and 
+                       not flag[1]  and 
+                       not flag[2]): break
+               else:
+                   continue
+               break 
+           else:
+               k = 0
+   
+           ### chekc if ana[k] was already reserved by other w_id 
+           ana = waiting_ana[k]
+           for key in w_rec:
+               if key == w_id: continue
+               for r in w_rec[key]:
+                   if (ana.ipage == r[0] and 
+                       ana.ishot == r[1] and 
+                       ana.isec  == r[2]): break
+                   if (ana.ipage == r[0] and 
+                       ana.ishot == r[1] and 
+                       not flag[2]): break
+                   if (ana.ipage == r[0] and 
+                       not flag[1]  and 
+                       not flag[2]): break
+                   if (not flag[0]  and 
+                       not flag[1]  and 
+                       not flag[2]): break
+               else:
+                   continue
+               k = -1
+               break
+
+           return k
+           #return hit_ana
+       def check_need_init(a_rec, rec, flag, book):
+           ## a_rec = (a.ipage, a.ishot, a.isec)
+           for i in range(3):
+              if flag[i] and a_rec[i] != rec[i]:
+                  return build_init_local_global_session(book)                
+           return None
+
+       def run_or_skip_job(a, fig_mds, pool, viewer, running_ana, unfinished_ana, global_ana, 
+                           waiting_ana, w_rec,  w_id):
+         if (a.shot in fig_mds._shot and
+             fig_mds._shot[a.shot] == a.ishot and
+             a.skip) or a.shot < 0:
+             wx.CallAfter(dprint1, 'skipping '+str(a.shot))
+
+             ## run only title evaluation
+             if a.do_title and len(a.jobs) > 3: 
+                # the second cond. is for fake runner (to test iscope 
+                #  w/o network...)
+                # 
+                b = [a.jobs[0], a.jobs[-2], a.jobs[-1]]
+                a.jobs = MDSJobSet()
+                a.jobs.extend(b)
+                a.jobnames = [a.jobnames[0], a.jobnames[-2], a.jobnames[-1]]
+                a.start_job(pool, w_id)
+                a.w_id = w_id
+                running_ana.append(a)
+                waiting_ana.remove(a)
+                w_rec[w_id].append((a.ipage, a.ishot, a.isec))
+             else:
+                waiting_ana.remove(a)
+                unfinished_ana.remove(a)
+                a.postprocess_done = True
+             a.skipped = True
+             wx.CallAfter(viewer.postprocess_skipped_data, fig_mds, a)
+         else:
+             wx.CallAfter(dprint1, 'analyzing '+ str(a.shot) +
+                          ':' +str((a.ipage, a.ishot, a.isec)) +  
+                          ' by '+ str(w_id))
+             a.start_job(pool, w_id)
+             a.w_id = w_id
+             ### check if initialization is necessary
+             init_ana = check_need_init((a.ipage, a.ishot, a.isec),
+                                         w_rec[w_id], init_flag, viewer.book)
+             a.skipped = False
+             running_ana.append(a)
+             waiting_ana.remove(a)
+             w_rec[w_id].append((a.ipage, a.ishot, a.isec))
+         # print 'submitting', ana.index(a)
+         return running_ana, unfinished_ana, global_ana, waiting_ana, w_rec, w_id
+
+
+
+       self._finished = False
+       self.pool = MDSWorkerPool.pool
+       waiting_ana = ana[:]  ### list of waiting job
+       unfinished_ana = ana[:]  ### list of unfinished jobs
+       running_ana = []      ### list of running jobs
+       fail_count = 0
+       abort_request = False
+
+
+       parallel_flag = (viewer.parallel_page,
+                        viewer.parallel_shot,
+                        viewer.parallel_sec)
+       init_flag = (viewer.init_page, 
+                    viewer.init_shot, 
+                    viewer.init_sec)
+       w_rec = {}
+
+       global_ana = []
+       for a in ana:
+           if (a.ipage == -1): global_ana.append(a)
+       wx.CallAfter(dprint1, 'number of globals : ' + str(len(global_ana)))
+          
+       #
+       #   step 0: check all workers are ready to start
+       #      (with thread locking this should not take a time)
+       wx.CallAfter(dprint1, 'checking all workers')
+       if not self.pool.get_pool_ready():
+            wx.CallAfter(dprint1, 'worker pool is not ready to start')
+       wx.CallAfter(dprint1, '...done')
+
+       #
+       #   step 0-1: mdsconnect
+       wx.CallAfter(dprint1, 
+                    'calling mdsconnect... ')
+       num_worker = self.pool.get_num_worker()
+       ana0 = [build_connect_session(viewer.book)
+              for x in range(num_worker)]
+       for w_id in range(num_worker):
+           ana0[w_id].start_job(self.pool, w_id)
+
+       for w_id in range(num_worker):        
+           while not ana0[w_id].check_finished():
+              if not self.aqueue.empty():
+                   abort_request = self.aqueue.get(False)
+                   wx.CallAfter(print_threaderror, 
+                          ['aborted durig connect', ])
+                   self._finished = True
+                   wx.CallAfter(viewer.eval_mdsdata_done, status=-5)
+                   return
+              time.sleep(0.05)
+       wx.CallAfter(dprint1, '...done')
+       #
+       #  
+       #   step 1: initialize MDS memory of all workers
+       #
+       if viewer.init_beginning:
+           wx.CallAfter(dprint1, 
+                    'initialing MDSplus memory...')
+           ana0 = [build_init_local_global_session(viewer.book)
+                  for x in range(num_worker)]
+           for w_id in range(num_worker):
+                 ana0[w_id].start_job(self.pool, w_id)
+           for w_id in range(num_worker):
+               while not ana0[w_id].check_finished():
+                  if not self.aqueue.empty():
+                     abort_request = self.aqueue.get(False)
+                     wx.CallAfter(print_threaderror, 
+                          ['aborted durig init', ])
+                     self._finished = True
+                     wx.CallAfter(viewer.eval_mdsdata_done, status=-4)
+                     return
+                  time.sleep(0.05)
+           wx.CallAfter(dprint1, '...done')
+
+       #  
+       #   step 2: run analysis sessions
+       #
+       global_done = False
+       while (len(unfinished_ana) != 0 and 
+              MDSWorkerPool().is_any_worker_alive()):
+            if not self.aqueue.empty():
+                abort_request = self.aqueue.get(False)
+            if (abort_request and
+                len(running_ana) == 0): break
+#           print 'running mds session', len(unfinished_ana)
+            ### if worker is available submit job
+            global_done = all([ga.postprocess_done for ga in global_ana])
+            w, w_id = self.pool.get_worker()
+            if (w is not None and len(waiting_ana) != 0
+                and not abort_request):
+                 k = get_ana_ready_to_start(waiting_ana, parallel_flag, w_id, w_rec)
+                 if k >= 0:
+                     a = waiting_ana[k]
+                     fig_mds = link[a]
+                     ### start panel jobs after globals are done
+                     if a.ipage == -1 or global_done:
+                        ret = run_or_skip_job(a, fig_mds, self.pool, viewer, running_ana, 
+                                           unfinished_ana, global_ana, waiting_ana, 
+                                           w_rec,  w_id)
+                        running_ana, unfinished_ana, global_ana,  waiting_ana, w_rec,  w_id = ret
+            ### check if any jobs are done
+            tmp = running_ana[:]
+            for a in running_ana:   
+                 if a.running:
+                      chk =  a.check_finished()
+                      if chk:
+#                           print a.result
+                           if a.status:
+#                               print 'job finished', a
+                               fig_mds = link[a]
+                               wx.CallAfter(func, fig_mds, a)
+                               if (fig_mds.get_parent() is not None and
+                                   a.isec != -1):
+                                   # None when getting current shot number
+#                                   wx.CallAfter(fig_mds.get_figaxes().adjust_axes_range)
+                                   wx.CallAfter(fig_mds.call_refresh_artist, a.ishot)
+                               if  a.result['worker output'] != '':
+                                   wx.CallAfter(print_threadoutput, 
+                                            a.result['worker output'])
+                               if a.ipage == viewer.ipage:
+                                   wx.CallAfter(viewer.canvas.draw_later)
+                           else:
+                               fail_count = fail_count + 1
+                               txt = ['job fail : wid'+str(a.w_id)]
+                               fig_mds = link[a]
+                               if fig_mds.get_parent() is not None:
+                                   # None when getting current shot number
+                                   wx.CallAfter(fig_mds.suppress_ishot, 
+                                                a.ishot)
+                               if 'error message' in a.result:
+                                  for item in a.result['error message']:
+                                      txt.append(str(item))          
+                               wx.CallAfter(dprint1, '\n'.join(txt))
+                           tmp.remove(a)
+#                           print 'end of ana', [ana.index(a) for a in unfinished_ana]
+                           unfinished_ana.remove(a)
+                           del link[a]        
+            running_ana = tmp[:]
+            wx.GetApp().Yield(True)
+#            time.sleep(0.1)
+#            wx.GetApp().Yield(True)
+       if abort_request:
+           '''
+           could send abort signal to workers, here?
+           '''
+           wx.CallAfter(print_threaderror, 
+                    ['aborted', 
+                     'Total job count:' + str(len(ana)),
+                     'Running job count:' + str(len(running_ana)),
+                     'Unfinished job count:' + str(len(unfinished_ana))])
+       if not MDSWorkerPool().is_any_worker_alive():
+           wx.CallAfter(print_threaderror, 
+                    ['all workers terminated by error. check input/shot number ...'])
+           wx.CallAfter(viewer.workers.call_method, 'onReset')
+           wx.CallAfter(viewer.workers.call_method, 'onStartWorker')        
+       self._finished = True
+       wx.CallAfter(dprint1, 
+                    'fail_count = '+str(fail_count))
+       if not nomode_change:
+           # shot number evaluation does not come here
+           wx.CallAfter(viewer.eval_mdsdata_done)
+       ifigure.events.SendChangedEvent(
+                    viewer.book, w=viewer, useProcessEvent=True)
+class message(object):
+    def __init__(self, n, p):
+        self.n = n
+        self.p = p
+
+class MDSScope(BookViewerFrame):
+    def __init__(self, *args, **kargs):
+        parent = args[0]
+        title = args[2]
+        kargs["style"] = (wx.CAPTION|
+                          wx.CLOSE_BOX|
+                          wx.MINIMIZE_BOX| 
+                          wx.RESIZE_BORDER)
+                         #|wx.FRAME_FLOAT_ON_PARENT)
+
+        if "show_prop" in kargs:
+           show_prop = kargs["show_prop"]
+           del kargs["show_prop"]
+        else:
+           show_prop = False
+
+        ### this is added not to have windows "always on parent"
+        args2 = [x for x in args]
+        args2[0] = None
+        args = tuple(args2)
+        ###
+
+        super(MDSScope, self).__init__(*args, **kargs)
+
+        if self.book is not None:
+#            for page in self.book.walk_page():
+            self.prepare_dwglobal(self.book)
+            if not self.book.hasvar('mdsplus_server'):
+                self.book.setvar('mdsplus_server',
+                                 'direct::CMOD')
+            if not self.book.hasvar('mdsscript_main'):
+                self.book.setvar('mdsscript_main',
+                                 True)
+            if not self.book.hasvar('mdsscope_autogrid'):
+                self.book.setvar('mdsscope_autogrid',
+                                 True)
+            from ifigure.mdsplus.fig_mdsbook import convert2figmdsbook
+            convert2figmdsbook(self.book)
+
+        self.g = {} ## global variabls for mainthread scripting
+        self._checking_current = False
+        self._cur_shot = 0
+        self._mds_exit_status = 0
+        self.mpanalysis = False
+        self._mpanalysis_mode = True
+        self.parallel_page = True
+        self.parallel_shot = True
+        self.parallel_sec = True
+        self.init_beginning = True
+        self.init_page = False
+        self.init_shot = False
+        self.init_sec = False
+        self.timer = None
+        self.ipage=0
+        self.mds_thread = None
+        self.previous_shot_set = [[]]
+        self.event_dict ={}
+        self.InitUI(parent, title, show_prop)    
+        self.BindTreeDictEvents()
+        self.adjust_frame_size()
+        self.SetPosition((50,50))        
+#        self.Thaw()
+
+        proj = self.book.get_root_parent()
+        if proj.setting.has_child('mdsplus_worker'):
+           self.workers = proj.setting.mdsplus_worker
+        else:
+           file = os.path.join(ifigure.__path__[0], 'add_on', 
+                            'setting', 'module', 'mdsplus_worker.py')
+
+           workers = proj.setting.add_absmodule(file)
+           workers.rename('mdsplus_worker')
+           self.workers = workers
+
+        p = SettingParser()
+        p.set_rule('global_set',{}, nocheck=True)
+        self.scope_setting = p.read_setting('mdsplus.scope_setting')
+
+        from ifigure.ifigure_config import rcdir, ifiguredir
+        mname = 'mdsplus.fig_mds_startup_script'
+        def_file = os.path.join(*([ifiguredir] + mname.split('.')))
+        user_file = os.path.join(*([rcdir] + mname.split('.')))+'.py'
+        if not os.path.exists(user_file):
+            shutil.copy(def_file, user_file)
+        self.startup_script = user_file
+
+        self._start_mds_threads() # start session runner and event listener
+
+        self.start_pool()
+        self.Bind(MDSSCOPE_EVT_MDSEVENT, self.onMDSEvent)
+        globals()['scope_count'] = globals()['scope_count'] + 1
+        self.txt_shot.set_color_style(self.book.dwglobal.getvar('color_order'))
+        self.make_event_dict()
+        self.use_book_scope_param()
+
+    def InitUI(self, parent, title, show_prop):  
+        # A Statusbar in the bottom of the window
+        self.sb = StatusBarSimple(self)
+        self.SetStatusBar(self.sb) 
+
+        ## define splitter panel tree
+
+        ## valid panel p1, p22, p121, p122
+        self.gui_tree_panel = wx.Panel(self)
+        self.shot_field_panel = wx.Panel(self)
+        self.SetSizer(wx.BoxSizer(wx.VERTICAL), 1)
+        self.GetSizer().Add(self.gui_tree_panel, 1, wx.EXPAND)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(self.shot_field_panel, 1, wx.EXPAND)
+        self.GetSizer().Add(hsizer, 0, wx.EXPAND, 2)
+
+        self.gui_tree = PanelCheckbox(self.gui_tree_panel, wx.HORIZONTAL)
+#        p1, p2 = self.gui_tree.add_splitter('v', 'h')
+
+        ## make all panels
+        self.panel1 = self.gui_tree.add_panel(wx.Panel,
+                                    "Figure", "Figure", 0)
+        self.gui_tree.set_primary(self.panel1)
+        self.gui_tree.hide_toggle_menu(self.panel1)
+        self.property_editor = self.gui_tree.add_panel(property_editor,
+                              "Property", "Property",
+                              1, 'r', 0, wx.ALL, 0)
+
+        #self.script_editor.Hide()
+        self.canvas=None
+        self._rebuild_ifigure_canvas()
+        self._link_canvas_property_editor()
+        self.gui_tree.primary_client(self.canvas)
+
+        self.shot_field_panel.SetSizer(wx.BoxSizer(wx.HORIZONTAL), 1)
+
+        txt = wx.StaticText(self.shot_field_panel, wx.ID_ANY, 'Shot:')
+        txt._help_name = 'MDSscope.ShotField'
+#        from ifigure.utils.edit_list import TextCtrlCopyPasteGenericHistory
+#        self.txt_shot = TextCtrlCopyPasteGenericHistory(self.shot_field_panel, 
+#                                          wx.ID_ANY,
+#                                          'c',
+#                                          style=wx.TE_PROCESS_ENTER)
+        from ifigure.mdsplus.shot_number_ctrl import ShotNumberCtrl
+        self.txt_shot = ShotNumberCtrl(self.shot_field_panel, 
+                                       wx.ID_ANY)
+
+        self.txt_shot._help_name = 'MDSscope.ShotField'
+        self.bt_apply = wx.Button(self.shot_field_panel, wx.ID_ANY, 'Apply')
+        self._mode = 'apply'            
+        self.shot_field_panel.GetSizer().Add(txt, 0, wx.ALIGN_CENTER)
+        self.shot_field_panel.GetSizer().Add(self.txt_shot, 1, 
+                                             wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_VERTICAL, 0)
+        self.shot_field_panel.GetSizer().Add(self.bt_apply, 0, 
+                                             wx.ALL, 0)
+
+        ### left button analyze a new shot
+        self.bt_apply.Bind(wx.EVT_LEFT_UP, self.onApplyN) 
+        ### right button allows user to select
+        self.bt_apply.Bind(wx.EVT_RIGHT_UP, self.onApplyR)
+        self.Bind(wx.EVT_TEXT_ENTER, self.onShot, self.txt_shot)
+        # File Menu
+        newmenu = wx.Menu()
+#        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
+#        self.add_menu(newmenu, wx.ID_ANY,
+#                     "Book",
+#                     "Create a new book and open it",
+#                     self.onLoadBookNew)
+        self.add_menu(self.filemenu, wx.ID_ANY,
+                     "New Scope",
+                     "Create a new book and open it in a new scope window",
+                      self.onNewBook)
+        self.add_menu(newmenu, wx.ID_ANY,
+                     "Impot DWSscope...","Import DWScope file", 
+                     self.onImportDW)
+        openmenu = wx.Menu()
+        self.filemenu.AppendMenu(wx.ID_ANY, 'Open', openmenu)
+        self.add_menu(openmenu, wx.ID_OPEN,
+                     "Book...",
+                     "Import Book file (.bfz). Current book is deleted from project", 
+                     self.onLoadBook)
+        self.add_menu(openmenu, wx.ID_ANY,
+                     "Book in new window...",
+                     "Import Book file (.bfz), New book data will be added to project",
+                     self.onLoadBookNew)
+        self.add_menu(openmenu, wx.ID_ANY,
+                     "Impot DWSscope...","Import DWScope file", 
+                     self.onImportDW)
+        self.export_book_menu = self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Export Book", "Export Book", 
+                     self.onExportBook)
+        self.export_book_menu1 = self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Export Book (w/o data)", "Export Book (data is not stored)", 
+                     self.onExportBook1)
+        self.export_book_menu.Enable(False)
+        self.export_book_menu1.Enable(False)
+        self.exportas_book_menu = self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Export Book As...", "Export Book", 
+                     self.onExportBookAs)
+        self.exportas_book_menu1 = self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Export Book As (w/o data)...", 
+                     "Export Book (data is not stored)", 
+                     self.onExportBookAs1)
+#        self.exportas_book_menu.Enable(False)
+        self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Save Image", "Save Image", 
+                     self.onSaveImage)
+        self.filemenu.AppendSeparator()
+        toolmenu = wx.Menu()
+        self.filemenu.AppendMenu(wx.ID_ANY, 'Tools', toolmenu)
+        self.add_menu(toolmenu, wx.ID_ANY,
+                     "Generate multiple pages...","Generate multiple pages from current page", 
+                     self.onGenerateMultipage)
+        self.commonvar_menu = wx.Menu()
+        toolmenu.AppendMenu(wx.ID_ANY, "Edit common variabls", self.commonvar_menu)
+        self.add_menu(toolmenu, wx.ID_ANY,
+                     "Reset MDSplus Workers","Reset MDS session workers", 
+                     self.onResetWorker)
+        self.add_menu(toolmenu, wx.ID_ANY,
+                     "Reset Position Variables",
+                     "Manual reset of position variables (_idx, _page, _col, _row)", 
+                     self.onResetPosvar)
+        self.add_menu(self.filemenu, wx.ID_ANY,
+                      "MDSScope Preference...","Configuration...", 
+                      self.onSetting)
+        self.add_menu(self.filemenu, wx.ID_ANY,
+                      "Preference...","Piescope preference...", 
+                      self.onAppPreference)
+
+        self.filemenu.AppendSeparator()
+        self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Close", "Close window", 
+                      self.onClose)
+        self.add_menu(self.filemenu, wx.ID_ANY, 
+                     "Close + Delete Book", "Close window and delete book data",
+                      self.onCloseDeleteBook)
+        self.Bind(wx.EVT_CLOSE, self.onWindowClose)
+
+        # Edit Menu
+        self.append_undoredo_menu(self.editmenu)
+        self.editmenu.AppendSeparator()
+
+        self.add_cutpaste_menu(self.editmenu)
+        #plot menu
+#        self.plotmenu = wx.Menu()
+#        self.menuBar.Append(self.plotmenu,"Plot")
+        self.add_std_plotmenu(self.plotmenu)
+#        self.add_menu(self.plotmenu, wx.ID_ANY, 
+#                     "Edit signal...", "Edit signal in selected section", 
+#                      self.onEditSignal)
+#        self.plotmenu.AppendSeparator()
+
+        # help menu
+        self.append_help_menu()
+
+        # Help menu
+        self.helpmenu.AppendSeparator()
+        self.add_menu(self.helpmenu, wx.ID_HELP, 
+                     "About MDSScope...","About MDSScope", 
+                     self.onAbout)
+
+        self.gui_tree.append_menu(self.viewmenu)
+        self.viewmenu.AppendSeparator()
+        self.gui_tree.update_check()
+        self.gui_tree.bind_handler(self)
+
+#        if property_editor.screen_width is not None:
+#           self.gui_tree.set_showhide([True, False])
+        self.gui_tree.set_splitters()
+
+        self.editmenu.AppendSeparator()
+        self.add_bookmenus(self.editmenu, self.viewmenu)
+        # add full screen to view menu
+        self.viewmenu.AppendSeparator()
+        self.add_menu(self.viewmenu, wx.ID_ANY, 
+                     "Full Screen", "switch to full screen mode",
+                      self.onFullScreen)
+
+
+        self.SetMenuBar(self.menuBar)  
+
+        self.property_editor.set_sizehint()
+        self.gui_tree.toggle_panel(self.property_editor, show_prop)                
+        self.SetSize([600, 400])
+        self.Layout()  
+        self.update_commonvar_menu()
+        self.Show(True)
+        self.set_accelerator_table()                        
+        #self.deffered_force_layout()
+    def update_exportas_menu(self):
+        if self.export_book_menu is None: return
+        if self.book is None : 
+           self.export_book_menu.Enable(False) 
+           self.export_book_menu1.Enable(False) 
+           return
+        if self.book.hasvar("original_filename"):
+           fname = self.book.getvar("original_filename")
+           if (os.path.exists(fname) and 
+               os.access(fname, os.W_OK)):
+               self.export_book_menu.Enable(True) 
+               self.export_book_menu1.Enable(True) 
+        else:
+           self.export_book_menu.Enable(False) 
+           self.export_book_menu1.Enable(False) 
+
+    def update_commonvar_menu(self):
+        clabels  = [mmi.GetItemLabelText() for mmi 
+                    in self.commonvar_menu.GetMenuItems()]
+        if not self.book.dwglobal.getvar('use_shot_global'):
+            nlabels = ['<common variabls is not used>']
+        else:
+            nlabels = self._get_common_var_names()
+        if clabels == nlabels: return
+
+        for mmi in self.commonvar_menu.GetMenuItems():
+            self.commonvar_menu.DestroyItem(mmi)
+#        self.commonvar_menu.Unbind(wx.EVT_MENU)
+        for l in nlabels:
+             def f(evt, self=self, label=l):
+                 self.onCommonVarEditMenu(evt, l)
+             mmi = wx.MenuItem(self.commonvar_menu, 
+                               wx.NewId(), l)
+             self.commonvar_menu.AppendItem(mmi)
+             if not self.book.dwglobal.getvar('use_shot_global'):
+                 mmi.Enable(False)
+             self.Bind(wx.EVT_MENU, f, mmi)
+
+    def onAbout(self, evt):
+        dlg = wx.MessageDialog(self, "MDSScope \n"
+                               "PieScope extention for MDSplus (v0.3)\n", 
+                      "about", wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy() 
+
+    def onNewBook(self, evt, veiwer=None):
+         super(MDSScope, self).onNewBook(evt, 
+                                         viewer = MDSScope)
+
+    def onLoadBook(self, evt, mode=0,proj=None):
+        import time
+        super(MDSScope, self).onLoadBook(evt, 
+                                         mode=mode, proj=proj)
+        self.prepare_dwglobal(self.book)
+        self.txt_shot.SetValue(self.book.dwglobal.getvar('shot'))
+        self.mpanalysis = self.book.dwglobal.getvar('mpanalysis')
+        self.update_commonvar_menu()
+        for page in self.book.walk_page():
+            for obj in page.walk_tree():
+               if isinstance(obj, FigMds):
+                    obj.set_suppress_all(True)
+        self.make_event_dict()
+        from ifigure.mdsplus.fig_mdsbook import convert2figmdsbook
+        convert2figmdsbook(self.book)
+        self.use_book_scope_param()
+
+    def onLoadBookNew(self, evt):
+        super(MDSScope, self).onLoadBookNew(evt, 
+                                            viewer = MDSScope)
+    def onEditSignal(self, evt):
+        pass
+
+    def prepare_dwglobal(self, book):
+        '''
+        set global parameters 
+        '''
+        names = ('experiment', 'default_node', 'x', 'y', 'z', 'xerr',
+                 'yerr', 'title', 'event')
+        values = ('', '', '', '', '', '', '', '', '')
+        names2 = ('shot', 'global_defaults', 'xmax', 'ymax', 'xmin', 'ymin',
+                  'global_choice', 'color_order',
+                  'mpanalysis', 'shot_global', 'use_shot_global')
+        values2 = ('-1', 0, None, None, None, None, 
+                   [1]*16, ['black', 'red', 'blue', 'g', 'yellow'],
+                   False, '', False)
+        gsettings = {n:[v]*n_global for n, v in zip(names, values)}
+
+        if not book.has_child('dwglobal'):
+#            param = FigobjParam()
+            param = FigobjData()
+#            param = FigMdsData()
+            book.add_child('dwglobal', param)
+            param.setvar('globalsets', gsettings)
+        elif isinstance(book.dwglobal, FigobjParam):
+            var = self.book.dwglobal.getvar().copy()
+            self.book.dwglobal.destroy()
+            param = FigobjData()
+            book.add_child('dwglobal', param)
+            param.setvar(var)
+
+        for n, v in zip(names2, values2):
+            if not book.dwglobal.hasvar(n):
+                book.dwglobal.setvar(n, v)
+        return book.dwglobal
+      
+    def show_page(self, ipage=0, last=False, first=False):
+        super(MDSScope, self).show_page(ipage=ipage, last=last, first=first)
+#        for page in self.book.walk_page():
+        self.prepare_dwglobal(self.book)
+        self.make_event_dict()
+#        from ifigure.mdsplus.fig_mdsbook import convert2figmdsbook
+#        convert2figmdsbook(self.book)
+
+    #
+    #   MDS plus data processing methods.
+    #
+    def eval_mdsdata(self, allshot=True, figaxes='all'):
+        from ifigure.ifigure_config import canvas_scratch_page as csp
+        shot_set = self.eval_mdsshot()
+        ### prepare pages
+        num_page = self.book.num_page()
+        if len(shot_set) > num_page:
+           ### add pages
+           fig_page = self.get_page(0)
+           self.canvas.copy_selection(obj = [fig_page])
+           for junk in range(len(shot_set)- num_page):
+               self.canvas.paste_selection(cs = csp)
+        elif len(shot_set) < num_page:
+           ### remove pages
+           self.show_page(0)
+           for junk in range(num_page-len(shot_set)):
+               self.del_page(self.book.num_page()-1)
+
+        ### set suppress
+        for i in range(len(shot_set)):
+           l = len(shot_set[i])
+           fig_page = self.get_page(i)
+           for ax in fig_page.walk_axes():
+               for name, child in ax.get_children():
+                  if isinstance(child, FigMds):
+                     child.active_plots(l)
+        ### build shot number index (horrible four for loops)
+        prevshot = 0
+        ushot_list = []
+        link_all = weakref.WeakKeyDictionary()
+        for k, page in enumerate(self.book.walk_page()):
+            self.set_index_col_row_page(k)
+            for ax in fig_page.walk_axes():
+                shots = shot_set[k]
+                if not (figaxes == 'all' or ax in figaxes): continue
+                for name, child in ax.get_children():
+                     if not isinstance(child, FigMds): continue
+                     for s in shots:
+                         ss, prevshot = child.eval_shotstr(s, prevshot, self._cur_shot)
+                         if ss is None:
+                             self.eval_mdsdata_done(status=-2)
+                             return
+                         if ss > 0:
+                             ushot_list.append(ss) 
+        ushot_list = [x for x in set(ushot_list)]
+
+        ### make a ana array for globals. for now, it runs global analysis for all shots
+        ### could be improved...
+        ### this global does not read global sets
+        ### this global never skips..
+        ana_all = self.eval_mdsglobaldata_inner([], ushot_list, link_all)
+        prevshot = 0
+        for k, shots in enumerate(shot_set):
+#           prevshots = ([] if k >= len(self.previous_shot_set) else 
+#                        [long(s) for s in self.previous_shot_set[k]])
+           ana_all, link_all, prevshot = self.eval_mdsdata_inner(shots, k, 
+                                                       ana_all, link_all,
+                                                       prevshot, allshot, 
+                                                       ushot_list,
+                                                       figaxes=figaxes)
+           if ana_all is None: 
+               self.eval_mdsdata_done(status=-3)
+               return
+
+        c = message('run',(ana_all, link_all, self, self.postprocess_data,False))
+        wx.CallAfter(self.queue.put, c)
+        self.previous_shot_set = shot_set
+
+    def make_event_dict(self):
+        from ifigure.mdsplus.event_listener import connect_listener, disconnect_listener
+        event_dict = {}
+        g_event = self.book.dwglobal.getvar('event')
+        if (g_event is not None and g_event != ''):
+            event_dict[g_event] = []
+        for k, page in enumerate(self.book.walk_page()):
+            for ax in page.walk_axes():
+                for name, child in ax.get_children():
+                     if not isinstance(child, FigMds): continue
+                     event_name = child.getvar('event')
+                     if (g_event is not None and g_event != ''):
+                         event_dict[g_event].append(weakref.ref(ax))
+                     if (event_name is not  None and event_name != ''): 
+                         if not event_name in event_dict: event_dict[event_name] = []
+                         event_dict[event_name].append(weakref.ref(ax)) 
+
+        for key in self.event_dict:
+            if not key in event_dict:
+                 disconnect_listener(self, key)
+        for key in event_dict:
+            if not key in self.event_dict:
+                 connect_listener(self, key)
+        self.event_dict = event_dict
+
+    def eval_mdsglobaldata_inner(self, ana, ushot_list, link):
+        if not self.book.dwglobal.getvar('use_shot_global'):return ana
+        for name in self._get_common_var_names():
+            child = self.book.get_child(name = name)
+            for ss in ushot_list:
+               ana.append(child.mdssession_job(shot = ss,
+                                             dwglobal = None,
+                                             startup=self.startup_script))
+               link[ana[-1]] = child
+               ana[-1].isec = -1
+               ana[-1].ishot = -1
+               ana[-1].uishot = ushot_list.index(ss)
+               ana[-1].ipage = -1
+               ana[-1].shot = ss
+               ana[-1].skip = False
+               ana[-1].do_title = False
+        return ana
+ 
+    def eval_mdsdata_inner(self, shots, ipage, ana, link, 
+                       prevshot, allshot, ushot_list, figaxes='all'):
+
+        init_param = (self.init_page, 
+                     self.init_sec)
+        fig_page = self.get_page(ipage)
+        app = fig_page.get_app()
+#        fig_page0 = self.get_page(0)
+        global_choice = self.book.dwglobal.getvar('global_choice')
+        gs0 = self.book.dwglobal.getvar('globalsets')
+        
+        ### build array of all analysis 
+        for isec, ax in enumerate(fig_page.walk_axes()):
+            if not (figaxes == 'all' or ax in figaxes): continue
+            for name, child in ax.get_children():
+                if isinstance(child, FigMds):
+                     child.reset_shots_expr()
+                     for k, s in enumerate(shots):
+                         ss, prevshot = child.eval_shotstr(s, prevshot, 
+                                                           self._cur_shot)
+#                         print ss, prevshot
+                         if ss is None and prevshot is None: return None, None, None
+                         if ss > 0: child.append_shots_expr(ss)
+                         if ss is None: continue
+
+                         gs = {key:gs0[key][global_choice[k]-1] for key in gs0}
+                         ana.append(child.mdssession_job(shot = ss,
+                                             dwglobal = gs,
+                                             startup=self.startup_script))
+                         link[ana[-1]] = child
+                         ana[-1].isec = isec
+                         ana[-1].ishot = k
+                         ana[-1].uishot = ushot_list.index(ss)
+                         ana[-1].ipage = ipage
+                         ana[-1].shot = ss
+                         ana[-1].skip = not allshot
+                         ana[-1].do_title = False
+                     for k, s in enumerate(shots):
+                         if ana[-1-k].shot > 0:
+#                              print ana[-1-k].shot, 'do_title = True'
+                              ana[-1-k].do_title = True 
+                              break
+        return ana, link, prevshot
+#        ifigure.events.SendChangedEvent(fig_page, w=app)
+
+    def erase_mdsdata(self):
+        fig_page = self.get_page()
+        app = fig_page.get_app()
+        
+        ### build array of all analysis 
+        ana = []
+        for ax in fig_page.walk_axes():
+            for name, child in ax.get_children():
+                if isinstance(child, FigMds):
+                   child.erase_mdsdata()
+        ifigure.events.SendChangedEvent(fig_page, w=app)
+
+    def postprocess_data(self, child, ana):
+#       postprocessing after data is loaded from MDSplus
+        fig_page = self.get_page()
+        color_order = self.book.dwglobal.getvar('color_order')
+        child.postprocess_data(ana, self, color_order)
+        for key in child._shot:
+            if child._shot[key] == ana.ishot: 
+                del child._shot[key]
+                break
+        child._shot[ana.shot] = ana.ishot
+
+        if self.book.getvar('mdsscope_autogrid'):
+            fig_ax =child.get_figaxes()
+            if fig_ax is None: return
+            flag = True
+            for name, child in fig_ax.get_children():
+                if isinstance(child, FigMds):
+                    flag = flag and child.is_all_suppressed()
+            if flag:
+                fig_ax._artists[0].get_xaxis().grid(False, which='Major')
+                fig_ax._artists[0].get_yaxis().grid(False, which='Major')
+            else:
+                fig_ax._artists[0].get_xaxis().grid(True, which='Major')
+                fig_ax._artists[0].get_yaxis().grid(True, which='Major')
+
+#        app = fig_page.get_app()
+#       print 'finishing  process data'
+#        ifigure.events.SendChangedEvent(fig_page, w=app)
+
+    def postprocess_skipped_data(self, child, ana):
+#       postprocessing when data was NOT  loaded from MDSplus
+        p = child.get_child(ana.ishot)
+        if p is not None:
+            if (ana.ishot in child._analysis_flag and
+                child._analysis_flag[ana.ishot]):
+                child.change_suppress(ana.shot < 0, p)
+            elif (ana.ishot in child._analysis_flag and
+                not child._analysis_flag[ana.ishot]):
+                child.change_suppress(True, p)
+            else:
+                child.change_suppress(False, p)
+        child.get_figaxes().set_bmp_update(False)
+        if ana.ipage ==self.ipage:
+            self.canvas.nodraw_on()
+            self.canvas.draw()
+
+    def store_shotnumber(self, child, ana):
+        pass
+
+    def set_mdsshot(self, shot):
+        self.txt_shot.SetValue(str(shot))
+
+    def eval_mdsshot(self):
+        '''
+        pre-process shot number field.
+        if it starts from '='. do eval
+        if it containes 'c', get the late shot number
+        then split it, and return
+        '''
+        txt = self._run_eval_mdsshot()
+        if txt.find('c') == -1:
+            ana = None
+        else:
+            ana = build_current_shot_session(self.book)
+#        ana = None
+        if ana is None: 
+            self._cur_shot = 0
+        else:
+            ana_all = [ana]
+            link_all = weakref.WeakKeyDictionary()
+            link_all[ana] = FigMds()
+            self._checking_current = True
+            c = message('run',(ana_all, link_all, self, self.store_shotnumber, True))
+            self.queue.put(c)
+            self.queue.join()
+#            print ana.jobs
+#            print ana.jobnames
+#            print ana.result
+            if 'shot' in ana.result:
+               self._cur_shot = ana.result['shot']
+            else:
+               self._cur_shot = 0
+            dprint1('current shot ' + str(self._cur_shot))
+
+        if self.mpanalysis:
+            arr =  txt.split(';')             
+            txt = ';'.join([arr[0]]*self.book.num_page())
+        arr = txt.split(';')
+        a2 = []
+        for t in arr:
+          a2.append([x.strip() for x in t.split(',')])
+
+        return a2
+
+    def onResetPosvar(self, evt):
+        for ipage, p in enumerate(self.book.walk_page()):
+             self.set_index_col_row_page(ipage)
+
+    def set_index_col_row_page(self, ipage):
+        '''
+        set col row to fig_mds
+        '''
+        p = self.get_page(ipage)
+        l =  [ (int((a.getp('area')[0] + a.getp('area')[2]/2.)*10),
+                int((a.getp('area')[1] + a.getp('area')[3]/2.)*10),
+                a) for a in p.walk_axes()]
+        col =  [int((a.getp('area')[0] + a.getp('area')[2]/2.)*10)
+                for a in p.walk_axes()]
+
+        idx = 0
+        for col, c in enumerate(sorted(set(col))):
+           el = [item[2] for item in l if item[0] == c]
+           l2 = [(int((a.getp('area')[1] + a.getp('area')[3]/2.)*10),
+                  a) for a in el]
+           for row, item in enumerate(reversed(sorted(l2))):
+               self._set_index_row_col_page(item[1], ipage, col, row, idx)
+               idx = idx+1           
+    def _set_index_row_col_page(self, a, ipage, col, row, idx):
+        # a : fig_axes
+        for name, child in a.get_children():
+            if isinstance(child, FigMds):
+                child.setvar('posvars', '_ipage=' + str(ipage) + ';' + 
+                                        '_col=' + str(col) + ';' + 
+                                        '_row=' + str(row) + ';' + 
+                                        '_index=' + str(idx))
+    #
+    #  methods for pool
+    # 
+    def start_pool(self):
+#        ifigure.events.SendWorkerStartRequest(self.book, w=self, workers=self.workers)
+        wx.CallAfter(self.workers.call_method, 'onStartWorker')        
+
+    def restart_worker(self):
+        self.workers.call_method('onReset')
+        dprint1('restarting workers')
+        self.start_pool()
+
+    def onResetWorker(self, evt):
+        self.restart_worker()
+
+    #
+    #  GUI event handler
+    # 
+    def onImportDW(self, evt):
+        def merge_globals(param, globals):
+            keys = ('title', 'experiment', 'default_node', 'x', 'y')
+            gs = param.getvar('globalsets')
+            for key in keys:
+                if key in globals:
+                    gs[key][0] = globals[key]
+                    del globals[key]
+                else:
+                    gs[key][0] = ''
+            for key in globals:
+                param.setvar(key, globals[key])
+
+        from ifigure.mdsplus.import_dw import import_dw
+        setting, globals, plots, filename = import_dw(file='') 
+        if setting is None: return
+        cr = [len(p) for p in plots]
+        ps = []
+        for p in plots:
+            ps = ps + p
+
+        if self.book.has_child('dwglobal'):
+           param = self.book.get_child(name='dwglobal')
+           param.destroy()
+        param = self.prepare_dwglobal(self.book)
+        merge_globals(param, globals)
+
+        param.setvar('setting', setting)
+
+        fig_page=self.get_page()        
+        for ax in fig_page.walk_axes():
+            ax.destroy()
+        self.set_section(cr)
+
+        fig_page.set_nomargin(True)
+        for iax in range(sum(cr)):
+           ax = self.get_axes(ipage=None, iaxes=iax)   
+           ax._yaxis[0].mode = [False, False, True]
+           figmds=FigMds(dwplot=ps[iax])
+           ax.add_child(ax.get_next_name('mds'), figmds)
+           ax.apply_nomargin_mode()
+           figmds.realize()
+
+#        self._handle_apply_abort()
+        self.draw()
+        ax = self.get_axes(ipage=None, iaxes=None)
+
+        ### change filename...
+        name = os.path.basename(filename)[:-4]
+        if not self.book.get_parent().has_child(name):
+           self.book.rename(name)
+        else:
+           name = self.book.get_parent().get_next_name(name+'_')
+           ret=dialog.message(self,
+                          'Do you rename Book to '+name+ '?',
+                          'DWscope file was imported',
+                          2, icon=wx.ICON_QUESTION)
+           if ret  == 'ok':
+               self.book.rename(name)
+        self.make_event_dict()
+        ifigure.events.SendChangedEvent(self.book, w=self)
+
+    def onApply(self, evt):
+        self._handle_apply_abort()
+        evt.Skip()
+
+    def onApplyN(self, evt):
+        self._handle_apply_abort(allshot=False)
+        evt.Skip()
+
+    def onApplyR(self, evt):
+        menu = wx.Menu()
+        f1=menu.Append(wx.ID_ANY, 'Update All', 'update all shots')
+        self.Bind(wx.EVT_MENU, self.onApply, f1)
+        f2=menu.Append(wx.ID_ANY, 'Update New Shots', '')
+        self.Bind(wx.EVT_MENU, self.onApplyN, f2)
+        evt.GetEventObject().PopupMenu(menu, evt.GetPosition())
+        menu.Destroy()
+        evt.Skip()
+
+    def onShot(self, evt):
+        print 'text enter'
+        self._handle_apply_abort(allshot=False)
+
+    def eval_mdsdata_done(self, status=0):
+        self._mode = 'apply'            
+        self._mds_exit_status = status
+        self.bt_apply.SetLabel('Apply')
+        self.bt_apply.Refresh()
+
+    def _handle_apply_abort(self, allshot = True, figaxes='all', do_apply = False):
+        if self._mode == 'apply' or do_apply:
+            self.bt_apply.SetLabel('Abort')
+            self.bt_apply.Refresh()
+#        self.erase_mdsdata()
+            self._mode = 'abort'
+            if (len(self.txt_shot._key_history_st1) == 0 or
+                self.txt_shot._key_history_st1[-1] !=
+                str(self.txt_shot.GetValue())):
+                self.txt_shot._key_history_st1.append(str(self.txt_shot.GetValue()))
+            try:
+               self.eval_mdsdata(allshot, figaxes=figaxes)
+            except:
+               dprint1('Error happend while evaluating mdsplus data')
+               dprint1(traceback.format_exc())
+               self.eval_mdsdata_done(status=-1)
+        else:
+            dprint1('abort requested')
+            self.aqueue.put(True)
+            while not self.mds_thread._finished:
+                time.sleep(0.1)
+#                wx.Yield()
+
+    def onSetting(self, evt):
+        from ifigure.mdsplus.dlg_setting import MDS_setting
+
+        fig_page=self.get_page()        
+        value =  MDS_setting(self, self.scope_setting,
+                             self.book.dwglobal,
+                             self.book.getvar('mdsplus_server'),
+                             self.book.getvar('mdsscript_main'),
+                             self.book.getvar('mdsscope_autogrid'))
+        self.book.setvar('mdsplus_server',
+                          str(value[1][4][0]))
+        self.book.setvar('mdsscript_main',
+                          value[1][5][6])
+        self.book.setvar('mdsscope_autogrid',
+                          value[1][5][7])
+        self.book.dwglobal.setvar('mpanalysis', self.mpanalysis)
+      
+        if self.book.dwglobal.getvar('use_shot_global'):
+           g_name = self.book.dwglobal.getvar('shot_global')
+           if g_name.strip() == '':
+               g_name = 'common_vars'           
+               self.book.dwglobal.setvar('shot_global', g_name)
+           for name in self._get_common_var_names():
+               flag = False
+               if not self.book.has_child(name):
+                   param = FigMdsData()
+                   self.book.add_child(name, param) 
+                   flag = True
+           if flag: ifigure.events.SendChangedEvent(self.book, w=self)
+        self.update_commonvar_menu()
+    #
+    #   ifigure event handler
+    # 
+    def onTD_ShowPage(self, evt):
+        if not evt.BookViewerFrame_Processed:
+           super(MDSScope, self).onTD_ShowPage(evt)
+           evt.BookViewerFrame_Processed = True
+           evt.SetEventObject(self)
+        evt.Skip()  
+
+    def viewer_canvasmenu(self):
+        if self.canvas.axes_selection is None: return []
+        if self.canvas.axes_selection() is None: return []
+        m1  = [('Add MDS Session',  self.onAddFigMds, None),]
+
+        m2 = []
+        figmdss = [child for name, child in self.canvas.axes_selection().figobj.get_children()
+                   if isinstance(child, FigMds)]
+        if len(figmdss) > 1:
+            m2.append(('+Edit Session', None, None))
+            tt = ''
+        else:
+            tt = 'Edit Session : '
+      
+        for child in figmdss:
+            def f(evt, figmds=child, viewer=self):
+                self.canvas.unselect_all()
+                if len(figmds._artists) != 0:
+                     self.canvas.add_selection(figmds._artists[0])
+                evt.SetEventObject(viewer)
+#                ifigure.events.SendSelectionEvent(figmds, viewer.canvas,
+#                                                  viewer.canvas.selection
+                sel = [weakref.ref(figmds._artists[0])]
+                ifigure.events.SendSelectionEvent(figmds, self, sel)
+                figmds.onDataSetting(evt)
+            m2.append(( tt + child.name, f, None))
+        if len(figmdss) > 1:
+            m2.append(('!', None, None))
+
+        m3  = [('Update This Panel',  self.onUpdatePanel, None),
+              ('---', None, None),]
+        return m2 + m1 + m3
+
+    def extra_canvas_range_menu(self):
+        if self.canvas.axes_selection() is None:
+#            return [('Use default X (all)', self.onDefaultXAll, None),
+#                   ('Use default Y (all)', self.onDefaultYAll, None),]
+            return [('Reset all scale', self.onDefaultXYAll, None),]
+        else:
+#            return [('Use default X', self.onDefaultX, None),
+#                    ('Use default Y', self.onDefaultY, None),
+#                    ('Use default X (all)', self.onDefaultXAll, None),
+#                    ('Use default Y (all)', self.onDefaultYAll, None),]
+            return [('Reset scale', self.onDefaultXY, None),
+                    ('Reset all scale', self.onDefaultXYAll, None),]
+
+
+    def _find_first_figmds(self, axes = None):
+        if axes is None:
+           if self.canvas.axes_selection is None: return None, None
+           if self.canvas.axes_selection() is None: return None, None
+           axes = self.canvas.axes_selection().figobj
+        for name, child in axes.get_children():
+            if isinstance(child, FigMds): return child, axes
+        return None, None        
+
+    def _apply_default_range(self, axes, name, range):
+        v  = axes.get_axrangeparam(axes._artists[0], name)
+        v[1] = False
+        v[2] = range
+        requests = {axes:[(name, v)]}
+        self.canvas.send_range_action(requests, 
+                        menu_name = 'use default '+name+'range')
+    def _get_page_default_range(self):
+        try:
+           x = [float(self.book.dwglobal.getvar('xmin')),
+                float(self.book.dwglobal.getvar('xmax'))]
+        except:
+           x = [None, None]
+        try:
+           y = [float(self.book.dwglobal.getvar('ymin')),
+                float(self.book.dwglobal.getvar('ymax'))]
+        except:
+           y = [None, None]
+        return x, y
+    def onDefaultX(self, evt):
+        defx, defy = self._get_page_default_range()
+        figmds, axes = self._find_first_figmds()
+        if figmds is None: return 
+        range = figmds._default_xyrange['value'][0]
+        if range[0] is None: range = defx
+        if range[0] is None: return
+        self._apply_default_range(axes, 'x', range)
+
+    def onDefaultY(self, evt):
+        defx, defy = self._get_page_default_range()
+        figmds, axes = self._find_first_figmds()
+        if figmds is None: return 
+        range = figmds._default_xyrange['value'][1]
+        if range[0] is None: range = defy
+        if range[0] is None: return
+        self._apply_default_range(axes, 'y', range)
+
+    def onDefaultXY(self, evt):
+        defx, defy = self._get_page_default_range()
+        figmds, axes = self._find_first_figmds()
+        if figmds is None: return 
+        xrange = figmds._default_xyrange['value'][0]
+        yrange = figmds._default_xyrange['value'][1]
+        if xrange[0] is None: xrange = defx
+        if yrange[1] is None: yrange = defy
+        r = []
+        if xrange[0] is not None: 
+           v  = axes.get_axrangeparam(axes._artists[0], 'x')
+           v[1] = False
+           v[2] = xrange
+           r.append(('x', v))
+        if xrange[1] is not None: 
+           v  = axes.get_axrangeparam(axes._artists[0], 'y')
+           v[1] = False
+           v[2] = yrange
+           r.append(('y', v))
+        if len(r) == 0: return 
+        requests = {axes:r}
+        self.canvas.send_range_action(requests, 
+                        menu_name = 'use default range')
+
+    def onDefaultXAll(self, evt):
+        defx, defy = self._get_page_default_range()
+        figpage = self.canvas._figure.figobj 
+        requests = {}
+        for axes in figpage.walk_axes():
+             figmds, axes = self._find_first_figmds(axes = axes)
+             range = figmds._default_xyrange['value'][0]
+             if range[0] is None: range = defx
+             if range[0] is None: continue
+             v  = axes.get_axrangeparam(axes._artists[0], 'x')
+             v[1] = False
+             v[2] = range
+             requests[axes] = [('x', v)]
+        self.canvas.send_range_action(requests, 
+                        menu_name = 'apply defaul xranges')
+
+    def onDefaultYAll(self, evt):
+        defx, defy = self._get_page_default_range()
+        figpage = self.canvas._figure.figobj 
+        requests = {}
+        for axes in figpage.walk_axes():
+             figmds, axes = self._find_first_figmds(axes = axes)
+             range = figmds._default_xyrange['value'][1]
+             if range[0] is None: range = defy
+             if range[0] is None: continue
+             v  = axes.get_axrangeparam(axes._artists[0], 'y')
+             v[1] = False
+             v[2] = range
+             requests[axes] = [('y', v)]
+        self.canvas.send_range_action(requests, 
+                        menu_name = 'apply default xyanges')
+    def onDefaultXYAll(self, evt):
+        defx, defy = self._get_page_default_range()
+        figpage = self.canvas._figure.figobj 
+        requests = {}
+        for axes in figpage.walk_axes():
+             figmds, axes = self._find_first_figmds(axes = axes)
+             xrange = figmds._default_xyrange['value'][0]
+             yrange = figmds._default_xyrange['value'][1]
+             if xrange[0] is None: xrange = defx
+             if yrange[0] is None: yrange = defy
+
+             r = []
+             for name, value in (('x', xrange), ('y', yrange)):
+                if value[0] is None: continue
+                v  = axes.get_axrangeparam(axes._artists[0], name)
+                v[1] = False
+                v[2] = value
+                r.append((name, v))
+             if len(r) != 0:
+                requests[axes] = r
+        self.canvas.send_range_action(requests, 
+                        menu_name = 'apply default xyanges')
+
+    def onUpdatePanel(self, evt):
+        ax = self.canvas.axes_selection()
+        if ax is None: return
+        self._handle_apply_abort(allshot=True, figaxes=[ax.figobj])
+        evt.Skip()
+
+    def onAddFigMds(self, evt):
+        if self.canvas.axes_selection is None: return []
+        if self.canvas.axes_selection() is None: return []
+
+        ax = self.canvas.axes_selection()
+        obj=FigMds()
+        name=ax.figobj.get_next_name(obj.get_namebase())        
+        ax.figobj.add_child(name, obj)
+        obj.realize()
+        ifigure.events.SendPVAddFigobj(ax.figobj, useProcessEvent=True)
+        ifigure.events.SendChangedEvent(ax.figobj, w = self.canvas, useProcessEvent=True)
+        self.canvas.unselect_all()
+        if len(obj._artists) != 0:
+            self.canvas.add_selection(obj._artists[0])
+#                     figmds.onDataSetting(evt)
+            ifigure.events.SendSelectionEvent(obj, self.canvas,
+                                              self.canvas.selection)
+        obj.onDataSetting(evt)
+#        if len(obj._artists) != 0:
+#            self.canvas.add_selection(obj._artists[0])
+#            ifigure.events.SendSelectionEvent(obj, self.canvas,
+#                                              self.canvas.selection)
+
+    def set_window_title(self):
+        super(MDSScope, self).set_window_title()
+        if self.book is None: return
+        title=self.GetTitle()
+        name = self.book.getvar('original_filename')
+        if name is None: 
+           name = 'untitled'
+        else:
+           name = os.path.basename(name)
+        title = name + ': ' + title
+        self.SetTitle(title)        
+
+    def onGenerateMultipage(self, evt):
+        from ifigure.utils.edit_list import DialogEditList
+
+        txt = "on" if self.mpanalysis else "off"
+        txt2 = '1' if not self._mpanalysis_mode else str(self.book.num_page())
+        list6 = [["Use multipage analysis", 
+                  "on", 1, {"values":["on", "off"]}],
+#                 ["Duplicate from", str(self.ipage), 0, None],
+                 ["Number of pages", txt2, 0, None],
+                 [None, self._mpanalysis_mode,  3, 
+                        {"text":"Erase exiting pagesd",
+                         "noindent":None }],]
+
+        value = DialogEditList(list6, modal = True, 
+                     style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
+                     tip = None, 
+                     parent=None,)
+
+        if value[0] is True:
+            self.mpanalysis  = (str(value[1][0]) == "on")
+            self.book.dwglobal.setvar('mpanalysis', self.mpanalysis)
+            ref_ipage = self.ipage
+            nump = int(value[1][1])
+        else:
+            return 
+        if nump == 0: 
+            print 'number of pages should be greater than 1'
+            return
+        self.canvas.unselect_all()
+        self.canvasaxes_selection=cbook.WeakNone()
+        p = self.get_page(ref_ipage)
+
+        from ifigure.ifigure_config import rcdir
+        fname = os.path.join(rcdir, 'mdsscope_'+str(os.getpid())+'_tmp.data')
+        self._mpanalysis_mode =  value[1][2]
+
+        pgb = dialog.progressbar(self,
+                    'generating all page data.', 'Please wait...',
+                    nump)
+        pgb.Update(0)
+        if value[1][2]: 
+            if p.hasvar('group_id'):
+               gid = p.getvar('group_id')
+            else:
+                gid = self._new_grp_id()
+            d = self._set_save_mode(1)
+            p.save_subtree(fname, compress=False)
+            self._set_save_mode(0, d)
+            pages = [child for child in self.book.walk_page()]
+            for page in pages:
+                page.destroy()
+            for i in range(nump):
+                obj = self.book.load_subtree(fname, compress=False)
+                if obj.name != 'page'+str(i+1):
+                   obj.rename('page'+str(i+1))
+                #obj.realize()
+                obj.setvar('group_id', gid)
+                obj._status = 'group '+str(gid+1)
+                pgb.Update(i)
+
+        else:
+            for child in self.book.walk_page():
+                 child.rename(child.name + 'tmp')
+            d = self._set_save_mode(1)
+            p.save_subtree(fname, compress=False)
+            self._set_save_mode(0, d)
+            if p.hasvar('group_id'):
+               gid = p.getvar('group_id')
+               pages = [child for child in self.book.walk_page()]
+               for page in pages:
+                   if (gid == page.getvar('group_id') and
+                       page is not p):
+                       page.destroy()
+            else:
+                gid = self._new_grp_id()
+                p.setvar('group_id', gid)
+                p._status = 'group '+str(gid+1)
+            ip = p.get_ichild()
+            for i in range(nump)-1:
+               obj = self.book.load_subtree(fname, compress=False)
+               obj.rename(obj.name + 'tmptmp')
+               obj.setvar('group_id', gid)
+               obj._status = 'group '+str(gid+1)
+               ip2 = obj.get_ichild()
+               self.book.move_child(ip2, ip+1)
+               pgb.Update(i)
+            for i, child in enumerate(self.book.walk_page()):
+               child.rename('page'+str(i+1))
+        pgb.Destroy()
+        os.remove(fname)
+        for ipage, p in enumerate(self.book.walk_page()):
+           self.set_index_col_row_page(ipage)
+
+        ipage = self.book.i_page(obj)
+#        self.show_page(ipage)
+        self.show_page(0)
+        ifigure.events.SendChangedEvent(self.book, w = self.canvas)
+#        ifigure.events.SendShowPageEvent(obj, w=self.canvas)
+
+    def _new_grp_id(self):
+        id = [child.getvar('group_id') for child in 
+                    self.book.walk_page() if child.hasvar('group_id')]
+        id = [-1] + id
+        return numpy.nanmax(id)+1
+
+    def onCommonVarEditMenu(self, evt, label):
+        evt.SetEventObject(self.canvas)
+#        print label
+        g = self.book.get_child(name = label)
+#        print g
+        g.onDataSetting(evt)
+
+    def onExportBook(self, evt):
+        self.onSaveBook(evt)
+    def onExportBookAs(self, evt):
+        self.onSaveBookAs(evt)
+    def onExportBook1(self, evt):
+        d = self._set_save_mode(1)
+        self.onSaveBook(evt)
+        self._set_save_mode(0, d)
+    def onExportBookAs1(self, evt):
+        d = self._set_save_mode(1)
+        self.onSaveBookAs(evt)
+        self._set_save_mode(0, d)
+    def onWindowClose(self, evt = None):
+        from ifigure.ifigure_config import iFigureConfig
+
+        globals()['scope_count'] = globals()['scope_count'] - 1
+        if globals()['scope_count'] == 0:
+            lock.acquire() 
+            if  self.mds_thread is not None:
+                self.queue.put(message('stop', None))
+                self.mds_thread.join()
+#                while self.mds_thread.isAlive():
+#                    time.sleep(0.1)
+#                    wx.GetApp().Yield(True)
+#                    dprint1('waiting ...')
+                self.mds_thread = None
+                globals()['mds_thread'] = None
+            lock.release() 
+            from ifigure.mdsplus.event_listener import stop_listener
+            stop_listener()
+#            print 'thread should have stopped'
+
+#        lock.release()
+        p = SettingParser()
+#        p.write_setting('mdsplus.connection_setting', 
+#                         self.connection_setting)
+        p.write_setting('mdsplus.scope_setting', 
+                         self.scope_setting)
+
+        #### below is the same as standard book viewer
+
+        bk = self.book
+        self.close_book()
+        ifigure.events.SendCloseBookEvent(bk, w=self)
+
+        val = iFigureConfig().setting['delbook_on_windowclose']
+        if ((val == 1 and bk is not None and self._del_book_from_proj == 0) or
+            (self._del_book_from_proj == 1 and bk is not None)):
+            ifigure.events.SendPVDeleteFigobj(bk)
+
+        if evt is not None:
+            evt.Skip()
+
+    def onPaste(self, e):
+        ret = super(MDSScope, self).onPaste(e)
+        for name in ret:
+            obj = self.book.find_by_full_path(name)
+            if obj.hasp('loaded_dwglobal'):
+                 self.do_global_copy(obj)
+
+    def do_global_copy(self, obj):
+        param =  obj.getp('loaded_dwglobal')
+        d = param['globalsets']
+        d2 = self.book.dwglobal.getvar('globalsets')
+        for key in d:
+           if d[key] == d2[key]: break
+        else:
+           return
+        ret=dialog.message(None,
+                          'Pasted object has different global setting.\n Do you overwrite the existing setting?\n',
+                          'Pasting MDSplus object... ',
+                           2, icon=wx.ICON_QUESTION)
+        if ret  == 'ok':
+             self.book.dwglobal.setvar('globalsets', d)
+
+    def onFullScreen(self, evt=None, value=True):
+        '''
+        Full Screen mode in MDSplus
+           1) show tool palette
+           2) does not use spacer (aspect ratio is not preserved)
+        '''
+        if value:
+             if self.isPropShown():
+                 self.toggle_property()
+             xd, yd = wx.GetDisplaySize()
+             xc, yc = self.canvas.canvas.bitmap.GetSize()
+             ratio = min([float(xd)/float(xc), float(yd)/float(yc)])
+#             w = None
+#             h = None
+             for p in self.book.walk_page():
+                 p.set_figure_dpi(long(p.getp('dpi')*ratio))
+#             self.canvas.show_spacer(w=0, h=0)
+#             self.canvas.full_screen(True)
+             self.ShowFullScreen(True)
+             self.canvas.turn_on_key_press()
+        else:
+             for p in self.book.walk_page():
+                 p.set_figure_dpi(p.getp('dpi'))
+#             self.canvas.hide_spacer()
+#             self.canvas.full_screen(False)
+             self.canvas.turn_off_key_press()
+             self.ShowFullScreen(False)        
+
+    def get_globals_for_figmds(self, shot):
+        vars = {}
+        if not self.book.dwglobal.getvar('use_shot_global'): return vars
+        for n in self._get_common_var_names():
+            obj = self.book.get_child(name = n)
+            for name, child in obj.get_children():
+                if child.getvar('shot') == shot:
+                    data = child.getvar('global_data')
+                    for key in data:
+                       vars[key] = data[key]
+                    break
+        return vars
+    def onMDSEvent(self, e):
+
+        txt = self._run_eval_mdsshot()
+        if txt.find('c') == -1: 
+           return
+        print 'MDS event', e.mdsevent_name
+        if e.mdsevent_name in self.event_dict:
+            self._handle_apply_abort(allshot=True, 
+                 figaxes = [r() for r in self.event_dict[e.mdsevent_name]],
+                 do_apply = True)
+
+    def set_book_scope_param(self):
+        w = self.txt_shot
+        v = (w.GetValue(),
+             w._key_history_st1,
+             w._key_history_st2,)
+        self.book._scope_param = v
+
+    def use_book_scope_param(self): 
+        if hasattr(self.book, '_scope_param'):
+           param = self.book._scope_param 
+           w = self.txt_shot           
+           w.SetValue(param[0])
+           w._key_history_st1.extend(param[1])
+           w._key_history_st2.extend(param[2])
+ 
+    def _get_common_var_names(self):
+        g_name = self.book.dwglobal.getvar('shot_global')
+        return [name.strip() for name in g_name.split(',')]
+
+    def _set_save_mode(self, mode, ret=None):
+        return self.book.set_compact_savemode(mode, ret=ret)
+
+    def _start_mds_threads(self):
+        if globals()['mds_thread'] is None:
+            lock.acquire()
+            self.queue = Queue.Queue()   
+            self.aqueue = Queue.Queue()   
+            globals()['mds_thread'] = SessionRunner(self.queue, self.aqueue)
+            self.mds_thread = globals()['mds_thread']
+            self.mds_thread.start()
+            lock.release()
+            from ifigure.mdsplus.event_listener import launch_listener
+            launch_listener()
+        else:
+            self.queue = globals()['mds_thread'].queue
+            self.aqueue = globals()['mds_thread'].aqueue
+            self.mds_thread = globals()['mds_thread']
+#        ifigure.events.SendThreadStartEvent(self.book, w=self, thread=self.mds_thread)
+    
+
+    def _run_eval_mdsshot(self):
+        '''
+        pre-process shot number field.
+        if it starts from '='. do eval
+        if it containes 'c', get the late shot number
+        then split it, and return
+        '''
+        txt = str(self.txt_shot.GetValue())
+        self.book.dwglobal.setvar('shot', txt)
+        from numpy import linspace
+
+        if txt.startswith('='):
+           try:
+               txt = eval(txt[1:], globals(), {'linspace': linspace})
+           except:
+               print 'Failed to evaluate string', txt[1:]
+               print traceback.format_exc()
+               raise
+        return txt
+    @at_wxthread
+    def SetShotNumber(self, number):
+        self.txt_shot.SetValue(str(number))
+    @at_wxthread
+    def LoadData(self, allshot = True, figaxes='all', do_apply = True):
+        self._mds_exit_status = 1
+        self._handle_apply_abort(allshot=allshot, figaxes=figaxes, do_apply=do_apply)
+#        if wait:
+#            while self._mds_exit_status == 1:
+#                time.sleep(1)
+              
+
+
+
+
+

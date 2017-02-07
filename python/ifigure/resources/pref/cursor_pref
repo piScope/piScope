@@ -1,0 +1,8 @@
+version = 1.0
+1dcolor1 = 'red'
+1dcolor2 = 'blue'
+1dalpha =  0.5
+1dthick = '1.0'           
+2dalpha =  0.7
+2dcolor = 'grey'
+format =  '{:.2e}'

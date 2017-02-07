@@ -1,0 +1,189 @@
+Scope.geometry: 1479x928+134+148
+Scope.title: "LH Scope"
+Scope.icon_name: "Scope"
+Scope.title_event: 
+Scope.print_file: dwscope.ps
+Scope.print_event: 
+Scope.print_portrait: 0
+Scope.print_window_title: 0
+Scope.printer: lp
+Scope.font: -Adobe-New Century Schoolbook-Medium-R-Normal--12-120-75-75-P-70-ISO8859-1
+Scope.columns: 4
+Scope.global_1_1.shot: current_shot('cmod')
+Scope.global_1_1.global_defaults: -12545
+Scope.rows_in_column_1: 6
+
+Scope.plot_1_1.height: 155
+Scope.plot_1_1.experiment: electrons
+Scope.plot_1_1.x: _t_nl=dim_of(_nl)
+Scope.plot_1_1.y: _nl=\top.tci.results:nl_04
+Scope.plot_1_1.event: tci_write
+Scope.plot_1_1.title: "nl_04"//$shot
+Scope.plot_1_1.global_defaults: -199809
+
+Scope.plot_2_1.height: 156
+Scope.plot_2_1.experiment: electrons
+Scope.plot_2_1.x: _t_nt=dim_of(_nt)
+Scope.plot_2_1.y: _nt=\thom_midpln:ne_t
+Scope.plot_2_1.event: yag_temps_ready
+Scope.plot_2_1.title: "TS midpln Ne"//$shot
+Scope.plot_2_1.label: NE_T
+Scope.plot_2_1.global_defaults: -724097
+
+Scope.plot_3_1.height: 155
+Scope.plot_3_1.experiment: electrons
+Scope.plot_3_1.y: \thom_midpln:te_t
+Scope.plot_3_1.event: YAG_new_READY
+Scope.plot_3_1.title: "Yag Mid Te"//$shot
+Scope.plot_3_1.global_defaults: -198785
+
+Scope.plot_4_1.height: 156
+Scope.plot_4_1.experiment: EDGE
+Scope.plot_4_1.default_node: \EDGE::top.probes.lh.top.p0
+Scope.plot_4_1.y: :Ne_Slow
+Scope.plot_4_1.ymin: 0
+Scope.plot_4_1.ymax: 0.5e19
+Scope.plot_4_1.title: :name//" Density"//$shot
+Scope.plot_4_1.global_defaults: -117377
+
+Scope.plot_5_1.height: 155
+Scope.plot_5_1.experiment: EDGE
+Scope.plot_5_1.default_node: \EDGE::top.probes.lh.mid.p0
+Scope.plot_5_1.y: :Ne_Slow
+Scope.plot_5_1.ymin: 0
+Scope.plot_5_1.ymax: 0.5e19
+Scope.plot_5_1.title: :name//" Density"//$shot
+Scope.plot_5_1.global_defaults: -117377
+
+Scope.plot_6_1.height: 81
+Scope.plot_6_1.experiment: EDGE
+Scope.plot_6_1.default_node: \EDGE::top.probes.lh.bot.p0
+Scope.plot_6_1.y: :Ne_Slow
+Scope.plot_6_1.ymin: 0
+Scope.plot_6_1.ymax: 0.5e19
+Scope.plot_6_1.title: :name//" Density"//$shot
+Scope.plot_6_1.global_defaults: -117377
+Scope.rows_in_column_2: 5
+
+Scope.plot_1_2.height: 187
+Scope.plot_1_2.experiment: mhd
+Scope.plot_1_2.y: \magnetics::ip*1.e-6
+Scope.plot_1_2.event: mag_traq
+Scope.plot_1_2.title: "Ip [MA] "//$shot
+Scope.plot_1_2.global_defaults: -198785
+
+Scope.plot_2_2.height: 188
+Scope.plot_2_2.experiment: mhd
+Scope.plot_2_2.default_node: \magnetics::top
+Scope.plot_2_2.x: dim_of(_v)
+Scope.plot_2_2.y: _ns=53,|||_v=\analysis::top.mflux:v0,_vs=smooth1d(_v,_ns)
+Scope.plot_2_2.event: anal_data
+Scope.plot_2_2.title: "Loop Voltage"//$shot
+Scope.plot_2_2.label: Vloop
+Scope.plot_2_2.global_defaults: -724609
+
+Scope.plot_3_2.height: 187
+Scope.plot_3_2.experiment: magnetics
+Scope.plot_3_2.y: \MAGNETICS::BTOR
+Scope.plot_3_2.xmin: 0
+Scope.plot_3_2.xmax: 2
+Scope.plot_3_2.event: yag_temps_ready
+Scope.plot_3_2.title: "B_tor"//$shot
+Scope.plot_3_2.label: BTOR
+Scope.plot_3_2.global_defaults: -784513
+
+Scope.plot_4_2.height: 188
+Scope.plot_4_2.experiment: spectroscopy
+Scope.plot_4_2.y: \z_ave
+Scope.plot_4_2.xmin: -.05
+Scope.plot_4_2.xmax: 1.05
+Scope.plot_4_2.ymin: 0
+Scope.plot_4_2.ymax: 5.
+Scope.plot_4_2.event: zeff_done
+Scope.plot_4_2.title: "Approx Zeff"//$shot
+Scope.plot_4_2.global_defaults: -260225
+
+Scope.plot_5_2.height: 110
+Scope.plot_5_2.experiment: electrons
+Scope.plot_5_2.default_node: \electrons::top.gpc_2
+Scope.plot_5_2.y: \ELECTRONS::GPC2_TE[*,8]
+Scope.plot_5_2.title: "ECE CH9"//$shot
+Scope.plot_5_2.global_defaults: -330369
+Scope.rows_in_column_3: 5
+
+Scope.plot_1_3.height: 187
+Scope.plot_1_3.experiment: rf
+Scope.plot_1_3.y: \rf::rf_power_net
+Scope.plot_1_3.event: rf_power_done
+Scope.plot_1_3.title: "RF Net Power"//$shot
+Scope.plot_1_3.global_defaults: -198785
+
+Scope.plot_2_3.height: 188
+Scope.plot_2_3.experiment: analysis
+Scope.plot_2_3.y: -deriv(\ANALYSIS::EFIT_AEQDSK:SIBDRY)*$2pi
+Scope.plot_2_3.event: twopi_camac_done
+Scope.plot_2_3.title: "Vsurf"//$shot
+Scope.plot_2_3.label: SIBDRY)*$2pi
+Scope.plot_2_3.global_defaults: -198785
+
+Scope.plot_3_3.height: 187
+Scope.plot_3_3.experiment: spectroscopy
+Scope.plot_3_3.y: _raw=\spectroscopy::top.z_meter:neuts_hards/1e12
+Scope.plot_3_3.event: twopi_camac_done
+Scope.plot_3_3.title: "Neuts/Hards (/10^12)"//$shot
+Scope.plot_3_3.label: SIBDRY)*$2pi
+Scope.plot_3_3.global_defaults: -198785
+
+Scope.plot_4_3.height: 188
+Scope.plot_4_3.experiment: particles
+Scope.plot_4_3.y: \PARTICLES::TOP.NEUTRONS.HE_3_BANK.RESULTS:HE3_NRATE
+Scope.plot_4_3.title: "Neutron Rate (n/s)"//$shot
+Scope.plot_4_3.global_defaults: -67713
+
+Scope.plot_5_3.height: 110
+Scope.plot_5_3.experiment: LH
+Scope.plot_5_3.x: dim_of(\LH::TOP.HARDWARE.CPS.MAP_CPS_RAW:FINT01)
+Scope.plot_5_3.y: _fint01=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT01,|||_fint02=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT02,|||_fint03=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT03,|||_fint04=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT04,|||_fint05=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT05,|||_fint06=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT06,|||_fint07=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT07,|||_fint08=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT08,|||_fint09=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT09,|||_fint10=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT10,|||_fint11=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT11,|||_fint12=\LH::TOP.HARDWARE.CPS.MAP_CPS_POW:FINT12,|||_fintsub=_fint01+_fint02+_fint03+_fint04+_fint05+_fint06,|||_fintsub+_fint07+_fint08+_fint09+_fint10+_fint11+_fint12
+Scope.plot_5_3.event: lhpostdone
+Scope.plot_5_3.title: "FINT_total [kW]"//$shot
+Scope.plot_5_3.global_defaults: -199809
+Scope.rows_in_column_4: 5
+
+Scope.plot_1_4.height: 187
+Scope.plot_1_4.experiment: LH
+Scope.plot_1_4.x: dim_of(\LH::TOP.RESULTS:NETPOW)
+Scope.plot_1_4.y: \LH::TOP.RESULTS:NETPOW
+Scope.plot_1_4.event: lhpostdone
+Scope.plot_1_4.title: "LH Net Power [kW]"//$shot
+Scope.plot_1_4.global_defaults: -199809
+
+Scope.plot_2_4.height: 188
+Scope.plot_2_4.experiment: LH
+Scope.plot_2_4.x: dim_of(\LH::TOP.RESULTS:REFCO)
+Scope.plot_2_4.y: \LH::TOP.RESULTS:REFCO
+Scope.plot_2_4.event: lhpostdone
+Scope.plot_2_4.title: "LH Ref. Coef."//$shot
+Scope.plot_2_4.global_defaults: -199809
+
+Scope.plot_3_4.height: 187
+Scope.plot_3_4.experiment: LH
+Scope.plot_3_4.y: \LH::TOP.RESULTS:PHASING
+Scope.plot_3_4.title: "LH Phasing [deg]" //$shot
+Scope.plot_3_4.global_defaults: -68225
+
+Scope.plot_4_4.height: 188
+Scope.plot_4_4.experiment: hxrlocal
+Scope.plot_4_4.default_node: \HXRLOCAL::TOP.HARDWARE:ACQ216_1:INPUT_16
+Scope.plot_4_4.y: \HXRLOCAL::TOP.HARDWARE:ACQ216_1:_INPUT_16
+Scope.plot_4_4.title: "Ch 16 HXR Raw" //$shot
+Scope.plot_4_4.global_defaults: -68225
+
+Scope.plot_5_4.height: 110
+Scope.plot_5_4.experiment: hxrlocal
+Scope.plot_5_4.default_node: \HXRLOCAL::TOP.HARDWARE:ACQ216_2:INPUT_01
+Scope.plot_5_4.y: \HXRLOCAL::TOP.HARDWARE:ACQ216_2:_INPUT_01
+Scope.plot_5_4.title: "Ch 17 HXR Raw" //$shot
+Scope.plot_5_4.global_defaults: -68225
+Scope.vpane_1: 250
+Scope.vpane_2: 500
+Scope.vpane_3: 750

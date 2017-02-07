@@ -1,0 +1,7 @@
+version = 1.3
+default_title = 'mail from piscope'
+default_message = 'file attached'
+default_to = ''
+server = 'mail1.psfc.mit.edu'
+use_ssl = "on"
+ssl_port = 465

@@ -1,0 +1,6 @@
+version = 1.65
+usr_addon_dir = '~/piescope_scripts'
+root_work_directory = '\'default\''
+wikihelp_front = 'http://piscope.psfc.mit.edu/index.php/'
+wikihelp_base  = 'http://www.psfc.mit.edu/research/alcator/cmodwiki/index.php/'
+delbook_on_windowclose = 1

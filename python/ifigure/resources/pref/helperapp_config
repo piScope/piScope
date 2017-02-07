@@ -1,0 +1,9 @@
+version = 2.2
+ext = 'pdf,ps'
+pdf = 'acroread {0} &'
+ps  = 'gv {0} &'
+editor  = '{bin}/start_emacs.sh {0} &'
+gs = '/usr/bin/gs'
+ps2pdf = '/usr/bin/ps2pdf'
+convert = '/usr/bin/convert'
+use_editor = False
