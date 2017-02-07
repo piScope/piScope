@@ -8,7 +8,13 @@ Goal of piScope includes
    * To build a data browsing (scope) application for MDSplus data system (www.mdsplus.org)
    * To provide lego blocks for gluing up large simulation codes 
      by python
-   * built on wxPython
+
+Requirements
+   python 2.7
+   wxPython 3.0.1
+   matplotlib 1.5 (2.0 untested)
+   PyOpenGL
+   ... and others.
 
 Wiki page : http://piscope.psfc.mit.edu/
 
