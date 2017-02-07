@@ -15,7 +15,7 @@ Directories:
 *  ../python/ifigure         core program
 *  ../python/ifigure/example examples
 *  ../bin/           scripts to run piScope
-*  ../example/       example data to look in piScope
+*  ../example/       example data to look in &pi;Scope
 
 Copyright: 
 *  Copyright (c) 2012-2017 S. Shiraiwa  All rights reserved.
