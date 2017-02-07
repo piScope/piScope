@@ -109,6 +109,7 @@ class Axes3DMod(Axes3D):
         if self._gl_id_data is None: return False
         
         x0, y0, id_dict, im, im2 = self._gl_id_data
+        x, x0,  y, y0 = int(x), int(x0),  int(y), int(y0)        
         d = np.rint((im[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten())
         dd = (im2[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten()
         if len(dd) == 0: return False

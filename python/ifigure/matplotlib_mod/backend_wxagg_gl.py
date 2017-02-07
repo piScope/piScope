@@ -7,7 +7,6 @@ from matplotlib.backends.backend_wx import RendererWx
 from ifigure.utils.cbook import EraseBitMap 
 from operator import itemgetter
 
-from matplotlib._image import fromarray, frombyte
 import numpy as np
 import time, ctypes
 

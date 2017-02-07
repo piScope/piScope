@@ -37,7 +37,10 @@ from matplotlib.backends.backend_wx import RendererWx
 from ifigure.utils.cbook import EraseBitMap 
 from operator import itemgetter
 
-from matplotlib._image import fromarray, frombyte
+try:
+    from matplotlib._image import fromarray, frombyte
+except:
+    def frombyte(im, num): return im  #MPL2.0 accept numpy array directly
 import numpy as np
 import time, ctypes
 
