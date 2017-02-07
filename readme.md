@@ -10,11 +10,11 @@ Goal of piScope includes
      by python
 
 Requirements
-   python 2.7
-   wxPython 3.0.1
-   matplotlib 1.5 (2.0 untested)
-   PyOpenGL
-   ... and others.
+  *  python 2.7
+  *  wxPython 3.0.1
+  *  matplotlib 1.5 (2.0 untested)
+  *  PyOpenGL
+  *  ... and others.
 
 Wiki page : http://piscope.psfc.mit.edu/
 
