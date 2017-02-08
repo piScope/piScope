@@ -584,6 +584,7 @@ class BitmapButtons(wx.Panel):
             array[-2:,:,2]=0
             array[:,:2,2]=0
             array[:,-2:,2]=0
+
             image = wx.EmptyImage(h, w)
             image.SetData(array.tostring())
             bitmap2 = image.ConvertToBitmap()
@@ -1128,11 +1129,11 @@ class ColorMapButton(BitmapButtons):
         evt.Skip()
 
 
-class ColorMapButtonIDL(BitmapButtons):
+class ColorMapButtonExtra(BitmapButtons):
     def __init__(self, *args):
 
         from ifigure.ifigure_config import colormap_list
-        super(ColorMapButtonIDL, self).__init__(*args)
+        super(ColorMapButtonExtra, self).__init__(*args)
         self.Controls=[]
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
@@ -1192,8 +1193,8 @@ class ColorMap(wx.Panel):
 
 
 #        p2 = wx.Panel(self)
-        self.bt2 = ColorMapButtonIDL(self.nb)
-        self.nb.AddPage(self.bt2, 'IDL')
+        self.bt2 = ColorMapButtonExtra(self.nb)
+        self.nb.AddPage(self.bt2, 'Extra')
 
         self.cb = wx.CheckBox(self, wx.ID_ANY, 'reverse')
         s.Add(self.cb, 0, wx.ALL, 5)

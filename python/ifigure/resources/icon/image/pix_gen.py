@@ -1,8 +1,12 @@
+#
+#  a script to produce icon images
+#
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
 import base64
-
+from ifigure.ifigure_config import isMPL2
+import wx
 encode  = base64.urlsafe_b64encode
 
 ##################################################
@@ -150,7 +154,7 @@ for linewidth in linewidthlist:
 ##################################################
 
 dpi=72
-dpi2 = dpi
+dpi2 = dpi*5 if isMPL2 else dpi
 
 F=plt.figure(num=None,figsize=(0.4, 0.25), dpi=dpi, facecolor='w')
 ax = plt.subplot(111)
@@ -175,4 +179,10 @@ for plinestyle in plinestylelist:
   filename='plinestyle_'+encode(str(plinestyle))+'.png'
   plt.savefig(filename, dpi=dpi2, format='png', bbox_inches=bbox)
 
+  ### plt produces blured image on MPL2.0
+  if isMPL2:
+     im = wx.Image(filename)
+     w, h = im.GetSize()
+     im.Rescale(w/5, h/5).SaveFile(filename, wx.BITMAP_TYPE_PNG)
+  
 

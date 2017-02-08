@@ -1,3 +1,4 @@
+
 from matplotlib.artist import ArtistInspector
 from ifigure.utils.setting_parser import iFigureSettingParser as SP
 import re, os
@@ -5,6 +6,14 @@ from os.path import expanduser
 import traceback
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('ifiure_config')
+
+from distutils.version import LooseVersion
+import matplotlib
+isMPL2 = LooseVersion(matplotlib.__version__) >= LooseVersion("2.0")
+if isMPL2:
+   # let's use classic for now.
+   import matplotlib.pyplot
+   matplotlib.pyplot.style.use('classic')
 
 def artist_property_checker(obj, prop, values=None):
 #    print 'inspecting', obj, prop
@@ -198,7 +207,9 @@ obj = PathCollection(Path.unit_rectangle())
 plinestylelist, plinestyle_rlist = artist_property_checker(obj, 'linestyle')
 pedgecolorlist, pedgecolor_rlist = artist_property_checker(obj, 'edgecolor', values = 
                                                   "'"+"','".join(collist)+"'")
-
+if isMPL2: 
+   plinestylelist = plinestylelist[:4]
+   plinestyle_rlist = plinestyle_rlist[:4]
 
 def colormap_list():
    return colormaplist

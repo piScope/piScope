@@ -15,6 +15,7 @@
 #*******************************************  
 #     Copyright(c) 2012- S. Shiraiwa
 #*******************************************
+from ifigure.ifigure_config import isMPL2
 from ifigure.widgets.canvas.file_structure import *
 
 from ifigure.mto.treedict import TreeDict
@@ -1477,14 +1478,17 @@ class FigObj(TreeDict):
        plist=self.property_in_file()
        vals={}
        for p in plist:
+          p0 = p
+          if isMPL2 and p == 'axis_bgcolor': p = 'facecolor'
           if hasattr(a, 'get_'+p):
-             vals[p]= (getattr(a, 'get_'+p))()
+             vals[p0]= (getattr(a, 'get_'+p))()
           elif hasattr(a, p):
-             vals[p]= getattr(a, p)
+             vals[p0]= getattr(a, p)
        return vals
 
     def set_artist_property(self, a, vals):
        for key in vals.keys():
+          if isMPL2 and key == 'axis_bgcolor': key = 'facecolor'           
           if hasattr(a, 'set_'+key):
               (getattr(a, 'set_'+key))(vals[key])
           elif hasattr(a,  key):
