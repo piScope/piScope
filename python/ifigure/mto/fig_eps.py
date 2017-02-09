@@ -29,6 +29,9 @@
 #*******************************************  
 #     Copyright(c) 2012- PSFC, MIT      
 #*******************************************
+import six
+import weakref
+import traceback
 
 from ifigure.mto.fig_obj import FigObj
 from ifigure.mto.axis_user import XUser, YUser, CUser
@@ -63,6 +66,8 @@ def calc_newpos_from_anchor(p1, p2, dp, mode):
 from matplotlib.backends.backend_pdf import RendererPdf, PdfFile, Name, Op, pdfRepr
 from matplotlib.backends.backend_ps import RendererPS
 
+import matplotlib.backends.backend_ps
+unicode_file = 'unicode_literals' in dir(matplotlib.backends.backend_ps)
 
 eps_funcs = '\n'.join(['/BeginEPSF {',
                       '  /EPSFsave save def',
@@ -131,14 +136,15 @@ class PdfFile_plus(PdfFile):
 
     def pdfObject(self, pdf):
         """Return name of an pdf XObject representing the given pdf."""
-        pair = self.pdfs.get(pdf, None)
+        pair = self.pdfs.get(id(pdf), None)
         if pair is not None:
-            return pair[0]
+            return pair[1]
 
         name = Name('Pdf%d' % self.nextPdf)
         ob = self.reserveObject('pdf %d' % self.nextPdf)
         self.nextPdf += 1
-        self.pdfs[pdf] = (name, ob)
+        self.pdfs[id(pdf)] = (pdf, name, ob)
+        
         return name
 
     def pdfResources(self, d, pairs=None):
@@ -210,7 +216,7 @@ class PdfFile_plus(PdfFile):
             self.writePdfResources(pairs)
 
     def writePdfs(self):
-        for pdf, pair in self.pdfs.iteritems():
+        for pdf, name, ob in six.itervalues(self.pdfs):
             xobj = pdf.get_xobj()
             dd = {'Type': Name('XObject'), 'Subtype': Name('Form'),
                      'BBox': xobj.BBox, 'FormType':xobj.FormType,
@@ -219,7 +225,7 @@ class PdfFile_plus(PdfFile):
                resources, id_pairs = self.pdfResources(xobj.Resources)
                dd['Resources'] = resources
             self.beginStream(
-                    pair[1].id,
+                    ob.id,
                     self.reserveObject('length of pdf stream'),
                     dd)
             self.currentstream.compressobj = None
@@ -227,7 +233,50 @@ class PdfFile_plus(PdfFile):
             self.endStream()
             if '/Resources' in xobj:
                 self.writePdfResources(id_pairs)
+                
+class PdfFile_plus2(PdfFile_plus):
+    def close(self):
+        print('PdfFile plus2 is closing file')        
+        self.endStream()
+        # Write out the various deferred objects
+        self.writeFonts()
+        self.writeObject(self.alphaStateObject,
+                         dict([(val[0], val[1])
+                               for val in six.itervalues(self.alphaStates)]))
+        self.writeHatches()
+        self.writeGouraudTriangles()
+        xobjects = dict(x[1:] for x in six.itervalues(self._images))
+        for tup in six.itervalues(self.markers):
+            xobjects[tup[0]] = tup[1]
+        for name, value in six.iteritems(self.multi_byte_charprocs):
+            xobjects[name] = value
+        for name, path, trans, ob, join, cap, padding, filled, stroked \
+                in self.paths:
+            xobjects[name] = ob
+        for pdf, name, ob in six.itervalues(self.pdfs):            
+            xobjects[name] = ob
+        self.writeObject(self.XObjectObject, xobjects)
+        self.writeImages()
+        self.writeMarkers()
+        self.writePathCollectionTemplates()
+        self.writePdfs()        
+        self.writeObject(self.pagesObject,
+                         {'Type': Name('Pages'),
+                          'Kids': self.pageList,
+                          'Count': len(self.pageList)})
+        self.writeInfoDict()
 
+        # Finalize the file
+        self.writeXref()
+        self.writeTrailer()
+        if self.passed_in_file_object:
+            self.fh.flush()
+        elif self.original_file_like is not None:
+            self.original_file_like.write(self.fh.getvalue())
+            self.fh.close()
+        else:
+            self.fh.close()
+    
 
 class RendererPdf_plus(RendererPdf):
       def draw_pdf(self, gc, x, y, scale, o):
@@ -239,8 +288,13 @@ class RendererPdf_plus(RendererPdf):
                            pdfob, Op.use_xobject, Op.grestore)
 
 def pdffile_upgrade(pdffile):
-    if pdffile.__class__ != PdfFile_plus:
-       pdffile.__class__ = PdfFile_plus        
+    from ifigure.ifigure_config import isMPL2
+    if isMPL2:
+        cls = PdfFile_plus2
+    else:
+        cls = PdfFile_plus        
+    if pdffile.__class__ != cls:
+       pdffile.__class__ = cls
        pdffile.pdfs = {}
        pdffile.nextPdf = 1
 def mixedrenderer_upgrade(renderer):
@@ -269,11 +323,12 @@ class FigureImageV(FigureImage):
             gc.set_alpha(self.get_alpha())
 
             ocwd = os.getcwd()
-            os.chdir(os.path.dirname(self._pdf_file))
-            file = os.path.basename(self._pdf_file)
+            _pdffile = os.path.join(self._figobj().owndir(), self._pdf_file)
+            os.chdir(os.path.dirname(_pdffile))
+            file = os.path.basename(_pdffile)
             obj = o.load(file)
             os.chdir(ocwd)
-#            print obj
+            self._obj =  obj
             renderer.draw_pdf(gc, round(self.ox), 
                                   round(self.oy), 
                               self._image_scale, pdfobj(obj))
@@ -281,7 +336,14 @@ class FigureImageV(FigureImage):
         elif (hasattr(renderer, '_vector_renderer') and
             isinstance(renderer._vector_renderer, RendererPS)):
             gc = renderer.new_gc()
-            ps_write = renderer._vector_renderer._pswriter.write
+            ps_write0 = renderer._vector_renderer._pswriter.write
+            _eps_file = os.path.join(self._figobj().owndir(), self._eps_file)
+            def ps_write(txt):
+                if unicode_file:                
+                    ps_write0(unicode(txt))
+                else:
+                    ps_write0(txt)
+                
             if not hasattr(renderer._vector_renderer, '_eps_func_written'):
                 ps_write(eps_funcs)
                 renderer._vector_renderer._eps_func_written = True
@@ -289,8 +351,8 @@ class FigureImageV(FigureImage):
             ps_write(str(round(self.ox)) + ' ' + str(round(self.oy)) + ' translate\n')
             ps_write(str(self._image_scale[0])+' '+str(self._image_scale[1]) + ' scale\n')
             ps_write(str(-self._eps_bbox[0]) + ' ' + str(-self._eps_bbox[1]) + ' translate\n')
-            ps_write('%%BeginDocument: "'+ os.path.basename(self._eps_file) + '"\n')
-            fid= open(self._eps_file, 'r')
+            ps_write('%%BeginDocument: "'+ os.path.basename(_eps_file) + '"\n')
+            fid= open(_eps_file, 'r')
             for l in fid.readlines():
                 ps_write(l)
             fid.close()
@@ -385,8 +447,8 @@ class FigEPS(FigBox):
     def property_in_palette(self):
         return  ["eps"], [["epsscale", "anchor", "alpha_2"]]
 
-    def set_parent(self, parent):
-        super(FigEPS, self).set_parent(parent)
+#    def set_parent(self, parent):
+#        super(FigEPS, self).set_parent(parent)
 
     def generate_artist(self):
 
@@ -400,15 +462,18 @@ class FigEPS(FigBox):
         self.set_frameart(self.getp('frameart'))
 
     def make_newartist(self):
+        self.check_loaded_gp_data()        
         if self._image_size == (-1,-1):
            dx = self._eps_bbox[2] - self._eps_bbox[0]
            dy = self._eps_bbox[3] - self._eps_bbox[1]
            x1d, y1d=self.get_gp(0).get_device_point()
            self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
            self._image_scale_str = ('100', '100')
+
         try:
            self.call_convert()
         except:
+           traceback.print_exc()
            a = super(FigEPS, self).make_newartist()
            a.set_alpha(0)
            return a
@@ -423,8 +488,9 @@ class FigEPS(FigBox):
                                  y1d, alpha = self._image_alpha)
             self._image_artists = [b]
             b._image_scale = self._image_scale
-            b._pdf_file = os.path.join(self.owndir(),self.getvar('epsfile')[:-3]+'pdf')
-            b._eps_file = os.path.join(self.owndir(),self.getvar('epsfile'))
+            b._figobj = weakref.ref(self)
+            b._pdf_file = self.getvar('epsfile')[:-3]+'pdf'
+            b._eps_file = self.getvar('epsfile')
             b._eps_bbox = self._eps_bbox
             b._is_frameart = self.getp('frameart')
             
@@ -499,6 +565,7 @@ class FigEPS(FigBox):
         x1d, y1d=self.get_gp(0).get_device_point()
         self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
         self.refresh_artist()
+        
     def get_epsscale(self, a):
         ox = self._eps_bbox[2] - self._eps_bbox[0]
         oy = self._eps_bbox[3] - self._eps_bbox[1]
@@ -540,6 +607,7 @@ class FigEPS(FigBox):
            self.get_gp(1).set_device_point(x2d, y2d)
         else:
            new_size = (abs(x1d - x2d), abs(y1d-y2d))
+
         new_size = [long(x) for x in new_size]
         if (new_size[0] == self._image_size[0] and
             new_size[1] == self._image_size[1] and
