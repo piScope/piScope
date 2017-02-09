@@ -260,11 +260,11 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                   kywds=self._var["kywds"]
                   kywds['alpha'] = self.getp('alpha')
                   if cax.scale == 'linear':
-                      args.append(z.flatten()) 
+                      args.append(z.flatten().astype(float)) 
                       kywds["clim"]=(crange[0], crange[1])
                   else:
                       # args.append(np.log10(z))
-                      args.append(z.flatten())                       
+                      args.append(z.flatten().astype(float))                       
                       kywds["clim"]=[np.log10(max((crange[0], 1e-16))),
                                      np.log10(max((crange[1], 1e-16)))]
                   kywds['shading']=self.getp('shading')
@@ -281,10 +281,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                   x = x.flatten()
                   y = y.flatten()
                   args, self._tri =  tri_args(x, y, self._tri)
-#                  if cax.scale == 'linear':
-                  args.append(z.flatten())
-#                  else:
-#                      args.append(np.log10(z.flatten()))
+
+                  args.append(z.flatten().astype(float))
+                  # astype(float) is patch work to open past files..
+
                   kywds=self._var["kywds"]
                   kywds = lp[0]
                   kywds['shading']=self.getp('shading')

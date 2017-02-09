@@ -1488,7 +1488,7 @@ class FigObj(TreeDict):
 
     def set_artist_property(self, a, vals):
        for key in vals.keys():
-          if isMPL2 and key == 'axis_bgcolor': key = 'facecolor'           
+#          if isMPL2 and key == 'axis_bgcolor': key = 'facecolor'           
           if hasattr(a, 'set_'+key):
               (getattr(a, 'set_'+key))(vals[key])
           elif hasattr(a,  key):
