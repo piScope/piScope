@@ -396,24 +396,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         self._fill_setter('alpha', value)
     def get_alpha(self, value):
         return self.getp('alpha')
-#
-#  Popup in Canvas
-#
-    def onExport(self, event):
-        from matplotlib.artist import getp        
-
-        canvas = event.GetEventObject()
-        sel = [a() for a in canvas.selection]
-
-        for a in self._artists:
-            if a in sel:
-               fig_val = {name+'data': self.getp(name)
-                         for name in _arg_names(self._mpl_cmd)}                
-               text= '#Exporting data as fig_val'
-               self._export_shell(fig_val, 'fig_val', text)
-               break
-        event.Skip()
-
+    
 #
 #   data extent
 #
@@ -509,7 +492,18 @@ class FigFill(FigObj, XUser, YUser, ZUser):
                          xrange=[None,None], 
                          yrange=[None,None], scale = 'linear'):
         return self._update_range(zrange, [self.getvar('zs'), self.getvar('zs')])
-
+#
+#   export
+#
+    def get_export_val(self, a):
+        v = {"xdata": self.getvar('x'),
+             "ydata": self.getvar('y')}
+        if self.getvar('x2') is not None:
+            v["x2data"] = self.getvar('x2')
+        if self.getvar('y2') is not None:
+            v["y2data"] = self.getvar('y2')
+        return v
+    
 #
 #   save/load
 #

@@ -492,10 +492,21 @@ class FigObj(TreeDict):
         return self._artists
     
     def set_frameart(self, v, a=None):
+        if self.get_figaxes() is not None:
+            dprint1("axes object cannot become Frame Artist")
+            return
+        if self.get_figpage() is None:
+            dprint1("object is not placed in page")
+            return
         self.setp('frameart', v)
         for a in self.get_artists_for_frameart():
             a._is_frameart = v
-    
+            
+        page = self.get_figpage()
+        if v:
+            page.add_frameart(self)
+        else:
+            page.rm_frameart(self)            
     def get_frameart(self, a=None):
         return self.getp('frameart')
             
@@ -527,8 +538,12 @@ class FigObj(TreeDict):
 
     def set_zorder_front(self, get_action=False):
         page = self.get_figpage()
-        l1=[figobj.getp('zorder') for figobj in page.walk_figobj()
-                                 if not figobj._floating ]
+        if self.get_frameart():
+           l1=[figobj.getp('zorder') for figobj in page.walk_figobj()
+                                 if not figobj._floating and figobj.get_frameart()]
+        else:
+           l1=[figobj.getp('zorder') for figobj in page.walk_figobj()
+                             if not figobj._floating and not figobj.get_frameart()]
         l2=[a.zorder for a in page.walk_allartists()]
 
         ret = [] if get_action else None
@@ -548,7 +563,12 @@ class FigObj(TreeDict):
     def set_zorder_bottom(self, get_action = False):
         page = self.get_figpage()
         a = []
-        l1=[figobj.getp('zorder') for figobj in page.walk_figobj()]
+        if self.get_frameart():
+           l1=[figobj.getp('zorder') for figobj in page.walk_figobj()
+                                 if not figobj._floating and figobj.get_frameart()]
+        else:
+           l1=[figobj.getp('zorder') for figobj in page.walk_figobj()
+                             if not figobj._floating and not figobj.get_frameart()]
         l2=[a.zorder for a in page.walk_allartists()]
         #print(l1, l2)
         if get_action:

@@ -102,5 +102,21 @@ class FigTripcolor(FigImage, TrianglePlots):
             self._tri = self.getvar('tri')
         return FigImage._eval_xyz(self)
 
-
-
+    def picker_a(self, artist, evt):
+        '''
+        this picker is faster since it judges based on
+        x, y nodes. It does not look if the mouse is 
+        inside the path. A user has to click the corner
+        of triangles...
+        '''
+        x, y = self.getp(('x', 'y'))
+        ptx = np.vstack((x.flatten(), y.flatten()))
+        t = self._artists[0].get_axes().transData
+        ptx = t.transform(ptx.transpose())
+        dist = np.sqrt((ptx[:,0] - evt.x)** 2 + (ptx[:,1] -  evt.y)**2)
+        if np.min(dist) < 5:
+            self._pick_pos = [evt.xdata, evt.ydata]                    
+            return True,  {'child_artist':artist}
+        else:
+            return False, {}
+        

@@ -24,6 +24,8 @@ import ifigure.events
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigPage')
 
+frameart_zbase = -100000 # a big number so that it is draw first.
+
 class FigPage(FigObj):
     def __init__(self, figsize=(0.15,0.1), dpi=72, src=None,
                  *args, **kywds):
@@ -671,6 +673,13 @@ class FigPage(FigObj):
 
 
 
+    def add_frameart(self, figobj):
+        z = figobj.get_zorder()
+        figobj.set_zorder(z + frameart_zbase)
+        
+    def rm_frameart(self, figobj):
+        z = figobj.get_zorder()
+        figobj.set_zorder(z - frameart_zbase)        
 
 
 

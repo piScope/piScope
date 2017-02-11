@@ -969,11 +969,10 @@ class ifigure_popup(wx.Menu):
                ('Bottom',   self.onBottom, None)]
         if (len(parent.selection) == 1 and
             parent.selection[0]().figobj.get_figaxes() is None):
-            if (hasattr(parent.selection[0](), '_is_frameart')
-                and parent.selection[0](), '_is_frameart'):
-                menus = menus + [('Set FrameArt', self.onSetFrameArt, None)]
+            if parent.selection[0]().figobj.get_frameart():
+                menus = menus + [('Unset FrameArt', self.onUnsetFrameArt, None)]
             else:
-                menus = menus + [('Unset FrameArt', self.onUnsetFrameArt, None)]                
+                menus = menus + [('Set FrameArt', self.onSetFrameArt, None)]                
         frame =  cbook.FindFrame(parent)
         menus = frame.viewer_canvasmenu() + menus
         self._menus = len(menus)
@@ -1109,7 +1108,7 @@ class ifigure_popup(wx.Menu):
         GlobalHistory().get_history(window).make_entry(a, menu_name = 'move to bottom')
 
     def onSetFrameArt(self, e):
-        print 'set frame art'
+#        print 'set frame art'
         canvas = e.GetEventObject()
         for item in canvas.selection:
             print item()
