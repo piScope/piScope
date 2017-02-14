@@ -599,10 +599,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         #                        "3D buttons", "", 
         #                        self.onToggle3DMenu, kind = wx.ITEM_CHECK)
 
-    def add_saveimage_menu(self, filemenu):
-        self.add_menu(filemenu, BookViewerFrame.ID_SAVEIMAGE, 
+    def add_saveimage_menu(self, parent):
+        self.add_menu(parent, BookViewerFrame.ID_SAVEIMAGE, 
                      "Save Image", "Save Image", 
                       self.onSaveImage)
+    def add_exporthdf_menu(self, parent):
+        self.add_menu(parent, wx.ID_ANY, 
+                     "HDF data...", "Export HDF data.", 
+                      self.onExportHDF)
 
     def append_screen_ratio_menu(self, viewmenu):
         ratiomenu = wx.Menu()
@@ -896,7 +900,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onSaveImage(self, evt):
         self.canvas.save_pic()
-
+        evt.Skip()
+        
+    def onExportHDF(self, evt):
+        self.canvas.export_hdf()
+        evt.Skip()
+        
     def onNewBook(self, evt, viewer=None, proj=None, basename=None, **kwargs):
         if viewer is None: 
            dprint1('onNewBook is called with viewer = None')
@@ -1700,13 +1709,17 @@ class BookViewer(BookViewerFrame):
                      self.onLoadBookNew)
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
-        self.export_book_menu = self.add_menu(self.filemenu, BookViewerFrame.ID_EXPORTBOOK, 
-                     "Export Book", "Export Book", 
-                     self.onExportBook)
-        self.add_menu(self.filemenu, BookViewerFrame.ID_EXPORTBOOK_AS,
+        exportmenu = wx.Menu()
+        self.filemenu.AppendMenu(wx.ID_ANY, 'Export...', exportmenu)
+        self.export_book_menu = self.add_menu(exportmenu,
+                                        BookViewerFrame.ID_EXPORTBOOK, 
+                                        "Export Book", "Export Book",
+                                        self.onExportBook)
+        self.add_menu(exportmenu, BookViewerFrame.ID_EXPORTBOOK_AS,
                      "Export Book As...", "Export Book", 
                      self.onExportBookAs)
-        self.add_saveimage_menu(self.filemenu)
+        self.add_saveimage_menu(exportmenu)
+        self.add_exporthdf_menu(exportmenu)        
         self.filemenu.AppendSeparator()
         self.add_menu(self.filemenu, wx.ID_ANY,
                       "Preference...","Piescope preference...", 

@@ -3157,7 +3157,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        matplotlib.rcParams['text.usetex'] = org_rc[0]
        matplotlib.rcParams['ps.usedistiller'] = org_rc[1]
        matplotlib.rcParams['font.family'] = org_rc[2]
+       
+   def export_hdf(self):
 
+       from ifigure.widgets.hdf_export_window import HdfExportWindow
+
+
+       window = self.GetTopLevelParent()       
+       page = self._figure.figobj
+       w = HdfExportWindow(parent = window,
+                          page = page)
+       
    def _clean_selection(self):
       for item in self.selection:
           if item() is None: 
