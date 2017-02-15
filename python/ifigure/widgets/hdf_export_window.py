@@ -32,15 +32,24 @@ class HDFDataModel(dv.PyDataViewModel):
         self.export_flag = kwargs.pop('export_flag')
         self.objmapper.UseWeakRefs(True)
         self.objs = []
-        
+        self.labels = {}
+
+    def getobj(self, labels):
+        if labels in self.labels:
+           return self.labels[labels]
+        else:
+           obj = ObjectData(labels)
+           self.labels[labels] = obj
+           return obj
     def GetChildren(self, parent, children):
         if not parent:
             num = 0            
             for name in six.iterkeys(self.dataset):
                 labels =(name,)
-                obj = ObjectData(labels)
+                obj = self.getobj(labels)
                 children.append(self.ObjectToItem(obj))
-                self.export_flag[labels] = True
+                if not labels in self.export_flag:
+                    self.export_flag[labels] = True
                 self.objs.append(obj)
                 num = num + 1
             return num
@@ -54,9 +63,10 @@ class HDFDataModel(dv.PyDataViewModel):
                 x = list(labels)
                 x.append(newlabel)
                 labels2 = tuple(x)
-                obj = ObjectData(labels2)
+                obj = self.getobj(labels2)                
                 children.append(self.ObjectToItem(obj))
-                self.export_flag[labels2] = True                
+                if not labels2 in self.export_flag:
+                    self.export_flag[labels2] = self.export_flag[labels]
                 self.objs.append(obj)
                 num = num + 1
             return num
@@ -72,9 +82,10 @@ class HDFDataModel(dv.PyDataViewModel):
         if len(labels) == 1:
             pass
         else:
-            for obj in self.objs:
-                if obj.GetData() == labels[:-1]: 
-                    ret = self.ObjectToItem(obj)
+            labels = obj.GetData()
+            if labels in self.labels:
+                obj = self.labels[labels]
+                ret = self.ObjectToItem(obj)
         return ret
 
     def GetColumnCount(self):
@@ -112,13 +123,19 @@ class HDFDataModel(dv.PyDataViewModel):
         elif col == 1:
             ret = self.export_flag[labels]
         elif col == 2:
-            ret = str(p)
-            if len(ret) > 50: ret = ret[:50] + '...'
-        elif col == 3:
-            if hasattr(p, 'shape'):
-                ret = str(p.shape)
-            else:
+            if self.IsContainer(item):
                 ret = ''
+            else:
+                ret = str(p)
+                if len(ret) > 50: ret = ret[:50] + '...'
+        elif col == 3:
+            if self.IsContainer(item):
+                ret = ''
+            else:
+                if hasattr(p, 'shape'):
+                    ret = str(p.shape)
+                else:
+                    ret = ''
         else:
              raise RuntimeError("unknown col")
         return ret
@@ -133,12 +150,30 @@ class HDFDataModel(dv.PyDataViewModel):
 
     def SetValue(self, value, item, col):
         labels = self.ItemToObject(item).GetData()
-        print value, labels
         p = self.dataset        
         for l in labels:
             p = p[l]
         if col == 1:
             self.export_flag[labels] = value
+            if value:
+                for l2 in self.labels:
+                   if len(l2) >= len(labels): continue                   
+                   if l2 == labels[:len(l2)]:
+                       self.export_flag[l2] = value
+                       obj = self.labels[l2]
+                       item2 = self.ObjectToItem(obj)
+                       self.ValueChanged(item2, col)
+            if self.IsContainer(item):
+                labels = self.ItemToObject(item).GetData()
+                for l2 in self.labels:
+                   if len(l2) <= len(labels): continue
+                   if l2[:len(labels)] == labels:
+                       self.export_flag[l2] = value
+                       obj = self.labels[l2]
+                       item2 = self.ObjectToItem(obj)
+                       self.ValueChanged(item2, col)
+    def HasContainerColumns(self, item):
+        return True
 
 class HdfExportWindow(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -225,10 +260,13 @@ class HdfExportWindow(wx.Frame):
         self.Layout()
         self.Show()
 
- 
-
+      
+#        self.Bind(dv.EVT_DATAVIEW_ITEM_VALUE_CHANGED,
+#                  self.onDataChanged, self.dataviewCtrl)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.btn_export)
-        
+#    def onDataChanged(self, evt):
+#        self.dataviewCtrl.Refresh()
+#        evt.Skip()
     def onExport(self, evt):
         import ifigure.widgets.dialog as dialog        
         flags = self.export_flag

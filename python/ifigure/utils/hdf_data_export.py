@@ -103,8 +103,10 @@ def hdf_data_export(page = None,
     rootgrp.history = "Created " + time.ctime(time.time())    
 
     for key in six.iterkeys(data):
-        key_grp = rootgrp.createGroup(key)
-        
+        labels = (key, )
+        if (labels in export_flag and
+            not export_flag[labels]): continue
+        key_grp = rootgrp.createGroup(key)        
         props = data[key]['property']
         for key2 in six.iterkeys(props):
             labels = (key, 'property', key2)
