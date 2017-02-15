@@ -17,6 +17,7 @@ except:
    HdfExportWindow(parent = <parent window>,
                    page = <figpage objct>)
 '''
+debug = True
 class ObjectData(object):
     def __init__(self, data):
         self.data = data
@@ -42,6 +43,7 @@ class HDFDataModel(dv.PyDataViewModel):
            self.labels[labels] = obj
            return obj
     def GetChildren(self, parent, children):
+        if debug: print('GetChildren')
         if not parent:
             num = 0            
             for name in six.iterkeys(self.dataset):
@@ -112,7 +114,9 @@ class HDFDataModel(dv.PyDataViewModel):
         return False            
 
     def GetValue(self, item, col):
+        if debug: print('GetValue')
         labels = self.ItemToObject(item).GetData()
+        if debug: print labels
         p = self.dataset
         for l in labels:
             p = p[l]
@@ -149,6 +153,7 @@ class HDFDataModel(dv.PyDataViewModel):
            return False
 
     def SetValue(self, value, item, col):
+        if debug: print('SetValue')
         labels = self.ItemToObject(item).GetData()
         p = self.dataset        
         for l in labels:
@@ -172,8 +177,8 @@ class HDFDataModel(dv.PyDataViewModel):
                        obj = self.labels[l2]
                        item2 = self.ObjectToItem(obj)
                        self.ValueChanged(item2, col)
-    def HasContainerColumns(self, item):
-        return True
+#    def HasContainerColumns(self, item):
+#        return True
 
 class HdfExportWindow(wx.Frame):
     def __init__(self, *args, **kargs):
