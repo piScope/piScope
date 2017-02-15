@@ -5,6 +5,8 @@ import wx
 import wx.dataview as dv
 import six
 import numpy as np
+import time
+import traceback
 try:
    #  for standalone testing (when running python hdf_export_window.py)
    from ifigure.utils.hdf_data_export import build_data,  hdf_data_export
@@ -17,7 +19,7 @@ except:
    HdfExportWindow(parent = <parent window>,
                    page = <figpage objct>)
 '''
-debug = True
+debug = False
 class ObjectData(object):
     def __init__(self, data):
         self.data = data
@@ -37,19 +39,19 @@ class HDFDataModel(dv.PyDataViewModel):
 
     def getobj(self, labels):
         if labels in self.labels:
-           return self.labels[labels]
+           return self.labels[labels], True
         else:
            obj = ObjectData(labels)
            self.labels[labels] = obj
-           return obj
+           return obj, False
     def GetChildren(self, parent, children):
         if debug: print('GetChildren')
         if not parent:
             num = 0            
             for name in six.iterkeys(self.dataset):
                 labels =(name,)
-                obj = self.getobj(labels)
-                children.append(self.ObjectToItem(obj))
+                obj, exist = self.getobj(labels)
+                if not exist: children.append(self.ObjectToItem(obj))
                 if not labels in self.export_flag:
                     self.export_flag[labels] = True
                 self.objs.append(obj)
@@ -65,8 +67,8 @@ class HDFDataModel(dv.PyDataViewModel):
                 x = list(labels)
                 x.append(newlabel)
                 labels2 = tuple(x)
-                obj = self.getobj(labels2)                
-                children.append(self.ObjectToItem(obj))
+                obj, exist = self.getobj(labels2)                
+                if not exist: children.append(self.ObjectToItem(obj))
                 if not labels2 in self.export_flag:
                     self.export_flag[labels2] = self.export_flag[labels]
                 self.objs.append(obj)
@@ -75,6 +77,7 @@ class HDFDataModel(dv.PyDataViewModel):
         return 0
     
     def GetParent(self, item):
+        if debug: print('GetParent')
         if not item:
             return dv.NullDataViewItem
 
@@ -85,8 +88,8 @@ class HDFDataModel(dv.PyDataViewModel):
             pass
         else:
             labels = obj.GetData()
-            if labels in self.labels:
-                obj = self.labels[labels]
+            if labels[:-1] in self.labels:
+                obj = self.labels[labels[:-1]]
                 ret = self.ObjectToItem(obj)
         return ret
 
@@ -116,7 +119,6 @@ class HDFDataModel(dv.PyDataViewModel):
     def GetValue(self, item, col):
         if debug: print('GetValue')
         labels = self.ItemToObject(item).GetData()
-        if debug: print labels
         p = self.dataset
         for l in labels:
             p = p[l]
@@ -160,6 +162,7 @@ class HDFDataModel(dv.PyDataViewModel):
             p = p[l]
         if col == 1:
             self.export_flag[labels] = value
+            
             if value:
                 for l2 in self.labels:
                    if len(l2) >= len(labels): continue                   
@@ -177,8 +180,9 @@ class HDFDataModel(dv.PyDataViewModel):
                        obj = self.labels[l2]
                        item2 = self.ObjectToItem(obj)
                        self.ValueChanged(item2, col)
-#    def HasContainerColumns(self, item):
-#        return True
+            
+    def HasContainerColumns(self, item):
+        return True
 
 class HdfExportWindow(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -282,6 +286,7 @@ class HdfExportWindow(wx.Frame):
                         export_flag = flags,
                         filename = path,
                         verbose = True)
+            print('HDF export finished : '+path)
         except:   
             dialog.showtraceback(parent = self,
                                txt='Failed to export HDF', 
