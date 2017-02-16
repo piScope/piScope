@@ -89,7 +89,11 @@ class PythonSTCPopUp(wx.Menu):
                  ('Paste', parent.onPaste, None),
                  ('Delete', parent.onDeleteBack, None),
                  ('---', None, None,),
-                 ('Select All', parent.onSelectAll, None )]
+                 ('Select All', parent.onSelectAll, None ),]
+        if hasattr(parent.GetParent().GetParent(), 'ToggleFindPanel'):
+           if not parent.GetParent().GetParent().get_findpanel_shown():
+                 menus.extend([('---', None, None,),
+                          ('Find...', parent.onFindText, None ),])
         if parent.doc_name.endswith('.py'):
             menus =  menus + [('---', None, None),
                       ('Shift region right', parent.onRegionRight, None),
@@ -818,6 +822,12 @@ class PythonSTC(stc.StyledTextCtrl):
     def onDeleteBack(self, evt):
         self.DeleteBack()
 
+    def onFindText(self, evt):
+        p = self.GetParent().GetParent()
+        if hasattr(p, 'ToggleFindPanel'):
+            p.ToggleFindPanel()
+
+
     def onSetBP(self, evt):
         l = self.GetCurrentLine()+1
         add_breakpoint(self.doc_name, l)
@@ -1090,8 +1100,14 @@ class ScriptEditor(wx.Panel):
 
         self.sp = wx.SplitterWindow(self, wx.ID_ANY, 
                      style=wx.SP_NOBORDER|wx.SP_LIVE_UPDATE|wx.SP_3DSASH)
-        self.nb = Notebook(self.sp,
-                     style=aui.AUI_NB_DEFAULT_STYLE|aui.AUI_NB_WINDOWLIST_BUTTON)
+        from find_panel import PanelWithFindPanel        
+        self.nb_panel = PanelWithFindPanel(self.sp)
+        self.nb = Notebook(self.nb_panel,
+                           style = (aui.AUI_NB_DEFAULT_STYLE|
+                                    aui.AUI_NB_WINDOWLIST_BUTTON),)
+
+        self.nb_panel.GetSizer().Add(self.nb, 1, wx.ALL|wx.EXPAND)
+
         self._last_update = -1
         sizer=wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.sp, 1, wx.EXPAND)
@@ -1489,7 +1505,7 @@ class ScriptEditor(wx.Panel):
     def ShowDebugPanel(self):
         if not self._d_shown:
             self.d_panel.txt.clear_window()
-            self.sp.SplitHorizontally(self.nb, self.d_panel)
+            self.sp.SplitHorizontally(self.nb_panel, self.d_panel)
 #            self.nb.Layout()
 #            self.d_panel.layout()
 #            self.GetSizer().Add(self.d_panel, 1, wx.EXPAND)
