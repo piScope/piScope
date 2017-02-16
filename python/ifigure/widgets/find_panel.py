@@ -41,11 +41,11 @@ class FindPanel(wx.Panel):
         self.Bind(wx.EVT_BUTTON, parent.onReplace, self.btn_replace)
         self.Bind(wx.EVT_BUTTON, parent.onReplaceAll, self.btn_replaceall)
         
-        sizer.Add(label, 0, wx.ALL)        
+        sizer.Add(label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)        
         sizer.Add(self.txt, 1, wx.ALL|wx.EXPAND)
         sizer.Add(gsizer, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         sizer.Add(self.btn_cl, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-        sizer2.Add(label2, 0, wx.ALL)
+        sizer2.Add(label2, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)        
         sizer2.Add(self.txt2, 1, wx.ALL|wx.EXPAND)
         sizer2.Add(self.btn_replace, 0, wx.ALL|wx.EXPAND)
         sizer2.Add(self.btn_replaceall, 0, wx.ALL|wx.EXPAND)
@@ -99,6 +99,8 @@ class PanelWithFindPanel(wx.Panel):
         return flag
     
     def onHitFW(self, evt):
+        nb = self.GetChildren()[1]
+        stc = nb.GetCurrentPage()
         flag = self.find_forward()
         stc.EnsureCaretVisible()
         evt.Skip()
@@ -115,8 +117,6 @@ class PanelWithFindPanel(wx.Panel):
             stc.SetCurrentPos(l1)
             stc.SetSelection(l1, l2)
         stc.EnsureCaretVisible()
-
-        
         evt.Skip()
         
     def onRunFind(self, evt):
