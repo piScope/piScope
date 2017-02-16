@@ -91,7 +91,8 @@ class PythonSTCPopUp(wx.Menu):
                  ('---', None, None,),
                  ('Select All', parent.onSelectAll, None ),]
         if hasattr(parent.GetParent().GetParent(), 'ToggleFindPanel'):
-            menus.extend([('---', None, None,),
+           if not parent.GetParent().GetParent().get_findpanel_shown():
+                 menus.extend([('---', None, None,),
                           ('Find...', parent.onFindText, None ),])
         if parent.doc_name.endswith('.py'):
             menus =  menus + [('---', None, None),
