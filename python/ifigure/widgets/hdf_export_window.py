@@ -10,7 +10,7 @@ import time
 import traceback
 try:
    #  for standalone testing (when running python hdf_export_window.py)
-   from ifigure.utils.hdf_data_export import build_data,  hdf_data_export
+   from ifigure.utils.hdf_data_export import build_data,  hdf_data_export, set_all_properties_all, select_unique_properties_all
 except:
    pass
 
@@ -35,7 +35,7 @@ class HDFDataModel(dv.PyDataViewModel):
         self.dataset = kwargs.pop('dataset', None)
         self.metadata = kwargs.pop('metadata', OrderedDict())
         self.export_flag = kwargs.pop('export_flag')
-        self.objmapper.UseWeakRefs(True)
+        #self.objmapper.UseWeakRefs(True)
         self.objs = []
         self.labels = {}
 
@@ -289,8 +289,14 @@ class HdfExportWindow(wx.Frame):
         self.grid = pg.PropertyGrid(self.sp)
 
         #self.btn_load = wx.Button(self, label = 'Load')
+        self.choices = ['Options...', 'No Property', 
+                        'Minimum properties',
+                        'All properties']
+        self.cb  =  wx.ComboBox(panel, wx.ID_ANY, 
+                             style=wx.TE_PROCESS_ENTER|wx.CB_READONLY,
+                             choices = self.choices)
+        self.cb.SetValue(self.choices[0])
         self.btn_export = wx.Button(panel, label = 'Export...')
-
         
         sizer.Add(self.filepicker, 0, wx.EXPAND|wx.ALL, 1)        
         sizer.Add(self.sp, 1, wx.EXPAND|wx.ALL, 5)
@@ -298,6 +304,7 @@ class HdfExportWindow(wx.Frame):
 
 
         #sizer_h.Add(self.btn_load, 0,   wx.EXPAND|wx.ALL, 1)
+        sizer_h.Add(self.cb, 0,   wx.EXPAND|wx.ALL, 1)
         sizer_h.AddStretchSpacer(prop = 1)
         sizer_h.Add(self.btn_export, 0, wx.EXPAND|wx.ALL, 1)
 
@@ -316,11 +323,27 @@ class HdfExportWindow(wx.Frame):
         self.grid.Bind(pg.EVT_PG_CHANGED, 
                   self.onPGChanged,  self.grid)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.btn_export)
+        self.Bind(wx.EVT_COMBOBOX, self.onCBHit, self.cb)      
 
+        self.page = page
 
-#    def onDataChanged(self, evt):
-#        self.dataviewCtrl.Refresh()
-#        evt.Skip()
+    def onCBHit(self, evt):
+        flags = self.model.export_flag
+        dataset = self.model.dataset
+        idx = self.choices.index(str(self.cb.GetValue()))
+
+        self.cb.SetValue(self.choices[0])
+        if idx == 1:
+           set_all_properties_all(flags, False)
+        elif idx == 2:
+           select_unique_properties_all(self.page, dataset, flags)
+        elif idx == 3:
+           set_all_properties_all(flags, True)
+        else:
+            pass
+        self.Refresh()
+        evt.Skip()
+
     def onSelChanged(self, evt):
         item = self.dataviewCtrl.GetSelection()
         labels = self.model.ItemToObject(item).GetData()

@@ -29,7 +29,50 @@ def set_default_export_flag(obj, name, flag):
         return 
     flag[name] = True
 
-def get_all_properties(obj, use_str = True):
+def select_unique_properties(parent, dataset, flags):
+    nb_done = []
+    page = parent.get_figpage()
+    for name, child in parent.get_children():
+        nb = child.get_namebase()
+        if nb in nb_done: continue
+        nb_done.append(nb)
+        objs = [child  for name, child in parent.get_children() 
+                if child.get_namebase() == nb]
+        names = [page.name + '.' + '.'.join(page.get_td_path(obj)[1:])
+                 for obj in objs]
+        if len(objs) == 1:
+             labels = (names[0], 'property')
+             flags[labels] = False
+             for key in six.iterkeys(dataset[names[0]]['property']):
+                 labels = (names[0], 'property', key)
+                 flags[labels] = False
+        props = [dataset[name]['property'] for name in names]                
+        pp = tuple()
+        for p in props: pp = pp + tuple(p.keys())
+        for x in set(pp):
+            value = not (len(set([p.get(x, None) for p in props])) == 1)
+            for nane in names:
+                labels = (name, 'property')
+                flags[labels] = value
+            for name in names:
+                labels = (name, 'property', x)
+                flags[labels] = value
+
+
+def select_unique_properties_all(page, dataset, flags):
+    for obj in page.walk_tree():
+        if obj.num_child() > 0:
+             select_unique_properties(obj, dataset, flags)
+
+def set_all_properties_all(flags, value):
+    for labels in six.iterkeys(flags):
+        if len(labels) < 2: continue
+        if labels[1] == 'property': flags[labels] = value
+    for labels in six.iterkeys(flags):
+        if not (labels[0], 'property') in flags:
+            flags[(labels[0], 'property')] = value
+    print flags
+def get_all_properties(obj):
     ret =  obj.property_for_shell()
     tags = None
     if isinstance(ret, tuple):
@@ -54,7 +97,10 @@ def get_all_properties(obj, use_str = True):
     for lll in ll:                
         tag, name, lp = lll
         ret = [call_getter(a, lp, tab = tag) for a in obj._artists]
-        if use_str: ret = ret.__repr__()
+        if len(ret) == 1: 
+           ret = str(ret[0])
+        else:
+           ret = [str(x) for x in ret]
         if tag == '': 
            props[name] = ret
         else:
@@ -97,7 +143,7 @@ def build_data(page, export_flag = None,
                 txt = ['member '+ str(i) + ' exprot ' + ','.join(d.keys()) for i, d in enumerate(dd)]
                 print(name + ' : ' + ','.join(txt))
         try:
-            props = get_all_properties(obj, use_str = True)
+            props = get_all_properties(obj)
         except:
             print('Unexpected error')
             raise
