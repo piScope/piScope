@@ -3,6 +3,7 @@ import traceback
 from collections import OrderedDict
 import wx
 import wx.dataview as dv
+import wx.propgrid as pg
 import six
 import numpy as np
 import time
@@ -32,6 +33,7 @@ class HDFDataModel(dv.PyDataViewModel):
     def __init__(self, **kwargs):
         dv.PyDataViewModel.__init__(self)
         self.dataset = kwargs.pop('dataset', None)
+        self.metadata = kwargs.pop('metadata', None)
         self.export_flag = kwargs.pop('export_flag')
         self.objmapper.UseWeakRefs(True)
         self.objs = []
@@ -44,6 +46,7 @@ class HDFDataModel(dv.PyDataViewModel):
            obj = ObjectData(labels)
            self.labels[labels] = obj
            return obj, False
+
     def GetChildren(self, parent, children):
         if debug: print('GetChildren')
         if not parent:
@@ -94,13 +97,14 @@ class HDFDataModel(dv.PyDataViewModel):
         return ret
 
     def GetColumnCount(self):
-        return 4
+        return 5
 
     def GetColumnType(self, col):
         mapper = { 0 : 'string',
                    1 : 'bool',                   
                    2 : 'string',
-                   3 : 'string',}
+                   3 : 'string',
+                   4 : 'string',}
         return mapper[col]
 
     def IsContainer(self, item):
@@ -142,6 +146,24 @@ class HDFDataModel(dv.PyDataViewModel):
                     ret = str(p.shape)
                 else:
                     ret = ''
+        elif col == 4:
+            p = 0
+            d = self.metadata
+            while labels[p] in d:
+                d = d[labels[p]]
+                dd = OrderedDict()
+                for key in six.iterkeys(d):
+                   if not isinstance(d[key], dict):
+                       dd[key] = d[key]
+                ret = str(dd)
+                p = p+1
+                if len(labels) <= p: break
+            else:
+                ret = ''
+            if self.IsContainer(item) and len(labels) != 1:
+                ret = ''
+            if ret.startswith('OrderedDict'):
+                ret = ret[13:-2]  ## tweak a visual ;D
         else:
              raise RuntimeError("unknown col")
         return ret
@@ -190,12 +212,12 @@ class HdfExportWindow(wx.Frame):
         parent = kargs.pop('parent', None)
         title  = kargs.pop('title', 'HDF export')
         path = kargs.pop('path', os.path.join(os.getcwd(), 'data.hdf'))
-        self.dataset = kargs.pop('dataset', None)
-
-        if self.dataset is None:
+        dataset = kargs.pop('dataset', None)
+        metadata = kargs.pop('metadata', None)
+        if dataset is None:
             if page is None:  return
-            self.dataset = build_data(page, verbose = False)
-
+            dataset, metadata, export_flag = build_data(page, 
+                                                        verbose = False)
         style = (wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|
                  wx.RESIZE_BORDER)
         if parent is not None:
@@ -219,15 +241,18 @@ class HdfExportWindow(wx.Frame):
         self.filepicker = wx.FilePickerCtrl(panel,
                                             style=wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL,
                                             path = path,
-                                            wildcard = wildcard)
-        self.dataviewCtrl = dv.DataViewCtrl(panel,
+                                            wildcard = wildcard) 
+        self.sp = wx.SplitterWindow(panel, wx.ID_ANY, 
+              style=wx.SP_NOBORDER|wx.SP_LIVE_UPDATE|wx.SP_3DSASH)
+        self.dataviewCtrl = dv.DataViewCtrl(self.sp,
                                             style = (wx.BORDER_THEME
                                                      |dv.DV_ROW_LINES
-                                                     |dv.DV_VERT_RULES
-                                                     |dv.DV_MULTIPLE))
+                                                     |dv.DV_VERT_RULES))
+
         self.export_flag = {}
         self.model = HDFDataModel(export_flag = self.export_flag,
-                             dataset = self.dataset)
+                             dataset = dataset,
+                             metadata = metadata)
         self.dataviewCtrl.AssociateModel(self.model)
 
         self.tr = tr = dv.DataViewTextRenderer()
@@ -247,17 +272,23 @@ class HdfExportWindow(wx.Frame):
                                            mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
         c3 = self.dataviewCtrl.AppendTextColumn('shape', 3,
                                            mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
+        c4 = self.dataviewCtrl.AppendTextColumn('metadata', 4,
+                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
         for c in self.dataviewCtrl.Columns:
             c.Sortable = True
             c.Reorderable = True
         c1.Alignment = wx.ALIGN_CENTER
+
+        #from ifigure.widgets.var_viewerg2 import _PropertyGrid
+
+        self.grid = pg.PropertyGrid(self.sp)
 
         #self.btn_load = wx.Button(self, label = 'Load')
         self.btn_export = wx.Button(panel, label = 'Export...')
 
         
         sizer.Add(self.filepicker, 0, wx.EXPAND|wx.ALL, 1)        
-        sizer.Add(self.dataviewCtrl, 1, wx.EXPAND|wx.ALL, 5)
+        sizer.Add(self.sp, 1, wx.EXPAND|wx.ALL, 5)
         sizer.Add(sizer_h, 0, wx.EXPAND|wx.ALL|wx.ALIGN_RIGHT, 5)        
 
 
@@ -269,20 +300,62 @@ class HdfExportWindow(wx.Frame):
         self.Layout()
         self.Show()
 
+        self.sp.SplitHorizontally(self.dataviewCtrl, self.grid)
       
 #        self.Bind(dv.EVT_DATAVIEW_ITEM_VALUE_CHANGED,
 #                  self.onDataChanged, self.dataviewCtrl)
+        self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
+                  self.onSelChanged, self.dataviewCtrl)
+        self.grid.Bind(pg.EVT_PG_CHANGED, 
+                  self.onPGChanged,  self.grid)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.btn_export)
+
+
 #    def onDataChanged(self, evt):
 #        self.dataviewCtrl.Refresh()
 #        evt.Skip()
+    def onSelChanged(self, evt):
+        item = self.dataviewCtrl.GetSelection()
+        labels = self.model.ItemToObject(item).GetData()
+        metadata = self.model.metadata
+        self.grid_target = None
+        p = 0
+        d = metadata
+        dd = OrderedDict()
+        while labels[p] in d:
+           d = d[labels[p]]
+           dd = OrderedDict()   
+           for key in six.iterkeys(d):
+               if not isinstance(d[key], dict):
+                  dd[key] = d[key]
+           ret = dd, d
+           p = p+1
+           if len(labels) <= p: break
+        else:
+           ret = None
+        if self.model.IsContainer(item) and len(labels) != 1:
+           ret = None
+        self.grid.Clear()
+        for key in six.iterkeys(dd):
+            prop = pg.StringProperty(str(key), value = str(dd[key]))
+            self.grid.Append(prop)
+        self.grid_target = d
+        evt.Skip()
+
+    def onPGChanged(self, evt):
+        prop = self.grid.GetSelection()
+        if self.grid_target is not None:
+            self.grid_target[prop.GetLabel()] = str(prop.GetValue())
+        evt.Skip()
+
     def onExport(self, evt):
         import ifigure.widgets.dialog as dialog        
         flags = self.export_flag
         path  = self.filepicker.GetPath()
 
         try:
-            hdf_data_export(data =self.dataset,
+            hdf_data_export(data = dataset,
+                        metadata = metadata, 
                         export_flag = flags,
                         filename = path,
                         verbose = True)

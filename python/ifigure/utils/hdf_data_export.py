@@ -11,6 +11,19 @@ from collections import OrderedDict
 
 from ifigure.widgets.artist_widgets import listparam, call_getter 
 
+def set_default_export_flag(obj, name, flag):
+    from ifigure.mto.fig_page import FigPage
+    from ifigure.mto.fig_axes import FigAxes
+    
+    if isinstance(obj, FigPage): flag[name] = True
+    if isinstance(obj, FigAxes): flag[name] = True
+    try:
+        dd = obj.export()
+    except NotImplementedError:
+        flag[name] = False
+        return 
+    flag[name] = True
+
 def get_all_properties(obj, use_str = True):
     ret =  obj.property_for_shell()
     tags = None
@@ -43,15 +56,22 @@ def get_all_properties(obj, use_str = True):
            props['_'.join((tag, name))] = ret
     return props
         
-def build_data(page, verbose=True):
+def build_data(page, export_flag = None,
+               metadata = None,  verbose=True):
+    if export_flag is None: export_flag = {}
+    if metadata is None: metadata = {}
     book = page.get_figbook()    
+    page.assign_default_file_metadata()
     dataset = OrderedDict()
+
     for obj in page.walk_tree():
         if obj is page:
             name = page.name
         else:
             name = page.name + '.' + '.'.join(page.get_td_path(obj)[1:])
+
         dataset[name] = {}
+        set_default_export_flag(obj, name, export_flag)
         try:
             dd = obj.export()
         except NotImplementedError:
@@ -61,8 +81,13 @@ def build_data(page, verbose=True):
             print('Unexpected error')
             raise
         else:
-            for kk,  ddd in enumerate(dd):
-               dataset[name]['data'+str(kk+1)] = ddd
+            if len(dd) == 1:
+                dataset[name]['data'] = dd[0]
+            else:
+                for kk,  ddd in enumerate(dd):
+                    dataset[name]['data'+str(kk+1)] = ddd
+            obj.assign_default_metadata()
+            obj.update_data_metadata()
             if verbose:
                 txt = ['member '+ str(i) + ' exprot ' + ','.join(d.keys()) for i, d in enumerate(dd)]
                 print(name + ' : ' + ','.join(txt))
@@ -76,23 +101,31 @@ def build_data(page, verbose=True):
             if verbose:
                 txt = '\n'.join([k + ':' + props[k] for k in props])
                 print('property')
-                print(txt)                
-                
-    return dataset
+                print(txt) 
+        if obj.has_metadata():               
+             metadata[name] = obj.getvar('metadata')       
+    return dataset, metadata, export_flag
     
 def hdf_data_export(page = None,
                     filename = 'data.hdf',
                     verbose = True,
                     dry_run = False,
                     data = None,
+                    metadata = None,
                     export_flag = None):
+
+    if export_flag is None: export_flag = {}
+    if metadata is None: metadata = {}
     if data is None:
         if page is None:
             print('Error: Specify either page object or data')
             return
-        data = build_data(page, verbose = verbose)
+        data, metadata, export_flag =  build_data(page, 
+                                    verbose = verbose,
+                                    metadata = metadata, 
+                                    export_flag = export_flag)
     if dry_run: return
-    if export_flag is None: export_flag = {}
+
     
     from netCDF4 import Dataset
     rootgrp = Dataset(filename, "w", format="NETCDF4")

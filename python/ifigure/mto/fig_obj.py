@@ -22,6 +22,7 @@ from ifigure.mto.treedict import TreeDict
 #from ifigure.mto.py_script import PyScript
 from ifigure.mto.py_code import PyCode
 from ifigure.mto.axis_user import XUser, YUser, ZUser, CUser
+from ifigure.mto.metadata import MetadataHolder
 import ifigure.utils.geom as geom
 import ifigure.events
 import logging, weakref, traceback
@@ -71,7 +72,7 @@ def mask_negative(z):
     return z_masked
 
 #class FigObj(PyScript):
-class FigObj(TreeDict):
+class FigObj(TreeDict, MetadataHolder):
     '''
     FigObj:
        baseclass of all figure object
@@ -1635,6 +1636,9 @@ class FigObj(TreeDict):
             return fig_axes._artists[0].transAxes 
         elif name == 'figure': 
             return fig_page._artists[0].transFigure
+
+
+
 
 
 

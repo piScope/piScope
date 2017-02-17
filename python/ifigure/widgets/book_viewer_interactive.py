@@ -58,6 +58,7 @@ import traceback
 import numpy as np
 import ifigure
 from ifigure.utils.cbook import ProcessKeywords
+from collections import OrderedDict
 from functools import wraps
 from ifigure.widgets.undo_redo_history import GlobalHistory
 from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
@@ -83,6 +84,7 @@ def has_plot(figaxes):
 def allow_interactive_call(method):
     @wraps(method)
     def method2(self, *args, **kargs):
+       metadata = kargs.pop('metadata', None)
        update, kargs = ProcessKeywords(kargs, 'update', value = self._interactive_update)
        hold, kargs = ProcessKeywords(kargs, 'hold', value = True)
        autonext, kargs = ProcessKeywords(kargs, 'autonext', value = True)
@@ -109,6 +111,7 @@ def allow_interactive_call(method):
           obj = ret
        self.canvas.hold_once(False)
        obj = self.add_interative(obj)
+       if metadata is not None: obj.setvar('metadata', OrderedDict(metadata))
 
        if update: 
            ifigure.events.SendChangedEvent(self.book, w = self, useProcessEvent=True)
