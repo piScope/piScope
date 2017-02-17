@@ -33,7 +33,7 @@ class HDFDataModel(dv.PyDataViewModel):
     def __init__(self, **kwargs):
         dv.PyDataViewModel.__init__(self)
         self.dataset = kwargs.pop('dataset', None)
-        self.metadata = kwargs.pop('metadata', None)
+        self.metadata = kwargs.pop('metadata', OrderedDict())
         self.export_flag = kwargs.pop('export_flag')
         self.objmapper.UseWeakRefs(True)
         self.objs = []
@@ -54,7 +54,8 @@ class HDFDataModel(dv.PyDataViewModel):
             for name in six.iterkeys(self.dataset):
                 labels =(name,)
                 obj, exist = self.getobj(labels)
-                if not exist: children.append(self.ObjectToItem(obj))
+                #if not exist:
+                children.append(self.ObjectToItem(obj))
                 if not labels in self.export_flag:
                     self.export_flag[labels] = True
                 self.objs.append(obj)
@@ -71,7 +72,8 @@ class HDFDataModel(dv.PyDataViewModel):
                 x.append(newlabel)
                 labels2 = tuple(x)
                 obj, exist = self.getobj(labels2)                
-                if not exist: children.append(self.ObjectToItem(obj))
+                #if not exist:
+                children.append(self.ObjectToItem(obj))
                 if not labels2 in self.export_flag:
                     self.export_flag[labels2] = self.export_flag[labels]
                 self.objs.append(obj)
@@ -213,11 +215,14 @@ class HdfExportWindow(wx.Frame):
         title  = kargs.pop('title', 'HDF export')
         path = kargs.pop('path', os.path.join(os.getcwd(), 'data.hdf'))
         dataset = kargs.pop('dataset', None)
-        metadata = kargs.pop('metadata', None)
+        metadata = kargs.pop('metadata', OrderedDict())
+        export_flag = kargs.pop('export_flag', {})        
         if dataset is None:
             if page is None:  return
             dataset, metadata, export_flag = build_data(page, 
-                                                        verbose = False)
+                                                        verbose = False,
+                                                        metadata = metadata,
+                                                        export_flag = export_flag)
         style = (wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|
                  wx.RESIZE_BORDER)
         if parent is not None:
@@ -225,7 +230,8 @@ class HdfExportWindow(wx.Frame):
                                 
         wx.Frame.__init__(self, *args,
                           style = style, 
-                          title = title, parent = parent)
+                          title = title, parent = parent,
+                          size = (400, 500))
 
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -249,10 +255,9 @@ class HdfExportWindow(wx.Frame):
                                                      |dv.DV_ROW_LINES
                                                      |dv.DV_VERT_RULES))
 
-        self.export_flag = {}
-        self.model = HDFDataModel(export_flag = self.export_flag,
-                             dataset = dataset,
-                             metadata = metadata)
+        self.model = HDFDataModel(export_flag = export_flag,
+                                  dataset = dataset,
+                                  metadata = metadata)
         self.dataviewCtrl.AssociateModel(self.model)
 
         self.tr = tr = dv.DataViewTextRenderer()
@@ -297,11 +302,13 @@ class HdfExportWindow(wx.Frame):
         sizer_h.Add(self.btn_export, 0, wx.EXPAND|wx.ALL, 1)
 
 
+
         self.Layout()
         self.Show()
-
+        
+        self.sp.SetMinimumPaneSize(30)
         self.sp.SplitHorizontally(self.dataviewCtrl, self.grid)
-      
+        self.sp.SetSashPosition(300)              
 #        self.Bind(dv.EVT_DATAVIEW_ITEM_VALUE_CHANGED,
 #                  self.onDataChanged, self.dataviewCtrl)
         self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
@@ -350,9 +357,10 @@ class HdfExportWindow(wx.Frame):
 
     def onExport(self, evt):
         import ifigure.widgets.dialog as dialog        
-        flags = self.export_flag
+        flags = self.model.export_flag
+        dataset = self.model.dataset
+        metadata = self.model.metadata        
         path  = self.filepicker.GetPath()
-
         try:
             hdf_data_export(data = dataset,
                         metadata = metadata, 

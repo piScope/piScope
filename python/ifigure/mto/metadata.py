@@ -74,11 +74,14 @@ class MetadataHolder(object):
     def assign_default_file_metadata(self, data=None):
         from ifigure.mto.fig_page import FigPage
         if not isinstance(self, FigPage): return
-        if self.has_metadata(): return
-        meta =OrderedDict()
+        if self.has_metadata():
+            metadata = self.getvar('metadata')
+        else:
+            metadata = OrderedDict()
         for k in default_metadata_file_keys:
-            meta[k] = ''
-        self.setvar('metadata', meta)
+            if not k in metadata:
+               metadata[k] = ''
+        self.setvar('metadata', metadata)
         self.update_file_metadata()
 
     def assign_default_metadata(self, data=None):
@@ -87,14 +90,18 @@ class MetadataHolder(object):
         '''
         def fill_dataset(dd, d):
             for key in six.iterkeys(d):
-                dd[key] = OrderedDict()
+                if not key in dd:
+                   dd[key] = OrderedDict()
                 for kk in default_metadata_data_keys:
-                    dd[key][kk] = ''
-        if self.has_metadata(): return
-        metadata = OrderedDict()
+                    if not kk in dd[key]:
+                        dd[key][kk] = ''
+        if self.has_metadata():
+            metadata = self.getvar('metadata')
+        else:
+            metadata = OrderedDict()
         self.setvar('metadata', metadata)
         for key in default_metadata_keys:
-            metadata[key] = ''
+            if not key in metadata: metadata[key] = ''
         if data is None:
             try:
                 data = self.export()
@@ -102,11 +109,13 @@ class MetadataHolder(object):
                 pass
         if data is not None:
            if len(data) == 1:
-               metadata['data'] = {}
+               if not 'data' in metadata:
+                   metadata['data'] = {}
                fill_dataset(metadata['data'], data[0])         
            else:
                for kk,  ddd in enumerate(data):
-                   metadata['data'+str(kk+1)] = {}
+                   if not 'data'+str(kk+1) in metadata:
+                       metadata['data'+str(kk+1)] = {}
                    fill_dataset(metadata['data'+str(kk+1)],
                                 ddd)
-        self.update_data_metadata(updatename = True)
+           self.update_data_metadata(updatename = True)

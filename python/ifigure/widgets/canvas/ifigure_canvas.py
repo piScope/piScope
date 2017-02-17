@@ -3167,6 +3167,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        page = self._figure.figobj
        w = HdfExportWindow(parent = window,
                           page = page)
+       self.w = w
        
    def _clean_selection(self):
       for item in self.selection:
