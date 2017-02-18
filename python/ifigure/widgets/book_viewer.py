@@ -46,6 +46,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('BookViewer')
 ID_KEEPDATA = wx.NewId()
 ID_HIDEAPP = wx.NewId()
 ID_WINDOWS = wx.NewId()
+ID_HDF_EXPORT = wx.NewId()
 
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -478,7 +479,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                     if self.book._screen_ratio_lock is None:
                         evt.Check(False) 
                     else:
-                        evt.Check(True) 
+                        evt.Check(True)
+        elif (id == ID_HDF_EXPORT):
+            if wx.GetApp().TopWindow.hdf_export_window is None:
+                evt.Enable(True)
+            else:
+                evt.Enable(False)                
         elif self.gui_tree.onUpdateUI(evt):
             pass
         else:
@@ -604,7 +610,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                      "Save Image", "Save Image", 
                       self.onSaveImage)
     def add_exporthdf_menu(self, parent):
-        self.add_menu(parent, wx.ID_ANY, 
+        self.add_menu(parent, ID_HDF_EXPORT,
                      "HDF data...", "Export HDF data.", 
                       self.onExportHDF)
 

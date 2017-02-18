@@ -51,9 +51,10 @@ def select_unique_properties(parent, dataset, flags):
         for p in props: pp = pp + tuple(p.keys())
         for x in set(pp):
             value = not (len(set([p.get(x, None) for p in props])) == 1)
-            for name in names:
-                labels = (name, 'property')
-                flags[labels] = value
+            if value:
+                for name in names:
+                    labels = (name, 'property')
+                    flags[labels] = value
             for name in names:
                 labels = (name, 'property', x)
                 flags[labels] = value

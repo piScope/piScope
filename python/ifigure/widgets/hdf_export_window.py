@@ -4,16 +4,18 @@ from collections import OrderedDict
 import wx
 import wx.dataview as dv
 import wx.propgrid as pg
+from wx._core import PyDeadObjectError
 import six
 import numpy as np
 import time
+import weakref
 import traceback
 try:
    #  for standalone testing (when running python hdf_export_window.py)
    from ifigure.utils.hdf_data_export import build_data,  hdf_data_export, set_all_properties_all, select_unique_properties_all
 except:
    pass
-
+import ifigure.events
 '''
    helper window for HDF export
 
@@ -320,13 +322,19 @@ class HdfExportWindow(wx.Frame):
 #                  self.onDataChanged, self.dataviewCtrl)
         self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                   self.onSelChanged, self.dataviewCtrl)
+        
+        #self.Bind(dv.EVT_DATAVIEW_ITEM_COLLAPSING,
+        #          self.onCollapsing, self.dataviewCtrl)
+        
         self.grid.Bind(pg.EVT_PG_CHANGED, 
                   self.onPGChanged,  self.grid)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.btn_export)
         self.Bind(wx.EVT_COMBOBOX, self.onCBHit, self.cb)      
-
+        self.Bind(wx.EVT_CLOSE, self.onWindowClose)
+        
         self.page = page
-
+        wx.GetApp().TopWindow.hdf_export_window = self
+        
     def onCBHit(self, evt):
         flags = self.model.export_flag
         dataset = self.model.dataset
@@ -344,9 +352,34 @@ class HdfExportWindow(wx.Frame):
         self.Refresh()
         evt.Skip()
 
-    def onSelChanged(self, evt):
+    def onTD_Selection(self, evt):
+        w = evt.GetEventObject()
+        if w is self: return
+        
+        td = evt.GetTreeDict()
+        name = self.page.name + '.' + '.'.join(self.page.get_td_path(td)[1:])
+
         item = self.dataviewCtrl.GetSelection()
-        labels = self.model.ItemToObject(item).GetData()
+        try:
+           clabels = self.model.ItemToObject(item).GetData()
+        except:
+           clabels = (self.page.name, )
+
+        if clabels[0] == name: return
+        if (name,) in self.model.labels:
+            obj, flag = self.model.getobj((name,))
+            item = self.model.ObjectToItem(obj)
+            self.dataviewCtrl.Select(item)
+        
+    def onSelChanged(self, evt):
+        #print('onSelChanged')
+        item = self.dataviewCtrl.GetSelection()
+        try:
+           labels = self.model.ItemToObject(item).GetData()
+        except:
+           self.grid.Clear()           
+           self.dataviewCtrl.UnselectAll()
+           return
         metadata = self.model.metadata
         self.grid_target = None
         p = 0
@@ -370,6 +403,15 @@ class HdfExportWindow(wx.Frame):
             prop = pg.StringProperty(str(key), value = str(dd[key]))
             self.grid.Append(prop)
         self.grid_target = d
+
+        names = labels[0].split('.')
+        if len(names) > 1:
+           figobj = self.page
+           for name in names[1:]:
+              figobj = figobj.get_child(name = name)
+           if len(figobj._artists) > 0:
+               sel = [weakref.ref(figobj._artists[0])]
+               ifigure.events.SendSelectionEvent(figobj, self, sel)        
         evt.Skip()
 
     def onPGChanged(self, evt):
@@ -400,7 +442,10 @@ class HdfExportWindow(wx.Frame):
                        message = 'Export finished')
         #self.Close()
         evt.Skip()
-
+        
+    def onWindowClose(self, evt):
+        wx.GetApp().TopWindow.hdf_export_window = None
+        evt.Skip()
 
 
 if __name__ == '__main__':

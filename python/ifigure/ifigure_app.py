@@ -419,6 +419,7 @@ class ifigure_app(BookViewerFrame):
        self.remote_lock = threading.Lock()
        self.viewers = [self] # list of fig viewers
        self._aviewer =  self
+
        self.ipage=-1
        self.book = self.make_empty_project()
        self.load_pref()
@@ -434,7 +435,8 @@ class ifigure_app(BookViewerFrame):
 #       self.logw.redirector = RedirectOutput(sys.stdout)
        self.tipw = Tipwindow(self, wx.ID_ANY, 'Command help')
        self.shell.set_tipw(self.tipw)
-
+       self.hdf_export_window = None
+       
        if redirect_std:
            self.redirector = RedirectOutput(self.proj_tree_viewer.consol.log,
                                             self.proj_tree_viewer.consol.log)
@@ -2015,6 +2017,12 @@ class ifigure_app(BookViewerFrame):
                viewer.onTD_SelectionInFigure(evt)
         if w != self.proj_tree_viewer:
            self.proj_tree_viewer.onTD_Selection(evt)
+        try:           
+           if w != self.hdf_export_window:
+              if self.hdf_export_window is not None:
+                   self.hdf_export_window.onTD_Selection(evt)
+        except PyDeadObjectError:
+           self.hdf_export_window = None
 
 #       this is added to preserve focus. 
 #       not a perfect solution.
