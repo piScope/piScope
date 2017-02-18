@@ -51,7 +51,7 @@ def select_unique_properties(parent, dataset, flags):
         for p in props: pp = pp + tuple(p.keys())
         for x in set(pp):
             value = not (len(set([p.get(x, None) for p in props])) == 1)
-            for nane in names:
+            for name in names:
                 labels = (name, 'property')
                 flags[labels] = value
             for name in names:
@@ -63,15 +63,21 @@ def select_unique_properties_all(page, dataset, flags):
     for obj in page.walk_tree():
         if obj.num_child() > 0:
              select_unique_properties(obj, dataset, flags)
+    for key in six.iterkeys(flags):
+        if (key[0] == page.name and len(key) >= 2 and
+            key[1] == 'property'):
+           flags[key] = False
 
 def set_all_properties_all(flags, value):
-    for labels in six.iterkeys(flags):
+    keys = flags.keys()
+    for labels in keys:
         if len(labels) < 2: continue
         if labels[1] == 'property': flags[labels] = value
-    for labels in six.iterkeys(flags):
+    keys = flags.keys()        
+    for labels in keys:
         if not (labels[0], 'property') in flags:
             flags[(labels[0], 'property')] = value
-    print flags
+
 def get_all_properties(obj):
     ret =  obj.property_for_shell()
     tags = None
@@ -184,7 +190,6 @@ def hdf_data_export(page = None,
     
     import time
     meta = metadata[metadata.keys()[0]]
-    print meta
     meta['description'] = "Figure data exported from piScope"
     meta['date']= time.ctime(time.time())
     for key in six.iterkeys(meta):

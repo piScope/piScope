@@ -396,8 +396,9 @@ class HdfExportWindow(wx.Frame):
                                txt='Failed to export HDF', 
                                title='Error during HDF export',
                                traceback=traceback.format_exc())
-        
-        self.Close()
+        dialog.message(parent = self, style = 0,
+                       message = 'Export finished')
+        #self.Close()
         evt.Skip()
 
 
