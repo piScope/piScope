@@ -4,7 +4,13 @@ Goal of piScope includes
 
    * To provide data analysis enviroment (= python shell, editor,
      data structure browser, and matplotlib figure)
-   * To allow user to edit matploblib based figures through gui and save it as a figure.
+   * To allow user to work with matploblib based figures through gui.
+    * save/load a figure as a figure file.
+    * edit artists using GUI palette for plot, contour, image, triplots and so on.
+    * change panel layout via an interactive layout editor
+    * cut/paste of plot, axes, or an entire page.
+    * export data from plot to python shell by one click
+    * interatively annotate figure using text, arrow, lines,,,
    * To build a data browsing (scope) application for MDSplus data system (www.mdsplus.org)
    * To provide lego blocks for gluing up large simulation codes 
      by python
