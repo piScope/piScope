@@ -50,6 +50,7 @@ __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
 import wx, time
+from wx._core import PyDeadObjectError
 import matplotlib
 import numpy as np
 #from numpy import arange, sin, pi
@@ -3163,10 +3164,20 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        from ifigure.widgets.hdf_export_window import HdfExportWindow
 
 
+       try:
+           exist_flag = True           
+           if wx.GetApp().TopWindow.hdf_export_window is not None:
+                wx.GetApp().TopWindow.hdf_export_window.GetSize()
+           else: exist_flag = False
+       except PyDeadObjectError:
+           exist_flag = False
+       if exist_flag: return
+        
        window = self.GetTopLevelParent()       
        page = self._figure.figobj
        w = HdfExportWindow(parent = window,
                           page = page)
+       self.w = w
        
    def _clean_selection(self):
       for item in self.selection:

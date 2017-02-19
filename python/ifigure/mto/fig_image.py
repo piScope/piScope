@@ -575,27 +575,12 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             
     def get_export_val(self, a):
         x, y, z = self._eval_xyz()
-        return {"zdata": z,
+        # althouth internally it is called zdata, export will name it cdata,
+        # which is more appropriate.
+        return {"cdata": z,
                 "xdata": x,
                 "ydata": y}
 
-#    def onExport(self, event):
-#        from matplotlib.artist import getp
-#
-#        app=self.get_root_parent().app
-#        shell=app.shell
-#        canvas = event.GetEventObject()
-#        sel = [a() for a in canvas.selection]
-#        for a in self._artists:
-#            if a in sel:
-#               print("Exporting Data to Shell") 
-#               x, y, z = self._eval_xyz()
-#               fig_val={"zdata": z,
-#                        "xdata": x,
-#                        "ydata": y}
-#               text= '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\'], fig_val[\'zdata\']'
-#               self._export_shell(fig_val, 'fig_val', text)
-#               break
     def interp_image(self, x, y, z):
         dprint2('interpolating image data')
 #        return x, y, z
