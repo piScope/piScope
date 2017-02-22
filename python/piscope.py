@@ -25,7 +25,6 @@ if __name__ == '__main__':
    site.USER_SITE = os.path.join(home, '.ifigure_rc', '.local', 'site-packages')
    site.USER_BASE = os.path.join(home, '.ifigure_rc', '.local')
    redirect_std = True
-   use_ipython  = False
    file = None
    start_server = False
    show_file_open_error = False
@@ -63,7 +62,6 @@ if __name__ == '__main__':
           print('-s               : start server thread')
           print('-d               : suppress redirect')
           print('-c               : use console redirect')
-          print('-i               : use ipython (-d is automatically used too)')
           print('-n               : no main window')
           print('-p               : call profiler')
           print('-r <command>     : run command')
@@ -86,10 +84,6 @@ if __name__ == '__main__':
         elif p == '-c':
           redirect_std = True
           print('consol redirect is on')
-          continue
-        elif p == '-i':
-          use_ipython = True
-          redirect_std = False
           continue
         elif p == '-n':
           hide_main = True
@@ -135,7 +129,6 @@ if __name__ == '__main__':
                 file = None
 
    ifigure.ifigure_app.redirect_std = redirect_std
-   ifigure.ifigure_app.use_ipython  = use_ipython
 
 #   from ifigure.utils.rollback_importer import RollbackImporter as RI
    from ifigure.mto.treedict import fill_td_name_space
@@ -145,22 +138,9 @@ if __name__ == '__main__':
    sc = os.path.join(rcdir, 'treedict_ns.py')
    if os.path.exists(sc): fill_td_name_space(sc)
  
-   if use_ipython:
-       from IPython.lib.guisupport import get_app_wx, start_event_loop_wx
-       app = wx.GetApp()
-       if app is None:
-           app = MyApp(redirect=False, clearSigInt=False)
-           ifig_app = app.get_ifig_app()
-       else:
-           ifig_app = ifigure_app(None, "iScope+:", noPyShell=use_ipython, hide=hide_main,
-                                  launcher_file=launcher_file)
-           app.SetTopWindow(ifig_app)
+   app = MyApp(False, clearSigInt=False)
+   ifig_app = app.get_ifig_app()
 
-   else:
-       app = MyApp(False, clearSigInt=False)
-       ifig_app = app.get_ifig_app()
-#       ifig_app = ifigure_app(None, "iScope+:", noPyShell=use_ipython, hide=hide_main)
-#       app.SetTopWindow(ifig_app)
    if show_file_open_error:
       ifig_app.shell.write('### File not found : ' + filename)
 
@@ -227,15 +207,7 @@ if __name__ == '__main__':
    ### conditions for iptyhon
    ifig_app.set_launcher_file(launcher_file)
 
-   if use_ipython:
-      try:
-          from IPython.lib.inputhook import enable_wx
-          enable_wx(app)
-      except ImportError:
-          app.MainLoop()
-   else:
-      app.MainLoop()
-
+   app.MainLoop()
    server = ifigure.server.Server()
    if server.info()[0]:
        server.stop()

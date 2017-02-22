@@ -299,7 +299,6 @@ ifigure._visual_config = {}
 ifigure._cursor_book = None   ### specail book for slice cursor
 
 redirect_std = False
-use_ipython  = False
 #
 #  debug setting
 #
@@ -2288,7 +2287,7 @@ class MyApp(wx.App):
 
         
     def OnInit(self,launcher_file = None):
-        self._ifig_app = ifigure_app(None, "iScope+:", noPyShell=use_ipython)
+        self._ifig_app = ifigure_app(None, "iScope+:")
         self.SetTopWindow(self._ifig_app)
         self.AppWindow = self._ifig_app
         
