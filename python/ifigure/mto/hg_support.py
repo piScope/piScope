@@ -16,6 +16,7 @@
        clone   : make clone outside the project directory
 '''
 import os, wx, shutil, ifigure.events, traceback, time, subprocess, shlex
+from fnmatch import fnmatch
 import ifigure.widgets.dialog  as     dialog
 from   ifigure.mto.treedict    import TreeDict
 from   ifigure.utils.edit_list import DialogEditList
@@ -331,22 +332,26 @@ try:
 #       print 'exclude', exclude
        for item in s['C']:
            path = os.path.join(dir, item)
-           if item in exclude:       
+           itemb = os.path.basename(item)
+           if item in exclude or any(fnmatch(itemb, x) for x in exclude):
                repo.hg_remove(path)
                rmfile.append(item)
        for item in s['M']:
            path = os.path.join(dir, item)
-           if item in exclude:       
+           itemb = os.path.basename(item)           
+           if item in exclude or any(fnmatch(itemb, x) for x in exclude):          
                repo.hg_remove(path)
                rmfile.append(item)
        s = repo.hg_status(clean = True)
        modfile = s['M']
        for item in s['?']:  
            path = os.path.join(dir, item)
+           itemb = os.path.basename(item)                      
 #           print item
            for item2 in exclude:
                if item2 == '': continue
-               if path.find(os.path.join(dir, item2)) != -1:
+               if (fnmatch(itemb, item2) or 
+                   path.find(os.path.join(dir, item2)) != -1):
                    dprint1('skipping folder ', item)
                    skipfile.append(item)
                    break
@@ -354,14 +359,14 @@ try:
            else:  
                print(isBinary(path), path)
                if isBinary(path):
-                   if item in include:
+                   if item in include or any(fnmatch(itemb, x) for x in include):    
                        repo.hg_add(path)
                        addfile.append(item)    
                    else:
                        dprint1('skipping binary', item)
                        skipfile.append(item)
                else:
-                   if item in exclude:
+                   if item in exclude or any(fnmatch(itemb, x) for x in exclude): 
                        dprint1('skipping text', item)
                        skipfile.append(item)
                    else:
@@ -898,8 +903,8 @@ try:
            evt.Skip()
 
        def onHGSetting(self, evt):
-           list = [["Include", ','.join(self.getvar('include')), 0, None],
-                   ["Exclude", ','.join(self.getvar('exclude')), 0, None],
+           list = [["Include", ', '.join(self.getvar('include')), 0, None],
+                   ["Exclude", ', '.join(self.getvar('exclude')), 0, None],
                    [None, '(Note) List binary files to be included and text files to be exlcuded.',
                     2, None]]
            tv = evt.GetEventObject()
