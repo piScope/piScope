@@ -4,7 +4,8 @@
 piScope,  where pi is written in Greek letter like $\pi$Scope in LaTex,
 is a python based workbench for data analysis and modeling.
 
-   Copyright (C) 2012-2016 Syun'ichi Shiraiwa
+   Copyright (C) 2012-2017 Syun'ichi Shiraiwa and Plasma Science
+   Fusion Center, MIT
    http://piscope.psfc.mit.edu
 
  Above copyright notice and citation of website must be retained in 

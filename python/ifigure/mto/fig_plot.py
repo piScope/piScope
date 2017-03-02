@@ -419,25 +419,22 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
     
     def get_export_val(self, a):
         from matplotlib.artist import getp
-        return {"xdata": getp(a,"xdata"), 
-                "ydata": getp(a,"ydata")}
-#
-#    def onExport(self, event):
-#        from matplotlib.artist import getp
-#        app=self.get_root_parent().app
-#       shell=app.shell
-#        canvas = event.GetEventObject()
-#        sel = [a() for a in canvas.selection]
-#        for a in self._artists:
-#            if a in sel:
-#               fig_val={"xdata": getp(a,"xdata"), 
-#                        "ydata": getp(a,"ydata")}
-#               text= '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']\"'
-#               self._export_shell(fig_val, 'fig_val', text)
-#               break
-#
-#   data extent
-#
+        data =  {"xdata": self.getvar("x"), 
+                 "ydata": self.getvar("y")}
+        zdata = self.getvar("z")
+        cdata = self.getvar("c")
+        if cdata is not None:
+            data["cdata"] = cdata
+            if zdata is not None:
+                data["zdata"] = zdata
+        else:
+            if zdata is not None:
+                if self.getvar("cz"):
+                    data["cdata"] = zdata
+                else:
+                    data["zdata"] = zdata
+        return data
+
     def get_data_extent(self):
 #        print 'entering data extent',  self._data_extent
         if self._data_extent is not None:
@@ -842,22 +839,10 @@ class StepPlot(FigPlot):
 
     def get_export_val(self, a):
         self.expand_catalog()
-        return {"xdata": self.getvar('x'),
-                "ydata": self.getvar('y')}
-
-#    def onExport(self, event):
-#        self.expand_catalog()
-#        canvas = event.GetEventObject()
-#        sel = [a() for a in canvas.selection]
-#        for a in self._artists:
-#            if a in sel:
-#               fig_val={"xdata": self.getvar('x'),
-#                        "ydata": self.getvar('y')}
-#               text= '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']\"'
-#               self._export_shell(fig_val, 'fig_val', text)
-#               break
-#        event.Skip()
-
+        data =  {"xdata": self.getvar('x'),
+                 "ydata": self.getvar('y')}
+        return data
+            
     def _eval_xy(self):
         names = ("x", "y", "z", "s", "c")
         if self.getp('use_var'): 

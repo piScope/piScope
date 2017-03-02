@@ -401,8 +401,15 @@ def call_getter(artist, ll, tab=''):
 #             sw = self.list[k][i][5]
         if sw > 9: sw = sw-10
         if sw  == 0:
-            m = getattr(artist, 'get_'+ll[4])
-            return m()
+            try:
+                m = getattr(artist, 'get_'+ll[4])
+                return m()
+            except AttributeError:
+                return None
+            except:
+                import traceback
+                traceback.print_exc()
+                return None
 #             elif sw == 10:
 #                m = getattr(artist, 'get_'+self.list[k][i][4])
 #                value[i] = m()
