@@ -841,21 +841,8 @@ class StepPlot(FigPlot):
         self.expand_catalog()
         data =  {"xdata": self.getvar('x'),
                  "ydata": self.getvar('y')}
+        return data
             
-
-#    def onExport(self, event):
-#        self.expand_catalog()
-#        canvas = event.GetEventObject()
-#        sel = [a() for a in canvas.selection]
-#        for a in self._artists:
-#            if a in sel:
-#               fig_val={"xdata": self.getvar('x'),
-#                        "ydata": self.getvar('y')}
-#               text= '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']\"'
-#               self._export_shell(fig_val, 'fig_val', text)
-#               break
-#        event.Skip()
-
     def _eval_xy(self):
         names = ("x", "y", "z", "s", "c")
         if self.getp('use_var'): 
