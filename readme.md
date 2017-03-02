@@ -31,4 +31,4 @@ Directories:
 *  ../example/       example data to look in &pi;Scope
 
 Copyright: 
-*  Copyright (c) 2012-2017 S. Shiraiwa  All rights reserved.
+*  Copyright (c) 2012-2017 S. Shiraiwa and PSFC, MIT All rights reserved.
