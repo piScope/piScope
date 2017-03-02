@@ -832,6 +832,8 @@ class VarViewerG(wx.Panel):
     def set_expression_field(self, row):
         gt=self.grid.GetTable()
         obj=gt.GetTreeDict()
+        names = get_varlist(obj)
+        if len(names) < row: return
         name=(get_varlist(obj))[row]
         name = gt.get_row_name(row)
         val=obj.getvar(name)
