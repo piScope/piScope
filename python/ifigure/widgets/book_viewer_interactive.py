@@ -36,7 +36,6 @@ import logging
 import six
 import matplotlib.colors as mcolors
 import warnings
-    
 
 _type_numbers = ['int8', 'int16', 'int32', 'int64',
                   'uint8', 'uint16', 'uint32', 'uint64',
@@ -81,10 +80,59 @@ def has_plot(figaxes):
            not isinstance(obj, FigCircle)): return True
     return False
 
+def pop_metadata(kargs):
+    '''
+       metadata is either dictionary
+       or 
+           longname,
+           xlongname
+           ylongname and so on
+
+      example : 
+           plot(np.arange(30), metadata = {'longname':'plot name',
+                                           'xdata':{'longname': 'xdata name', 'unit': '[s]'},
+                                           'ydata':{'longname': 'ydata name', 'unit': '[V]'}})
+           plot(np.arange(30), metadata = 'metadata', xmetadata='xdata')
+
+           note: "name" in metadata is reseved, and piScope automatically 
+                 fills using axis lables.
+    '''
+    meta0 = kargs.pop('metadata', None)
+    if isinstance(meta0, dict):
+        meta = OrderedDict()
+        for k in meta0:
+            if k.endswith('data'):
+               if not 'data' in meta: meta['data'] = {}
+               meta['data'][k] = OrderedDict(meta0[k])
+            else:
+               meta[k] = meta0[k]
+    else:
+        meta = OrderedDict()
+        if meta0 is not None:
+            meta['name'] = ''
+            meta['long_description'] = meta0
+
+        names = []
+        for k in kargs.keys():
+            if k.endswith('metadata'):
+                names.append(k)
+                header = k[:-8]
+                if header == '':
+                    pass
+                else:
+                    if not 'data' in meta: meta['data'] = {}
+                    meta['data'][header+'data'] = OrderedDict()
+                    meta['data'][header+'data']['name'] = ''
+                    meta['data'][header+'data']['long_description'] = kargs[k]
+        if len(names) == 0: return None
+        for name in names:
+            del kargs[name]
+    return meta
+        
 def allow_interactive_call(method):
     @wraps(method)
     def method2(self, *args, **kargs):
-       metadata = kargs.pop('metadata', None)
+       metadata = pop_metadata(kargs)
        update, kargs = ProcessKeywords(kargs, 'update', value = self._interactive_update)
        hold, kargs = ProcessKeywords(kargs, 'hold', value = True)
        autonext, kargs = ProcessKeywords(kargs, 'autonext', value = True)
