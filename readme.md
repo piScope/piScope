@@ -11,6 +11,7 @@ Goal of piScope includes
     * cut/paste of plot, axes, or an entire page.
     * export data from plot to python shell by one click
     * interatively annotate figure using text, arrow, lines,,,
+    * draw 3D (OpenGL) in matplotlib canvas.
    * To build a data browsing (scope) application for MDSplus data system (www.mdsplus.org)
    * To provide lego blocks for gluing up large simulation codes 
      by python
