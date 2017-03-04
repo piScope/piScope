@@ -457,11 +457,17 @@ class AbsScriptContainer(object):
         child.load_script(file)
 
     def onAddScriptFromFile(self, e):
+        
         file = dialog.read(None, message="Select script", 
                              wildcard='*.py')
-
+        if file == '':
+            e.Skip()
+            return 
         # this call is just import check..
-        mode, path = self.fullpath2path(file)
+        from ifigure.mto.py_script import PyScript        
+        tmp_child=PyScript()        
+        idx=self.add_child('_tempraroy_script', tmp_child)        
+        mode, path = tmp_child.fullpath2path(file)
         if (mode == 'wdir' or mode == 'owndir'):
            m = 'Import should import from somewhere outside project directory'
            ret=dialog.message(None, message=m, 
@@ -486,7 +492,8 @@ class AbsScriptContainer(object):
              shutil.copyfile(file, newfile)
              file = newfile
              modes = ['owndir']
-        mode, path = self.fullpath2path(file, modes)
+        mode, path = tmp_child.fullpath2path(file, modes)
+        tmp_child.destroy()
         self.onAddAbsScript(e, file=file, name=name)
         e.Skip()
 

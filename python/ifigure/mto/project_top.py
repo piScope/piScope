@@ -6,7 +6,7 @@ from ifigure.mto.py_code import PyModel
 from ifigure.mto.py_solver import PySolver
 from ifigure.mto.py_code import PySol
 from ifigure.mto.fig_book import FigBook
-from ifigure.mto.fileholder import FileHolder
+
 import   ifigure.widgets.dialog as dialog
 
 import ifigure.utils.debug as debug
@@ -69,7 +69,7 @@ class PySetting(TreeDict, AbsModuleContainer, AbsScriptContainer):
         self.add_child(name, obj)
         evt.Skip()
 
-class ProjectTop(TopTreeDict, AbsScriptContainer, AbsFileContainer, FileHolder):
+class ProjectTop(TopTreeDict, AbsScriptContainer, AbsFileContainer):
      '''
      root object of treedict (data tree object)
      '''
