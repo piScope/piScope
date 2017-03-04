@@ -518,7 +518,7 @@ class TreeDict(object):
         warning = kargs.pop('warning', [])
         
         if len(args)==2:
-           name=args[0]
+           name=str(args[0]) #avoid unicode name...
            obj=args[1]
         elif len(args)==1:
            obj=args[0]

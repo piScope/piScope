@@ -112,6 +112,11 @@ def onLoadFile(td, message="Select File",
     except: 
        samefile = False
     if ask_org_copy and not samefile:
+        from ifigure.widgets.dlg_fileimportmode import DlgFileimportmode
+        copy_file, pathmodes, ret = DlgFileimportmode(td,
+                                                      ask_copyorg = True)
+
+        '''
         choices = ["auto", "abs", "home", "proj"]
         if td.get_extfolderpath() is not None:
             choices.append(td.get_extfolderpath())
@@ -133,6 +138,7 @@ def onLoadFile(td, message="Select File",
         pathmodes = value[1][0][1]
         if str(pathmodes[0]) == 'auto':
            pathmodes = ['proj', 'home', 'abs']
+        '''
     else:
         ret = True
         copy_file = True
