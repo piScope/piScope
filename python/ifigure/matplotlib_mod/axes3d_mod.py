@@ -1,5 +1,6 @@
 import weakref
 import ifigure.events as events
+from scipy.signal import convolve2d
 
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -15,6 +16,13 @@ from matplotlib.collections import Collection, LineCollection, \
         PolyCollection, PatchCollection, PathCollection
 from ifigure.matplotlib_mod.is_supported_renderer import isSupportedRenderer
 
+### KERNEL for mask bluring
+conv_kernel_size = 11
+x = 1-np.abs(np.linspace(-1., 1., conv_kernel_size))
+X, Y = np.meshgrid(x, x)
+conv_kernel = np.sqrt(X**2, Y**2)
+conv_kernel = conv_kernel/np.sum(conv_kernel)
+###             
 def convert_to_gl(obj, zs = 0, zdir = 'z'):
     from art3d_gl import polygon_2d_to_gl 
     from art3d_gl import line_3d_to_gl 
@@ -149,6 +157,8 @@ class Axes3DMod(Axes3D):
         #     and
         #     if it is the closet artist in the area of checking
         #     then return True
+
+        
         if self._gl_id_data is None: return False
         if self._gl_mask_artist is None: return False
 
@@ -162,11 +172,17 @@ class Axes3DMod(Axes3D):
             if (id_dict[k] == id):
                m = im == k
                arr[:,:,0][m] = cmask
-               arr[:,:,1][m] = cmask
-               arr[:,:,2][m] = cmask
+               #arr[:,:,1][m] = cmask
+               #arr[:,:,2][m] = cmask
                arr[:,:,3][m] = amask               
                break
-        #self._gl_mask_artist.set_array(arr)
+        # blur the mask,,,
+        b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
+        #b = np.sqrt(b)
+        b[b > amask] = amask
+        a = arr[:,:,0]; a[b > 0.0] = cmask        
+        arr = np.dstack((a,a,a,b))
+        self._gl_mask_artist.set_array(arr)
 
     def set_nomargin_mode(self, mode):
         self._nomargin_mode = mode

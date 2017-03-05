@@ -365,7 +365,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
 #                      z=a._verts3d[2]
 #                      hl[0].set_3d_properties(zs = z)
               elif isinstance(a, Line3DCollectionGL):
-                  hl = a.make_hl_artist(container)
+                  hl = alist[0].add_hl_mask()                                 
+#                  hl = a.make_hl_artist(container) #slower
               for item in hl:
                   a.figobj_hl.append(item)
         else:
