@@ -618,6 +618,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     xxx = [None]*len(self.artists_data[aa][a])
                 else:
                     xxx = self.vbo[aa][a]
+                    
                 for k, data in enumerate(self.artists_data[aa][a]):
                     m = getattr(self, 'makevbo_'+ data[0])
                     if len(xxx) == k: xxx.append(None)
@@ -874,9 +875,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if lw > 0: glLineWidth(lw)
         if rgbFace is None:
             glColor(gc._rgb)
-#            if not self._shadow:
-#                self.set_view_offset()
-#                print 'set offset'
             if self._wireframe == 2: glDisable(GL_DEPTH_TEST)            
             if lw != 0:
                 if (linestyle == '-' or self._p_shader != self.shader):
@@ -1068,7 +1066,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           facecolor, edgecolor,
                                           linewidth, linestyle, offset,
                                           stencil_test = False,
-                                          lighting = True):
+                                          lighting = True,
+                                          view_offset = (0, 0, 0, 0)):
 
 
         glEnableClientState(GL_VERTEX_ARRAY)
@@ -1099,6 +1098,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
            use_multdrawarrays = True
 
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
+        self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
+        
         
         if not lighting and self._p_shader is self.shader:
             ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()
@@ -1132,7 +1133,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDepthFunc(GL_LEQUAL)
 
             if not self._shadow:
-                self.set_view_offset()
+                self.set_view_offset(offset_base = view_offset)
             if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             if use_multdrawarrays:
@@ -1145,7 +1146,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #                              len(counts))
             if self._wireframe == 2: glEnable(GL_DEPTH_TEST)            
             self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-                             (0, 0, 0.00, 0.))
+                             (0, 0, 0., 0.))
             vbos['ec'].unbind()
         if not lighting and self._p_shader is self.shader:            
             self.set_lighting(ambient = ambient,
@@ -1162,14 +1163,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
         glDepthMask(GL_TRUE)
 
-    def set_view_offset(self):
+    def set_view_offset(self, offset_base = (0, 0, 0., 0)):
+        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.005, 0.)))
         if self._use_frustum:
-           self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-                           (0, 0, -0.005, 0.))
+           self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
         else:
-           self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-                           (0, 0, -0.005, 0.))
-           
+           self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
           
     def makevbo_path_collection(self, vbos, gc, paths, facecolor, 
                                       edgecolor, *args, **kwargs):

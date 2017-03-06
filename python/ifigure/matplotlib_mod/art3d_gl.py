@@ -70,6 +70,7 @@ class ArtGL(object):
         self._gl_3dpath = None        
         self._gl_lighting = True
         self._gl_offset = (0, 0, 0.)
+        self._gl_voffset = (0., 0., 0., 0.)        # view offset
         self._gl_data_extent = None
         self._gl_hl = False
 
@@ -220,7 +221,8 @@ class LineGL(ArtGL, Line3D):
                    [self._linewidth], self._linestyle,
                    self._antialiased, self._url,
                    None, lighting = self._gl_lighting, 
-                   stencil_test = False)
+                   stencil_test = False,
+                   view_offset = self._gl_voffset)              
                              
            if len(self._marker.get_path()) != 0:
               marker_path = None
@@ -496,7 +498,9 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
                    self._linewidths, self._linestyles,
                    self._antialiaseds, self._urls,
                    self._offset_position, lighting = self._gl_lighting, 
-                   stencil_test = self.do_stencil_test)
+                    stencil_test = self.do_stencil_test,
+                   view_offset = self._gl_voffset)                
+
 #           renderer.do_stencil_test = False
            glcanvas.end_draw_request()
            gc.restore()
@@ -537,6 +541,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._gl_shade = kargs.pop('gl_shade', 'smooth')
         self._gl_lighting = kargs.pop('gl_lighting', True)
         self._gl_facecolordata = kargs.pop('facecolordata', None)
+        self._gl_voffset = kargs.pop('view_offset', (0,0,0,0.))
         self._cz = None
         self._gl_cz = None
         self._update_ec = True
@@ -750,7 +755,9 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                    self._gl_facecolor, self._gl_edgecolor,
                    self._linewidths, self._linestyles,
                    self._antialiaseds, self._urls,
-                    self._offset_position, stencil_test = self.do_stencil_test)
+                   self._offset_position,
+                    stencil_test = self.do_stencil_test,
+                    view_offset = self._gl_voffset)
 
 #           renderer.do_stencil_test = False
            glcanvas.end_draw_request()

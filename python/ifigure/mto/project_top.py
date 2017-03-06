@@ -6,6 +6,7 @@ from ifigure.mto.py_code import PyModel
 from ifigure.mto.py_solver import PySolver
 from ifigure.mto.py_code import PySol
 from ifigure.mto.fig_book import FigBook
+
 import   ifigure.widgets.dialog as dialog
 
 import ifigure.utils.debug as debug

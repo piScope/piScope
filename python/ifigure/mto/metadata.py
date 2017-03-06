@@ -18,7 +18,7 @@ default_metadata_file_keys = ('name',
 # this is assigned to figplot under data dictionary key.
 default_metadata_data_keys = ('name',
                                    'long_description',
-                                   'units',
+                                   'unit',
                                    'range')
 # In addition to this shape and type will be written 
 # automatically.

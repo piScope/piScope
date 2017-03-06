@@ -444,13 +444,58 @@ class AbsScriptContainer(object):
         if e is not None: e.Skip()
         return child
 
-    def onAddAbsScript(self, e, file=None):
+    def onAddAbsScript(self, e, file=None, name = None):
         from ifigure.mto.py_script import PyScript
         child=PyScript()
-        name=self.get_next_name(child.get_namebase())
+        if name is None:
+             name=self.get_next_name(child.get_namebase())
+        if self.has_child(name):
+             print 'doing here'
+             name=self.get_next_name(name)
         idx=self.add_child(name, child)
-        print('loading add-on', file)
+        #print('loading add-on', file)
         child.load_script(file)
+
+    def onAddScriptFromFile(self, e):
+        
+        file = dialog.read(None, message="Select script", 
+                             wildcard='*.py')
+        if file == '':
+            e.Skip()
+            return 
+        # this call is just import check..
+        from ifigure.mto.py_script import PyScript        
+        tmp_child=PyScript()        
+        idx=self.add_child('_tempraroy_script', tmp_child)        
+        mode, path = tmp_child.fullpath2path(file)
+        if (mode == 'wdir' or mode == 'owndir'):
+           m = 'Import should import from somewhere outside project directory'
+           ret=dialog.message(None, message=m, 
+               title='Import error')
+           return
+        
+        if not file.endswith('.py'):
+           m = 'Script fils should be a .py file'
+           ret=dialog.message(None, message=m, 
+               title='Import error')
+           return
+        name = os.path.basename(file)[:-3]
+        
+        from ifigure.widgets.dlg_fileimportmode import DlgFileimportmode
+        
+        copy, modes, copy_org = DlgFileimportmode(self,
+                                                  parent =  e.GetEventObject())
+        if copy:
+             newfile =  os.path.join(self.owndir()
+                                       , os.path.basename(file))
+             if not self.has_owndir(): self.mk_owndir()
+             shutil.copyfile(file, newfile)
+             file = newfile
+             modes = ['owndir']
+        mode, path = tmp_child.fullpath2path(file, modes)
+        tmp_child.destroy()
+        self.onAddAbsScript(e, file=file, name=name)
+        e.Skip()
 
     def build_script_menu(self, mod_path):
         menu=[]
@@ -477,12 +522,16 @@ class AbsScriptContainer(object):
     def script_template_list(self):
         base_mod='ifigure.template.script'
         mod_path=cbook.GetModuleDir(base_mod)
-        menu = self.build_script_menu2(mod_path)
         from ifigure.ifigure_config import usr_script_template_dir
-        menu2 = self.build_script_menu2(usr_script_template_dir)
-        menu.extend(menu2)
-        menu.append(('---', None, None))
-        menu.append(('Blank Script...', self.onAddNewScript, None))
+        
+        menu = []
+        menu.append(('Blank Script...', self.onAddNewScript, None))        
+        menu.append(('From File...', self.onAddScriptFromFile, None))
+        menu.append(('+From Template...', None, None))
+        menu.extend(self.build_script_menu2(mod_path))
+        menu.extend(self.build_script_menu2(usr_script_template_dir))
+        menu.append(('!', None, None))        
+
         return menu
 
 

@@ -293,7 +293,8 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
            facecolor='k'
            if isinstance(alist[0], Poly3DCollectionGL):
-               hl = alist[0].make_hl_artist(container)
+               hl = alist[0].add_hl_mask()               
+#               hl = alist[0].make_hl_artist(container) # slower
                facecolor = 'none'
            else:
                hl = []
