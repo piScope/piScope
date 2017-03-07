@@ -2309,6 +2309,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            alist = []
        if turn_on_gl:
            checklist = []
+           axes_gl = []
            for item in self.selection:
                if item() is None: continue
                if item().axes is not None:
@@ -2316,8 +2317,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                         if not item().axes in checklist:
                            alist.extend(item().axes.make_gl_hl_artist())
                            checklist.append(item().axes)
+                           axes_gl.append(item().axes)
            del checklist
-    
            
        for item in self.selection:
            if item() is None: continue
@@ -2325,7 +2326,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            if figobj is not None:
               figobj.highlight_artist(False, artist=[item()])
               figobj.highlight_artist(True,  artist=[item()]) 
-              
+
+       if turn_on_gl:
+           for a in axes_gl:
+               a.blur_gl_hl_mask()
+
        from numpy import inf
        hl_range = [inf, -inf, inf, -inf]              
        for item in self.selection:
