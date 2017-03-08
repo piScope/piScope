@@ -2,8 +2,7 @@
 &pi;Scope is a python based workbench for data analysis and modeling.
 Goal of piScope includes
 
-* To provide data analysis environment (= python shell, editor,
-     data structure browser, and matplotlib figure)
+* To provide data analysis environment (= python shell, editor, data structure browser, and matplotlib figure)
 * To allow user to work with matplotlib based figures through gui.
  * save/load a figure as a figure file.
  * edit artists using GUI palette for plot, contour, image, triplots and so on.
