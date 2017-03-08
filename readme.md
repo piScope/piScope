@@ -25,10 +25,10 @@ Requirements
 Wiki page : http://piscope.psfc.mit.edu/
 
 Directories:
-*  ../python/ifigure         core program
-*  ../python/ifigure/example examples
-*  ../bin/           scripts to run piScope
-*  ../example/       example data to look in &pi;Scope
+* ../python/ifigure             core program
+* ../python/ifigure/example              examples
+* ../bin/                        scripts to run &pi;Scope
+* ../example/                   example data to look in &pi;Scope
 
 Copyright: 
 *  Copyright (c) 2012-2017 S. Shiraiwa and PSFC, MIT All rights reserved.
