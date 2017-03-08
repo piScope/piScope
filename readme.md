@@ -13,8 +13,7 @@ Goal of piScope includes
  * interactively annotate figure using text, arrow, lines,,,
  * draw 3D (OpenGL) in matplotlib canvas.
 * To build a data browsing (scope) application for MDSplus data system (www.mdsplus.org)
-* To provide lego blocks for gluing up large simulation codes 
-     by python
+* To provide lego blocks for gluing up large simulation codes using python
      
 Requirements
 *  python 2.7
