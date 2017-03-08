@@ -177,6 +177,9 @@ class Axes3DMod(Axes3D):
                arr[:,:,3][m] = amask               
                break
         # blur the mask,,,
+
+    def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.8):
+        arr = self._gl_mask_artist.get_array()
         b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         #b = np.sqrt(b)
         b[b > amask] = amask
