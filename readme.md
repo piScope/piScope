@@ -33,3 +33,9 @@ Directories:
 
 Copyright: 
 *  Copyright (c) 2012-2017 S. Shiraiwa and PSFC, MIT All rights reserved.
+
+Citation: 
+*  S Shiraiwa, T Fredian, J Hillairet, J Stillerman, Fusion Engineering and Design 112, 835-838
+
+Acknowledgement:
+*  This work is partly supported by the U.S. DoE, OS, OFES, using User Facility Alcator C-Mod (DE-FC02-99ER54512)
