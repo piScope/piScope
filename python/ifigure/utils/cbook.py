@@ -682,33 +682,36 @@ def BuildPopUpMenu(base, menus, eventobj=None,
      from the popup has the widget as eventobj
     '''
     isTop = True
+    ret = {}
     for m in menus:
        s = m[0]
        h = m[1]
        i = m[2]
        bmp = None if len(m) < 4 else m[3]
+       id  = wx.ID_ANY if len(m) < 5 else m[4]
        if s == '---':
            if not isTop:
               base.AppendSeparator()
            continue
        elif s[0] is '+':
            new_base=wx.Menu()
-           base.AppendMenu(wx.ID_ANY, s[1:], new_base)
+           base.AppendMenu(id, s[1:], new_base)
            base=new_base
            isTop = True
+           mmm = base
        elif s[0] is '!':
            base=base.GetParent()
            isTop = False
        else:
            isTop = False
            if s[0] is '-':
-               mmi = wx.MenuItem(base, wx.ID_ANY, s[1:])
+               mmi = wx.MenuItem(base, id, s[1:])
            elif s[0] is '*':
-               mmi = wx.MenuItem(base, wx.ID_ANY, s[1:],kind = wx.ITEM_CHECK)
+               mmi = wx.MenuItem(base, id, s[1:],kind = wx.ITEM_CHECK)
            elif s[0] is '^':
-               mmi = wx.MenuItem(base, wx.ID_ANY, s[1:],kind = wx.ITEM_CHECK)
+               mmi = wx.MenuItem(base, id, s[1:],kind = wx.ITEM_CHECK)
            else:
-               mmi = wx.MenuItem(base, wx.ID_ANY, s)
+               mmi = wx.MenuItem(base, id, s)
            if bmp is not None: mmi.SetBitmap(bmp)
            base.AppendItem(mmi)
            if s[0] is '^': mmi.Check(True)
@@ -730,7 +733,9 @@ def BuildPopUpMenu(base, menus, eventobj=None,
                       evt.mpl_xydata = (None, None)
                   handler(evt)
            base.Bind(wx.EVT_MENU, func, mmi)
-           
+           mmm = mmi.GetMenu()
+       if id != wx.ID_ANY: ret[id] = mmm
+    return ret
 BuildMenu = BuildPopUpMenu
 
 def parseStr(x0):
