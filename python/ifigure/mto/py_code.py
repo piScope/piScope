@@ -1132,7 +1132,7 @@ class PyFolder(TreeDict, AbsModuleContainer, AbsScriptContainer,
         if dir == '': return
         self.add_extfolder(dir)
         if evt is not None: evt.Skip()
-        
+
 class PySol(TreeDict):
     """
     PySol is a folder to store solution
