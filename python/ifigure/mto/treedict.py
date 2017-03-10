@@ -1061,7 +1061,11 @@ class TreeDict(object):
                        menu.append(('Export Subtree', self.onSaveSubTree, None))
                else:
                    menu.append(('-Export Subtree', None, None))
-               menu.append(('Export Subtree As...', self.onSaveSubTreeAs, None))
+               menu.append(('+Export As...', None, None))
+               menu.append(('Subtree...', self.onSaveSubTreeAs, None))
+               if self.has_owndir():
+                    menu.append(('Files...', self.onExportFiles, None))
+               menu.append(('!', None, None))
            else:
                if (self.hasvar('subtree_path') and
                    os.path.exists(self.getvar('subtree_path'))):
@@ -1126,6 +1130,8 @@ class TreeDict(object):
            self.save_subtree(path)
        else:
            self.onSaveSubTreeAs(e)
+
+
     def onSaveSubTreeAs(self, e):
         path = dialog.write(defaultfile=self.name+'.pfs',
                                 wildcard='*.pfs')
@@ -1135,6 +1141,16 @@ class TreeDict(object):
         print('exporting subtree to '+path)
         self.save_subtree(path)
         self.setvar('subtree_path', path)
+
+    def onExportFiles(self, e):
+        path = dialog.writedir(parent = e.GetEventObject(),
+                              message= 'Select directory to save files',)
+
+        if path == '': return
+        path = os.path.join(path, self._name)
+        print('exporting files to '+path)
+        import shutil
+        shutil.copytree(self.owndir(), path)
 
     def onLoadSubTree(self, e):
         path = dialog.read(wildcard='*.pfs')
