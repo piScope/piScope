@@ -10,6 +10,7 @@ import ifigure.widgets.dialog as dialog
 from ifigure.widgets.script_editor import PythonSTC
 from collections import OrderedDict
 from ifigure.widgets.book_viewer import FrameWithWindowList
+from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 
 bitmaps = None
@@ -24,7 +25,8 @@ bitmaps = None
 
 from ifigure.widgets.script_editor import Notebook
 
-class DlgMdsSession(FrameWithWindowList):
+#class DlgMdsSession(FrameWithWindowList):
+class DlgMdsSession(DialogWithWindowList):
     def __init__(self, parent, data=None, figmds=None, cb = None, noapply=False):
         if data is None: return
         if figmds is None: return
@@ -32,8 +34,12 @@ class DlgMdsSession(FrameWithWindowList):
         self._var_mask = [x for x in figmds._var_mask]
         self.cb = cb
         self.figmds = weakref.ref(figmds, self.onLinkDead)
-        FrameWithWindowList.__init__(self, parent, wx.ID_ANY,
-                          title = self.figmds().get_full_path())
+        
+        style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER             
+        super(DlgMdsSession, self).__init__(parent, wx.ID_ANY, style=style,
+                                            title = self.figmds().get_full_path())
+        #FrameWithWindowList.__init__(self, parent, wx.ID_ANY,
+        #                  title = self.figmds().get_full_path())
         if bitmaps is None:
             from ifigure.utils.cbook import make_bitmap_list
             from ifigure.ifigure_config import icondir as path
@@ -127,17 +133,25 @@ class DlgMdsSession(FrameWithWindowList):
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChange, self.nb)
 #        wx.CallLater(1000, self.onPageChange, None)
         self.set_panel2(figmds)
-        self.append_help_menu()
-        self.append_help2_menu(self.helpmenu)
+        
+        #self.append_help_menu()
+        #self.append_help2_menu(self.helpmenu)
+        #self.SetMenuBar(self.menuBar)
+        self.Bind(wx.EVT_CLOSE, self.onClose)          
         self.SetSize((650,600))
-        self.SetMenuBar(self.menuBar)  
         self.Layout()
         self.SetSize((650,700))
         self.Show()
         self.Raise()
-        self.set_accelerator_table()      
+        #self.set_accelerator_table()      
         self.nb.SetSelection(0)   
         self.set_mask_button()
+        wx.GetApp().add_palette(self)
+        
+    def onClose(self, evt):
+        wx.GetApp().rm_palette(self)
+        self.Destroy()                        
+        evt.Skip()
 
     def onFormat(self, evt):
         from ifigure.mto.fig_plot import FigPlot

@@ -2299,9 +2299,28 @@ class MyApp(wx.App):
         return True
 
     def add_palette(self, window):
-        self._palettes[window.GetParent()] = window
+        if not window.GetParent() in self._palettes:
+           self._palettes[window.GetParent()] = [window, ]
+        else:
+           self._palettes[window.GetParent()].append(window)
+
+    def raise_palette(self, window):
+        if not window in self._palettes:return
+        x = self._palettes[window]
+        for w in x:
+            try:
+                print("raising " + str(w))
+                w.Raise()
+            except:
+                import traceback
+                traceback.print_exc()
+                pass
+           
     def rm_palette(self, window):
-        del self._palettes[window.GetParent()]
+        x = self._palettes[window.GetParent()]
+        if window in x:
+            x.remove(window)
+        if len(x) == 0: self._palettes[window.GetParent()]
 
     def clean_palette(self):
         from wx._core import _wxPyDeadObject
@@ -2314,9 +2333,17 @@ class MyApp(wx.App):
         self.clean_palette()
         for key in self._palettes:
             if key is window:
-                self._palettes[key].Show()
+                for x in self._palettes[key]:
+                    try:
+                        x.Show()
+                    except:
+                        pass
             else:
-                self._palettes[key].Hide()                
+                for x in self._palettes[key]:
+                    try:
+                        x.Hide()
+                    except:
+                        pass
         
     def get_ifig_app(self):
         return self._ifig_app

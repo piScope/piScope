@@ -2,6 +2,7 @@ from ifigure.utils.edit_list import DialogEditListTab
 import ifigure.widgets.dialog as dialog
 import wx
 from ifigure.widgets.book_viewer import FrameWithWindowList
+from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.script_editor import Notebook
 
@@ -10,9 +11,12 @@ pkeys = ['experiment', 'default_node','x', 'y', 'z',
 
 def make_gs_arr(gs, s):
           return {key:gs[key][s] for key in gs}
-class DlgMdsSetting(FrameWithWindowList):
+#class DlgMdsSetting(FrameWithWindowList):
+class DlgMdsSetting(DialogWithWindowList):
    def __init__(self, parent, setting,  gwparam, mds_server, thread_main, cb=None):
-      FrameWithWindowList.__init__(self, parent, wx.ID_ANY)
+      style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER             
+      super(DlgMdsSetting, self).__init__(parent, wx.ID_ANY, style=style)
+#      super(DlgMdsSetting, self).__init__(parent, wx.ID_ANY)
       self.cb = cb
       gs = gwparam.getvar('globalsets')
       gv = gwparam.getvar()
@@ -117,10 +121,12 @@ class DlgMdsSetting(FrameWithWindowList):
       self.Bind(wx.EVT_CLOSE, self.onClose)
       self.Layout()
       self.Show()
-      self.append_help_menu()
-      self.append_help2_menu(self.helpmenu)
-      self.set_accelerator_table()      
-
+      #self.append_help_menu()
+      #self.append_help2_menu(self.helpmenu)
+      #self.set_accelerator_table()
+      
+      wx.GetApp().add_palette(self)
+      
    def onApply(self, evt):
        value = [elp.GetValue() for elp in self.elp]
        self.cb(value)
@@ -136,6 +142,8 @@ class DlgMdsSetting(FrameWithWindowList):
           self.GetParent()._setting_dlg = None
        except:
           pass
+       wx.GetApp().rm_palette(self)
+       self.Destroy()                        
        evt.Skip()
 
 def callback(parent, value, setting, gwparam):

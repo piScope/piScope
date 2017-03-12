@@ -152,6 +152,7 @@ class FrameWithWindowList(wx.Frame):
             w = tw.windowlist.get_next(w)
             if w.IsShown(): break
         w.Raise()
+        wx.GetApp().raise_palette(w)
         w.SetFocus()
     def onPrevWindow(self, evt):
         tw = wx.GetApp().TopWindow
@@ -160,6 +161,7 @@ class FrameWithWindowList(wx.Frame):
             w = tw.windowlist.get_prev(w)
             if w.IsShown(): break
         w.Raise()
+        wx.GetApp().raise_palette(w)        
         w.SetFocus()
     def append_accelerator_table(self, value):
         self._atable.append(value)
@@ -1619,6 +1621,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 ifigure.events.SendPVDeleteFigobj(bk)
             self._attaching = False
         if evt is not None:
+             if not evt.CanVeto(): self.Destroy()                        
              evt.Skip()
 
 #    def close_figurebook(self):

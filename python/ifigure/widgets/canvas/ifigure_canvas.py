@@ -3814,6 +3814,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def _check_can_group(self):
        if len(self.selection) < 2: return False
+       if self.selection[0]() is None: return False
        f = self.selection[0]().figobj.get_parent()
        flag = True
        for s in self.selection:
@@ -3823,6 +3824,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return flag
    def _check_can_ungroup(self):   
        if len(self.selection) != 1: return False
+       if self.selection[0]() is None: return False       
        if not hasattr(self.selection[0]().figobj, 'onUngroup'): return False
        return True
    def group(self):

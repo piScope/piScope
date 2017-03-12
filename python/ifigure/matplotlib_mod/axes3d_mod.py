@@ -1,6 +1,6 @@
 import weakref
 import ifigure.events as events
-from scipy.signal import convolve2d
+from scipy.signal import convolve2d, fftconvolve
 
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -150,7 +150,7 @@ class Axes3DMod(Axes3D):
             self._gl_mask_artist.remove()
         self._gl_mask_artist = None
         
-    def set_gl_hl_mask(self, id, cmask = 0.0, amask = 0.8):
+    def set_gl_hl_mask(self, id, cmask = 0.0, amask = 0.65):
         #
         #  logic is
         #     if artist_id is found within raidus from (x, y)
@@ -178,9 +178,10 @@ class Axes3DMod(Axes3D):
                break
         # blur the mask,,,
 
-    def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.8):
+    def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.65):
         arr = self._gl_mask_artist.get_array()
-        b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
+        #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
+        b = fftconvolve(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         #b = np.sqrt(b)
         b[b > amask] = amask
         a = arr[:,:,0]; a[b > 0.0] = cmask        
