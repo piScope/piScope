@@ -2309,7 +2309,6 @@ class MyApp(wx.App):
         x = self._palettes[window]
         for w in x:
             try:
-                print("raising " + str(w))
                 w.Raise()
             except:
                 import traceback

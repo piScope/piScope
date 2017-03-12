@@ -4136,7 +4136,7 @@ class EditListDialog(wx.Dialog):
 class EditListDialogTab(wx.Dialog):
     def __init__(self, parent, id, title='', tab=None, list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
-                 tip=None, pos=None, nobutton=False,
+                 tip=None, pos=None, size = (-1, -1), nobutton=False,
                  add_palette = False):       
         wx.Dialog.__init__(self, parent, id, title,  style=style)
         self.nobutton = nobutton
@@ -4324,7 +4324,7 @@ def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
     """
     #if not modal:
     #   style = wx.STAY_ON_TOP|style
-    dia = _class(parent, wx.ID_ANY, title, list, 
+    dia = _class(parent, wx.ID_ANY, title=title, list=list, 
                  style=style, tip=tip, pos=pos, size=size, **kwargs)
 
     if modal:
