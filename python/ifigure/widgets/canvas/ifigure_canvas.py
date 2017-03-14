@@ -2935,6 +2935,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       return [float(x)/float(scr_size[0]), float(y)/float(scr_size[1])]
 
    def motion_event(self, evt):
+       if evt.inaxes is None: return
+       if evt.inaxes.figobj.get_3d(): return
        self.update_status_str(evt)
 
    def update_status_str(self, evt):

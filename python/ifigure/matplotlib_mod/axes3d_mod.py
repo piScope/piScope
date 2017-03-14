@@ -179,6 +179,7 @@ class Axes3DMod(Axes3D):
         # blur the mask,,,
 
     def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.65):
+        if self._gl_mask_artist is None: return
         arr = self._gl_mask_artist.get_array()
         #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         b = fftconvolve(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
@@ -288,10 +289,12 @@ class Axes3DMod(Axes3D):
             p1 = np.array((np.cos(razim) * np.cos(relev),
                            np.sin(razim) * np.cos(relev),
                            np.sin(relev)))
-            p2 = np.array((np.sin(razim), -np.cos(razim), 0))
-            p3 = np.cross(p1, p2)
-            
-            dx, dy, dz = p2*dx + p3*dy
+            rightvec = np.cross(self._upvec, p1)  # right on screen
+
+            #p2 = np.array((np.sin(razim), -np.cos(razim), 0))
+            #p3 = np.cross(p1, p2)
+            #dx, dy, dz = p2*dx + p3*dy
+            dx, dy, dz = -rightvec * dx - self._upvec* dy
             minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
             dx = (maxx-minx)*dx
             dy = (maxy-miny)*dy
@@ -794,7 +797,7 @@ class Axes3DMod(Axes3D):
                       axes=self, figure=self.figure,
                       transform = self.transData,
                       verticalalignment='center',
-                      horizontalalignment='center',)
+                      horizontalalignment='center')
             
             p0, p1, pt = ptf(yvec); 
             a2 = Line2D(p0, p1,
@@ -803,7 +806,7 @@ class Axes3DMod(Axes3D):
                       axes=self, figure=self.figure,
                       transform = self.transData,
                       verticalalignment='center',
-                      horizontalalignment='center',)
+                      horizontalalignment='center')
             
             p0, p1, pt = ptf(zvec); 
             a3 = Line2D(p0, p1,
@@ -812,7 +815,7 @@ class Axes3DMod(Axes3D):
                       axes=self, figure=self.figure,
                       transform = self.transData,
                       verticalalignment='center',
-                      horizontalalignment='center',)
+                      horizontalalignment='center')
             
             self.add_line(a1)
             self.add_line(a2)
@@ -850,6 +853,7 @@ class Axes3DMod(Axes3D):
         self.patch.set_facecolor(self.figure.patch.get_facecolor())
 
 #        if self._use_gl and isSupportedRenderer(renderer):
+        gl_len = 0
         if isSupportedRenderer(renderer):    
 #        if hasattr(renderer, 'use_gl'):
 #            worldM, viewM, perspM, E, R, V = self.get_proj2()
@@ -874,11 +878,16 @@ class Axes3DMod(Axes3D):
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return
+                
+            gl_len = len(gl_obj)
+
+                
         ### axes3D seems to change frameon status....
         frameon = self.get_frame_on()
         self.set_frame_on(False)
         if self._show_3d_axes:
             self.draw_3d_axes()
+            for a in self._3d_axes_icon: a().set_zorder(gl_len+1)
         else:
             if self._3d_axes_icon is not None:
                 self.lines.remove(self._3d_axes_icon[0]())

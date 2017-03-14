@@ -40,7 +40,7 @@ try:
 except ImportError:
     haveOpenGL = False
 
-near_clipping = 5
+near_clipping = 8
 
 import os
 basedir = os.path.dirname(__file__)
@@ -1164,7 +1164,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDepthMask(GL_TRUE)
 
     def set_view_offset(self, offset_base = (0, 0, 0., 0)):
-        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.005, 0.)))
+        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))
         if self._use_frustum:
            self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
         else:

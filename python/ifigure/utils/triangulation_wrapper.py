@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial import Delaunay
-from matplotlib.delaunay import Triangulation
+from matplotlib.tri import Triangulation
 
 use_mpl_tri = False
 
