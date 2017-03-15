@@ -202,7 +202,8 @@ class VideoViewerMode(object):
                return
            if (self._video_page == num_page-1 and self._is_playing == 1 and
                not self._playloop):
-               self._playerbtn.reset_btn_toggle_bitmap()
+               if self._playerbtn is not None:               
+                   self._playerbtn.reset_btn_toggle_bitmap()
                self._is_playing = 0
                return
            ifigure.events.SendShowPageEvent(self.book, self, str(self._is_playing))
