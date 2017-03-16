@@ -2295,7 +2295,6 @@ class MyApp(wx.App):
 
         if "wxMac" in wx.PlatformInfo:
             self._ifig_app.Bind(wx.EVT_MENU, self.MacQuit, id = self.GetMacExitMenuItemId())
-        
         return True
 
     def add_palette(self, window):
@@ -2303,7 +2302,7 @@ class MyApp(wx.App):
            self._palettes[window.GetParent()] = [window, ]
         else:
            self._palettes[window.GetParent()].append(window)
-
+        
     def raise_palette(self, window):
         if not window in self._palettes:return
         x = self._palettes[window]
@@ -2314,7 +2313,8 @@ class MyApp(wx.App):
                 import traceback
                 traceback.print_exc()
                 pass
-           
+        wx.CallAfter(window.Raise)
+        
     def rm_palette(self, window):
         x = self._palettes[window.GetParent()]
         if window in x:
@@ -2327,14 +2327,28 @@ class MyApp(wx.App):
                      if isinstance(key, _wxPyDeadObject)]
         for key in dead_keys:
             del self._palettes[key]
+        dead_keys = []
+        for key in self._palettes:
+            dead_window = []
+            for x in self._palettes[key]:
+               if isinstance(x, _wxPyDeadObject):
+                   dead_window.append(x)
+            for x in dead_window:
+                self._palettes[key].remove(x)
+            if len(self._palettes[key]) == 0:
+                dead_keys.append(key)
+        for key in dead_keys:
+            del self._palettes[key]
 
     def process_child_focus(self, window):
         self.clean_palette()
         for key in self._palettes:
             if key is window:
                 for x in self._palettes[key]:
+                    if x.IsShown(): continue
                     try:
                         x.Show()
+                        x.Raise()
                     except:
                         pass
             else:
@@ -2343,7 +2357,6 @@ class MyApp(wx.App):
                         x.Hide()
                     except:
                         pass
-        
     def get_ifig_app(self):
         return self._ifig_app
     def MacReopenApp(self):

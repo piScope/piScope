@@ -1104,6 +1104,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if not lighting and self._p_shader is self.shader:
             ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()
         if facecolor is not None:
+           glEnable(GL_POLYGON_SMOOTH)
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
            vbos['fc'].unbind()

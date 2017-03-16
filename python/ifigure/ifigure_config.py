@@ -62,7 +62,6 @@ rcdir=os.path.join(home, '.ifigure_rc')
 import site
 site.USER_SITE = os.path.join(rcdir, '.local', 'site-packages')
 site.USER_BASE = os.path.join(rcdir, '.local')
-geom_file = os.path.join(rcdir, 'gui_geom')
 if not os.path.exists(rcdir):
     os.mkdir(rcdir)
 if not os.path.exists(site.USER_BASE):
@@ -82,7 +81,7 @@ if not os.path.exists(file):
     fid = open(file, 'w')
     fid.close()
 
-
+geom_file = os.path.join(rcdir, 'gui_geom')
 
 usr_template_dir = os.path.join(rcdir, 'template')
 if not os.path.exists(usr_template_dir):
