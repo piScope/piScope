@@ -157,19 +157,18 @@ if __name__ == '__main__':
            #           ifig_app.draw_all()     
            #ifig_app.set_filename_2_window_title()
        elif file[-4:] == '.bfz': 
-           bk = ifig_app.book.get_parent().load_subtree(file, compress=True)
+           bk = ifig_app.proj.load_subtree(file, compress=True)
+           from ifigure.mto.fig_book import FigBook
            if not isinstance(bk, FigBook): 
                sys.exit()
            ifig_app.ipage = 0
-           ifig_app.book.set_open(False)
-           obk = ifig_app.book
-#           bk.realize()
            bk.setvar("original_filename", file)
-           bk.set_open(True)
+#           bk.set_open(True)
            ifig_app.book = bk
-           obk.destroy()
-           ifigure.events.SendChangedEvent(ifig_app.book, w=ifig_app)
-           ifig_app.show_page(ifig_app.ipage)
+#           obk.destroy()
+           ifigure.events.SendChangedEvent(bk, w=ifig_app)
+           ifigure.events.SendOpenBookEvent(bk, w = ifig_app)
+#           ifig_app.show_page(ifig_app.ipage)
        else:
            wx.CallLater(3, ifig_app.onOpenWithHelperCommand, 
                         path =file, hide_main = hide_main)          

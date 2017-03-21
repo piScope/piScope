@@ -695,7 +695,10 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 else:
                     self._gl_facecolor = self.to_rgba(self._gl_cz)
             if self._alpha is not None:
-                self._gl_facecolor[:,-1]=self._alpha
+                if self._gl_facecolor.ndim == 3:
+                    self._gl_facecolor[:, :,-1]=self._alpha
+                else:
+                    self._gl_facecolor[:,-1]=self._alpha
             
         if self._gl_solid_edgecolor is not None:
             f = cc.to_rgba(self._gl_solid_edgecolor)
@@ -708,8 +711,11 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 self._gl_edgecolor = self.to_rgba(z)
             else:                
                 self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
-            if self._alpha is not None:                
-                self._gl_edgecolor[:,-1]=self._alpha
+            if self._alpha is not None:
+                if self._gl_edgecolor.ndim == 3:
+                    self._gl_edgecolor[:, :,-1]=self._alpha
+                else:
+                    self._gl_edgecolor[:,-1]=self._alpha
 
         Poly3DCollection.update_scalarmappable(self)
 

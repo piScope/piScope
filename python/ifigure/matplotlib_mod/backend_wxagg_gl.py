@@ -1108,10 +1108,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
            vbos['fc'].unbind()
-           
+
            if len(facecolor) != 0:
-               if facecolor[0][3] != 1.0:
-                   glDepthMask(GL_FALSE)
+               if facecolor.ndim == 3:
+                   if facecolor[0,0,3] != 1.0:glDepthMask(GL_FALSE)
+               else:
+                   if facecolor[0,3] != 1.0:glDepthMask(GL_FALSE)
+
            if stencil_test:
               for f, c in zip(first, counts): 
                   self._draw_polygon(f, c)
@@ -1384,15 +1387,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
             facecolor is not None):
             counts = vbos['counts']
+            
             if len(facecolor) == 0:
                 facecolor = np.array([[1,1,1, 0]])
-            if len(facecolor) == len(paths[0]):
+            if  facecolor.ndim == 3:
+                col = [facecolor]
+            elif len(facecolor) == len(paths[0]):
 #                col = [list(f)*c  for f, c in  zip(facecolor, counts)]
                 col = facecolor[idxset,:]
             elif len(facecolor) == len(counts):
                 col = [list(f)*c  for f, c in  zip(facecolor, counts)]
             else:
                 col = [facecolor]*np.sum(counts)
+            
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
                 vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')

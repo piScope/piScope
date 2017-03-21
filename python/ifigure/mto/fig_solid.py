@@ -36,7 +36,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
 
 
         #p.add_key('cmap', None)
-        #p.add_key('shade', False)
+
         if 'cz' in kywds and kywds['cz']:
             def_alpha = None
             def_ec = None
@@ -58,8 +58,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('normals', None)
         p.add_key('cz', False, 'bool')
         p.add_key('cdata', None)
-
-       # p.add_key('edgecolor', None)
+        p.add_key('shade', 'flat')
 
         v, kywds,d, flag = p.process(*args, **kywds)
         if not flag: 
@@ -110,6 +109,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         YUser.get_yaxisparam(self)
         ZUser.get_zaxisparam(self)
         CUser.get_caxisparam(self)
+        
     def args2var(self):
         ret = self._args2var()
         return ret
@@ -162,7 +162,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
                 else:
                     norms.extend([-n1/d]*xyz.shape[0])
             norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
-            
+
         kywds = self._var["kywds"].copy()
         kywds['alpha'] = self.getp('alpha') if self.getp('alpha') is not None else 1
         
@@ -187,8 +187,11 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         if self.getvar('cz'):
             kywds['cz'] = self.getvar('cz')
             if self.getvar('cdata') is not None:
-                cdata = self.getvar('cdata')            
-                kywds['facecolordata'] = np.mean(cdata, -1).real
+                cdata = self.getvar('cdata')
+                if self.getvar('shade') != 'linear':
+                    kywds['facecolordata'] = np.mean(cdata, -1).real
+                else:
+                    kywds['facecolordata'] = cdata.real
         else:
             kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
