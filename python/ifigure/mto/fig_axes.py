@@ -1649,13 +1649,17 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         a._use_frustum = v[8]
         
     def set_axes3d_viewparam(self, value, a, no_proj = False):
-        elev, azim = value
+        if len(value) == 2:
+            elev, azim = value
+        else:
+            elev, azim, upvec = value
+            a._upvec = upvec
         a.elev = elev
         a.azim = azim
         if not no_proj: a.get_proj()
 
     def get_axes3d_viewparam(self, ax):
-        return ax.elev, ax.azim
+        return ax.elev, ax.azim, ax._upvec
 
     def set_axis_bgalpha(self, value, artist = None):
         for a in self._artists:
