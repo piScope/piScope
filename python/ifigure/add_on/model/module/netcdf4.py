@@ -234,7 +234,7 @@ def onLoadFile(self, e=None, file = ''):
                    pathname = pathname,
                    extname  = extname, 
                    wildcard='nc(*.nc)|*.nc|nc.gz(*.nc.gz)|*.nc.gz|cdf(*.cdf)|*.cdf|Any|*',
-                   ask_org_copy = False   )
+                   )
     if ret:
         load_netcdf_file(self.td)
         ifigure.events.SendChangedEvent(self.td)

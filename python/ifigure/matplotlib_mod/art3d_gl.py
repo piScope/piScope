@@ -36,7 +36,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
-        #im.is_grayscale = False ## do I have to be able to switch it...?
+        im.is_grayscale = False ## this is needed to print in MPL1.5
         renderer.draw_image(gc, round(x), round(y), im)
         gc.restore()
     else:
@@ -45,7 +45,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
-        #im.is_grayscale = False ## do I have to be able to switch it...?
+        im.is_grayscale = False ## this is needed to print in MPL1.5
 
         if renderer.gl_svg_rescale:
            ### svg renderer has image_dpi = 100 (not 72)
