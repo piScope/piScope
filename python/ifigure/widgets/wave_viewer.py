@@ -75,14 +75,14 @@ class FigSolidPhasor(FigSolid):
     def set_phasor(self, angle = None):
         if angle is not None:
            z = self.getvar('cdata') * np.exp(1j*angle)
-           if len(z.shape) == 2:
-              z =  np.mean(z, -1).real
-           else:
-              z =  z.real               
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1).real
+#           else:
+           z =  z.real               
         else:
            z = np.absolute(self.getvar('cdata'))
-           if len(z.shape) == 2:
-              z =  np.mean(z, -1)
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1)
         self._artists[0]._gl_facecolordata = z
         self._artists[0]._update_fc = True
         

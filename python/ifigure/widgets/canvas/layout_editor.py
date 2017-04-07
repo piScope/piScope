@@ -601,6 +601,7 @@ class layout_editor(object):
        ## earea -> expanded
        request = []
        irarea = []
+       earea = None
        if event.x < 0: 
            irarea = [k[0] for k in self.edge_hit2 if k[1]==2]
            earea = [(k[0], self.area[k[0]]) for k in self.edge_hit2 if k[1]==0]
@@ -629,7 +630,51 @@ class layout_editor(object):
            for idx, x in earea:
                x[3] = 1 - x[1]
                request.append(('m', idx, x))
-
+               
+       if earea is not None and len(earea) == 0:
+           # filling void
+           if len(irarea) == 1:
+               k = irarea[0]
+               left, right, up, down  = self._search_nearby(self.area[k])
+               if len(left) >  0 and  len(right) == 0:
+                   for idx, x  in left:
+                       x[2] = 1 - x[0]
+                       request.append(('m', idx, x))                           
+               elif len(left) >  0 and  len(right) >  0:
+                   mid = self.area[k][0] + self.area[k][2]/2.0
+                   for idx, x  in right:
+                       x[2] = x[0] + x[2] - mid
+                       x[0] = mid
+                       request.append(('m', idx, x))                           
+                   for idx, x  in left:
+                       x[2] = mid -  x[0]
+                       x[0] = x[0]
+                       request.append(('m', idx, x))                           
+               elif len(left) == 0 and  len(right) >  0:
+                   for idx, x  in right:
+                       x[2] = x[0] + x[2]
+                       x[0] = 0
+                       request.append(('m', idx, x))
+               elif len(up) >  0 and  len(down) == 0:
+                   for idx, x  in up:
+                       x[3] = x[1] + x[1]
+                       x[1] = 0
+                       request.append(('m', idx, x))                           
+               elif len(up) >  0 and  len(down) >  0:
+                   mid = self.area[k][1] + self.area[k][3]/2.0
+                   for idx, x  in down:
+                       x[3] = mid - x[1]
+                       x[1] = x[1]
+                       request.append(('m', idx, x))                           
+                   for idx, x  in up:
+                       x[3] = x[1] + x[3] - mid
+                       x[1] = mid
+                       request.append(('m', idx, x))                           
+               elif len(up) == 0 and  len(down) >  0:
+                   for idx, x  in down:
+                       x[3] = 1 - x[1]
+                       request.append(('m', idx, x))                           
+           
        for k in irarea:
            request.append(('d', k, None))
        
@@ -1176,6 +1221,28 @@ class layout_editor(object):
           (check(y1,y20) or check(y2,y10))): return True
 
        return False
+
+   def _search_nearby(self, a):
+       x10,y10,x20,y20  = self._area2boxv(a)
+       def check(a,b):
+           return abs(a-b)< 3
+       
+       left = [] # area at the left of a
+       right= []
+       up   = []
+       down = []
+       for k, a1 in enumerate(self.area):
+           x1,y1,x2,y2  = self._area2boxv(a1)
+           if check(x10, x2):
+               left.append((k, a1[:]))
+           elif check(x20, x1):
+               right.append((k, a1[:]))
+           elif check(y10, y2):
+               down.append((k, a1[:]))
+           elif check(y20 ,y1):
+               up.append((k, a1[:]))
+       return left, right, up, down
+           
    def _area2xy(self,sec):
       ### convert x0, y0, w, h to x, y
       x=[sec[0], sec[0]+sec[2], sec[0]+sec[2], sec[0],  sec[0]]

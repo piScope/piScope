@@ -5,6 +5,7 @@ try:
     from matplotlib._image import fromarray, frombyte
 except:
     def frombyte(im, num): return im
+
 from matplotlib.colors import ColorConverter
 from matplotlib.path import Path
 
@@ -19,6 +20,7 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection
 import mpl_toolkits.mplot3d.proj3d as proj3d
 
 ##
+from ifigure.ifigure_config import isMPL2
 from ifigure.utils.marker_image import marker_image
 from ifigure.matplotlib_mod.backend_wxagg_gl import mixin_gl_renderer
 from ifigure.matplotlib_mod.is_supported_renderer import isSupportedRenderer
@@ -36,7 +38,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
-        #im.is_grayscale = False ## do I have to be able to switch it...?
+        if not isMPL2: im.is_grayscale = False ## this is needed to print in MPL1.5
         renderer.draw_image(gc, round(x), round(y), im)
         gc.restore()
     else:
@@ -45,7 +47,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
-        #im.is_grayscale = False ## do I have to be able to switch it...?
+        if not isMPL2:  im.is_grayscale = False ## this is needed to print in MPL1.5
 
         if renderer.gl_svg_rescale:
            ### svg renderer has image_dpi = 100 (not 72)
@@ -695,7 +697,10 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 else:
                     self._gl_facecolor = self.to_rgba(self._gl_cz)
             if self._alpha is not None:
-                self._gl_facecolor[:,-1]=self._alpha
+                if self._gl_facecolor.ndim == 3:
+                    self._gl_facecolor[:, :,-1]=self._alpha
+                else:
+                    self._gl_facecolor[:,-1]=self._alpha
             
         if self._gl_solid_edgecolor is not None:
             f = cc.to_rgba(self._gl_solid_edgecolor)
@@ -708,8 +713,11 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 self._gl_edgecolor = self.to_rgba(z)
             else:                
                 self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
-            if self._alpha is not None:                
-                self._gl_edgecolor[:,-1]=self._alpha
+            if self._alpha is not None:
+                if self._gl_edgecolor.ndim == 3:
+                    self._gl_edgecolor[:, :,-1]=self._alpha
+                else:
+                    self._gl_edgecolor[:,-1]=self._alpha
 
         Poly3DCollection.update_scalarmappable(self)
 

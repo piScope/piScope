@@ -2295,13 +2295,31 @@ class MyApp(wx.App):
 
         if "wxMac" in wx.PlatformInfo:
             self._ifig_app.Bind(wx.EVT_MENU, self.MacQuit, id = self.GetMacExitMenuItemId())
-        
         return True
 
     def add_palette(self, window):
-        self._palettes[window.GetParent()] = window
+        if not window.GetParent() in self._palettes:
+           self._palettes[window.GetParent()] = [window, ]
+        else:
+           self._palettes[window.GetParent()].append(window)
+        
+    def raise_palette(self, window):
+        if not window in self._palettes:return
+        x = self._palettes[window]
+        for w in x:
+            try:
+                w.Raise()
+            except:
+                import traceback
+                traceback.print_exc()
+                pass
+        wx.CallAfter(window.Raise)
+        
     def rm_palette(self, window):
-        del self._palettes[window.GetParent()]
+        x = self._palettes[window.GetParent()]
+        if window in x:
+            x.remove(window)
+        if len(x) == 0: self._palettes[window.GetParent()]
 
     def clean_palette(self):
         from wx._core import _wxPyDeadObject
@@ -2309,15 +2327,36 @@ class MyApp(wx.App):
                      if isinstance(key, _wxPyDeadObject)]
         for key in dead_keys:
             del self._palettes[key]
+        dead_keys = []
+        for key in self._palettes:
+            dead_window = []
+            for x in self._palettes[key]:
+               if isinstance(x, _wxPyDeadObject):
+                   dead_window.append(x)
+            for x in dead_window:
+                self._palettes[key].remove(x)
+            if len(self._palettes[key]) == 0:
+                dead_keys.append(key)
+        for key in dead_keys:
+            del self._palettes[key]
 
     def process_child_focus(self, window):
         self.clean_palette()
         for key in self._palettes:
             if key is window:
-                self._palettes[key].Show()
+                for x in self._palettes[key]:
+                    if x.IsShown(): continue
+                    try:
+                        x.Show()
+                        x.Raise()
+                    except:
+                        pass
             else:
-                self._palettes[key].Hide()                
-        
+                for x in self._palettes[key]:
+                    try:
+                        x.Hide()
+                    except:
+                        pass
     def get_ifig_app(self):
         return self._ifig_app
     def MacReopenApp(self):

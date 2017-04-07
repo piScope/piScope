@@ -120,9 +120,9 @@ class VideoViewerMode(object):
     def onPrevPage(self, evt):        
         self.onPrevVideoPage(evt)        
 
-    def onActivate(self, evt):
-        if self._playerbtn is not None:
-            self._playerbtn.Raise()
+#    def onActivate(self, evt):
+#        if self._playerbtn is not None:
+#            self._playerbtn.Raise()
     def save_animgif(self, filename='animation.gif',
                      show_page = None):
         def show_page(args):
@@ -159,6 +159,7 @@ class VideoViewerMode(object):
                          self.onTogglePlayerButton,
                         kind = wx.ITEM_CHECK)
         self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
+        wx.GetApp().add_palette(self._playerbtn)        
         self._mm_player.Check(True)        
         self.add_menu(viewmenu, BookViewerFrame.ID_PM[4], 
                      "Next Page",  "next page",
@@ -171,7 +172,9 @@ class VideoViewerMode(object):
         if self._mm_player.IsChecked():
             if self._playerbtn is None:
                 self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
+                wx.GetApp().add_palette(self._playerbtn)                        
         else:
+            wx.GetApp().rm_palette(self._playerbtn)                                    
             self._playerbtn.Destroy()
             self._playerbtn = None
             
@@ -202,7 +205,8 @@ class VideoViewerMode(object):
                return
            if (self._video_page == num_page-1 and self._is_playing == 1 and
                not self._playloop):
-               self._playerbtn.reset_btn_toggle_bitmap()
+               if self._playerbtn is not None:               
+                   self._playerbtn.reset_btn_toggle_bitmap()
                self._is_playing = 0
                return
            ifigure.events.SendShowPageEvent(self.book, self, str(self._is_playing))
@@ -271,10 +275,10 @@ class VideoViewer(VideoViewerMode, BookViewer):
         BookViewer.__init__(self, *args, **kwargs)
         if self.book is not None:
            self.add_all_video_obj()
-        self.Bind(wx.EVT_ACTIVATE, self.onActivate)
+        #self.Bind(wx.EVT_ACTIVATE, self.onActivate)
         
-    def onActivate(self, evt):
-        VideoViewerMode.onActivate(self, evt)
+#    def onActivate(self, evt):
+#        VideoViewerMode.onActivate(self, evt)
         
     def image(self, *args, **kwargs):
         '''

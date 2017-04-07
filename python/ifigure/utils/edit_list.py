@@ -4092,7 +4092,8 @@ class EditListPanel(EditListCore, wx.Panel):
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
-                 tip=None, pos = None, size=(-1,-1), nobutton=False):
+                 tip=None, pos = None, size=(-1,-1), nobutton=False,
+                 add_palette = False):
         wx.Dialog.__init__(self, parent, id, title, pos, size, style = style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -4112,7 +4113,10 @@ class EditListDialog(wx.Dialog):
             self.SetPosition(pos)
         self.Bind(EDITLIST_CHANGED, self.onEL_Changed)
         wx.CallAfter(self._myRefresh, size)
-     
+
+        if add_palette:
+            wx.GetApp().add_palette(self)
+        
     def GetValue(self):
         return self.elp.GetValue()
 
@@ -4132,7 +4136,8 @@ class EditListDialog(wx.Dialog):
 class EditListDialogTab(wx.Dialog):
     def __init__(self, parent, id, title='', tab=None, list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
-                 tip=None, pos=None, nobutton=False):
+                 tip=None, pos=None, size = (-1, -1), nobutton=False,
+                 add_palette = False):       
         wx.Dialog.__init__(self, parent, id, title,  style=style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -4157,6 +4162,9 @@ class EditListDialogTab(wx.Dialog):
             self.Centre()
         self.Bind(EDITLIST_CHANGED, self.onEL_Changed)
         wx.CallAfter(self._myRefresh)
+        
+        if add_palette:
+            wx.GetApp().add_palette(self)
 
     def GetValue(self):
         return [elp.GetValue() for elp in self.elp]
@@ -4178,11 +4186,11 @@ class EditListDialogTab(wx.Dialog):
         win.Layout()
         
         
-def DialogEditList(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
+def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
                    tip = None, parent = None, pos = None, size=(-1,-1),
                    title='',
                    ok_cb = None, close_cb = None,
-                   ok_noclose = False ):
+                   ok_noclose = False, _class = EditListDialog, **kwargs):
     """
     Dialog to ask user a list of input using various
     wx control widgets
@@ -4316,8 +4324,8 @@ def DialogEditList(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
     """
     #if not modal:
     #   style = wx.STAY_ON_TOP|style
-    dia = EditListDialog(parent, wx.ID_ANY, title, list, 
-                         style=style, tip=tip, pos=pos, size=size)
+    dia = _class(parent, wx.ID_ANY, title=title, list=list, 
+                 style=style, tip=tip, pos=pos, size=size, **kwargs)
 
     if modal:
        val = dia.ShowModal()
@@ -4340,12 +4348,63 @@ def DialogEditList(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
        dia.Show()
        return dia
 
-def DialogEditListTab(tab, list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
+from ifigure.widgets.miniframe_with_windowlist import WithWindowList_MixIn
+
+class EditListDialogWithWindowList(EditListDialog, WithWindowList_MixIn):        
+    def __init__(self, *args, **kargs):
+        style = kargs.pop('style', wx.DEFAULT_DIALOG_STYLE)
+        kargs['style'] = style
+        super(EditListDialogWithWindowList, self).__init__(*args, **kargs)
+        WithWindowList_MixIn.__init__(self)
+
+class EditListDialogTabWithWindowList(EditListDialogTab, WithWindowList_MixIn):        
+    def __init__(self, *args, **kargs):
+        style = kargs.pop('style', wx.DEFAULT_DIALOG_STYLE)
+#        kargs['style'] = style|wx.STAY_ON_TOP
+        kargs['style'] = style
+        super(EditListDialogTabWithWindowList, self).__init__(*args, **kargs)
+        WithWindowList_MixIn.__init__(self)
+        
+
+def DialogEditList(list, **kwargs):
+    '''
+    DialogEditList(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
+                   tip = None, parent = None, pos = None, size=(-1,-1),
+                   title='',
+                   ok_cb = None, close_cb = None,
+                   ok_noclose = False ):
+    '''
+    kwargs['_class'] = EditListDialog    
+    return _DialogEditListCore(list, **kwargs)
+    
+def DialogEditListWithWindowList(list, **kwargs):
+    kwargs['_class'] = EditListDialogWithWindowList   
+    return _DialogEditListCore(list, **kwargs)
+    
+    
+def DialogEditListTab(tab, list, **kwargs):
+    '''
+    DialogEditListTab(tab, list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
                       tip=None, parent=None, pos=None, title='',
                       ok_cb = None):
-   
-    if tip is None:
-        tip = [['']*len(x) for x in list]
+    '''
+    tip = kwargs.pop('tip', None)
+    if tip is None: tip = [['']*len(x) for x in list]
+    kwargs['tip'] = tip
+    kwargs['tab'] = tab
+    kwargs['_class'] = EditListDialogTab
+    return _DialogEditListCore(list, **kwargs)
+
+def DialogEditListTabWithWindowList(tab, list, **kwargs):
+    tip = kwargs.pop('tip', None)
+    if tip is None: tip = [['']*len(x) for x in list]
+    kwargs['tip'] = tip
+    kwargs['tab'] = tab
+    kwargs['_class'] = EditListDialogTabWithWindowList
+    return _DialogEditListCore(list, **kwargs)
+    
+    
+    '''
     dia = EditListDialogTab(parent, wx.ID_ANY, title, tab, 
                             list, style=style, tip=tip, pos=pos)
     wx.CallAfter(dia.Layout)
@@ -4366,7 +4425,7 @@ def DialogEditListTab(tab, list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
        if ok_cb is not None:
            dia.Bind(wx.EVT_BUTTON, ok_func, id=wx.ID_OK)        
        dia.Show()
- 
+    '''
 class EditListMiniFrame(wx.MiniFrame):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.CAPTION|

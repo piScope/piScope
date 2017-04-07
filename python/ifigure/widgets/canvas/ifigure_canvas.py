@@ -2935,6 +2935,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       return [float(x)/float(scr_size[0]), float(y)/float(scr_size[1])]
 
    def motion_event(self, evt):
+       if evt.inaxes is None: return
+       if evt.inaxes.figobj.get_3d(): return
        self.update_status_str(evt)
 
    def update_status_str(self, evt):
@@ -3814,6 +3816,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def _check_can_group(self):
        if len(self.selection) < 2: return False
+       if self.selection[0]() is None: return False
        f = self.selection[0]().figobj.get_parent()
        flag = True
        for s in self.selection:
@@ -3823,6 +3826,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return flag
    def _check_can_ungroup(self):   
        if len(self.selection) != 1: return False
+       if self.selection[0]() is None: return False       
        if not hasattr(self.selection[0]().figobj, 'onUngroup'): return False
        return True
    def group(self):

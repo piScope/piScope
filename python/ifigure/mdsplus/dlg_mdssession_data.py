@@ -10,20 +10,26 @@ import ifigure.widgets.dialog as dialog
 from ifigure.widgets.script_editor import PythonSTC
 from collections import OrderedDict
 from ifigure.widgets.book_viewer import FrameWithWindowList
+from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.script_editor import Notebook
 
 bitmaps = None
 
-class DlgMdsSessionData(FrameWithWindowList):
+class DlgMdsSessionData(DialogWithWindowList):
+#class DlgMdsSessionData(FrameWithWindowList):
     def __init__(self, parent, data=None, figmds=None, cb = None, noapply=False):
         if data is None: return
         if figmds is None: return
         self._rvars = tuple()
         self.cb = cb
         self.figmds = weakref.ref(figmds, self.onLinkDead)
-        FrameWithWindowList.__init__(self, parent, wx.ID_ANY,
-                          title = self.figmds().get_full_path())
+        
+        style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER
+        super(DlgMdsSessionData, self).__init__(parent, wx.ID_ANY, style=style,
+                                            title = self.figmds().get_full_path())        
+#        FrameWithWindowList.__init__(self, parent, wx.ID_ANY,
+#                          title = self.figmds().get_full_path())
 
         if bitmaps is None:
             from ifigure.utils.cbook import make_bitmap_list
@@ -104,15 +110,21 @@ class DlgMdsSessionData(FrameWithWindowList):
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChanging, self.nb)
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChange, self.nb)
 #        wx.CallLater(1000, self.onPageChange, None)
-        self.append_help_menu()
+        #self.append_help_menu()
         self.SetSize((650,600))
-        self.SetMenuBar(self.menuBar)  
+        #self.SetMenuBar(self.menuBar)  
         self.Layout()
         self.Show()
         self.Raise()
-        self.set_accelerator_table()      
+        #self.set_accelerator_table()      
         self.nb.SetSelection(0)   
-
+        wx.GetApp().add_palette(self)
+        
+    def onClose(self, evt):
+        wx.GetApp().rm_palette(self)
+        self.Destroy()                        
+        evt.Skip()
+        
     def onPageChanging(self, evt):
         ipage=self.nb.GetSelection()
         evt.Skip()

@@ -126,8 +126,8 @@ class JobRunner(object):
            com = job.command
            if com == 'novalue': return ''
            if debug_runner: print(job)
-           print job
-           print threading.current_thread().name, com, job.params
+           #print job
+           #print threading.current_thread().name, com, job.params
            if com == 'open':           
                tree = job.params[0]
                shot = job.params[1]
@@ -166,7 +166,7 @@ class JobRunner(object):
                      self.connection.setDefault(node)
                   return 'ok'
                except:
-                  print(node)
+                  #print(node)
                   self.error = ['run error', traceback.format_exc()]
                   return None
            elif com == 'value':

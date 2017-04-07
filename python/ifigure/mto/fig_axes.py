@@ -52,7 +52,7 @@ import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigAxes')
 
 import matplotlib 
-color_cycle = matplotlib.rcParams['axes.color_cycle']
+#color_cycle = matplotlib.rcParams['axes.color_cycle']
 
 #from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
@@ -99,6 +99,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self.setp('axis_bglinewidth', 0.0)
         self.setp('axis_bglinestyle', 'solid')
         self.setp('axis_bgedgecolor', (0,0,0,0))
+        self.setp('axis_bgfacecolor', (1,1,1,1))        
     @classmethod
     def isFigAxes(self):
         return True
@@ -107,10 +108,17 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         return 'axes'
     @classmethod
     def property_in_file(self):
-        return ["frame_on", "axis_bgcolor", "lighting", "azim",
-                "elev", "dist", "_upvec", "_use_clip",
-                "_use_frustum", "_show_3d_axes"]
-
+        from ifigure.ifigure_config import isMPL2
+        if isMPL2:
+           return ["frame_on",
+                   "lighting", "azim",
+                   "elev", "dist", "_upvec", "_use_clip",
+                   "_use_frustum", "_show_3d_axes"]
+        else:
+           return ["frame_on", #"axis_bgcolor",
+                   "lighting", "azim",
+                   "elev", "dist", "_upvec", "_use_clip",
+                   "_use_frustum", "_show_3d_axes"]
     @classmethod  ###define _attr values to be saved
     def attr_in_file(self):
 #       fig_axes store all getp() without this modification
@@ -1288,6 +1296,14 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         if not isinstance(self.getp('grid'), list): self.setp('grid', [False]*3)
         super(FigAxes, self).load_data2(data)
 
+        from ifigure.ifigure_config import isMPL2
+        if isMPL2:
+            lp = self.getp("loaded_property")
+            for x in lp:
+                if 'axis_bgcolor' in x:
+                    x['facecolor'] = x['axis_bgcolor']
+                    del x['axis_bgcolor']
+
     def cla(self):
         from ifigure.mto.fig_text import FigText
         for name, child in self.get_children():
@@ -1567,7 +1583,9 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         else:
             self.set_3d(True)
         evt.GetEventObject().set_axes_selection(self._artists[0])
-        ifigure.events.SendCanvasDrawRequest(evt.GetEventObject(),)            
+        ifigure.events.SendCanvasDrawRequest(evt.GetEventObject(),)
+        ifigure.events.SendSelectionEvent(self, evt.GetEventObject(),
+                                          evt.GetEventObject().selection)        
 #           figobj.reset_artist()
         
     def set_3d(self, value):
@@ -1575,9 +1593,16 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self._3D = value
         if self._3D and len(self._zaxis)==0:
             self.add_axis_param(dir='z')
-        if not self._3D:  self._zaxis = []
+        if self._3D: # going to 3d
+            self.get_axis_bgfacecolor()
+            self.get_axis_bgedgecolor()            
+        if not self._3D:
+            self._zaxis = []
         self.del_artist(delall=True)
         self.realize()
+        if not self._3D:
+            self.set_axis_bgedgecolor(self.getp('axis_bgedgecolor'))
+            self.set_axis_bgfacecolor(self.getp('axis_bgfacecolor'))
         self.set_bmp_update(False)
         
     def get_3d(self):
@@ -1624,13 +1649,17 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         a._use_frustum = v[8]
         
     def set_axes3d_viewparam(self, value, a, no_proj = False):
-        elev, azim = value
+        if len(value) == 2:
+            elev, azim = value
+        else:
+            elev, azim, upvec = value
+            a._upvec = upvec
         a.elev = elev
         a.azim = azim
         if not no_proj: a.get_proj()
 
     def get_axes3d_viewparam(self, ax):
-        return ax.elev, ax.azim
+        return ax.elev, ax.azim, ax._upvec
 
     def set_axis_bgalpha(self, value, artist = None):
         for a in self._artists:
@@ -1639,9 +1668,10 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self.setp('axis_bgalpha', value)
         #self.set_3d_pane_alpha([float(value)]*3)
 
-    def get_axis_bgalpha(self, artist):
+    def get_axis_bgalpha(self, artist=None):
         return self._artists[0].patch.get_alpha()
-    def set_axis_bgedgewidth(self, value, artist = None):
+    
+    def set_axis_bgedgealpha(self, value, artist = None):
         for a in self._artists:
             a.patch.set_linewidth(0.0)
         self._artists[0].patch.set_linewidth(value)            
@@ -1658,14 +1688,19 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 
     def get_axis_bglinestyle(self, artist):
         return self._artists[0].patch.get_linestyle()
+                                      
     def set_axis_bglinestyle(self, value, artist = None):
         for a in self._artists:
             a.patch.set_linestyle(value)
         self.setp('axis_bglinestyle', value)
         #self.set_3d_pane_alpha([float(value)]*3)
 
-    def get_axis_bgedgecolor(self, artist):
-        return self._artists[0].patch.get_edgecolor()
+    def get_axis_bgedgecolor(self, artist = None):
+        v1 = self._artists[0].patch.get_edgecolor()
+        if v1 != self.getp('axis_bgedgecolor'):
+            self.setp('axis_bgedgecolor', v1)
+        return v1
+
     def set_axis_bgedgecolor(self, value, artist = None):
         for a in self._artists:
             a.patch.set_edgecolor((0,0,0,0))
@@ -1673,8 +1708,11 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self.setp('axis_bgedgecolor', value)
         #self.set_3d_pane_alpha([float(value)]*3)
         
-    def get_axis_bgfacecolor(self, artist):
-        return self._artists[0].patch.get_facecolor()
+    def get_axis_bgfacecolor(self, artist = None):
+        v1 = self._artists[0].patch.get_facecolor()
+        if v1 != self.getp('axis_bgfacecolor'):
+            self.setp('axis_bgfacecolor', v1)
+        return v1
     def set_axis_bgfacecolor(self, value, artist = None):
         alpha = self._artists[0].patch.get_alpha()        
         for a in self._artists:
@@ -1687,7 +1725,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self._artists[0].patch.set_facecolor(value)
         self._artists[0].patch.set_alpha(value[3])
 #        self._artists[0].set_axis_bgcolor(value)
-        #self.setp('axis_bgfacecolor', value)
+        self.setp('axis_bgfacecolor', value)
         #self.set_3d_pane_alpha([float(value)]*3)
         
 

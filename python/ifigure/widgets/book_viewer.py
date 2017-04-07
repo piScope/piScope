@@ -61,25 +61,17 @@ class FrameWithWindowList(wx.Frame):
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
         self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
-        self.Bind(wx.EVT_CHILD_FOCUS, self.onChildFocus)
-   
-        ### these two works only MSW....
-        #self.Bind(wx.EVT_MOVE_START, self.onMoveStart)
-        #self.Bind(wx.EVT_MOVE_END, self.onMoveEnd)
+        #self.Bind(wx.EVT_CHILD_FOCUS, self.onChildFocus)
+        self.Bind(wx.EVT_ACTIVATE, self.onActivate)   
+        
+    def onActivate(self, evt):
+        if evt.GetActive():
+           wx.GetApp().process_child_focus(self)
+        evt.Skip()
         
     def onChildFocus(self, evt):
-        #print 'child focus', self.GetTopLevelParent()
-        wx.GetApp().process_child_focus(self)
         evt.Skip()
-#    def onMove(self, e):
-#        print 'move'
-#    def onMoveStart(self, e):
-#        print 'move start'
-#        self.SetTransparent(120)
-#        self.Refresh()
-#    def onMoveEnd(self, e):
-#        print 'move end'
-#        self.SetTransparent(255)
+        pass        
 
     def onUpdateUI(self, evt):
 #        if evt.GetId() > 0 and evt.GetId() < 300:  print evt.GetId(), ID_KEEPDATA
@@ -152,6 +144,7 @@ class FrameWithWindowList(wx.Frame):
             w = tw.windowlist.get_next(w)
             if w.IsShown(): break
         w.Raise()
+        wx.GetApp().raise_palette(w)
         w.SetFocus()
     def onPrevWindow(self, evt):
         tw = wx.GetApp().TopWindow
@@ -160,6 +153,7 @@ class FrameWithWindowList(wx.Frame):
             w = tw.windowlist.get_prev(w)
             if w.IsShown(): break
         w.Raise()
+        wx.GetApp().raise_palette(w)        
         w.SetFocus()
     def append_accelerator_table(self, value):
         self._atable.append(value)
@@ -1619,6 +1613,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 ifigure.events.SendPVDeleteFigobj(bk)
             self._attaching = False
         if evt is not None:
+             if not evt.CanVeto(): self.Destroy()                        
              evt.Skip()
 
 #    def close_figurebook(self):

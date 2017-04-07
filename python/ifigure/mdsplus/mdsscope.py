@@ -1416,7 +1416,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
 
         btn = ('reset_all', 'resetrange_all.png', 0, 
                'reset to default range', self.onDefaultXYAll)
-        self.canvas.toolbar.add_extra_group1_button(9, btn)
+        self.canvas.toolbar.add_extra_group1_button(10, btn)
         #self.deffered_force_layout()
 
     def onUpdateUI(self, evt):

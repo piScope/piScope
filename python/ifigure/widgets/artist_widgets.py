@@ -167,6 +167,11 @@ listparam["image_interp"] = ["interpolation", "linear",
                               4, s_imageinterp, 'interp', 2]
 listparam["tripcolor_shading"] = ["interpolation", "flat", 
                               4, s_shading, 'shading', 1]
+
+s_shading2 ={"style":wx.CB_READONLY,
+    "choices": ["flat", "linear"]}
+listparam["solid_shade"] = ["interpolation", "flat", 4, s_shading2, 
+                            "shade", 2]
 s = {"values":['data', 'axes']}
 listparam["switchtrans"] = ["coord",        0, 1, s, 'switchtrans', 2]
 s = {"values":['data', 'axes', 'figure'], "orientation":'vertical'}
