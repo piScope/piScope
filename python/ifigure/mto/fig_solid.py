@@ -87,7 +87,8 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         return 'solid'
     @classmethod  
     def property_in_palette(self):
-        return ["facecolor_2", "edgecolor_2", "linewidthz","alpha_2"]
+        return ["facecolor_2", "edgecolor_2", "linewidthz", 
+                "solid_shade", "alpha_2"]
     @classmethod
     def attr_in_file(self):
         return ([ "alpha", "facecolor", 
@@ -325,10 +326,11 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         return self.getp('linewidth')
 
     def set_shade(self, value, a):
-        self.setp('shade', value)
+        self.setvar('shade', value)
+        self.reset_artist()
 
     def get_shade(self, a=None):
-        return self.getp('shade')
+        return self.getvar('shade')
 
 #
 #   def hit_test

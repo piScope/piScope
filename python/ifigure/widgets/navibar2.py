@@ -60,6 +60,7 @@ def make_bitmap_with_bluebox(bitmap):
 
     
 simple_bar = False
+three_d_bar = False
 btasks0 = [#('previous', 'arrowleft.png', 0, 'previous page'),
            #        ('next',   'arrowright.png', 0,'next page'),
            #        ('---',    (10,10), 0, ''),
@@ -75,15 +76,15 @@ btasks1=[('select', 'select.png', 1, 'select', True),
           True),
          ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']), True),
          ('cursor',   'cursor.png', 1, 'cursor', True),
-         ('3dzoom',   'threed_rot.png', 1, '3D zoom', False),]
+         ('3dzoom',   'threed_rot.png', 1, '3D zoom', False, True),]
          
 btasks1.extend([
                 ('---',    (10,10), 0, '', True),
-                ('xlog',  'xlog.png', 0, 'toggle xlog', True),
-                ('ylog',   'ylog.png', 0, 'toggle ylog', True),
+                ('xlog',  'xlog.png', 0, 'toggle xlog', True, False),
+                ('ylog',   'ylog.png', 0, 'toggle ylog', True, False),
                 ('xauto',  'xauto.png', 0, 'autoscale x', True),
                 ('yauto',  'yauto.png', 0, 'autoscale y', True),
-                ('grid',   'grid.png', 0, 'toggle grid', True),
+                ('grid',   'grid.png', 0, 'toggle grid', True, False),
 #                ('colorbar', 'colorbar.bmp', 0, 'color bar'),
                 ('nomargin', 'margin.png', 0, 'no margin mode', True),])
 #                ('3d',   'three_d.png', 0, '3D axis', False), ])
@@ -124,6 +125,7 @@ class ButtonInfo(bp.ButtonInfo):
     def __init__(self, *args, **kwargs):
         bp.ButtonInfo.__init__(self, *args, **kwargs)
         self.use_in_simple_menu = True
+        self.use_in_3d_menu = True
     def GetBestSize(self):
         size = self.GetBitmap().GetSize()
         h = 26
@@ -146,6 +148,7 @@ class navibar(ButtonPanel):
         self.ptype = ''   # palette type ('pmode', 'amode')
         self.rotmode = False
         self.simple_bar = True
+        self.three_d_bar = False
 
         self.p0  = self.make_button_group(self, btasks0)
         self.p1  = self.make_button_group(self, btasks1)
@@ -182,9 +185,12 @@ class navibar(ButtonPanel):
         self.threed_crs = threed_crs
         self._curve_mode = 'pp'
 
-    def add_extra_group1_button(self, idx, data, use_in_simple_menu = True):
+    def add_extra_group1_button(self, idx, data, 
+                                use_in_simple_menu = True, 
+                                use_in_3d_menu = False):
         xx =list(data[:4])
         xx.append(use_in_simple_menu)
+        xx.append(use_in_3d_menu)
         self.btasks1.insert(idx, xx)
         self.p1  = self.make_button_group(self, self.btasks1)
         self._extra_buttons[data[0]] = data[-1]
@@ -228,6 +234,8 @@ class navibar(ButtonPanel):
               btnl.SetKind('toggle')
            if len(items) > 4:
                btnl.use_in_simple_menu  = items[4] 
+           if len(items) > 5:
+               btnl.use_in_3d_menu  = items[5] 
            bts.append(btnl)
            #           def func(evt, btask=btask): return self.OnButton(evt, btask)
            #           parent.Bind(wx.EVT_BUTTON, func, btnl)
@@ -555,21 +563,22 @@ class navibar(ButtonPanel):
     def AddButtonOrS(self, b):
         if isinstance(b, bp.ButtonInfo):
            if self.simple_bar and not b.use_in_simple_menu: return
+           if self.three_d_bar and not b.use_in_3d_menu: return
            self.AddButton(b)
            self.allbinfo.append(b)
         else:
            self.AddSeparator()
 
     def Show3DMenu(self):
-        if not self.simple_bar: return
-        self.simple_bar = False
-        globals()['simple_bar'] = False
+        if self.three_d_bar: return            
+        self.three_d_bar = True
+        globals()['three_d_bar'] = True
         if self.ptype == 'pmode': self.SetPMode()
 
     def Hide3DMenu(self):
-        if self.simple_bar: return            
-        self.simple_bar = True
-        globals()['simple_bar'] = True
+        if not self.three_d_bar: return            
+        self.three_d_bar = False
+        globals()['three_d_bar'] = False
         if self.ptype == 'pmode': self.SetPMode()
 
     def SetXYlog(self, name):

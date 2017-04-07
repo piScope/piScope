@@ -18,7 +18,7 @@ import tempfile, numpy
 import numpy, os, time
 import ifigure.utils.debug as debug
 debug.debug_default_level = 1
-dprint1, dprint2, dprint3 = debug.init_dprints('FigMds')
+dprint1, dprint2, dprint3 = debug.init_dprints('FigNDArray')
 import traceback
 
 def random_tmp_name(seed='1'):
@@ -35,6 +35,7 @@ def random_tmp_name(seed='1'):
 class FiledNDArray(object):
     def __init__(self, array):
         self._decimation = False
+        dprint3('Called here')
 #        fid = tempfile.NamedTemporaryFile(delete=False)
 #        name = fid.name
 #        name = '/home/shiraiwa/my_tmp/'+random_tmp_name()
@@ -55,7 +56,7 @@ class FiledNDArray(object):
 #           fid = open(name, 'w')
            fid, name = tempfile.mkstemp()
            array2 =self._decimate(array)
-#           print 'Storing to', name
+           dprint3('Storing to', name)
            array2.tofile(name)
            os.close(fid)  # to close tempfile here
 #           fid.close()

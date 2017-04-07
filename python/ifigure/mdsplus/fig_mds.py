@@ -849,8 +849,13 @@ class FigMds(FigGrp):
                obj.setvar('y', y)
                if 'x_catalog' in ana.result:
                    obj.setvar('x_catalog', ana.result['x_catalog'])
+               else:
+                   obj.delvar('x_catalog')
                if 'y_catalog' in ana.result:
                    obj.setvar('y_catalog', ana.result['y_catalog'])
+               else:
+                   obj.delvar('y_catalog')
+
 #               obj._is_decimate = True
                obj.setp('use_var', True)
            else:
