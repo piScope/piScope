@@ -59,7 +59,6 @@ def make_bitmap_with_bluebox(bitmap):
         return bitmap2
 
     
-simple_bar = False
 three_d_bar = False
 btasks0 = [#('previous', 'arrowleft.png', 0, 'previous page'),
            #        ('next',   'arrowright.png', 0,'next page'),
@@ -75,7 +74,7 @@ btasks1=[('select', 'select.png', 1, 'select', True),
           '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction']),
           True),
          ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']), True),
-         ('cursor',   'cursor.png', 1, 'cursor', True),
+         ('cursor',   'cursor.png', 1, 'cursor', True, False),
          ('3dzoom',   'threed_rot.png', 1, '3D zoom', False, True),]
          
 btasks1.extend([
@@ -86,7 +85,7 @@ btasks1.extend([
                 ('yauto',  'yauto.png', 0, 'autoscale y', True),
                 ('grid',   'grid.png', 0, 'toggle grid', True, False),
 #                ('colorbar', 'colorbar.bmp', 0, 'color bar'),
-                ('nomargin', 'margin.png', 0, 'no margin mode', True),])
+                ('nomargin', 'margin.png', 0, 'no margin mode', True, True),])
 #                ('3d',   'three_d.png', 0, '3D axis', False), ])
 
 btasks2=[#('selecta', 'select.bmp', 1, 'select'),
@@ -124,7 +123,7 @@ class TaskBtnList(list):
 class ButtonInfo(bp.ButtonInfo):
     def __init__(self, *args, **kwargs):
         bp.ButtonInfo.__init__(self, *args, **kwargs)
-        self.use_in_simple_menu = True
+        self.use_in_2d_menu = True
         self.use_in_3d_menu = True
     def GetBestSize(self):
         size = self.GetBitmap().GetSize()
@@ -147,7 +146,6 @@ class navibar(ButtonPanel):
         self.mode = ''    # mode of action (''=select, 'pan', 'zoom', 'text'....)
         self.ptype = ''   # palette type ('pmode', 'amode')
         self.rotmode = False
-        self.simple_bar = True
         self.three_d_bar = False
 
         self.p0  = self.make_button_group(self, btasks0)
@@ -186,10 +184,10 @@ class navibar(ButtonPanel):
         self._curve_mode = 'pp'
 
     def add_extra_group1_button(self, idx, data, 
-                                use_in_simple_menu = True, 
+                                use_in_2d_menu = True, 
                                 use_in_3d_menu = False):
         xx =list(data[:4])
-        xx.append(use_in_simple_menu)
+        xx.append(use_in_2d_menu)
         xx.append(use_in_3d_menu)
         self.btasks1.insert(idx, xx)
         self.p1  = self.make_button_group(self, self.btasks1)
@@ -233,7 +231,7 @@ class navibar(ButtonPanel):
            if tg == 1:
               btnl.SetKind('toggle')
            if len(items) > 4:
-               btnl.use_in_simple_menu  = items[4] 
+               btnl.use_in_2d_menu  = items[4] 
            if len(items) > 5:
                btnl.use_in_3d_menu  = items[5] 
            bts.append(btnl)
@@ -406,11 +404,7 @@ class navibar(ButtonPanel):
         self.abutton.SetToggled(False)
         self._set_bitmap2(self.p0, self.ipbutton)
         for b in self.p0: self.AddButtonOrS(b)
-#        for k, b in enumerate(self.p1): 
-#            if self.simple_bar and k in simple_bar_idx: 
-#               print 'skip...', k
-#               continue
-#            self.AddButtonOrS(b)
+
         self.AddSpacer()
         for b in self.p3: self.AddButtonOrS(b)
         self.DoLayout()
@@ -547,8 +541,9 @@ class navibar(ButtonPanel):
         self.GetParent().canvas.SetCursor(self.zoom_crs[0])
 
     def _set_toggle(self, idx):
-        mmm = 4 if self.simple_bar else 5
+        mmm = 6
         for i in range(mmm):
+            if self.p1[i] == '---': return
             if idx != i:
                self.p1[i].SetStatus('Normal')
                self.p1[i].SetToggled(False)
@@ -562,8 +557,11 @@ class navibar(ButtonPanel):
         
     def AddButtonOrS(self, b):
         if isinstance(b, bp.ButtonInfo):
-           if self.simple_bar and not b.use_in_simple_menu: return
-           if self.three_d_bar and not b.use_in_3d_menu: return
+           if not self.three_d_bar:
+              if not b.use_in_2d_menu: return
+           if self.three_d_bar:
+              if not b.use_in_3d_menu: return
+
            self.AddButton(b)
            self.allbinfo.append(b)
         else:
