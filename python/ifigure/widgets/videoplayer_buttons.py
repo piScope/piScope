@@ -23,8 +23,8 @@ class VideoplayerBar(bp.ButtonPanel):
         self.mode = ''    # mode of action (''=select, 'pan', 'zoom', 'text'....)
         self.ptype = ''   # palette type ('pmode', 'amode')
         self.rotmode = False
-        self.simple_bar = True
-
+        
+        self.three_d_bar = False
         self.p0  = self.make_button_group(self, btasks0)
         self.btasks0 = btasks0[:]
         self.refresh_button()
@@ -64,7 +64,10 @@ class VideoplayerBar(bp.ButtonPanel):
            if tg == 1:
               btnl.SetKind('toggle')
            if len(items) > 4:
-               btnl.use_in_simple_menu  = items[4] 
+               btnl.use_in_2d_menu  = items[4]
+           if len(items) > 5:
+               btnl.use_in_3d_menu  = items[5] 
+               
            bts.append(btnl)
            #           def func(evt, btask=btask): return self.OnButton(evt, btask)
            #           parent.Bind(wx.EVT_BUTTON, func, btnl)
@@ -82,7 +85,10 @@ class VideoplayerBar(bp.ButtonPanel):
         
     def AddButtonOrS(self, b):
         if isinstance(b, bp.ButtonInfo):
-           if self.simple_bar and not b.use_in_simple_menu: return
+           if not self.three_d_bar:
+              if not b.use_in_2d_menu: return
+           if self.three_d_bar:
+              if not b.use_in_3d_menu: return
            self.AddButton(b)
            self.allbinfo.append(b)
         else:
