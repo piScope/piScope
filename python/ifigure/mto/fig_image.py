@@ -513,10 +513,9 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
 
     def get_slice(self, xin, yin, a = None):
-
         if a is None: a = self._artists[0]
         array = a.get_array()
-        axes = a.get_axes()
+        axes = a.axes
 
         x0, y0 = axes.transAxes.transform([0,0])
         x1, y1 = axes.transAxes.transform([1,1])
@@ -524,10 +523,9 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         ix = float(xin-x0)/float(x1-x0)*array.shape[1]
         iy = float(yin-y0)/float(y1-y0)*array.shape[0]
 
-#        print ix, iy
         try:
-           zp1 = array[:, ix]
-           zp2 = array[iy, :]
+           zp1 = array[:, int(ix)]
+           zp2 = array[int(iy), :]
         except:
            return None, None
         
