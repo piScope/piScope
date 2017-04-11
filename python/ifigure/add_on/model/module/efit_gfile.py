@@ -51,6 +51,10 @@ menu = [("Import File...", "onLoadFile", True),
         ("Update Tree...", "onUpdateTree", True),
         ("Plot Equilibrium", "onPlotEq", True),
         ("Plot MidPlane", "onPlotMid", True),
+        ("+Modify...", None,  False),
+        ("Scale Bt...", "onScaleBt",  False),
+        ("Scale Ip...", "onScaleIp",  False),
+        ("!", None, False),
         ("+TextEditor...", None,  False),
         ("View Original File", "onOpenOrg", False),
         ("Edit File", "onOpenCurrent", False),
@@ -58,7 +62,7 @@ menu = [("Import File...", "onLoadFile", True),
 method = ['scale_b', 'scale_i', 'scale_p', 'init', 
           'txt2tree', 'tree2txt',
           'onLoadFile', 'onWriteFile', 'onPlotEq',
-          'onOpenOrg', 'onOpenCurrent',
+          'onOpenOrg', 'onOpenCurrent', 'onScaleBt', 'onScaleIp', 
           'onPlotMid', 'onUpdateFile', 'onUpdateTree']
 
 icon = 'data.png'
@@ -490,6 +494,10 @@ def scale_i(self, factor=None):
    print('Updating g-file')
    self.onUpdateFile()
 
+def onScaleIp(self, evt):
+    self.scale_i()
+def onScaleBt(self, evt):
+    self.scale_b()
 def init(self, *args, **kargs):
     if not kargs.has_key("src"):
       self.onLoadFile(file = '')
