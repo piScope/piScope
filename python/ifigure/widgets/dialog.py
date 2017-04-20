@@ -76,6 +76,18 @@ def writedir(parent=None,  message='Directory to write'):
         dlg.Destroy()
         return None
 
+def readdir(parent=None,  message='Directory to read'):
+    dlg = wx.DirDialog (parent, message=message)
+    path = ''
+    wc = ''
+    if dlg.ShowModal() == wx.ID_OK:
+        path = dlg.GetPath()
+        dlg.Destroy()
+        return path        
+    else:
+        dlg.Destroy()
+        return None
+
 def textentry(parent=None, message='', title='', def_string='', center=False):
 
     dlg = wx.TextEntryDialog(parent, 

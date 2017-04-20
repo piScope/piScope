@@ -188,8 +188,6 @@ class FigureCanvasWxAggMod(CanvasAgg):
         wx.TheClipboard.Flush()
 
     def draw_by_bitmap(self):
-
-
         last_size = self.figure.figobj._last_draw_size
         if (self.GetClientSize()[0] != last_size[0] or
             self.GetClientSize()[1] != last_size[1]):

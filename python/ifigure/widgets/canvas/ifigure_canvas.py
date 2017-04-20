@@ -1273,6 +1273,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._line_insert_mode = False
       self._bindidle=False
       self._previous_lclick =  0.
+      self._last_draw_time = -1.
 #      self._press_key = None
       self._mpl_mode = 'normal'
       self._mplc = None
@@ -2415,8 +2416,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
    def draw(self, refresh_hl=False):
 #       if not self._nodraw:
           if self._figure is None: return
-#          print 'drawing'
-          t = time.time()         
+          t = time.time()
+          self._last_draw_time = t
+          
           self._figure.figobj.update_artist()
           self._drawing = True
 #          self.canvas.draw(nogui_reprint = True)
@@ -2431,6 +2433,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           self._drawing = False
 
           dprint2('drawing time ' + str(time.time()-t))
+
 #       else:
 #          self._draw_request = True
 
