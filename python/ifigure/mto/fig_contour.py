@@ -632,9 +632,9 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
            if a in sel:
                print("Exporting Data to Shell") 
                x, y, z = self._eval_xyz()
-               fig_val={"zdata": x,
-                        "xdata": y,
-                        "ydata": z}
+               fig_val={"zdata": z,
+                        "xdata": x,
+                        "ydata": y}
                text= '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\'], fig_val[\'zdata\']'
                self._export_shell(fig_val, 'fig_val', text)
                break
