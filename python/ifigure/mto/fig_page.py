@@ -151,7 +151,12 @@ class FigPage(FigObj):
                if len(lp) > 0:
                    self.set_artist_property(self._artists[0], lp[0])
                self.delp("loaded_property")
-         
+
+            # set suptitle
+            info = self.getp('suptitle_labelinfo')               
+            self.set_suptitle(info[0], 
+                              size  = info[-1],
+                              color = info[1])
 
     def del_artist(self, artist=None, delall=False):
 
