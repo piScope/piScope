@@ -1116,8 +1116,10 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def draw(self):
         self.canvas.draw()
     def draw_all(self):
-        self.canvas.draw_all()   
-
+        self.canvas.draw_all()
+    def last_draw_time(self):
+        return self.canvas._last_draw_time
+    
     def get_axes(self, ipage=None, iaxes=None):
         f_page= self.get_page(ipage=ipage)
 

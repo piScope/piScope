@@ -74,7 +74,7 @@ btasks1=[('select', 'select.png', 1, 'select', True),
           '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction']),
           True),
          ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']), True),
-         ('cursor',   'cursor.png', 1, 'cursor', True, False),
+         ('cursor',   'cursor.png', 1, 'cursor', True, True),
          ('3dzoom',   'threed_rot.png', 1, '3D zoom', False, True),]
          
 btasks1.extend([

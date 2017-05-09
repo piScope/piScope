@@ -188,8 +188,6 @@ class FigureCanvasWxAggMod(CanvasAgg):
         wx.TheClipboard.Flush()
 
     def draw_by_bitmap(self):
-
-
         last_size = self.figure.figobj._last_draw_size
         if (self.GetClientSize()[0] != last_size[0] or
             self.GetClientSize()[1] != last_size[1]):
@@ -404,3 +402,19 @@ class FigureCanvasWxAggMod(CanvasAgg):
         im[:,:,3] = out.astype(np.uint8)
        
         return im
+
+    ### following code is added since when a user press right button 
+    ### while dragging a mouse, mouse is already captured and backend_wx
+    ### try to capture it again, which causes trouble on linux
+    def _onRightButtonDown(self, evt):
+        if self.HasCapture():
+            self.ReleaseMouse()
+        return super(FigureCanvasWxAggMod, self)._onRightButtonDown(evt)
+    def _onLeftButtonDown(self, evt):
+        if self.HasCapture():
+            self.ReleaseMouse()
+        return super(FigureCanvasWxAggMod, self)._onLeftButtonDown(evt)
+    def _onMiddleButtonDown(self, evt):
+        if self.HasCapture():
+            self.ReleaseMouse()
+        return super(FigureCanvasWxAggMod, self)._onMiddleButtonDown(evt)
