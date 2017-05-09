@@ -271,6 +271,7 @@ def load_file(file=None):
 
    nm = Efitgfile()
 
+   psirzraw = psirz.copy()
    if cpasma > 0: 
      sss = -1
      ssimag = ssimag*sss
@@ -302,6 +303,7 @@ def load_file(file=None):
    val["rgrid"]=rgrid
    val["zgrid"]=zgrid
    val["psirz"]=psirz
+   val["psirzraw"]=psirzraw
    val["fpol"] =fpol
    val["pres"] =pres
    val["ffprim"]=ffprim
@@ -484,12 +486,12 @@ def scale_i(self, factor=None):
 
    print('Ip scale by', str(factor))
 
-   td[:]["table"]["psirz"] *= np.abs(factor)
+   td[:]["table"]["psirz"] *= factor
    td[:]["table"]["qpsi"]   *= np.abs(1./factor)
    td[:]["table"]["cpasma"] *= factor
-   td[:]["table"]["ssibry"] *= np.abs(factor)
-   td[:]["table"]["ssibdry"] *= np.abs(factor)
-   td[:]["table"]["ssimag"] *= np.abs(factor)
+   td[:]["table"]["ssibry"] *= factor
+   td[:]["table"]["ssibdry"] *= factor
+   td[:]["table"]["ssimag"] *= factor
    add_extra_data(td[:]["table"])
    print('Updating g-file')
    self.onUpdateFile()
