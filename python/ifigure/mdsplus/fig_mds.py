@@ -554,6 +554,9 @@ class FigMds(FigGrp):
             else:
                 can_compress = False
 
+        # if title_expr is not enclosed by '"', then put it.
+        if title_expr[0] != '"' and title_expr[-1] != '"':
+            title_expr = '"'+title_expr + '"'
         if title_expr == '': 
             title_expr = '""'
             jobname  = 'novalue'
