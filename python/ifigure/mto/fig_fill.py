@@ -198,7 +198,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
 
         if self.isempty() is False:
             return
-
+        s = ""
         if self._mpl_cmd == 'fill':
             x, y, s = self._eval_xy()
         elif self._mpl_cmd == 'fill_between':
@@ -210,9 +210,11 @@ class FigFill(FigObj, XUser, YUser, ZUser):
 
         kywds["alpha"] = self.getp('alpha')
         kywds["edgecolor"] = self.getp('edgecolor')
-        kywds["facecolor"] = self.getp('facecolor')
         kywds["linewidth"] = self.getp('linewidth')
-        kywds["linestyle"] = self.getp('linestyle')
+
+        if s == "":
+            kywds["facecolor"] = self.getp('facecolor')
+            kywds["linestyle"] = self.getp('linestyle')
         try:
             if self.get_figaxes().get_3d(): 
                 kywds['zs'] = self.getvar('zs')
