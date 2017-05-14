@@ -225,7 +225,17 @@ def trisurf3d_demo2(**kwargs):
     v.trisurf(triang, z, cmap=plt.cm.CMRmap)
 
 
-def quiver_demo():
+def quiver_demo(**kwargs):
+   '''
+   quiver_demo(length = 1.0, 
+               normalize = True,
+               facecolor = 'b',
+               edgecolor = None,
+               arrow_length_ratio = 0.3,
+               shaftsize = 0.01,
+               headsize = 0.01)    
+
+   '''
    from ifigure.interactive import quiver, threed, figure
    
    x, y, z = np.meshgrid(np.arange(-0.8, 1, 0.2),
@@ -239,4 +249,4 @@ def quiver_demo():
 
    figure()
    threed('on')
-   quiver(x, y, z, u, v, w, length=0.1)
+   quiver(x, y, z, u, v, w, **kwargs)

@@ -68,7 +68,7 @@ def get_glcanvas():
 class ArtGL(object):
     is_gl = True
     def __init__(self):
-        self.is_last = False        
+        self.is_last = False
         self._gl_3dpath = None        
         self._gl_lighting = True
         self._gl_offset = (0, 0, 0.)
@@ -519,13 +519,13 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
 
 def line_collection_3d_to_gl(obj):
     obj.__class__ = Line3DCollectionGL
-    obj._gl_offset = (0, 0, 0.)
     obj._gl_3dpath = None
     obj._gl_solid_edgecolor = None
     obj._c_data = None
     obj._update_ec = True
     obj._update_v = True
     obj._gl_lighting = False
+    ArtGL.__init__(obj)    
     return obj
 
 class Poly3DCollectionGL(ArtGL, Poly3DCollection):
