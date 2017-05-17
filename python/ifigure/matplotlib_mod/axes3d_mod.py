@@ -9,6 +9,8 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 import mpl_toolkits.mplot3d.proj3d as proj3d
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.transforms as trans
+from matplotlib.colors import ColorConverter
+cc = ColorConverter()
 
 from matplotlib.artist import allow_rasterization
 import numpy as np
@@ -54,6 +56,29 @@ def norm_vec(n):
        return [0,0,0]
     else:
        return n/np.sqrt(d)
+
+def arrow3d(base, r1, r2, ort, l, h, m = 13):
+    x = np.array([1., 0., 0.])
+    y = np.array([0., 1., 0.])
+    th = np.linspace(0, np.pi*2, m).reshape(-1,1)
+    ort = norm_vec(ort)
+    if np.sum(ort * x) == 0:
+       d1 = norm_vec(np.cross(ort, y))
+    else:
+       d1 = norm_vec(np.cross(ort, x))
+    d2 = np.cross(ort, d1)
+    p = base + r1* (d1*np.cos(th) + d2*np.sin(th))
+    q = p + l*ort
+    p2 = base + r2* (d1*np.cos(th) + d2*np.sin(th)) + l*ort
+    p3 = base + (l+h)*ort 
+    p3 = np.array([p3]*m).reshape(-1, 3)
+    t1 = np.stack((p[:-1], q[:-1], p[1:]), axis=1)
+    t2 = np.stack((p[1:], q[:-1], q[1:]), axis=1)
+    t3 = np.stack((p2[:-1], p3[:-1], p2[1:]), axis=1)
+    #t2 = np.dstack((p[1:], q[:-1], q[1:]))
+    t1  = np.vstack((t1, t2, t3))
+    return t1
+
 
 from functools import wraps
 def use_gl_switch(func):
@@ -439,20 +464,114 @@ class Axes3DMod(Axes3D):
         return cset
     
     def quiver(self, *args, **kwargs):
+        '''
+         quiver(x, y, z, u, v, w, length=0.1, normalize = True, **kwargs)  
+
+            kwargs: facecolor
+                    edgecolor
+                    alpha
+                    cz, cdata
+
+        '''
         if 'edgecolor' in kwargs:
             set_edgecolor = True
-            edgecolor = kwargs.pop('edgecolor', [1,1,1,0])
         else:
-            set_edgecolor = False            
-        linec = Axes3D.quiver(self, *args, **kwargs)
-        convert_to_gl(linec)
-        if not set_edgecolor:
-            edgecolor = linec.get_color()[0]
+            set_edgecolor = False
+        edgecolor = kwargs.pop('edgecolor', [1,1,1,0])            
+        use_solid = True
+        if use_solid:
+            # handle kwargs
+            # shaft length
+            length = kwargs.pop('length', 1.0)
+            # arrow length ratio to the shaft length 
+            arrow_length_ratio = kwargs.pop('arrow_length_ratio', 0.3)
+            # pivot point (not implemeted)
+            pivot = kwargs.pop('pivot', 'tail')
+            # normalize
+            normalize = kwargs.pop('normalize', False)
+
+            # handle args
+            argi = 6
+            if len(args) < argi:
+                ValueError('Wrong number of arguments. Expected %d got %d' %
+                           (argi, len(args)))
+
+            # first 6 arguments are X, Y, Z, U, V, W
+            input_args = args[:argi]
+            # if any of the args are scalar, convert into list
+            input_args = [[k] if isinstance(k, (int, float)) else k
+                          for k in input_args]
+
+            # extract the masks, if any
+            masks = [k.mask for k in input_args if isinstance(k, np.ma.MaskedArray)]
+            # broadcast to match the shape
+            bcast = np.broadcast_arrays(*(input_args + masks))
+            input_args = bcast[:argi]
+            masks = bcast[argi:]
+            if masks:
+                # combine the masks into one
+                mask = reduce(np.logical_or, masks)
+                # put mask on and compress
+                input_args = [np.ma.array(k, mask=mask).compressed()
+                              for k in input_args]
+            else:
+                input_args = [k.flatten() for k in input_args]
+            XYZ = np.column_stack(input_args[:3])
+            UVW = np.column_stack(input_args[3:argi]).astype(float)
+
+            norm = np.sqrt(np.sum(UVW**2, axis=1))            
+            # If any row of UVW is all zeros, don't make a quiver for it
+            mask = norm > 0
+            norm = norm[mask]
+            XYZ = XYZ[mask]
+            ORT = UVW[mask] / norm.reshape((-1, 1))
+            if normalize:
+                norm = np.array([length]*len(ORT))
+            else:
+                norm = norm/np.max(norm)*length
+                
+            kwargs = kwargs.copy()
+            h = np.max(norm)*arrow_length_ratio
+            r1 = kwargs.pop('shaftsize', 0.01)
+            r2 = kwargs.pop('headsize', 0.04)                        
             
-        linec.convert_2dpath_to_3dpath(0.0, zdir = 'z')
-        linec.do_stencil_test = False
-        linec.set_edgecolor((edgecolor,))        
-        return linec
+            v = np.vstack([arrow3d(base, r1, r2, ort, l, h, m = 13)
+                           for base, ort, l in zip(XYZ, ORT, norm)])
+
+            linewidth = kwargs.pop('linewidth', None)
+            kwargs['linewidths'] =  0.0 if linewidth is None else linewidth
+            
+            if not kwargs.get('cz', False):
+                fc = kwargs.pop('facecolor', 'b')
+                ec = kwargs.pop('edgecolor', None)
+                alpha = kwargs.get('alpha', 1.0)
+                if isinstance(ec, str): ec = cc.to_rgba(ec)
+                if isinstance(fc, str): fc = cc.to_rgba(fc)
+                fc = list(fc); fc[3] = alpha
+                if ec is None:
+                    ec = [0,0,0,0]
+                    kwargs['linewidths'] = 0.0
+                else:
+                    ec = list(ec); ec[3] = alpha
+                kwargs['facecolor'] = (fc,)
+                kwargs['edgecolor'] = (ec,)
+            else:
+                cdata = kwargs.pop('cdata', None)
+                if cdata is not None:
+                    kwargs['facecolordata'] = cdata.real
+                else:
+                    kwargs['facecolordata'] = v[:,:,-1].real
+            return self.plot_solid(v, **kwargs)
+        else:
+            linec = Axes3D.quiver(self, *args, **kwargs)
+            convert_to_gl(linec)
+            if not set_edgecolor:
+                edgecolor = linec.get_color()[0]
+            
+            linec.convert_2dpath_to_3dpath(0.0, zdir = 'z')
+            linec.do_stencil_test = False
+            linec.set_edgecolor((edgecolor,))        
+            return linec
     
     def plot_revolve(self, R, Z,  *args, **kwargs):
         '''
@@ -692,9 +811,34 @@ class Axes3DMod(Axes3D):
     def plot_solid(self, v, **kwargs):
         '''
         v [element_index, points_in_element, xyz]
-        '''
-        from art3d_gl import Poly3DCollectionGL
 
+        kwargs: normals : normal vectors
+        '''
+        #gl_3dpath = kwargs.get('gl_3dpath', None)
+        
+        norms = kwargs.pop('normals', None)        
+        if norms is None:
+            norms = []
+            for xyz in v:
+                if xyz.shape[0] > 2:
+                    p0, p1, p2 = [xyz[k,:3] for k in range(3)]
+                    n1 = np.cross(p0-p1, p1-p2)
+                    d = np.sqrt(np.sum(n1**2))
+                else:
+                    d = 0
+                if d == 0:
+                    norms.append([0,0,1]*xyz.shape[0])
+                else:
+                    norms.extend([-n1/d]*xyz.shape[0])
+            norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
+        nv = len(v[:, :, 2].flatten())
+        kwargs['gl_3dpath'] = [v[:, :, 0].flatten(),
+                               v[:, :, 1].flatten(),
+                               v[:, :, 2].flatten(),
+                               norms,
+                               np.arange(nv).reshape(v.shape[0], v.shape[1])]
+        
+        from art3d_gl import Poly3DCollectionGL
         a = Poly3DCollectionGL(v, **kwargs)
         Axes3D.add_collection3d(self, a)
         a.do_stencil_test = False

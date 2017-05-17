@@ -149,6 +149,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         if lp is not None: self.delp("loaded_property")
 
         norms = self.getvar('normals')
+        '''
         if norms is None:
             norms = []
             for xyz in v:
@@ -163,8 +164,9 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
                 else:
                     norms.extend([-n1/d]*xyz.shape[0])
             norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
-
+        '''
         kywds = self._var["kywds"].copy()
+        kywds['normals'] = norms
         kywds['alpha'] = self.getp('alpha') if self.getp('alpha') is not None else 1
         
         fc = self.getp('facecolor')
@@ -179,12 +181,13 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         else:
             ec = list(ec)
             if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
-        
+        '''
         nv = len(v[:, :, 2].flatten())
         kywds['gl_3dpath'] = [v[:, :, 0].flatten(),
                               v[:, :, 1].flatten(),
                               v[:, :, 2].flatten(),
                               norms, np.arange(nv).reshape(v.shape[0], v.shape[1])]
+        '''
         if self.getvar('cz'):
             kywds['cz'] = self.getvar('cz')
             if self.getvar('cdata') is not None:

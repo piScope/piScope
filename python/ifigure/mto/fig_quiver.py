@@ -488,7 +488,7 @@ class FigQuiver3D(FigQuiver, ZUser):
         p.set_default_list(default_kargs)
         p.add_key2(("alpha", "cmap"))
         p.add_key2(("pivot", "pivot"))
-        p.add_key("length", 0.1)
+        p.add_key("length", 1.0)
         p.add_key("arrow_length_ratio", 0.3)
 
         p.set_ndconvert("x", "y", "z", "u", "v", "w", "c") 
