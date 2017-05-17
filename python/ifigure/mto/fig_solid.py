@@ -181,21 +181,16 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         else:
             ec = list(ec)
             if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
-        '''
-        nv = len(v[:, :, 2].flatten())
-        kywds['gl_3dpath'] = [v[:, :, 0].flatten(),
-                              v[:, :, 1].flatten(),
-                              v[:, :, 2].flatten(),
-                              norms, np.arange(nv).reshape(v.shape[0], v.shape[1])]
-        '''
         if self.getvar('cz'):
             kywds['cz'] = self.getvar('cz')
             if self.getvar('cdata') is not None:
                 cdata = self.getvar('cdata')
-                if self.getvar('shade') != 'linear':
-                    kywds['facecolordata'] = np.mean(cdata, -1).real
-                else:
-                    kywds['facecolordata'] = cdata.real
+            else:
+                cdata = v[:,:, -1]
+            if self.getvar('shade') != 'linear':
+                kywds['facecolordata'] = np.mean(cdata, -1).real
+            else:
+                kywds['facecolordata'] = cdata.real
         else:
             kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)

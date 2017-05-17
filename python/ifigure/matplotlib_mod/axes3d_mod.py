@@ -57,7 +57,7 @@ def norm_vec(n):
     else:
        return n/np.sqrt(d)
 
-def arrow3d(base, r1, r2, ort, l, h, m = 13):
+def arrow3d(base, r1, r2, ort, l, h, m = 13, pivot = 'tail'):
     x = np.array([1., 0., 0.])
     y = np.array([0., 1., 0.])
     th = np.linspace(0, np.pi*2, m).reshape(-1,1)
@@ -66,10 +66,16 @@ def arrow3d(base, r1, r2, ort, l, h, m = 13):
        d1 = norm_vec(np.cross(ort, y))
     else:
        d1 = norm_vec(np.cross(ort, x))
+    if pivot == 'tip':
+       base = base - (l+h)*ort
+    elif pivot == 'mid':
+       base = base - (l+h)*ort/2.
+    else:
+       pass
     d2 = np.cross(ort, d1)
-    p = base + r1* (d1*np.cos(th) + d2*np.sin(th))
+    p = base + l*r1* (d1*np.cos(th) + d2*np.sin(th))
     q = p + l*ort
-    p2 = base + r2* (d1*np.cos(th) + d2*np.sin(th)) + l*ort
+    p2 = base + l*r2* (d1*np.cos(th) + d2*np.sin(th)) + l*ort
     p3 = base + (l+h)*ort 
     p3 = np.array([p3]*m).reshape(-1, 3)
     t1 = np.stack((p[:-1], q[:-1], p[1:]), axis=1)
@@ -471,107 +477,73 @@ class Axes3DMod(Axes3D):
                     edgecolor
                     alpha
                     cz, cdata
-
+          
         '''
-        if 'edgecolor' in kwargs:
-            set_edgecolor = True
-        else:
-            set_edgecolor = False
-        edgecolor = kwargs.pop('edgecolor', [1,1,1,0])            
-        use_solid = True
-        if use_solid:
-            # handle kwargs
-            # shaft length
-            length = kwargs.pop('length', 1.0)
-            # arrow length ratio to the shaft length 
-            arrow_length_ratio = kwargs.pop('arrow_length_ratio', 0.3)
-            # pivot point (not implemeted)
-            pivot = kwargs.pop('pivot', 'tail')
-            # normalize
-            normalize = kwargs.pop('normalize', False)
+        # made based on mplot3d but makes GL solid object
+        # handle kwargs
+        # shaft length
+        length = kwargs.pop('length', 1.0)
+        # arrow length ratio to the shaft length 
+        arrow_length_ratio = kwargs.pop('arrow_length_ratio', 0.3)
+        # pivot point (not implemeted)
+        pivot = kwargs.pop('pivot', 'tail')
+        # normalize
+        normalize = kwargs.pop('normalize', False)
 
-            # handle args
-            argi = 6
-            if len(args) < argi:
-                ValueError('Wrong number of arguments. Expected %d got %d' %
-                           (argi, len(args)))
+        # handle args
+        argi = 6
+        if len(args) < argi:
+            ValueError('Wrong number of arguments. Expected %d got %d' %
+                       (argi, len(args)))
 
-            # first 6 arguments are X, Y, Z, U, V, W
-            input_args = args[:argi]
-            # if any of the args are scalar, convert into list
-            input_args = [[k] if isinstance(k, (int, float)) else k
+        # first 6 arguments are X, Y, Z, U, V, W
+        input_args = args[:argi]
+        # if any of the args are scalar, convert into list
+        input_args = [[k] if isinstance(k, (int, float)) else k
+                      for k in input_args]
+
+        # extract the masks, if any
+        masks = [k.mask for k in input_args if isinstance(k, np.ma.MaskedArray)]
+        # broadcast to match the shape
+        bcast = np.broadcast_arrays(*(input_args + masks))
+        input_args = bcast[:argi]
+        masks = bcast[argi:]
+        if masks:
+            # combine the masks into one
+            mask = reduce(np.logical_or, masks)
+            # put mask on and compress
+            input_args = [np.ma.array(k, mask=mask).compressed()
                           for k in input_args]
-
-            # extract the masks, if any
-            masks = [k.mask for k in input_args if isinstance(k, np.ma.MaskedArray)]
-            # broadcast to match the shape
-            bcast = np.broadcast_arrays(*(input_args + masks))
-            input_args = bcast[:argi]
-            masks = bcast[argi:]
-            if masks:
-                # combine the masks into one
-                mask = reduce(np.logical_or, masks)
-                # put mask on and compress
-                input_args = [np.ma.array(k, mask=mask).compressed()
-                              for k in input_args]
-            else:
-                input_args = [k.flatten() for k in input_args]
-            XYZ = np.column_stack(input_args[:3])
-            UVW = np.column_stack(input_args[3:argi]).astype(float)
-
-            norm = np.sqrt(np.sum(UVW**2, axis=1))            
-            # If any row of UVW is all zeros, don't make a quiver for it
-            mask = norm > 0
-            norm = norm[mask]
-            XYZ = XYZ[mask]
-            ORT = UVW[mask] / norm.reshape((-1, 1))
-            if normalize:
-                norm = np.array([length]*len(ORT))
-            else:
-                norm = norm/np.max(norm)*length
-                
-            kwargs = kwargs.copy()
-            h = np.max(norm)*arrow_length_ratio
-            r1 = kwargs.pop('shaftsize', 0.01)
-            r2 = kwargs.pop('headsize', 0.04)                        
-            
-            v = np.vstack([arrow3d(base, r1, r2, ort, l, h, m = 13)
-                           for base, ort, l in zip(XYZ, ORT, norm)])
-
-            linewidth = kwargs.pop('linewidth', None)
-            kwargs['linewidths'] =  0.0 if linewidth is None else linewidth
-            
-            if not kwargs.get('cz', False):
-                fc = kwargs.pop('facecolor', 'b')
-                ec = kwargs.pop('edgecolor', None)
-                alpha = kwargs.get('alpha', 1.0)
-                if isinstance(ec, str): ec = cc.to_rgba(ec)
-                if isinstance(fc, str): fc = cc.to_rgba(fc)
-                fc = list(fc); fc[3] = alpha
-                if ec is None:
-                    ec = [0,0,0,0]
-                    kwargs['linewidths'] = 0.0
-                else:
-                    ec = list(ec); ec[3] = alpha
-                kwargs['facecolor'] = (fc,)
-                kwargs['edgecolor'] = (ec,)
-            else:
-                cdata = kwargs.pop('cdata', None)
-                if cdata is not None:
-                    kwargs['facecolordata'] = cdata.real
-                else:
-                    kwargs['facecolordata'] = v[:,:,-1].real
-            return self.plot_solid(v, **kwargs)
         else:
-            linec = Axes3D.quiver(self, *args, **kwargs)
-            convert_to_gl(linec)
-            if not set_edgecolor:
-                edgecolor = linec.get_color()[0]
-            
-            linec.convert_2dpath_to_3dpath(0.0, zdir = 'z')
-            linec.do_stencil_test = False
-            linec.set_edgecolor((edgecolor,))        
-            return linec
+            input_args = [k.flatten() for k in input_args]
+        XYZ = np.column_stack(input_args[:3])
+        UVW = np.column_stack(input_args[3:argi]).astype(float)
+
+        norm = np.sqrt(np.sum(UVW**2, axis=1))            
+        # If any row of UVW is all zeros, don't make a quiver for it
+        mask = norm > 0
+        norm = norm[mask]
+        XYZ = XYZ[mask]
+        ORT = UVW[mask] / norm.reshape((-1, 1))
+        if normalize:
+            norm = np.array([length]*len(ORT))
+        else:
+            norm = norm/np.max(norm)*length
+
+        h = np.max(norm)*arrow_length_ratio
+        r1 = kwargs.pop('shaftsize', 0.05)
+        r2 = kwargs.pop('headsize', 0.25)                        
+
+        m = 13
+        sample_len = len(arrow3d(XYZ[0], r1, r2, ORT[0], norm[0], h, m = m, pivot = pivot))
+        v = np.vstack([arrow3d(base, r1, r2, ort, l, h, m = m, pivot = pivot)
+                       for base, ort, l in zip(XYZ, ORT, norm)],)
+        cdata = kwargs.pop('facecolordata', None)
+        if cdata is not None:
+            cdata = np.transpose(np.vstack([cdata.flatten()]*sample_len)).flatten()
+            kwargs['facecolordata'] = cdata
+
+        return self.plot_solid(v, **kwargs)
     
     def plot_revolve(self, R, Z,  *args, **kwargs):
         '''

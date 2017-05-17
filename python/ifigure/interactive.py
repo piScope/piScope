@@ -686,6 +686,14 @@ def quiver(*args, **kargs):
 
     """
     pass
+@redirect_to_aviewer
+def quiver3d(*args, **kargs):
+    '''
+    quiver3D is threed('on') + quiver
+    quiver3D(x, y, z, u, v, w,  cz = False, cdata = None)
+
+    if cz is True and cdata is None, z is used for color
+    '''
 
 @redirect_to_aviewer
 def image(*args, **kargs):

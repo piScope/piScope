@@ -359,7 +359,7 @@ s3={"style":wx.CB_READONLY,
             "choices": ["xy", "uv"]}
 listparam["qangles"] = ["angles",    s1["choices"][0], 4, s3, 'angles',  2]
 s = {"minV": 1.,"maxV": 8., "val" : 5, "res" : 1, "text_box" : False}
-listparam["qheadlength"]=["headlength", '1',   24,  s, 'headlength', 2]
+listparam["qheadlength"]=["headlength", '1',   300,  {}, 'headlength', 2]
 listparam["qheadaxislength"]=["headaxislength", '1',   24,  s, 'headaxislength', 2]
 listparam["qheadwidth"]=["headwidth", '1',   24,  s, 'headwidth', 2]
 
@@ -367,9 +367,7 @@ spivot={"style":wx.CB_READONLY,
         "choices": ["tail", "mid", "tip"]}
 listparam["qpivot"]=["pivot", spivot['choices'][0],   4,
                      spivot, 'pivot', 2]
-listparam["q3dlength"]=["length", '1',   24,
-                        {"minV": 0.1,"maxV": 3., "val" : 0.1, "res" : 0.01,
-                         "text_box" : False}, 'q3dlength', 2]
+listparam["q3dlength"]=["length", 1.,   300, {}, 'q3dlength', 2]
 listparam["q3dratio"]=["length ratio", '0.3',   24,
                        {"minV": 0.05,"maxV": 0.9, "val" : 0.3, "res" : 0.01,
                        "text_box" : False}, 'q3dratio', 2]

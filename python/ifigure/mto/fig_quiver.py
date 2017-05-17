@@ -1,15 +1,19 @@
 import weakref, wx, os, sys, logging
 import numpy as np
 
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import ColorConverter
+cc = ColorConverter()
+
 import ifigure
 import ifigure.events
 from ifigure.mto.fig_obj import FigObj, mask_negative
 from ifigure.mto.axis_user import XUser, YUser, ZUser, CUser
 import ifigure.utils.cbook as cbook
+
 from ifigure.utils.args_parser import ArgsParser
 import ifigure.widgets.canvas.custom_picker as cpicke
 from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists, GlobalHistory
-
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigQuiver')
 
@@ -477,19 +481,35 @@ class FigQuiver3D(FigQuiver, ZUser):
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
+        
+        if 'cz' in kywds and kywds['cz']:
+            def_alpha = None
+            def_ec = None
+            def_fc = None
+            def_lw = 0.0
+        else:
+            def_alpha = 1.0
+            def_ec = (0, 0, 0, 1)
+            def_fc = (0, 0, 1, 1)
+            def_lw = 1.0
+        
         p = ArgsParser()
         p.add_var('x', ['numbers|nonstr','dynamic'])
         p.add_var('y', ['numbers|nonstr','dynamic'])
         p.add_var('z', ['numbers|nonstr','dynamic'])        
         p.add_var('u', ['numbers|nonstr','dynamic'])
         p.add_var('v', ['numbers|nonstr','dynamic'])
-        p.add_var('w', ['numbers|nonstr','dynamic'])        
-        p.add_opt('c', None, ['numbers|nonstr','dynamic'])
+        p.add_var('w', ['numbers|nonstr','dynamic'])
+        p.add_key('cz', False, 'bool')
+        p.add_key('cdata', None)
         p.set_default_list(default_kargs)
-        p.add_key2(("alpha", "cmap"))
+        p.add_key2(("cmap"))
         p.add_key2(("pivot", "pivot"))
         p.add_key("length", 1.0)
         p.add_key("arrow_length_ratio", 0.3)
+        p.add_key('alpha', def_alpha)
+        p.add_key('facecolor', def_fc)
+        p.add_key('edgecolor', def_ec)
 
         p.set_ndconvert("x", "y", "z", "u", "v", "w", "c") 
 
@@ -503,9 +523,9 @@ class FigQuiver3D(FigQuiver, ZUser):
         obj = FigObj.__new__(cls, *args, **kywds)
         obj = set_hidden_vars(obj)
 
-        for name in ('u', 'v', 'w', 'c', 'x', 'y', 'z'): 
+        for name in ('u', 'v', 'w', 'x', 'y', 'z'): 
             obj.setvar(name, v[name])
-        for name in ('alpha', 'cmap', 'pivot', 'length', 'arrow_length_ratio'): 
+        for name in ('alpha', 'cmap', 'pivot', 'length', 'arrow_length_ratio', 'cz', 'cdata'): 
             obj.setvar(name, v[name])
 
         if v['cmap'] is not None:
@@ -527,9 +547,9 @@ class FigQuiver3D(FigQuiver, ZUser):
                 super(FigQuiver3D, self).attr_in_file())
     @classmethod  
     def property_in_palette(self):
-        return (['quiver', 'path'], [
+        return (['quiver', 'path/patch'], [
                  ["qpivot", "q3dlength", "q3dratio", "alpha_2"], 
-                 ["pedgecolor_2", "elinewidth"], ])
+                 ["facecolor_2", "edgecolor_2", "elinewidth"], ])
 
     def set_parent(self, parent):
         ZUser.unset_az(self)        
@@ -538,8 +558,8 @@ class FigQuiver3D(FigQuiver, ZUser):
         
     def _args2var(self):
         names0 = self.attr_in_file()
-        names  = ["x", "y", "z", "u", "v", "w", "c"] + names0
-        use_np = [True]*7 + [False]*(len(names0))
+        names  = ["x", "y", "z", "u", "v", "w" ] + names0
+        use_np = [True]*6 + [False]*(len(names0))
         ### n and v can be dynamic too.
         values = list(self.put_args2var(names,
                                   use_np))
@@ -556,7 +576,6 @@ class FigQuiver3D(FigQuiver, ZUser):
         self.setp('u', values[3])
         self.setp('v', values[4])
         self.setp('w', values[5])                
-        self.setp('c', values[6])
         return True
 
     def _eval_xyzw(self):
@@ -564,30 +583,8 @@ class FigQuiver3D(FigQuiver, ZUser):
             success = self.handle_use_var()
             if not success: 
                 return None, None, None, None, None
-        return  self.getp(("x", "y", "z", "u", "v", "w", "c"))
+        return  self.getp(("x", "y", "z", "u", "v", "w"))
         
-    def get_xrange(self, xrange=[None, None], scale='linear'):
-        x, y, u, v, c = self._eval_xyz() # this handles "use_var"
-        if x is None: return
-        if scale == 'log': x = mask_negative(x)
-        return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])
-
-    def get_yrange(self, yrange=[None, None], 
-                         xrange=[None, None], scale = 'linear'):
-#        de = self.get_data_extent()
-        x, y, u, v, c = self._eval_xyz() # this handles "use_var"
-        if y is None: return
-        if scale == 'log': y = mask_negative(y)
-        return self._update_range(yrange, (np.nanmin(y), np.nanmax(y)))
-    
-    def get_zrange(self, zrange=[None,None], 
-                         xrange=[None,None], 
-                         yrange=[None,None], scale = 'linear'):
-        x, y, z, u, v, w, c = self._eval_xyzw() # this handles "use_var"
-        if z is None: return
-        if scale == 'log': z = mask_negative(z)
-        return self._update_range(zrange, (np.nanmin(z), np.nanmax(z)))
-
     def generate_artist(self):
         ### this method generate artist
         ### if artist does exist, update artist
@@ -601,7 +598,7 @@ class FigQuiver3D(FigQuiver, ZUser):
            flag = 0
            if self.isempty() is False:
               return
-           x, y, z, u, v, w, c = self._eval_xyzw() # this handles "use_var"
+           x, y, z, u, v, w = self._eval_xyzw() # this handles "use_var"
            if u is None: return
            if v is None: return
            if w is None: return           
@@ -614,10 +611,38 @@ class FigQuiver3D(FigQuiver, ZUser):
            kywds['alpha'] = self.getp('alpha')
            kywds['length'] = self.getp('length')
            kywds['pivot'] = self.getp('pivot')           
-           kywds['arrow_length_ratio'] = self.getp('arrow_length_ratio')           
+           kywds['arrow_length_ratio'] = self.getp('arrow_length_ratio')
+
+           kywds['alpha'] = self.getp('alpha') if self.getp('alpha') is not None else 1
+
+           fc = self.getp('facecolor')
+           if isinstance(fc, str): fc = cc.to_rgba(fc)
+           if fc is None: fc = [0,0,0,0]        
+           else:
+               fc = list(fc)
+               if self.getp('alpha') is not None: fc[3]=self.getp('alpha')
+           ec = self.getp('edgecolor')
+           if isinstance(ec, str): ec = cc.to_rgba(ec)
+           if ec is None: ec = [0,0,0,0]
+           else:
+               ec = list(ec)
+               if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
+           if self.getvar('cz'):
+               kywds['cz'] = self.getvar('cz')
+               if self.getvar('cdata') is not None:
+                   cdata = self.getvar('cdata')
+               else:
+                   cdata = z
+               if np.iscomplexobj(cdata):                   
+                   kywds['facecolordata'] = cdata.real
+               else:
+                   kywds['facecolordata'] = cdata
+           else:
+               kywds['facecolor'] = (fc,)
+           kywds['edgecolor'] = (ec,)
+           kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
 
            args=(x, y, z, u, v, w)
-#           if c is not None: args.append(c)
            cax = self.get_caxisparam()
 
            dprint2(args)              
@@ -632,8 +657,6 @@ class FigQuiver3D(FigQuiver, ZUser):
               a.figobj_hl=[]
               a.set_zorder(self.getp('zorder'))
 
-              if c is not None:
-                  self._mappable = self._artsits
               for a in self.get_mappable():
                   cax.set_crangeparam_to_artist(a)
            except Exception:
@@ -677,6 +700,12 @@ class FigQuiver3D(FigQuiver, ZUser):
                  hl.remove()
               a.figobj_hl=[]
               
+    def get_mappable(self):
+        if self.getvar('cz'):
+            return [a for a in self._artists if isinstance(a, ScalarMappable)]
+        else:
+            return []
+              
     def set_edgecolor(self, value, a):
         for a in self._artists:
             a.set_edgecolor(value)
@@ -697,6 +726,29 @@ class FigQuiver3D(FigQuiver, ZUser):
         self.setp('pivot', v)
         self._update_artist()
         
+    def set_edgecolor(self, value, a):
+        self.setp('edgecolor', value)
+        a.set_edgecolor([value])
+
+    def get_edgecolor(self, a=None):
+        return self.getp('edgecolor')
+
+    def set_facecolor(self, value, a):
+        if self.getvar('cz'): return
+        if value == 'disabled': return
+        if isinstance(value, str): value = cc.to_rgba(value)
+        alpha = self.getp('alpha')
+        if alpha is None: alpha = 1.0
+        value = (value[0], value[1], value[2], alpha)
+        self.setp('facecolor', value)
+        a.set_facecolor([value])
+
+    def get_facecolor(self, a=None):
+        if self.getvar('cz'):
+            return 'disabled'
+        return self.getp('facecolor')
+        
+        
     def set_q3dlength(self, v, a):
         self.setp('length', float(v))
         self._update_artist()        
@@ -710,6 +762,57 @@ class FigQuiver3D(FigQuiver, ZUser):
 
     def get_q3dratio(self, a):
         return self.getp('arrow_length_ratio')
+
+
+    #
+    #  xyzc-range
+    #
+
+    def get_xrange(self, xrange=[None, None], scale='linear'):
+        x, y, z, u, v, w = self._eval_xyzw() # this handles "use_var"                
+        if x is None: return
+        if scale == 'log': x = mask_negative(x)
+        return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])
+
+    def get_yrange(self, yrange=[None, None], 
+                         xrange=[None, None], scale = 'linear'):
+#        de = self.get_data_extent()
+        x, y, z, u, v, w = self._eval_xyzw() # this handles "use_var"        
+        if y is None: return
+        if scale == 'log': y = mask_negative(y)
+        return self._update_range(yrange, (np.nanmin(y), np.nanmax(y)))
+    
+    def get_zrange(self, zrange=[None,None], 
+                         xrange=[None,None], 
+                         yrange=[None,None], scale = 'linear'):
+        x, y, z, u, v, w = self._eval_xyzw() # this handles "use_var"
+        if z is None: return
+        if scale == 'log': z = mask_negative(z)
+        return self._update_range(zrange, (np.nanmin(z), np.nanmax(z)))
+    
+    def get_crange(self, crange=[None,None], 
+                         xrange=[None,None], 
+                         yrange=[None,None],
+                         scale = 'linear'):
+        cdata = self.getvar('cdata')
+        cz = self.getvar('cz')
+        if not cz: return crange
+        if cdata is None:
+            x, y, z, u, v, w = self._eval_xyzw() # this handles "use_var"            
+            crange = self._update_range(crange,
+                             (np.nanmin(z), np.nanmax(z)))
+
+        else:
+            if np.iscomplexobj(cdata):
+                tmp  = np.max(np.abs(cdata))
+                crange = self._update_range(crange,
+                                    (-tmp, tmp))
+
+            else:
+                crange = self._update_range(crange,
+                                    (np.nanmin(cdata), np.nanmax(cdata)))
+
+        return crange
 
     def save_data2(self, data=None):
         def check(obj, name):

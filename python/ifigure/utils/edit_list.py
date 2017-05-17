@@ -624,6 +624,8 @@ class BitmapButtons(wx.Panel):
         for btn in self._btn:
             btn.SetBitmapLabel(self.Controls[i]["bitmap"])
             i = i+1
+        if hasattr(val, '__iter__'):
+           print val, self._btn_name
         if val in self._btn_name:
             j = self._btn_name.index(val)
             #print 'found', j
