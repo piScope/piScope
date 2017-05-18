@@ -667,12 +667,12 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
     def set_cz(self, cz):
         if cz is not None:
-            if hasattr(self, '_segis'):
-                self._gl_cz = np.hstack([cz[si:ei] for si, ei in self._segis])
-            else:
+#            if hasattr(self, '_segis'):
+#                self._gl_cz = np.hstack([cz[si:ei] for si, ei in self._segis])
+#            else:
                 self._gl_cz = cz
         else:
-            self._gl_cz = None
+            self._gl_cz = False
 
     def update_scalarmappable(self):
         if self._gl_solid_facecolor is not None:

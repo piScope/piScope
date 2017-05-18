@@ -731,15 +731,15 @@ class Axes3DMod(Axes3D):
         '''
         plot_trisurf(x, y, z,  **wrargs)
         plot_trisurf(x, y, z,  triangles = triangle,,,)
-        plot_trisurf(tri, z,  **kwargs, cz = cz)
+        plot_trisurf(tri, z,  **kwargs, cz = cz, cdata = cdata)
 
 
         '''
         from art3d_gl import poly_collection_3d_to_gl
         from matplotlib.tri.triangulation import Triangulation
 
-        cz = kwargs.pop('cz', None)        
-
+        cz = kwargs.pop('cz', False)
+        cdata = kwargs.pop('cdata', None)        
         tri, args, kwargs = Triangulation.get_from_args_and_kwargs(*args, **kwargs)
         if 'Z' in kwargs:
             z = np.asarray(kwargs.pop('Z'))
@@ -754,31 +754,23 @@ class Axes3DMod(Axes3D):
         Z3D = z
         idxset = tri.get_masked_triangles()
 
+        verts = np.dstack((X3D[idxset], 
+                           Y3D[idxset],
+                           Z3D[idxset]))
+        if cz:
+            if cdata is not None:
+                cdata = cdata[idxset]
+            else:
+                cdata = Z3D[idxset]
+            shade = kwargs.pop('shade', 'flat')
+            if shade != 'linear':
+                cdata = np.mean(cdata, -1)
+            kwargs['facecolordata'] = cdata.real
+            kwargs.pop('facecolor', None) # get rid of this keyword
 
-        norms = []        
-        for idx in idxset:
-           p = [np.array((X3D[idx[k]],
-                          Y3D[idx[k]],
-                          Z3D[idx[k]]))
-                for k in range(3)]
-           nn = [norm_vec(np.cross(p[2]-p[0], p[1]-p[0]))]*3
-           norms.extend(nn)
-           
-        norms = np.hstack(norms).reshape(-1, 3)
+        kwargs['cz'] = cz
 
-        facecolor = kwargs.get('facecolor', None)
-        edgecolor = kwargs.get('edgecolor', 'k')
-
-
-        polyc = Axes3D.plot_trisurf(self, tri.x, tri.y, z,
-                                    triangles = triangles,  **kwargs)
-        polyc = poly_collection_3d_to_gl(polyc)
-        polyc._gl_3dpath = [X3D, Y3D, Z3D, norms.reshape(-1,3), idxset]
-        polyc.set_facecolor(facecolor)
-        polyc.set_edgecolor(edgecolor)
-        polyc.set_cz(cz)
-        polyc.do_stencil_test = False
-        return polyc
+        return self.plot_solid(verts, **kwargs)
     
     def plot_solid(self, v, **kwargs):
         '''

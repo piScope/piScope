@@ -61,12 +61,13 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
 
         p.add_key('cmap', None)
-        p.add_key('shade', True)
+        p.add_key('shade', 'flat')
         p.add_key('linewidth', 1.0)
         p.add_key('alpha', None)
         p.add_key('rstride', 1)
         p.add_key('cstride', 1)
         p.add_key('edgecolor', 'k')        
+        p.add_key('facecolor', 'b')        
 
         p.set_pair("x", "y")
         p.set_ndconvert("x","y","z")
@@ -109,7 +110,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
     @classmethod
     def attr_in_file(self):
         return (["cmap", "cstride", "rstride", "shade", "alpha", 
-                 "edgecolor", "linewidth"] +
+                 "edgecolor", "linewidth", "facecolor"] +
                 super(FigSurface, self).attr_in_file())
     @classmethod  
     def load_classimage(self):
@@ -202,7 +203,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
             not 'facecolors' in kywds):
             cmap = self.get_cmap()
             kywds['cmap'] = cm.get_cmap(cmap)
-        kywds['shade'] = self.getp('shade')
+        kywds['shade'] = self.getvar('shade')
         kywds['linewidth'] = self.getp('linewidth')
 
         m = getattr(container, self._method)
@@ -348,11 +349,12 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
         return self.getp('linewidth')
 
     def set_shade(self, value, a):
-        self.setp('shade', value)
-        a.set_shade(value)
+        self.setvar('shade', value)
+        self.reset_artist()
 
     def get_shade(self, a=None):
-        return self.getp('shade')
+        return self.getvar('shade')
+
 
 #
 #   def hit_test

@@ -153,7 +153,7 @@ def solid_demo2(**kwargs):
     solid(v, **kwargs)
 
 
-def trisurf3d_gl_demo(**kwargs):
+def trisurf3d_demo(**kwargs):
     from matplotlib import cm
     import numpy as np
     from ifigure.interactive import figure, threed, trisurf   
@@ -170,8 +170,17 @@ def trisurf3d_gl_demo(**kwargs):
 
     v = figure()
     threed('on')
-    #return v.get_axes()._artists[0].plot_trisurf(x, y, z, cmap=cm.jet, linewidth=0.2)
-    trisurf(x, y, z, cmap=cm.jet, linewidth=0.2)
+    trisurf(x, y, z, cmap=cm.jet, linewidth=0.2, cz = True)
+
+    v = figure()
+    threed('on')
+    trisurf(x, y, z, linewidth=0.2,  facecolor='b')
+
+    v = figure()
+    threed('on')
+    trisurf(x, y, z*0, cmap=cm.jet, linewidth=0.2, 
+            cz = True, cdata = z)
+
 
 def trisurf3d_demo2(**kwargs): 
     import numpy as np
@@ -195,7 +204,7 @@ def trisurf3d_demo2(**kwargs):
     v.nsec(2)
     v.isec(0)
     v.threed('on')
-    v.trisurf(x, y, z, triangles=tri.triangles, cmap=plt.cm.Spectral)
+    v.trisurf(x, y, z, triangles=tri.triangles, cmap=plt.cm.Spectral, cz = True)
 
     # First create the x and y coordinates of the points.
     n_angles = 36
@@ -222,7 +231,7 @@ def trisurf3d_demo2(**kwargs):
 
     v.isec(1)
     v.threed('on')
-    v.trisurf(triang, z, cmap=plt.cm.CMRmap)
+    v.trisurf(triang, z, cmap=plt.cm.CMRmap, cz = True, shade = 'linear')
 
 
 def quiver_demo(**kwargs):

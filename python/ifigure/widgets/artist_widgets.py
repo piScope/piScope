@@ -769,6 +769,16 @@ class artist_surface_widget(artist_panel, base_artist_widget):
        self.tab, self.list = self.build_editlist_list(obj, ret)
        self.make_panel()
 
+class artist_trisurface_widget(artist_panel, base_artist_widget):
+   def __init__(self, parent, *args):
+       super(artist_trisurface_widget,self).__init__(parent, *args)
+       base_artist_widget.__init__(self)
+       from ifigure.mto.fig_trisurface import FigTrisurface
+       obj = FigTrisurface([0],[0],[0])
+       ret = obj.property_in_palette()
+       self.tab, self.list = self.build_editlist_list(obj, ret)
+       self.make_panel()
+
 class artist_axline_widget(artist_panel, base_artist_widget):
    def __init__(self, parent, *args):
        super(artist_axline_widget,self).__init__(parent, *args)
@@ -1154,6 +1164,7 @@ class panel1(artist_widgets):
                ('fill', artist_fill_widget),
                ('surface', artist_surface_widget),
                ('revolve', artist_surface_widget),
+               ('trisurface', artist_trisurface_widget),
                ('tripcolor', artist_tripcolor_widget),
                ('triplot', artist_triplot_widget),
                ('eps', artist_eps_widget),

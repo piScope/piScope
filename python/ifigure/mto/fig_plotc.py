@@ -496,5 +496,16 @@ class FigPlotC(FigPlot, FigControl):
             vm = self.getp('marked_point') 
         return vm
 
+    def get_export_val(self, a):
+        data = super(FigPlotC, self).get_export_val(a)
+        data["xdata"] = self.getp('x')
+        data["ydata"] = self.getp('y')
+        if self.getp('xerr') is not None:    
+            data["xerrdata"] = self.getp('xerr')
+        if self.getp('yerr') is not None:    
+            data["yerrdata"] = self.getp('yerr')
+
+        return data
+
 
 
