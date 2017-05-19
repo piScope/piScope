@@ -232,8 +232,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glUniform4fv(self.shader.uniform_loc['uLightDir'], 1, light_direction)
         glUniform3fv(self.shader.uniform_loc['uLightColor'], 1, light_color)
-        glUniform1f(self.shader.uniform_loc['uLightPow'], light)
-        glUniform1f(self.shader.uniform_loc['uLightPowSpec'], specular)
+        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1, light)
+        glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1, specular)
         glUniform3fv(self.shader.uniform_loc['uClipLimit1'], 1, clip_limit1)
         glUniform3fv(self.shader.uniform_loc['uClipLimit2'], 1, clip_limit2)
 
@@ -259,8 +259,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                           (1.0, 1.0, 1.0, 1.0))
-        glUniform1f(self.shader.uniform_loc['uLightPow'], 0.0)
-        glUniform1f(self.shader.uniform_loc['uLightPowSpec'], 0.0)
+        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1,  0.0)
+        glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1,0.0)
         self._use_shadow_map = False
 
         return list(a)[0], list(b)[0], list(c)[0], d, clip1, clip2
