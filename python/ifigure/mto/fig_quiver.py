@@ -525,7 +525,8 @@ class FigQuiver3D(FigQuiver, ZUser):
 
         for name in ('u', 'v', 'w', 'x', 'y', 'z'): 
             obj.setvar(name, v[name])
-        for name in ('alpha', 'cmap', 'pivot', 'length', 'arrow_length_ratio', 'cz', 'cdata'): 
+        for name in ('alpha', 'cmap', 'pivot', 'length', 'arrow_length_ratio',
+                     'cz', 'cdata', 'facecolor', 'edgecolor'): 
             obj.setvar(name, v[name])
 
         if v['cmap'] is not None:
@@ -543,7 +544,8 @@ class FigQuiver3D(FigQuiver, ZUser):
         return 'quiver3d'
     @classmethod  
     def attr_in_file(self):
-        return (["length", "arrow_length_ratio"]+
+        return (["length", "arrow_length_ratio", "facecolor", "edgecolor",
+                 "linewidth",]+
                 super(FigQuiver3D, self).attr_in_file())
     @classmethod  
     def property_in_palette(self):

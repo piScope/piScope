@@ -12,6 +12,9 @@ from ifigure.utils.args_parser import ArgsParser
 from matplotlib import cm
 from matplotlib.colors import Normalize, colorConverter, LightSource, Colormap
 from matplotlib.cm import ScalarMappable
+from matplotlib.colors import ColorConverter
+cc = ColorConverter()
+
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigSurface')
@@ -67,7 +70,9 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
         p.add_key('rstride', 1)
         p.add_key('cstride', 1)
         p.add_key('edgecolor', 'k')        
-        p.add_key('facecolor', 'b')        
+        p.add_key('facecolor', 'b')
+        p.add_key('cz',  not 'color' in kywds) 
+        p.add_key('cdata', None)                
 
         p.set_pair("x", "y")
         p.set_ndconvert("x","y","z")
@@ -106,7 +111,9 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
         return 'surface'
     @classmethod  
     def property_in_palette(self):
-        return ["surf_shade", "cmap","edgecolor_2", "linewidthz", "alpha_2"]
+        return ["facecolor_2", "edgecolor_2", "linewidthz", "solid_shade",
+                "alpha_2"]
+        
     @classmethod
     def attr_in_file(self):
         return (["cmap", "cstride", "rstride", "shade", "alpha", 
@@ -189,8 +196,8 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
         kywds['alpha'] = self.getp('alpha')
         ### stride is handled in fig_surface
-        kywds['cstride'] = 1
-        kywds['rstride'] = 1
+        kywds['cstride'] = self.getvar('cstride')
+        kywds['rstride'] = self.getvar('rstride')
         if coarse:
            f = ifigure._visual_config["3d_rot_accel_factor"]
         else: f = 1
@@ -203,9 +210,33 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
             not 'facecolors' in kywds):
             cmap = self.get_cmap()
             kywds['cmap'] = cm.get_cmap(cmap)
-        kywds['shade'] = self.getvar('shade')
-        kywds['linewidth'] = self.getp('linewidth')
 
+        kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
+        
+        fc = self.getp('facecolor')
+        if isinstance(fc, str): fc = cc.to_rgba(fc)
+        if fc is None: fc = [0,0,0,0]        
+        else:
+            fc = list(fc)
+            if self.getp('alpha') is not None: fc[3]=self.getp('alpha')
+        ec = self.getp('edgecolor')
+        if isinstance(ec, str): ec = cc.to_rgba(ec)
+        if ec is None:
+            ec = [0,0,0,0]
+        else:
+            ec = list(ec)
+            if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
+        cz = self.getvar('cz')
+        if cz is None: 
+            kywds['cz'] = False
+        else:
+            kywds['cz'] = cz
+        if kywds['cz']: kywds['cdata'] = self.getvar('cdata')
+        kywds['facecolor'] = (fc,)
+        kywds['edgecolor'] = (ec,)
+        kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
+        kywds['shade'] = self.getvar('shade')
+        print kywds
         m = getattr(container, self._method)
         self._artists = [m(x, y, z, **kywds)]
         self._fine_artist = self._artists[0]
@@ -355,6 +386,20 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
     def get_shade(self, a=None):
         return self.getvar('shade')
 
+    def set_facecolor(self, value, a):
+        if self.getvar('cz'): return
+        if value == 'disabled': return
+        if isinstance(value, str): value = cc.to_rgba(value)
+        alpha = self.getp('alpha')
+        if alpha is None: alpha = 1.0
+        value = (value[0], value[1], value[2], alpha)
+        self.setp('facecolor', value)
+        a.set_facecolor([value])
+
+    def get_facecolor(self, a=None):
+        if self.getvar('cz'):
+            return 'disabled'
+        return self.getp('facecolor')
 
 #
 #   def hit_test
@@ -428,12 +473,37 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
                 self._update_range(zrange, [np.nanmin(z), np.nanmax(z)])
 
         return zrange
-
+    
     def get_crange(self, crange=[None,None], 
                          xrange=[None,None], 
                          yrange=[None,None],
                          scale = 'linear'):
-        return self.get_zrange(crange, xrange = xrange, yrange=yrange, scale='linear')
+        cdata = self.getvar('cdata')
+        cz = self.getvar('cz')
+        if not cz: return crange
+        if cdata is None:
+            x, y, z = self._eval_xy()
+            crange = self._update_range(crange,
+                             (np.nanmin(z), np.nanmax(z)))
+
+        else:
+            if np.iscomplexobj(cdata):
+                tmp  = np.max(np.abs(cdata))
+                crange = self._update_range(crange,
+                                    (-tmp, tmp))
+
+            else:
+                crange = self._update_range(crange,
+                                    (np.nanmin(cdata), np.nanmax(cdata)))
+
+        return crange
+    
+    def get_mappable(self):
+        if self.getvar('cz'):
+            return [a for a in self._artists if isinstance(a, ScalarMappable)]
+        else:
+            return []
+
 
     def handle_axes_change(self, data):
         name =  data['name']

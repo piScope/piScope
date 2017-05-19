@@ -622,19 +622,14 @@ class Axes3DMod(Axes3D):
         but it also supports color mapping by supplying the *cmap*
         argument.
 
-        The `rstride` and `cstride` kwargs set the stride used to
-        sample the input data to generate the graph.  If 1k by 1k
-        arrays are passed in the default values for the strides will
-        result in a 100x100 grid being plotted.
-
         ============= ================================================
         Argument      Description
         ============= ================================================
         *X*, *Y*, *Z* Data values as 2D arrays
-        *rstride*     Array row stride (step size), defaults to 10
-        *cstride*     Array column stride (step size), defaults to 10
         *edgecolor*   Color of the surface patches (default 'k')
         *facecolor*   Color of the surface patches (default None: use cmap)
+        *rstride*     Reduce data 
+        *cstride*     Reduce data 
         *cmap*        A colormap for the surface patches.
         *shade*       Whether to shade the facecolors
         ============= ================================================
@@ -642,8 +637,8 @@ class Axes3DMod(Axes3D):
         Other arguments are passed on to
         :class:`~mpl_toolkits.mplot3d.art3d.Poly3DCollection`
         '''
-
-        had_data = self.has_data()
+        cz = kwargs.pop('cz', False)
+        cdata = kwargs.pop('cdata', None)        
 
         Z = np.atleast_2d(Z)
         # TODO: Support masked arrays
@@ -653,9 +648,6 @@ class Axes3DMod(Axes3D):
 
         rstride = kwargs.pop('rstride', 10)
         cstride = kwargs.pop('cstride', 10)
-        facecolor = kwargs.pop('facecolor', None)
-        edgecolor = kwargs.pop('edgecolor', 'k')
-        shade  = kwargs.pop('shade', True)                
         idxset3d =[]
         r = list(xrange(0, rows, rstride))
         c = list(xrange(0, cols, cstride))
@@ -674,59 +666,26 @@ class Axes3DMod(Axes3D):
 
         idxset = np.array([x + offset for x in base], 'H')
 
+        #idxset = tri.get_masked_triangles()
 
-        ### normal vector array
-        n_tmp = []
-        
-        for idx in idxset:                      
-           p = [np.array((X3D[idx[k]], Y3D[idx[k]], Z3D[idx[k]]))
-#                for k in range(5)]
-                for k in range(4)]                
-           n1 = np.cross(p[3]-p[0], p[1]-p[0]); n1 = norm_vec(n1)
-           n2 = np.cross(p[0]-p[1], p[2]-p[1]); n2 = norm_vec(n2)
-           n3 = np.cross(p[1]-p[2], p[3]-p[2]); n3 = norm_vec(n3)
-           n4 = np.cross(p[2]-p[3], p[0]-p[3]); n4 = norm_vec(n4)
-           n_tmp.append(norm_vec((n1+n2+n3+n4)/4.0))
-           
-        n_tmp = np.vstack(n_tmp).reshape(l_r-1, l_c-1, 3)
-        norms = np.zeros((l_r, l_c, 3))
-        norms[:-1,:-1,:] = norms[:-1,:-1,:] + n_tmp
-        norms[:-1, 1:,:] = norms[:-1, 1:,:] + n_tmp
-        norms[1:, :-1,:] = norms[1:, :-1,:] + n_tmp
-        norms[1:, 1:,:] = norms[1:,1:,:] + n_tmp
-        x  = np.zeros((l_r, l_c))
-        x[:-1,:-1] = x[:-1,:-1] + 1.0
-        x[:-1, 1:] = x[:-1, 1:] + 1.0
-        x[1:, :-1] = x[1:, :-1] + 1.0
-        x[1:, 1:] = x[1:,1:] + 1.0
-        norms[:,:, 0] = norms[:,:,0]/x
-        norms[:,:, 1] = norms[:,:,1]/x
-        norms[:,:, 2] = norms[:,:,2]/x
+        verts = np.dstack((X3D[idxset], 
+                           Y3D[idxset],
+                           Z3D[idxset]))
+        if cz:
+            if cdata is not None:
+                cdata = cdata[r, :][:, c].flatten()[idxset]
+            else:
+                cdata = Z3D[idxset]
+            shade = kwargs.pop('shade', 'flat')
+            if shade != 'linear':
+                cdata = np.mean(cdata, -1)
+            kwargs['facecolordata'] = cdata.real
+            kwargs.pop('facecolor', None) # get rid of this keyword
 
-        ### we create very small data for mplot3d.
-        ### this is a fallback when opengl is not supported.
-        rstride2d = (rows/7)+1; cstride2d = (cols/7)+1
-        
-        idxset2d =[]
-        r = list(xrange(0, rows-1, rstride2d))
-        c = list(xrange(0, cols-1, cstride2d))
-        X2D = X[r, :][:, c]
-        Y2D = Y[r, :][:, c]
-        Z2D = Z[r, :][:, c]
-        kwargs['rstride'] = rstride2d
-        kwargs['cstride'] = cstride2d
+        kwargs['cz'] = cz
 
-        polyc = Axes3D.plot_surface(self, X2D, Y2D, Z2D,  *args, **kwargs)
-        from art3d_gl import poly_collection_3d_to_gl         
+        return self.plot_solid(verts, **kwargs)
 
-        poly_collection_3d_to_gl(polyc)
-        polyc._gl_3dpath = [X3D, Y3D, Z3D, norms.reshape(-1,3), idxset]
-        polyc.set_facecolor(facecolor)
-        polyc.set_edgecolor(edgecolor)
-        polyc.set_shade(shade)
-
-        return polyc
-        
     def plot_trisurf(self, *args, **kwargs):
         '''
         plot_trisurf(x, y, z,  **wrargs)

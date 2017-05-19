@@ -711,7 +711,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                       for idx in self._gl_3dpath[4]]
                 z = np.array(z)
                 self._gl_edgecolor = self.to_rgba(z)
-            else:                
+            else:
                 self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
             if self._alpha is not None:
                 if self._gl_edgecolor.ndim == 3:

@@ -167,7 +167,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         '''
         kywds = self._var["kywds"].copy()
         kywds['normals'] = norms
-        kywds['alpha'] = self.getp('alpha') if self.getp('alpha') is not None else 1
+        kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
         
         fc = self.getp('facecolor')
         if isinstance(fc, str): fc = cc.to_rgba(fc)

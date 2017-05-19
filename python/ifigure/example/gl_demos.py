@@ -41,9 +41,11 @@ def surf_demo2(**kwargs):
    from mpl_toolkits.mplot3d import Axes3D
    import numpy as np
 
-   from ifigure.interactive import surf, threed, figure
+   from ifigure.interactive import surf, threed, figure, isec, nsec
 
    figure(gl = True)
+   nsec(3)
+   isec(0)
    threed('on')
    u = np.linspace(0, 2 * np.pi, 100)
    v = np.linspace(0, np.pi, 100)
@@ -51,8 +53,16 @@ def surf_demo2(**kwargs):
    x = 10 * np.outer(np.cos(u), np.sin(v))
    y = 10 * np.outer(np.sin(u), np.sin(v))
    z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
-   surf(x, y, z, rstride=4, cstride=4,  color='b')
+   surf(x, y, z, cz = False, facecolor='b', edgecolor = 'k')
+   
+   isec(1)
+   threed('on')
+   surf(x, y, z, cstride=4, cz = True,  edgecolor = 'k')
 
+   isec(2)
+   threed('on')
+   surf(x, y, z,  cz = True, cdata = y, edgecolor = None)
+   
 def contour_demo(**kwargs):
     import mpl_toolkits.mplot3d.axes3d as axes3d
     from ifigure.interactive import contour, threed, figure
@@ -91,8 +101,7 @@ def revolve_demo(**kwargs):
     v.ylim(-1.5, 1.5)
     v.zlim(-1.5, 1.5)    
 
- 
-def solid_demo(**kwargs):
+def solid_stl_demo(**kwargs):
     from stl import mesh
     from ifigure.interactive import solid, figure, threed
     import ifigure, os
@@ -103,13 +112,13 @@ def solid_demo(**kwargs):
     threed('on')
     solid(mymesh.vectors, alpha = 0.5, **kwargs)
 
-def solid_demo2(**kwargs):
+def solid_demo(**kwargs):
     '''
       solid_demo2(cz = True, linewidths = 1.0, edgecolor='red')
       solid_demo2(facecolor='b', linewidths = 1.0, edgecolor='red')
 
     '''
-    from ifigure.interactive import solid, figure, threed
+    from ifigure.interactive import solid, figure, threed, isec, nsec, lighting
     import ifigure, os
 
     # preparing the data, the same as mplot3d demo
@@ -149,14 +158,26 @@ def solid_demo2(**kwargs):
                    Z.flatten()[tri.triangles],))
 
     viewer = figure()
+    nsec(3)
+    isec(0)
     threed('on')
-    solid(v, **kwargs)
+    solid(v, edgecolor = 'k', facecolor = 'b')
+    lighting(light = 0.5, ambient = 0.5)            
+    isec(1)
+    threed('on')
+    solid(v, cz = True)
+    lighting(light = 0.5, ambient = 0.5)            
+    isec(2)
+    threed('on')
+    solid(v, cz = True, cdata = v[:,:,0], shade='linear')
+    lighting(light = 0.5, ambient = 0.5)        
+    
 
 
 def trisurf3d_demo(**kwargs):
     from matplotlib import cm
     import numpy as np
-    from ifigure.interactive import figure, threed, trisurf   
+    from ifigure.interactive import figure, threed, trisurf , nsec, isec, lighting
 
     # preparing the data, the same as mplot3d demo
     n_angles = 36
@@ -169,17 +190,18 @@ def trisurf3d_demo(**kwargs):
     z = np.sin(-x*y)
 
     v = figure()
+    nsec(3)
+    isec(0)
     threed('on')
     trisurf(x, y, z, cmap=cm.jet, linewidth=0.2, cz = True)
-
-    v = figure()
+    isec(1)
     threed('on')
-    trisurf(x, y, z, linewidth=0.2,  facecolor='b')
-
-    v = figure()
+    trisurf(x, y, z, linewidth=0.2,  color='b')
+    lighting(light = 0.5, ambient = 0.5)    
+    isec(2)
     threed('on')
     trisurf(x, y, z*0, cmap=cm.jet, linewidth=0.2, 
-            cz = True, cdata = z)
+            cz = True, cdata = z, edgecolor = None)
 
 
 def trisurf3d_demo2(**kwargs): 
@@ -231,7 +253,8 @@ def trisurf3d_demo2(**kwargs):
 
     v.isec(1)
     v.threed('on')
-    v.trisurf(triang, z, cmap=plt.cm.CMRmap, cz = True, shade = 'linear')
+    v.trisurf(triang, z, cmap=plt.cm.CMRmap, cz = True, shade = 'linear',
+              edgecolor = None)
 
 
 def quiver_demo(**kwargs):
@@ -245,7 +268,7 @@ def quiver_demo(**kwargs):
                headsize = 0.01)    
 
    '''
-   from ifigure.interactive import quiver, threed, figure
+   from ifigure.interactive import quiver, threed, figure, lighting, view, isec, nsec
    
    x, y, z = np.meshgrid(np.arange(-0.8, 1, 0.2),
                       np.arange(-0.8, 1, 0.2),
@@ -257,5 +280,14 @@ def quiver_demo(**kwargs):
      np.sin(np.pi * z))
 
    figure()
+   nsec(2)
+   isec(0)
    threed('on')
-   quiver(x, y, z, u, v, w, **kwargs)
+   lighting(light = 0.5, ambient = 0.7)
+   view('noclip')
+   quiver(x, y, z, u, v, w, length = 0.3, facecolor = 'b')
+   isec(1)
+   threed('on')
+   lighting(light = 0.5, ambient = 0.7)
+   view('noclip')
+   quiver(x, y, z, u, v, w, cz = True, cdata = y, length = 0.3)

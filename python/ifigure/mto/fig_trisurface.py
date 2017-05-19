@@ -13,8 +13,6 @@ class FigTrisurface(FigSurface):
             argc = argc[1:]
         else:
             tri = None
-        cz = kywds.pop('cz', True)
-        cdata = kywds.pop('cdata', None)
         obj = FigSurface.__new__(self, *argc, **kywds)
 
         return obj
@@ -25,11 +23,7 @@ class FigTrisurface(FigSurface):
             argc = argc[1:]
         else:
             tri = None
-        cz = kywds.pop('cz', False)
-        cdata = kywds.pop('cdata', None)
         if tri is not None: self.setvar('tri', tri)
-        self.setvar('cz', cz)
-        self.setvar('cdata', cdata)
         return FigSurface.__init__(self, *argc, **kywds)
 
     @classmethod
@@ -87,7 +81,7 @@ class FigTrisurface(FigSurface):
         if cax is None:
             dprint1('Error: cax is None')
             return
-        kywds['alpha'] = self.getp('alpha') if self.getp('alpha') is not None else 1
+        kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
         
         fc = self.getp('facecolor')
         if isinstance(fc, str): fc = cc.to_rgba(fc)
@@ -155,6 +149,7 @@ class FigTrisurface(FigSurface):
                                                          xrange=xrange,
                                                          yrange=yrange,
                                                          scale = 'linear')
+    '''    
     def get_crange(self, crange=[None,None], 
                          xrange=[None,None], 
                          yrange=[None,None],
@@ -179,24 +174,4 @@ class FigTrisurface(FigSurface):
 
         return crange
 
-    def get_mappable(self):
-        if self.getvar('cz'):
-            return [a for a in self._artists if isinstance(a, ScalarMappable)]
-        else:
-            return []
-
-    def set_facecolor(self, value, a):
-        if self.getvar('cz'): return
-        if value == 'disabled': return
-        if isinstance(value, str): value = cc.to_rgba(value)
-        alpha = self.getp('alpha')
-        if alpha is None: alpha = 1.0
-        value = (value[0], value[1], value[2], alpha)
-        self.setp('facecolor', value)
-        a.set_facecolor([value])
-
-    def get_facecolor(self, a=None):
-        if self.getvar('cz'):
-            return 'disabled'
-        return self.getp('facecolor')
-        
+    ''' 
