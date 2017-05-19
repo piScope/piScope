@@ -188,14 +188,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         print(glGetProgramInfoLog(self.shader))
         self.select_shader(self.shader)
 
-        names = names + ['uAmbient', 'uLightDir', 'uLightColor',
+#        names = names + ['uAmbient', 'uLightDir', 'uLightColor',
+        names = names + ['uLightDir', 'uLightColor',                         
                          'uLightPow', 'uLightPowSpec',
                          'uMaxAlpha',  'uShadowM',
                          'uShadowMaxZ', 'uShadowMinZ',
                          'uShadowTex', 'uUseShadowMap',
                          'uShadowTexSize', 'uShadowTex2',
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
-                         'uLineStyle']
+                         'uLineStyle', 'uAmbient']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -225,7 +226,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                            clip_limit1 = [0, 0, 0],
                            clip_limit2 = [1, 1, 1], shadowmap = True):
         if not self.init: return
-
+        #print('set_lighting', light)
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                           (ambient, ambient, ambient, 1.0))
 
@@ -242,7 +243,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #print 'light power', self.shader, light
         
     def set_lighting_off(self):
-
+        #print('set_lighting_off')
         a = (GLfloat * 4)()
         b = (GLfloat * 1)()
         c= (GLfloat * 1)()
@@ -1099,7 +1100,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
-        
         
         if not lighting and self._p_shader is self.shader:
             ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()

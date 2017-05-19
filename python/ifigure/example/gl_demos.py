@@ -19,9 +19,9 @@ def image_demo():
                     [0, 1, 0]))
 
 def surf_demo(**kwargs):
-   from ifigure.interactive import surf, threed, figure, hold
+   from ifigure.interactive import surf, threed, figure, hold, lighting
 
-   figure(gl = True)
+   figure()
    threed('on')
 #   X = np.arange(-5, 5, 0.25)
 #   Y = np.arange(-5, 5, 0.25)
@@ -29,8 +29,10 @@ def surf_demo(**kwargs):
    Y = np.linspace(-5, 5, 40)
    X, Y = np.meshgrid(X, Y)
    R = np.sqrt(X**2 + Y**2)
-   Z = np.sin(R)    
-   surf(X, Y, Z, cmap='coolwarm', **kwargs)
+   Z = np.sin(R)
+
+   lighting(light = 0.5, ambient = 0.7)   
+   surf(X, Y, Z, cmap='coolwarm', shade = 'linear', **kwargs)
 #  Debug to draw flat plane....   
 #   hold(1)
 #   surf(np.array([-5.0,-5, -5.0]), np.array([-5, 0, 5]), np.array([[1,0, -1],[1, 0, -1],[1, 0, -1]]), cmap='coolwarm', **kwargs)

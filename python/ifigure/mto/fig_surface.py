@@ -236,7 +236,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
         kywds['shade'] = self.getvar('shade')
-        print kywds
+
         m = getattr(container, self._method)
         self._artists = [m(x, y, z, **kywds)]
         self._fine_artist = self._artists[0]
