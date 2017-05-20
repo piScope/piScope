@@ -922,9 +922,6 @@ class Axes3DMod(Axes3D):
 #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
         if isSupportedRenderer(renderer):    
-#        if hasattr(renderer, 'use_gl'):
-#            worldM, viewM, perspM, E, R, V = self.get_proj2()
-#            renderer.set_canvas_proj(worldM, viewM, perspM, (E, R, V))
             self._matrix_cache = self.get_proj2()
             artists = []
 
@@ -935,20 +932,17 @@ class Axes3DMod(Axes3D):
             artists.extend(self.texts)
             artists.extend(self.artists)
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
-            for o in gl_obj: o.is_last =  False
 
-            if len(gl_obj) > 0:
-                print gl_obj
-                gl_obj[-1].is_last =  True
+            gl_len = len(gl_obj)
+            if gl_obj > 0:
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
                     glcanvas.init): 
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return
-                
-            gl_len = len(gl_obj)
-
+            self._num_globj = gl_len
+            self._k_globj =   0
                 
         ### axes3D seems to change frameon status....
         frameon = self.get_frame_on()
@@ -965,6 +959,7 @@ class Axes3DMod(Axes3D):
                 self.texts.remove(self._3d_axes_icon[4]())
                 self.texts.remove(self._3d_axes_icon[5]())                
             self._3d_axes_icon  = None
+
         val = Axes3D.draw(self, renderer)
         self.set_frame_on(frameon)
         return val

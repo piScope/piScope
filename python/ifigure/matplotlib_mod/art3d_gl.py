@@ -32,6 +32,9 @@ frame_range = np.array([-0.095, -0.095, 1.1, 1.10])+0.01
 #frame_range = np.array([0, 0, 1, 1])
 
 def finish_gl_drawing(glcanvas, renderer, tag, trans):
+    tag._k_globj += 1
+    if (tag._k_globj != tag._num_globj): return
+    #print ("finish gl draw", tag._k_globj, tag._num_globj)
     if not glcanvas._hittest_map_update:
         id_dict = glcanvas.draw_mpl_artists(tag)
         im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
@@ -68,7 +71,6 @@ def get_glcanvas():
 class ArtGL(object):
     is_gl = True
     def __init__(self):
-        self.is_last = False
         self._gl_3dpath = None        
         self._gl_lighting = True
         self._gl_offset = (0, 0, 0.)
@@ -120,7 +122,6 @@ class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
         self._invalidz = False
         self._zorig = None
-        self.is_last = False
         self._update_path = False
         self._facecolor = None
         Line3D.__init__(self, xdata, ydata, zdata, **kargs)
@@ -175,7 +176,6 @@ class LineGL(ArtGL, Line3D):
                self.recache()
                if self.get_zdata() is None:
                    self._zorig = np.array([0]*len(self.get_xdata()))
-#           print self._transform_path()
            renderer.use_gl = True
            glcanvas = get_glcanvas()
            if self.axes is not None:
@@ -211,7 +211,6 @@ class LineGL(ArtGL, Line3D):
            if self._gl_3dpath is None:
                 self.verts3d_to_3dpath()
            if len(self._gl_3dpath) == 3:
-              print 'draw line', self
               renderer.gl_draw_path(gc, self._gl_3dpath,  trans,
                                     rgbFace = self._facecolor,
                                     linestyle = self._linestyle)
@@ -244,14 +243,10 @@ class LineGL(ArtGL, Line3D):
               marker_trans = (m_size,)
               renderer.gl_draw_markers(gc, marker_path, marker_trans,
                                  self._gl_3dpath[:3],  trans)           
-#           glcanvas.update_gc(self, gc)
            glcanvas.end_draw_request()
-#           else:
-#              glcanvas.update_gc(self, gc)
            gc.restore()
 
-           if self.is_last:
-               finish_gl_drawing(glcanvas, renderer, tag, trans)
+           finish_gl_drawing(glcanvas, renderer, tag, trans)
            renderer.use_gl = False
         else:
            v =  Line3D.draw(self, renderer)
@@ -330,7 +325,6 @@ class AxesImageGL(ArtGL, AxesImage):
            glcanvas.frame_request(self, trans)
 #           if not glcanvas.has_vbo_data(self):
            glcanvas.start_draw_request(self)
-#           print self._gl_rgbacache_id, id(self._rgbacache)
            if self._gl_3dpath is not None:
               im = self.make_image(renderer.get_image_magnification())
               gc = renderer.new_gc()              
@@ -348,8 +342,7 @@ class AxesImageGL(ArtGL, AxesImage):
            else:
               pass
            glcanvas.end_draw_request()
-           if self.is_last:
-               finish_gl_drawing(glcanvas, renderer, tag, trans)
+           finish_gl_drawing(glcanvas, renderer, tag, trans)
            renderer.use_gl = False
         else:
             pass
@@ -365,7 +358,6 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
     def __init__(self, *args, **kargs):
         ArtGL.__init__(self)
         
-        self.is_last = False
         self.do_stencil_test = True
         self._gl_3dpath = kargs.pop('gl_3dpath', None)
         self._gl_offset = kargs.pop('gl_offset', (0, 0, 0.))
@@ -511,8 +503,7 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
            self._update_ec = False
            self._update_v = False
 
-           if self.is_last:
-               finish_gl_drawing(glcanvas, renderer, tag, trans)
+           finish_gl_drawing(glcanvas, renderer, tag, trans)
 
            renderer.use_gl = False        
         else:
@@ -533,7 +524,6 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     def __init__(self, *args, **kargs):
         ArtGL.__init__(self)
 
-        self.is_last = False
         self.do_stencil_test = True
         self._gl_offset = kargs.pop('gl_offset', (0, 0, 0.))
         self._gl_3dpath = kargs.pop('gl_3dpath', None)
@@ -758,7 +748,6 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 #           renderer.do_stencil_test = self.do_stencil_test
            glcanvas.start_draw_request(self)
            if self._gl_3dpath is not None:
-                print 'draw', self
                 renderer.gl_draw_path_collection_e(
                    gc, None, self._gl_3dpath,
                    self.get_transforms(), self._gl_offset, None,
@@ -777,8 +766,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
            self._update_ec = False
            self._update_v = False
 
-           if self.is_last:
-               finish_gl_drawing(glcanvas, renderer, tag, trans)
+           finish_gl_drawing(glcanvas, renderer, tag, trans)
 
            renderer.use_gl = False
         else:
@@ -810,7 +798,6 @@ class Polygon3DGL(ArtGL, Polygon):
         self._gl_lighting = kargs.pop('gl_lighting', True)
         xy = xyz[:,0:2]
         Polygon.__init__(self, xy, **kargs)
-        self.is_last = False
         self.do_stencil_test = True
         self.set_3d_properties(zs = xyz[:,2])
         
@@ -863,15 +850,13 @@ class Polygon3DGL(ArtGL, Polygon):
 #              glcanvas.update_gc(self, gc)
            gc.restore()
            renderer.use_gl = False
-           if self.is_last:
-               finish_gl_drawing(glcanvas, renderer, tag, trans)
+           finish_gl_drawing(glcanvas, renderer, tag, trans)
 
         else:
             Polygon.draw(self, renderer)
 
 def polygon_2d_to_gl(obj, zs, zdir):
     obj.__class__ = Polygon3DGL
-    obj.is_last = False
     obj._invalidz = True
     obj.do_stencil_test = True
     obj._gl_lighting = True    

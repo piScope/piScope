@@ -390,6 +390,8 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
         sel = [weakref.ref(self._artists[0])]
         import wx
         app = wx.GetApp().TopWindow
+        #ifigure.events.SendPVDrawRequest(self, w=None, 
+        #                        wait_idle=True, refresh_hl=True)
         ifigure.events.SendSelectionEvent(self, w=app, selections=sel)
         #self.reset_artist()
 

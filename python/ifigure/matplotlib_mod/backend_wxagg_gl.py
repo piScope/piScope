@@ -885,8 +885,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 else:
                     self._styled_line(vbos, linestyle = linestyle)
             if self._wireframe == 2: glEnable(GL_DEPTH_TEST)
-#            self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-#                             (0, 0, 0.00, 0.))
         else:
             glColor(rgbFace)
             self._draw_polygon(0, vbos['count'], facecolor = rgbFace,
@@ -1070,7 +1068,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           lighting = True,
                                           view_offset = (0, 0, 0, 0)):
 
-
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
         glVertexPointer(3, GL_FLOAT, 0, None)
@@ -1103,8 +1100,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         if not lighting and self._p_shader is self.shader:
             ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()
-        if facecolor is not None:
+        if facecolor is not None: 
            glEnable(GL_POLYGON_SMOOTH)
+           glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
            vbos['fc'].unbind()
@@ -1132,13 +1130,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
-            print("here")
-            #
-            #glEnable(GL_LINE_SMOOTH)                        
-            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-            glDepthMask(GL_FALSE)
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)            
+            if linewidth[0] < 1.5:
+               glLineWidth(linewidth[0]-0.5)
+               glEnable(GL_LINE_SMOOTH)                        
+               glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+               glDepthMask(GL_FALSE)
+               glEnable(GL_BLEND)
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            else:
+               glDisable(GL_LINE_SMOOTH)                        
             #
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
@@ -1154,12 +1154,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                 glDrawArrays(primitive_mode, 0, len(counts)*counts[0])
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
-#            glMultiDrawArrays(GL_LINE_STRIP, first, counts,
-#                              len(counts))
             if self._wireframe == 2: glEnable(GL_DEPTH_TEST)            
             self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                              (0, 0, 0., 0.))
             vbos['ec'].unbind()
+#            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
         if not lighting and self._p_shader is self.shader:            
             self.set_lighting(ambient = ambient,
                               light = light, 
@@ -1512,7 +1512,7 @@ class RendererGLMixin(object):
     def __init__(self, *args, **kwargs):
         self.do_stencil_test = False
         self._no_update_id = False
-        
+        self._num_globj = 0
     def __del__(self):
         self._glcanvas = None
 
