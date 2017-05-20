@@ -1131,7 +1131,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
             if linewidth[0] < 1.5:
-               glLineWidth(linewidth[0]-0.5)
+               glLineWidth(max(linewidth[0]-0.5, 0.5))
                glEnable(GL_LINE_SMOOTH)                        
                glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
                glDepthMask(GL_FALSE)
