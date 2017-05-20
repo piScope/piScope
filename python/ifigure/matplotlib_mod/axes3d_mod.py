@@ -583,10 +583,11 @@ class Axes3DMod(Axes3D):
 #        from ifigure.interactive import figure
 #        v = figure()
 #        v.plot(X, Z)
-        facecolor = kwargs.pop('facecolor', (0,0,1,1))
+        #facecolor = kwargs.pop('facecolor', (0,0,1,1))
         X, Y, Z = np.broadcast_arrays(X, Y, Z)
+
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
-        polyc.set_facecolor([facecolor])
+        polyc._revolve_data = (X, Y, Z)
         return polyc
     
     def plot_extrude(self, X, Y, Z, path,
@@ -611,7 +612,6 @@ class Axes3DMod(Axes3D):
 
         X = x.flatten(); Y = y.flatten(); Z = z.flatten()
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
-        polyc.set_facecolor([facecolor])
         return polyc
         
     def plot_surface(self, X, Y, Z, *args, **kwargs):
@@ -938,6 +938,7 @@ class Axes3DMod(Axes3D):
             for o in gl_obj: o.is_last =  False
 
             if len(gl_obj) > 0:
+                print gl_obj
                 gl_obj[-1].is_last =  True
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and

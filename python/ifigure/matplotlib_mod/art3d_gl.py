@@ -120,7 +120,7 @@ class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
         self._invalidz = False
         self._zorig = None
-        self.is_last = True
+        self.is_last = False
         self._update_path = False
         self._facecolor = None
         Line3D.__init__(self, xdata, ydata, zdata, **kargs)
@@ -211,6 +211,7 @@ class LineGL(ArtGL, Line3D):
            if self._gl_3dpath is None:
                 self.verts3d_to_3dpath()
            if len(self._gl_3dpath) == 3:
+              print 'draw line', self
               renderer.gl_draw_path(gc, self._gl_3dpath,  trans,
                                     rgbFace = self._facecolor,
                                     linestyle = self._linestyle)
@@ -757,6 +758,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 #           renderer.do_stencil_test = self.do_stencil_test
            glcanvas.start_draw_request(self)
            if self._gl_3dpath is not None:
+                print 'draw', self
                 renderer.gl_draw_path_collection_e(
                    gc, None, self._gl_3dpath,
                    self.get_transforms(), self._gl_offset, None,

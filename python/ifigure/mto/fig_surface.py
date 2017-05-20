@@ -212,7 +212,6 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
             kywds['cmap'] = cm.get_cmap(cmap)
 
         kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
-        
         fc = self.getp('facecolor')
         if isinstance(fc, str): fc = cc.to_rgba(fc)
         if fc is None: fc = [0,0,0,0]        
@@ -381,7 +380,18 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
     def set_shade(self, value, a):
         self.setvar('shade', value)
-        self.reset_artist()
+        self.del_artist(delall=True)
+        self.delp('loaded_property')
+
+        self.generate_artist()
+        ax = self.get_figaxes()        
+        ax.set_bmp_update(False)
+        
+        sel = [weakref.ref(self._artists[0])]
+        import wx
+        app = wx.GetApp().TopWindow
+        ifigure.events.SendSelectionEvent(self, w=app, selections=sel)
+        #self.reset_artist()
 
     def get_shade(self, a=None):
         return self.getvar('shade')
@@ -573,11 +583,16 @@ class FigRevolve(FigSurface):
         p.add_var('z', ['iter|nonstr', 'dynamic'])       
 
         p.add_key('cmap', None)
-        p.add_key('shade', True)
+        p.add_key('shade', 'flat')
         p.add_key('linewidth', 1.0)
         p.add_key('alpha', 1)
         p.add_key('rstride', 1)
         p.add_key('cstride', 1)
+        p.add_key('edgecolor', 'k')        
+        p.add_key('facecolor', 'b')
+        p.add_key('cz',  False)
+        p.add_key('cdata', None)                
+        
         p.set_ndconvert("x","y")
 
         v, kywds,d, flag = p.process(*args, **kywds)
@@ -637,25 +652,44 @@ class FigRevolve(FigSurface):
             dprint1('Error: cax is None')
             return
 
-        kywds['alpha'] = self.getp('alpha')
-
         ### stride is handled in fig_surface
         kywds['cstride'] = 1
         kywds['rstride'] = 1
         if coarse:
            f = ifigure._visual_config["3d_rot_accel_factor"]
         else: f = 1
-#        x, y, z = _reduce_size(x, y, z, 
-#                               self.getp('cstride')*f, 
-#                               self.getp('rstride')*f)
 
 
         if (not 'color' in kywds and
             not 'facecolors' in kywds):
             cmap = self.get_cmap()
             kywds['cmap'] = cm.get_cmap(cmap)
-        kywds['shade'] = self.getp('shade')
-        kywds['linewidth'] = self.getp('linewidth')
+            
+        kywds['shade'] = self.getvar('shade')
+        kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
+        fc = self.getp('facecolor')
+        if isinstance(fc, str): fc = cc.to_rgba(fc)
+        if fc is None: fc = [0,0,0,0]        
+        else:
+            fc = list(fc)
+            if self.getp('alpha') is not None: fc[3]=self.getp('alpha')
+        ec = self.getp('edgecolor')
+        if isinstance(ec, str): ec = cc.to_rgba(ec)
+        if ec is None:
+            ec = [0,0,0,0]
+        else:
+            ec = list(ec)
+            if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
+        cz = self.getvar('cz')
+        if cz is None: 
+            kywds['cz'] = False
+        else:
+            kywds['cz'] = cz
+        if kywds['cz']: kywds['cdata'] = self.getvar('cdata')
+        kywds['facecolor'] = (fc,)
+        kywds['edgecolor'] = (ec,)
+        kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
+        
         m = getattr(container, self._method)
         self._artists = [m(r, z, **kywds)]
         self._fine_artist = self._artists[0]
@@ -715,3 +749,5 @@ class FigRevolve(FigSurface):
                 return [None]*len(names)
         return self.getp(names)
 
+    def get_shade(self, a=None):
+        return self.getvar('shade')
