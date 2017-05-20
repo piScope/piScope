@@ -789,9 +789,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def _styled_line(self, vbos, linestyle = '--'):
         w = vbos['count']
-        print("styled_line")
-        import traceback
-        traceback.print_stack()
 
         atlas_tex = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, atlas_tex)
@@ -837,10 +834,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         vertex_id.bind()
         self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
         vertex_id.unbind()
-#        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-#                               GL_COLOR_ATTACHMENT2, 
-#                               GL_TEXTURE_2D, 0, 0)
-#        glDeleteTextures(atlas_tex)
+
         self.set_uniform(glUniform1i,  'uisAtlas', 0)
         if linestyle == '--':
            self.set_uniform(glUniform1i,  'uLineStyle', 0)

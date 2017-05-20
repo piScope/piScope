@@ -32,9 +32,9 @@ frame_range = np.array([-0.095, -0.095, 1.1, 1.10])+0.01
 #frame_range = np.array([0, 0, 1, 1])
 
 def finish_gl_drawing(glcanvas, renderer, tag, trans):
-    tag._k_globj += 1
-    if (tag._k_globj != tag._num_globj): return
-    #print ("finish gl draw", tag._k_globj, tag._num_globj)
+    renderer._k_globj += 1
+    if (renderer._k_globj != renderer._num_globj): return
+    #print ("finish gl draw", renderer._k_globj, renderer._num_globj)
     if not glcanvas._hittest_map_update:
         id_dict = glcanvas.draw_mpl_artists(tag)
         im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
