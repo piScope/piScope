@@ -941,8 +941,8 @@ class Axes3DMod(Axes3D):
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return
-            self._num_globj = gl_len
-            self._k_globj =   0
+            renderer._num_globj = gl_len
+            renderer._k_globj =   0
                 
         ### axes3D seems to change frameon status....
         frameon = self.get_frame_on()

@@ -17,7 +17,7 @@ from matplotlib.transforms import Bbox, TransformedPath
 from matplotlib.colors import Colormap
 
 from ifigure.matplotlib_mod.cz_linecollection import CZLineCollection
-from ifigure.matplotlib_mod.art3d_gl import Line3DCollectionGL        
+from ifigure.matplotlib_mod.art3d_gl import Line3DCollectionGL, LineGL
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigPlot')
@@ -340,7 +340,9 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         container=self.get_container()
         if val == True:
            for a in alist:
-              if isinstance(a, Line2D) or isinstance(a, CZLineCollection):
+              if isinstance(a, LineGL):
+                  hl = alist[0].add_hl_mask() 
+              elif isinstance(a, Line2D) or isinstance(a, CZLineCollection):
                   if hasattr(a, 'set_3d_properties'):
                       args = a._verts3d
                   else:

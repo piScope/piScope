@@ -789,7 +789,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def _styled_line(self, vbos, linestyle = '--'):
         w = vbos['count']
-
+        print("styled_line")
+        import traceback
+        traceback.print_stack()
 
         atlas_tex = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, atlas_tex)
@@ -1130,6 +1132,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
+            ''' 
             if linewidth[0] < 1.5:
                glLineWidth(max(linewidth[0]-0.5, 0.5))
                glEnable(GL_LINE_SMOOTH)                        
@@ -1139,6 +1142,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             else:
                glDisable(GL_LINE_SMOOTH)                        
+            '''
             #
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
@@ -1632,6 +1636,8 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         for o in gl_obj: o.is_last =  False
         if len(gl_obj) > 0:
             gl_obj[-1].is_last =  True
+            self.renderer._k_globj =   0
+            self.renderer._num_globj =  len(gl_obj)
             self.renderer.no_update_id()
 #            self.renderer.no_lighting = no_lighting
             FigureCanvasWxAggModGL.glcanvas._artist_mask = alist
