@@ -1132,6 +1132,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
+            print("here")
+            #
+            #glEnable(GL_LINE_SMOOTH)                        
+            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+            glDepthMask(GL_FALSE)
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)            
+            #
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
             glDepthFunc(GL_LEQUAL)

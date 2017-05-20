@@ -3993,7 +3993,13 @@ class EditListCore(object):
         i=0
         for w, txt in self.widgets:
             if w.IsEnabled():
-               err=w.SetValue(value[i])
+               try:
+                   err=w.SetValue(value[i])
+               except:
+                   import traceback
+                   traceback.print_exc()
+                   print("failed to call SetValue" + str(w))                   
+                   continue
                if err is False:
                   w.Hide()
                   if txt is not None: txt.Hide()
