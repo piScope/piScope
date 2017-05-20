@@ -3892,8 +3892,8 @@ class EditListCore(object):
               if len(val)==4:
                  setting=val[3]
               else:
-                 setting={"minV": 0.,
-                          "maxV": 1., 
+                 setting={"minV": -4.,
+                          "maxV": 5., 
                           "val" : 0.5, 
                           "res" : 0.01,
                           "motion_event" : False,                          
