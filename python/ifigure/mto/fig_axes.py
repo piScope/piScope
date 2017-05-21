@@ -2083,11 +2083,12 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         for i in self._xaxis:
             item.append(["axlabel",
                          "axlotsize", 
-                         "axtlcolor", "axticks"])
+                         "axtlcolor", "axticks",
+                         "axxpos"])
         for i in self._yaxis:
             item.append(["axlabel", 
                          "axlotsize", 
-                         "axtlcolor", "axticks"])
+                         "axtlcolor", "axticks", "axypos"])
         return tab, item
 
     @classmethod  
