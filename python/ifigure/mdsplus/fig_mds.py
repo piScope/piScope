@@ -555,12 +555,12 @@ class FigMds(FigGrp):
                 can_compress = False
 
         # if title_expr is not enclosed by '"', then put it.
-        if title_expr[0] != '"' and title_expr[-1] != '"':
-            title_expr = '"'+title_expr + '"'
         if title_expr == '': 
             title_expr = '""'
             jobname  = 'novalue'
         else:
+            if title_expr[0] != '"' and title_expr[-1] != '"':
+                title_expr = '"'+title_expr + '"'
             jobname  = 'value'
         if True:
             shots_expr = self.make_shots_expr()
