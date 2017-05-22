@@ -188,14 +188,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         print(glGetProgramInfoLog(self.shader))
         self.select_shader(self.shader)
 
-        names = names + ['uAmbient', 'uLightDir', 'uLightColor',
+#        names = names + ['uAmbient', 'uLightDir', 'uLightColor',
+        names = names + ['uLightDir', 'uLightColor',                         
                          'uLightPow', 'uLightPowSpec',
                          'uMaxAlpha',  'uShadowM',
                          'uShadowMaxZ', 'uShadowMinZ',
                          'uShadowTex', 'uUseShadowMap',
                          'uShadowTexSize', 'uShadowTex2',
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
-                         'uLineStyle']
+                         'uLineStyle', 'uAmbient']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -225,14 +226,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
                            clip_limit1 = [0, 0, 0],
                            clip_limit2 = [1, 1, 1], shadowmap = True):
         if not self.init: return
-
+        #print('set_lighting', light)
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                           (ambient, ambient, ambient, 1.0))
 
         glUniform4fv(self.shader.uniform_loc['uLightDir'], 1, light_direction)
         glUniform3fv(self.shader.uniform_loc['uLightColor'], 1, light_color)
-        glUniform1f(self.shader.uniform_loc['uLightPow'], light)
-        glUniform1f(self.shader.uniform_loc['uLightPowSpec'], specular)
+        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1, light)
+        glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1, specular)
         glUniform3fv(self.shader.uniform_loc['uClipLimit1'], 1, clip_limit1)
         glUniform3fv(self.shader.uniform_loc['uClipLimit2'], 1, clip_limit2)
 
@@ -242,7 +243,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #print 'light power', self.shader, light
         
     def set_lighting_off(self):
-
+        #print('set_lighting_off')
         a = (GLfloat * 4)()
         b = (GLfloat * 1)()
         c= (GLfloat * 1)()
@@ -258,8 +259,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                           (1.0, 1.0, 1.0, 1.0))
-        glUniform1f(self.shader.uniform_loc['uLightPow'], 0.0)
-        glUniform1f(self.shader.uniform_loc['uLightPowSpec'], 0.0)
+        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1,  0.0)
+        glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1,0.0)
         self._use_shadow_map = False
 
         return list(a)[0], list(b)[0], list(c)[0], d, clip1, clip2
@@ -789,7 +790,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def _styled_line(self, vbos, linestyle = '--'):
         w = vbos['count']
 
-
         atlas_tex = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, atlas_tex)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -834,10 +834,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         vertex_id.bind()
         self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
         vertex_id.unbind()
-#        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-#                               GL_COLOR_ATTACHMENT2, 
-#                               GL_TEXTURE_2D, 0, 0)
-#        glDeleteTextures(atlas_tex)
+
         self.set_uniform(glUniform1i,  'uisAtlas', 0)
         if linestyle == '--':
            self.set_uniform(glUniform1i,  'uLineStyle', 0)
@@ -884,8 +881,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 else:
                     self._styled_line(vbos, linestyle = linestyle)
             if self._wireframe == 2: glEnable(GL_DEPTH_TEST)
-#            self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-#                             (0, 0, 0.00, 0.))
         else:
             glColor(rgbFace)
             self._draw_polygon(0, vbos['count'], facecolor = rgbFace,
@@ -1069,7 +1064,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           lighting = True,
                                           view_offset = (0, 0, 0, 0)):
 
-
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
         glVertexPointer(3, GL_FLOAT, 0, None)
@@ -1100,11 +1094,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
         
-        
         if not lighting and self._p_shader is self.shader:
             ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()
-        if facecolor is not None:
+        if facecolor is not None: 
            glEnable(GL_POLYGON_SMOOTH)
+           glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
            vbos['fc'].unbind()
@@ -1132,6 +1126,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
+            ''' 
+            if linewidth[0] < 1.5:
+               glLineWidth(max(linewidth[0]-0.5, 0.5))
+               glEnable(GL_LINE_SMOOTH)                        
+               glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+               glDepthMask(GL_FALSE)
+               glEnable(GL_BLEND)
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            else:
+               glDisable(GL_LINE_SMOOTH)                        
+            '''
+            #
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
             glDepthFunc(GL_LEQUAL)
@@ -1146,12 +1152,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                 glDrawArrays(primitive_mode, 0, len(counts)*counts[0])
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
-#            glMultiDrawArrays(GL_LINE_STRIP, first, counts,
-#                              len(counts))
             if self._wireframe == 2: glEnable(GL_DEPTH_TEST)            
             self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                              (0, 0, 0., 0.))
             vbos['ec'].unbind()
+#            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
         if not lighting and self._p_shader is self.shader:            
             self.set_lighting(ambient = ambient,
                               light = light, 
@@ -1504,7 +1510,7 @@ class RendererGLMixin(object):
     def __init__(self, *args, **kwargs):
         self.do_stencil_test = False
         self._no_update_id = False
-        
+        self._num_globj = 0
     def __del__(self):
         self._glcanvas = None
 
@@ -1624,6 +1630,8 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         for o in gl_obj: o.is_last =  False
         if len(gl_obj) > 0:
             gl_obj[-1].is_last =  True
+            self.renderer._k_globj =   0
+            self.renderer._num_globj =  len(gl_obj)
             self.renderer.no_update_id()
 #            self.renderer.no_lighting = no_lighting
             FigureCanvasWxAggModGL.glcanvas._artist_mask = alist

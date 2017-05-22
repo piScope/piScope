@@ -1085,6 +1085,18 @@ class BookViewerInteractive(object):
            print(x.message)
            return
         return obj
+    @allow_interactive_call
+    def quiver3d(self, *args, **kargs):
+        from ifigure.mto.fig_quiver import FigQuiver, FigQuiver3D
+
+        self.threed('on')
+        try:
+           obj=FigQuiver3D(*args, **kargs)
+        except ValueError as x:
+           print(x.message)
+           return
+        return obj
+      
 
     import matplotlib.mlab as mlab
 #    @allow_interactive_call

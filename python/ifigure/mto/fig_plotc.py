@@ -31,6 +31,7 @@ class FigPlotC(FigPlot, FigControl):
         FigControl.__init__(self)        
         self._figc_hit = -1
         self._enable_a = None
+        self._mark_a = None
 
     @classmethod  
     def attr_in_file(self):
@@ -55,16 +56,33 @@ class FigPlotC(FigPlot, FigControl):
 
     def generate_artist(self):
         FigPlot.generate_artist(self)
+        container=self.get_container()
+        a = self._artists[0]
+        x=a.get_xdata()
+        y=a.get_ydata()
+
+        vm = self.getp('marked_point')
+        if vm is not None:
+           if self._mark_a is not None:
+              self._mark_a.remove()
+              self._mark_a = None
+
+           a3 = container.plot(x[vm].copy(), y[vm].copy(), marker='o',
+                            color='k', linestyle='None',
+                            markerfacecolor='k',
+                            markeredgecolor='k', 
+                            markersize = 6,
+                            scalex=False, scaley=False)
+           print a3
+           self._mark_a = a3[0]
+
         idx = np.where([not x for x in self.getp('enabled_point')])[0]
         if self._enable_a is not None:
            self._enable_a.remove()
            self._enable_a = None
         if idx.size == 0: 
             return
-        container=self.get_container()
-        a = self._artists[0]
-        x=a.get_xdata()
-        y=a.get_ydata()
+
         marker = a.get_marker()
         fc = 'white'
         ec = a.get_markeredgecolor()
@@ -75,25 +93,40 @@ class FigPlotC(FigPlot, FigControl):
                             markeredgecolor=ec, 
                             markersize = ms,
                             scalex=False, scaley=False)
+
         self._enable_a = a2[0]
 
     def del_artist(self, artist=None, delall=False):
         if self._enable_a is not None:
            self._enable_a.remove()
            self._enable_a = None
+        if self._mark_a is not None:
+           self._mark_a.remove()
+           self._mark_a = None
+
         return FigPlot.del_artist(self, artist=artist, delall=delall)
 
     def canvas_menu(self):
         m = [('Add Point', self.onAddPoint, None),]
         if self._figc_hit != -1:
             if self.getp('enabled_point')[self._figc_hit]:
-               m = m + [('Delete Point', self.onDelPoint, None),
-                        ('Edit Point', self.onEditPoint, None),
-                        ('Disable Point', self.onDisablePoint, None),]
+               m = m + [('Delete point', self.onDelPoint, None),
+                        ('Edit point', self.onEditPoint, None),
+                        ('Disable point', self.onDisablePoint, None),]
             else:
-               m = m + [('Delete Point', self.onDelPoint, None),
-                        ('Edit Point', self.onEditPoint, None),
-                        ('Enable Point', self.onEnablePoint, None),]
+               m = m + [('Delete point', self.onDelPoint, None),
+                        ('Edit point', self.onEditPoint, None),
+                        ('Enable point', self.onEnablePoint, None),]
+            vm = self.get_mark_data()
+            if vm[self._figc_hit]:
+               m = m+ [ ('Unmark point', self.onUnmarkPoint, None),
+                        ('Reset mark', self.onResetMark, None),
+                        ('Export mark', self.onExportMark, None),]
+            else:
+               m = m + [('Mark point', self.onMarkPoint, None),
+                        ('Reset mark', self.onResetMark, None),
+                        ('Export mark', self.onExportMark, None),]
+
         return m + FigPlot.canvas_menu(self)
 
     def onEditPoint(self, evt):
@@ -211,8 +244,6 @@ class FigPlotC(FigPlot, FigControl):
     def onEnablePoint(self, evt):
         v = self.getp('enabled_point')[:]
         v[self._figc_hit] = True
-#        action = UndoRedoFigobjMethod(self._artists[0], 
-#                                     'enabled_point', v)
         # x, y is the same, this triggers control_changed_callback
         x = self.getp('x').copy()
         y = self.getp('y').copy()
@@ -224,6 +255,7 @@ class FigPlotC(FigPlot, FigControl):
         window = evt.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(actions)
         return 1
+
 
     def onDisablePoint(self, evt):
         v = self.getp('enabled_point')[:]
@@ -239,6 +271,65 @@ class FigPlotC(FigPlot, FigControl):
         window = evt.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(actions)
         return 1
+
+    def onMarkPoint(self, evt):
+        vm = self.getp('marked_point')
+        if vm is None:
+            l = len(self.getp('enabled_point'))
+            self.setp('marked_point', np.array([False]*l))
+            vm = self.getp('marked_point') 
+        vm[self._figc_hit] = True
+        self.setp('marked_point', vm)
+        self.set_update_artist_request()
+        self.get_figaxes().set_bmp_update(False)
+ 
+        import ifigure.events
+        w = evt.GetEventObject().GetTopLevelParent()
+        w.draw()
+        return 1
+
+    def onUnmarkPoint(self, evt):
+        vm = self.getp('marked_point')
+        if vm is None:
+            l = len(self.getp('enabled_point'))
+            self.setp('marked_point', np.array([False]*l))
+            vm = self.getp('marked_point') 
+        vm[self._figc_hit] = False
+        self.setp('marked_point', vm)
+        self.set_update_artist_request()
+        self.get_figaxes().set_bmp_update(False)
+ 
+        import ifigure.events
+        w = evt.GetEventObject().GetTopLevelParent()
+        w.draw()
+        return 1
+
+    def onResetMark(self, evt):
+        vm = self.getp('marked_point')
+        if vm is None:
+            l = len(self.getp('enabled_point'))
+            self.setp('marked_point', np.array([False]*l))
+            vm = self.getp('marked_point') 
+        for x in range(len(vm)):
+           vm[x] = False
+        self.setp('marked_point', vm)
+        self.set_update_artist_request()
+        self.get_figaxes().set_bmp_update(False)
+        import ifigure.events
+        w = evt.GetEventObject().GetTopLevelParent()
+        w.draw()
+        return 1
+
+    def onExportMark(self, evt):
+        vm = self.getp('marked_point')
+        if vm is None: return
+        a = self._artists[0]
+        x=a.get_xdata()
+        y=a.get_ydata()
+        xx = x[vm]
+        yy = y[vm]
+        data = {'xdata': xx, 'ydata':yy}
+        self._export_shell(data, 'data', '')
 
     def enable_point(self, idx, value):
         if len(self.getp('enabled_point')) > idx+1: return
@@ -397,7 +488,24 @@ class FigPlotC(FigPlot, FigControl):
         var_bk = self._var.copy()
         return var_bk
 
+    def get_mark_data(self):
+        vm = self.getp('marked_point')
+        l = len(self.getp('enabled_point'))
+        if vm is None or len(vm) != l:
+            self.setp('marked_point', np.array([False]*l))
+            vm = self.getp('marked_point') 
+        return vm
 
+    def get_export_val(self, a):
+        data = super(FigPlotC, self).get_export_val(a)
+        data["xdata"] = self.getp('x')
+        data["ydata"] = self.getp('y')
+        if self.getp('xerr') is not None:    
+            data["xerrdata"] = self.getp('xerr')
+        if self.getp('yerr') is not None:    
+            data["yerrdata"] = self.getp('yerr')
+
+        return data
 
 
 

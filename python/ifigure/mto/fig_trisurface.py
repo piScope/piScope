@@ -1,5 +1,8 @@
 from fig_surface import FigSurface
 from ifigure.utils.triangulation_wrapper import tri_args
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import ColorConverter
+cc = ColorConverter()
 from matplotlib import cm
 import numpy as np
 
@@ -10,7 +13,6 @@ class FigTrisurface(FigSurface):
             argc = argc[1:]
         else:
             tri = None
-        cz = kywds.pop('cz', None)
         obj = FigSurface.__new__(self, *argc, **kywds)
 
         return obj
@@ -21,10 +23,17 @@ class FigTrisurface(FigSurface):
             argc = argc[1:]
         else:
             tri = None
-        cz = kywds.pop('cz', None)
         if tri is not None: self.setvar('tri', tri)
-        if cz is not None: self.setvar('cz', cz)
         return FigSurface.__init__(self, *argc, **kywds)
+
+    @classmethod
+    def get_namebase(self):
+        return 'trisurface'
+    @classmethod  
+    def property_in_palette(self):
+        return ["facecolor_2",
+                "edgecolor_2", "linewidthz", "solid_shade",
+                "alpha_2"]
 
     def _args2var(self):
         names0 = self.attr_in_file()
@@ -72,21 +81,35 @@ class FigTrisurface(FigSurface):
         if cax is None:
             dprint1('Error: cax is None')
             return
-
-        kywds['alpha'] = self.getp('alpha')
-        if (not 'color' in kywds and
-            not 'facecolors' in kywds):
-            cmap = self.get_cmap()
-            kywds['cmap'] = cm.get_cmap(cmap)
+        kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
+        
+        fc = self.getp('facecolor')
+        if isinstance(fc, str): fc = cc.to_rgba(fc)
+        if fc is None: fc = [0,0,0,0]        
+        else:
+            fc = list(fc)
+            if self.getp('alpha') is not None: fc[3]=self.getp('alpha')
+        ec = self.getp('edgecolor')
+        if isinstance(ec, str): ec = cc.to_rgba(ec)
+        if ec is None: ec = [0,0,0,0]
+        else:
+            ec = list(ec)
+            if self.getp('alpha') is not None: ec[3]=self.getp('alpha')
+        cz = self.getvar('cz')
+        if cz is None: 
+            kywds['cz'] = False
+        else:
+            kywds['cz'] = cz
+        if kywds['cz']: kywds['cdata'] = self.getvar('cdata')
+        kywds['facecolor'] = (fc,)
+        kywds['edgecolor'] = (ec,)
+        kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
+        kywds['shade'] = self.getvar('shade')
 
         if self.hasvar('tri'):
             args = (self.getvar('tri'), z)
         else:
             args = (x, y, z)
-        if self.hasvar('cz'):
-            kywds['cz'] = self.getvar('cz')
-        kywds['edgecolor'] = self.getvar('edgecolor')
-        kywds['linewidth'] = self.getvar('linewidth')        
         self._artists = [container.plot_trisurf(*args, **kywds)]       
 
         for artist in self._artists:
@@ -94,7 +117,10 @@ class FigTrisurface(FigSurface):
             artist.figobj=self
             artist.figobj_hl=[]
             artist.set_zorder(self.getp('zorder'))
-            cax.set_crangeparam_to_artist(artist)
+            if self.getvar('cz'):
+                cax = self.get_caxisparam()
+                if cax is None: dprint1('Error: cax is None')
+                cax.set_crangeparam_to_artist(artist)            
             
     def get_xrange(self, xrange=[None,None], scale = 'linear'):
         if self.hasvar('tri'):
@@ -123,20 +149,29 @@ class FigTrisurface(FigSurface):
                                                          xrange=xrange,
                                                          yrange=yrange,
                                                          scale = 'linear')
+    '''    
     def get_crange(self, crange=[None,None], 
                          xrange=[None,None], 
                          yrange=[None,None],
                          scale = 'linear'):
-        if self.hasvar('cz'):
-            cz = self.getvar('cz')
-            return self._update_range(crange, (np.min(cz), np.max(cz)))
-        if self.hasvar('tri'):
+        cdata = self.getvar('cdata')
+        cz = self.getvar('cz')
+        if not cz: return crange
+        if cdata is None:
             x, y, z = self._eval_xy()
-            return self._update_range(crange, (np.min(z), np.max(z)))
-        else:
-            return super(FigTrisurface, self).get_crange(crange=crange,
-                                                         xrange=xrange,
-                                                         yrange=yrange,
-                                                         scale = 'linear')
+            crange = self._update_range(crange,
+                             (np.nanmin(z), np.nanmax(z)))
 
-        
+        else:
+            if np.iscomplexobj(cdata):
+                tmp  = np.max(np.abs(cdata))
+                crange = self._update_range(crange,
+                                    (-tmp, tmp))
+
+            else:
+                crange = self._update_range(crange,
+                                    (np.nanmin(cdata), np.nanmax(cdata)))
+
+        return crange
+
+    ''' 

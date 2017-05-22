@@ -737,12 +737,16 @@ class ifigure_app(BookViewerFrame):
        else:
            val["sh"][1]=False ## this is to hide script editor
 
+           # safe guard in case size is zero...
+           val["size"][0] = max(( val["size"][0], 300))
+           val["size"][1] = max(( val["size"][1], 300))           
            self.SetSize(val["size"]) 
            self.gui_tree.set_showhide(val["sh"])
            self.gui_tree.update_check()
            self.gui_tree.set_splitters()
 
            self.CenterOnScreen()
+
 
            self.Layout()
            self.gui_tree.set_sashposition(val["pos"])

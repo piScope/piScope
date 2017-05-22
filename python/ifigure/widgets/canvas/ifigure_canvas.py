@@ -3912,15 +3912,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
        from ifigure.utils.edit_list import EditListMiniFrame
 
-       setting={"minV": 0.,
-                          "maxV": 1., 
-                          "val" : [0.1, 0.9], 
+       setting={"minV": -4,
+                          "maxV": 5., 
+                          "val" : [-4.1, 4.9], 
                           "res" : 0.001,
                           "motion_event": True,
                           "text_box" : True}
-       ll = (["X", (0.0, 1.0), 39, setting],
-             ["Y", (0.0, 1.0), 39, setting],
-             ["Z", (0.0, 1.0), 39, setting],
+       ll = (["X", (0, 1.0), 39, setting],
+             ["Y", (0, 1.0), 39, setting],
+             ["Z", (0, 1.0), 39, setting],
              [None,  False, 3, {"text": "slice all 3d panels"}])
        
        f = EditListMiniFrame(self, wx.ID_ANY, title='3D slice setting',  list = ll,

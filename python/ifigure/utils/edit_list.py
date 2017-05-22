@@ -624,6 +624,8 @@ class BitmapButtons(wx.Panel):
         for btn in self._btn:
             btn.SetBitmapLabel(self.Controls[i]["bitmap"])
             i = i+1
+        if hasattr(val, '__iter__'):
+           print val, self._btn_name
         if val in self._btn_name:
             j = self._btn_name.index(val)
             #print 'found', j
@@ -715,8 +717,9 @@ class ColorFace(Color):
         from ifigure.ifigure_config import color_list_face
         from matplotlib.colors import ColorConverter as CC
         self.check_if_need2expand()
-        names = [self._a2n(CC().to_rgba(x)) for x in color_list_face()]
-        self.add_bitmap_buttons('Color', 'color', names , 'color', filenames=color_list_face())
+        names = [self._a2n(CC().to_rgba(x)) for x in color_list_face()] + ['other']
+        self.add_bitmap_buttons('Color', 'color', names , 'color',
+                                filenames=color_list_face() + ['other'])
         self.val = self.Controls[0]["value"]
 
     def SetValue(self, val):
@@ -3890,8 +3893,8 @@ class EditListCore(object):
               if len(val)==4:
                  setting=val[3]
               else:
-                 setting={"minV": 0.,
-                          "maxV": 1., 
+                 setting={"minV": -4.,
+                          "maxV": 5., 
                           "val" : 0.5, 
                           "res" : 0.01,
                           "motion_event" : False,                          
@@ -3990,7 +3993,13 @@ class EditListCore(object):
         i=0
         for w, txt in self.widgets:
             if w.IsEnabled():
-               err=w.SetValue(value[i])
+               try:
+                   err=w.SetValue(value[i])
+               except:
+                   import traceback
+                   traceback.print_exc()
+                   print("failed to call SetValue" + str(w))                   
+                   continue
                if err is False:
                   w.Hide()
                   if txt is not None: txt.Hide()

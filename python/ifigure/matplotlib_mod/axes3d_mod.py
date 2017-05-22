@@ -9,6 +9,8 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 import mpl_toolkits.mplot3d.proj3d as proj3d
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.transforms as trans
+from matplotlib.colors import ColorConverter
+cc = ColorConverter()
 
 from matplotlib.artist import allow_rasterization
 import numpy as np
@@ -54,6 +56,35 @@ def norm_vec(n):
        return [0,0,0]
     else:
        return n/np.sqrt(d)
+
+def arrow3d(base, r1, r2, ort, l, h, m = 13, pivot = 'tail'):
+    x = np.array([1., 0., 0.])
+    y = np.array([0., 1., 0.])
+    th = np.linspace(0, np.pi*2, m).reshape(-1,1)
+    ort = norm_vec(ort)
+    if np.sum(ort * x) == 0:
+       d1 = norm_vec(np.cross(ort, y))
+    else:
+       d1 = norm_vec(np.cross(ort, x))
+    if pivot == 'tip':
+       base = base - (l+h)*ort
+    elif pivot == 'mid':
+       base = base - (l+h)*ort/2.
+    else:
+       pass
+    d2 = np.cross(ort, d1)
+    p = base + l*r1* (d1*np.cos(th) + d2*np.sin(th))
+    q = p + l*ort
+    p2 = base + l*r2* (d1*np.cos(th) + d2*np.sin(th)) + l*ort
+    p3 = base + (l+h)*ort 
+    p3 = np.array([p3]*m).reshape(-1, 3)
+    t1 = np.stack((p[:-1], q[:-1], p[1:]), axis=1)
+    t2 = np.stack((p[1:], q[:-1], q[1:]), axis=1)
+    t3 = np.stack((p2[:-1], p3[:-1], p2[1:]), axis=1)
+    #t2 = np.dstack((p[1:], q[:-1], q[1:]))
+    t1  = np.vstack((t1, t2, t3))
+    return t1
+
 
 from functools import wraps
 def use_gl_switch(func):
@@ -439,20 +470,80 @@ class Axes3DMod(Axes3D):
         return cset
     
     def quiver(self, *args, **kwargs):
-        if 'edgecolor' in kwargs:
-            set_edgecolor = True
-            edgecolor = kwargs.pop('edgecolor', [1,1,1,0])
+        '''
+         quiver(x, y, z, u, v, w, length=0.1, normalize = True, **kwargs)  
+
+            kwargs: facecolor
+                    edgecolor
+                    alpha
+                    cz, cdata
+          
+        '''
+        # made based on mplot3d but makes GL solid object
+        # handle kwargs
+        # shaft length
+        length = kwargs.pop('length', 1.0)
+        # arrow length ratio to the shaft length 
+        arrow_length_ratio = kwargs.pop('arrow_length_ratio', 0.3)
+        # pivot point (not implemeted)
+        pivot = kwargs.pop('pivot', 'tail')
+        # normalize
+        normalize = kwargs.pop('normalize', False)
+
+        # handle args
+        argi = 6
+        if len(args) < argi:
+            ValueError('Wrong number of arguments. Expected %d got %d' %
+                       (argi, len(args)))
+
+        # first 6 arguments are X, Y, Z, U, V, W
+        input_args = args[:argi]
+        # if any of the args are scalar, convert into list
+        input_args = [[k] if isinstance(k, (int, float)) else k
+                      for k in input_args]
+
+        # extract the masks, if any
+        masks = [k.mask for k in input_args if isinstance(k, np.ma.MaskedArray)]
+        # broadcast to match the shape
+        bcast = np.broadcast_arrays(*(input_args + masks))
+        input_args = bcast[:argi]
+        masks = bcast[argi:]
+        if masks:
+            # combine the masks into one
+            mask = reduce(np.logical_or, masks)
+            # put mask on and compress
+            input_args = [np.ma.array(k, mask=mask).compressed()
+                          for k in input_args]
         else:
-            set_edgecolor = False            
-        linec = Axes3D.quiver(self, *args, **kwargs)
-        convert_to_gl(linec)
-        if not set_edgecolor:
-            edgecolor = linec.get_color()[0]
-            
-        linec.convert_2dpath_to_3dpath(0.0, zdir = 'z')
-        linec.do_stencil_test = False
-        linec.set_edgecolor((edgecolor,))        
-        return linec
+            input_args = [k.flatten() for k in input_args]
+        XYZ = np.column_stack(input_args[:3])
+        UVW = np.column_stack(input_args[3:argi]).astype(float)
+
+        norm = np.sqrt(np.sum(UVW**2, axis=1))            
+        # If any row of UVW is all zeros, don't make a quiver for it
+        mask = norm > 0
+        norm = norm[mask]
+        XYZ = XYZ[mask]
+        ORT = UVW[mask] / norm.reshape((-1, 1))
+        if normalize:
+            norm = np.array([length]*len(ORT))
+        else:
+            norm = norm/np.max(norm)*length
+
+        h = np.max(norm)*arrow_length_ratio
+        r1 = kwargs.pop('shaftsize', 0.05)
+        r2 = kwargs.pop('headsize', 0.25)                        
+
+        m = 13
+        sample_len = len(arrow3d(XYZ[0], r1, r2, ORT[0], norm[0], h, m = m, pivot = pivot))
+        v = np.vstack([arrow3d(base, r1, r2, ort, l, h, m = m, pivot = pivot)
+                       for base, ort, l in zip(XYZ, ORT, norm)],)
+        cdata = kwargs.pop('facecolordata', None)
+        if cdata is not None:
+            cdata = np.transpose(np.vstack([cdata.flatten()]*sample_len)).flatten()
+            kwargs['facecolordata'] = cdata
+
+        return self.plot_solid(v, **kwargs)
     
     def plot_revolve(self, R, Z,  *args, **kwargs):
         '''
@@ -492,10 +583,11 @@ class Axes3DMod(Axes3D):
 #        from ifigure.interactive import figure
 #        v = figure()
 #        v.plot(X, Z)
-        facecolor = kwargs.pop('facecolor', (0,0,1,1))
+        #facecolor = kwargs.pop('facecolor', (0,0,1,1))
         X, Y, Z = np.broadcast_arrays(X, Y, Z)
+
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
-        polyc.set_facecolor([facecolor])
+        polyc._revolve_data = (X, Y, Z)
         return polyc
     
     def plot_extrude(self, X, Y, Z, path,
@@ -520,7 +612,6 @@ class Axes3DMod(Axes3D):
 
         X = x.flatten(); Y = y.flatten(); Z = z.flatten()
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
-        polyc.set_facecolor([facecolor])
         return polyc
         
     def plot_surface(self, X, Y, Z, *args, **kwargs):
@@ -531,19 +622,14 @@ class Axes3DMod(Axes3D):
         but it also supports color mapping by supplying the *cmap*
         argument.
 
-        The `rstride` and `cstride` kwargs set the stride used to
-        sample the input data to generate the graph.  If 1k by 1k
-        arrays are passed in the default values for the strides will
-        result in a 100x100 grid being plotted.
-
         ============= ================================================
         Argument      Description
         ============= ================================================
         *X*, *Y*, *Z* Data values as 2D arrays
-        *rstride*     Array row stride (step size), defaults to 10
-        *cstride*     Array column stride (step size), defaults to 10
         *edgecolor*   Color of the surface patches (default 'k')
         *facecolor*   Color of the surface patches (default None: use cmap)
+        *rstride*     Reduce data 
+        *cstride*     Reduce data 
         *cmap*        A colormap for the surface patches.
         *shade*       Whether to shade the facecolors
         ============= ================================================
@@ -551,8 +637,8 @@ class Axes3DMod(Axes3D):
         Other arguments are passed on to
         :class:`~mpl_toolkits.mplot3d.art3d.Poly3DCollection`
         '''
-
-        had_data = self.has_data()
+        cz = kwargs.pop('cz', False)
+        cdata = kwargs.pop('cdata', None)        
 
         Z = np.atleast_2d(Z)
         # TODO: Support masked arrays
@@ -562,9 +648,6 @@ class Axes3DMod(Axes3D):
 
         rstride = kwargs.pop('rstride', 10)
         cstride = kwargs.pop('cstride', 10)
-        facecolor = kwargs.pop('facecolor', None)
-        edgecolor = kwargs.pop('edgecolor', 'k')
-        shade  = kwargs.pop('shade', True)                
         idxset3d =[]
         r = list(xrange(0, rows, rstride))
         c = list(xrange(0, cols, cstride))
@@ -583,72 +666,39 @@ class Axes3DMod(Axes3D):
 
         idxset = np.array([x + offset for x in base], 'H')
 
+        #idxset = tri.get_masked_triangles()
 
-        ### normal vector array
-        n_tmp = []
-        
-        for idx in idxset:                      
-           p = [np.array((X3D[idx[k]], Y3D[idx[k]], Z3D[idx[k]]))
-#                for k in range(5)]
-                for k in range(4)]                
-           n1 = np.cross(p[3]-p[0], p[1]-p[0]); n1 = norm_vec(n1)
-           n2 = np.cross(p[0]-p[1], p[2]-p[1]); n2 = norm_vec(n2)
-           n3 = np.cross(p[1]-p[2], p[3]-p[2]); n3 = norm_vec(n3)
-           n4 = np.cross(p[2]-p[3], p[0]-p[3]); n4 = norm_vec(n4)
-           n_tmp.append(norm_vec((n1+n2+n3+n4)/4.0))
-           
-        n_tmp = np.vstack(n_tmp).reshape(l_r-1, l_c-1, 3)
-        norms = np.zeros((l_r, l_c, 3))
-        norms[:-1,:-1,:] = norms[:-1,:-1,:] + n_tmp
-        norms[:-1, 1:,:] = norms[:-1, 1:,:] + n_tmp
-        norms[1:, :-1,:] = norms[1:, :-1,:] + n_tmp
-        norms[1:, 1:,:] = norms[1:,1:,:] + n_tmp
-        x  = np.zeros((l_r, l_c))
-        x[:-1,:-1] = x[:-1,:-1] + 1.0
-        x[:-1, 1:] = x[:-1, 1:] + 1.0
-        x[1:, :-1] = x[1:, :-1] + 1.0
-        x[1:, 1:] = x[1:,1:] + 1.0
-        norms[:,:, 0] = norms[:,:,0]/x
-        norms[:,:, 1] = norms[:,:,1]/x
-        norms[:,:, 2] = norms[:,:,2]/x
+        verts = np.dstack((X3D[idxset], 
+                           Y3D[idxset],
+                           Z3D[idxset]))
+        if cz:
+            if cdata is not None:
+                cdata = cdata[r, :][:, c].flatten()[idxset]
+            else:
+                cdata = Z3D[idxset]
+            shade = kwargs.pop('shade', 'flat')
+            if shade != 'linear':
+                cdata = np.mean(cdata, -1)
+            kwargs['facecolordata'] = cdata.real
+            kwargs.pop('facecolor', None) # get rid of this keyword
 
-        ### we create very small data for mplot3d.
-        ### this is a fallback when opengl is not supported.
-        rstride2d = (rows/7)+1; cstride2d = (cols/7)+1
-        
-        idxset2d =[]
-        r = list(xrange(0, rows-1, rstride2d))
-        c = list(xrange(0, cols-1, cstride2d))
-        X2D = X[r, :][:, c]
-        Y2D = Y[r, :][:, c]
-        Z2D = Z[r, :][:, c]
-        kwargs['rstride'] = rstride2d
-        kwargs['cstride'] = cstride2d
+        kwargs['cz'] = cz
 
-        polyc = Axes3D.plot_surface(self, X2D, Y2D, Z2D,  *args, **kwargs)
-        from art3d_gl import poly_collection_3d_to_gl         
+        return self.plot_solid(verts, **kwargs)
 
-        poly_collection_3d_to_gl(polyc)
-        polyc._gl_3dpath = [X3D, Y3D, Z3D, norms.reshape(-1,3), idxset]
-        polyc.set_facecolor(facecolor)
-        polyc.set_edgecolor(edgecolor)
-        polyc.set_shade(shade)
-
-        return polyc
-        
     def plot_trisurf(self, *args, **kwargs):
         '''
         plot_trisurf(x, y, z,  **wrargs)
         plot_trisurf(x, y, z,  triangles = triangle,,,)
-        plot_trisurf(tri, z,  **kwargs, cz = cz)
+        plot_trisurf(tri, z,  **kwargs, cz = cz, cdata = cdata)
 
 
         '''
         from art3d_gl import poly_collection_3d_to_gl
         from matplotlib.tri.triangulation import Triangulation
 
-        cz = kwargs.pop('cz', None)        
-
+        cz = kwargs.pop('cz', False)
+        cdata = kwargs.pop('cdata', None)        
         tri, args, kwargs = Triangulation.get_from_args_and_kwargs(*args, **kwargs)
         if 'Z' in kwargs:
             z = np.asarray(kwargs.pop('Z'))
@@ -663,38 +713,55 @@ class Axes3DMod(Axes3D):
         Z3D = z
         idxset = tri.get_masked_triangles()
 
+        verts = np.dstack((X3D[idxset], 
+                           Y3D[idxset],
+                           Z3D[idxset]))
+        if cz:
+            if cdata is not None:
+                cdata = cdata[idxset]
+            else:
+                cdata = Z3D[idxset]
+            shade = kwargs.pop('shade', 'flat')
+            if shade != 'linear':
+                cdata = np.mean(cdata, -1)
+            kwargs['facecolordata'] = cdata.real
+            kwargs.pop('facecolor', None) # get rid of this keyword
 
-        norms = []        
-        for idx in idxset:
-           p = [np.array((X3D[idx[k]],
-                          Y3D[idx[k]],
-                          Z3D[idx[k]]))
-                for k in range(3)]
-           nn = [norm_vec(np.cross(p[2]-p[0], p[1]-p[0]))]*3
-           norms.extend(nn)
-           
-        norms = np.hstack(norms).reshape(-1, 3)
+        kwargs['cz'] = cz
 
-        facecolor = kwargs.get('facecolor', None)
-        edgecolor = kwargs.get('edgecolor', 'k')
-
-
-        polyc = Axes3D.plot_trisurf(self, tri.x, tri.y, z,
-                                    triangles = triangles,  **kwargs)
-        polyc = poly_collection_3d_to_gl(polyc)
-        polyc._gl_3dpath = [X3D, Y3D, Z3D, norms.reshape(-1,3), idxset]
-        polyc.set_facecolor(facecolor)
-        polyc.set_edgecolor(edgecolor)
-        polyc.set_cz(cz)
-        polyc.do_stencil_test = False
-        return polyc
+        return self.plot_solid(verts, **kwargs)
     
     def plot_solid(self, v, **kwargs):
         '''
         v [element_index, points_in_element, xyz]
-        '''
-        from art3d_gl import Poly3DCollectionGL
 
+        kwargs: normals : normal vectors
+        '''
+        #gl_3dpath = kwargs.get('gl_3dpath', None)
+        
+        norms = kwargs.pop('normals', None)        
+        if norms is None:
+            norms = []
+            for xyz in v:
+                if xyz.shape[0] > 2:
+                    p0, p1, p2 = [xyz[k,:3] for k in range(3)]
+                    n1 = np.cross(p0-p1, p1-p2)
+                    d = np.sqrt(np.sum(n1**2))
+                else:
+                    d = 0
+                if d == 0:
+                    norms.append([0,0,1]*xyz.shape[0])
+                else:
+                    norms.extend([-n1/d]*xyz.shape[0])
+            norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
+        nv = len(v[:, :, 2].flatten())
+        kwargs['gl_3dpath'] = [v[:, :, 0].flatten(),
+                               v[:, :, 1].flatten(),
+                               v[:, :, 2].flatten(),
+                               norms,
+                               np.arange(nv).reshape(v.shape[0], v.shape[1])]
+        
+        from art3d_gl import Poly3DCollectionGL
         a = Poly3DCollectionGL(v, **kwargs)
         Axes3D.add_collection3d(self, a)
         a.do_stencil_test = False
@@ -855,9 +922,6 @@ class Axes3DMod(Axes3D):
 #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
         if isSupportedRenderer(renderer):    
-#        if hasattr(renderer, 'use_gl'):
-#            worldM, viewM, perspM, E, R, V = self.get_proj2()
-#            renderer.set_canvas_proj(worldM, viewM, perspM, (E, R, V))
             self._matrix_cache = self.get_proj2()
             artists = []
 
@@ -868,19 +932,17 @@ class Axes3DMod(Axes3D):
             artists.extend(self.texts)
             artists.extend(self.artists)
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
-            for o in gl_obj: o.is_last =  False
 
-            if len(gl_obj) > 0:
-                gl_obj[-1].is_last =  True
+            gl_len = len(gl_obj)
+            if gl_obj > 0:
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
                     glcanvas.init): 
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return
-                
-            gl_len = len(gl_obj)
-
+            renderer._num_globj = gl_len
+            renderer._k_globj =   0
                 
         ### axes3D seems to change frameon status....
         frameon = self.get_frame_on()
@@ -897,6 +959,7 @@ class Axes3DMod(Axes3D):
                 self.texts.remove(self._3d_axes_icon[4]())
                 self.texts.remove(self._3d_axes_icon[5]())                
             self._3d_axes_icon  = None
+
         val = Axes3D.draw(self, renderer)
         self.set_frame_on(frameon)
         return val

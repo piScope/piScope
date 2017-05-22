@@ -18,7 +18,7 @@ from ifigure.interactive import tripcolor, tricontour, tricontourf
 from ifigure.interactive import axline, axlinec
 from ifigure.interactive import axspan, axspanc
 from ifigure.interactive import surf, solid, trisurf, revolve
-from ifigure.interactive import quiver
+from ifigure.interactive import quiver, quiver3d
 from ifigure.interactive import annotate
 from ifigure.interactive import legend
 from ifigure.interactive import text, figtext, arrow, figarrow
