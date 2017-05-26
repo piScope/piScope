@@ -683,8 +683,9 @@ class Axes3DMod(Axes3D):
             kwargs.pop('facecolor', None) # get rid of this keyword
 
         kwargs['cz'] = cz
-
-        return self.plot_solid(verts, **kwargs)
+        o =  self.plot_solid(verts, **kwargs)
+        o._idxset = (r, c, idxset)   # this is used for phasor
+        return o
 
     def plot_trisurf(self, *args, **kwargs):
         '''

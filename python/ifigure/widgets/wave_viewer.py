@@ -27,6 +27,7 @@ from ifigure.mto.fig_tripcolor import FigTripcolor
 from ifigure.mto.fig_quiver import FigQuiver
 from ifigure.mto.fig_plot import FigPlot
 from ifigure.mto.fig_solid import FigSolid
+from ifigure.mto.fig_surface import FigSurface
 from matplotlib.collections import TriMesh
 
 class FigTripcolorPhasor(FigTripcolor):
@@ -85,6 +86,23 @@ class FigSolidPhasor(FigSolid):
 #              z =  np.mean(z, -1)
         self._artists[0]._gl_facecolordata = z
         self._artists[0]._update_fc = True
+
+class FigSurfacePhasor(FigSurface):
+    def set_phasor(self, angle = None):
+        if angle is not None:
+           z = self.getvar('cdata') * np.exp(1j*angle)
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1).real
+#           else:
+           z =  z.real               
+        else:
+           z = np.absolute(self.getvar('cdata'))
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1)
+        r, c, idxset =  self._artists[0]._idxset
+        self._artists[0]._gl_facecolordata = z[r,:][:,c].flatten()[idxset]
+        self._artists[0]._update_fc = True
+
         
 def convert_figobj(obj):
     if obj.__class__ == FigTripcolor:
@@ -95,6 +113,8 @@ def convert_figobj(obj):
         obj.__class__ = FigQuiverPhasor
     elif obj.__class__ == FigSolid:        
         obj.__class__ = FigSolidPhasor
+    elif obj.__class__ == FigSurface:        
+        obj.__class__ = FigSurfacePhasor
     else:
         pass
 class WaveViewer(VideoViewerMode, BookViewer):
@@ -155,6 +175,14 @@ class WaveViewer(VideoViewerMode, BookViewer):
         self.add_video_obj(o)       
         return o
     
+    def surf(self, *args, **kwargs):
+        try:
+           o = BookViewer.surf(self, *args, **kwargs)            
+        except ValueError as x:
+           return
+        convert_figobj(o)       
+        self.add_video_obj(o)       
+        return o
         
     def _get_phase(self, ipage):
         return self.sign*np.pi*2*ipage/self.nframe
@@ -167,7 +195,8 @@ class WaveViewer(VideoViewerMode, BookViewer):
             if isinstance(obj, FigTripcolorPhasor): self.add_video_obj(obj)
             if isinstance(obj, FigPlotPhasor): self.add_video_obj(obj)
             if isinstance(obj, FigQuiverPhasor): self.add_video_obj(obj)
-            if isinstance(obj, FigSolidPhasor): self.add_video_obj(obj)                                    
+            if isinstance(obj, FigSolidPhasor): self.add_video_obj(obj)
+            if isinstance(obj, FigSurfacePhasor): self.add_video_obj(obj)                                    
 
     def UpdateImage(self, i):
         phase = self._get_phase(i)
