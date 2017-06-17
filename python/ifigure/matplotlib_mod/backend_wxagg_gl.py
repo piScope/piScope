@@ -205,7 +205,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
                           'uLineStyle', 'uAmbient',
                           'uRT0', 'uRT1', 'uisFinal', 'uisClear', 
-                          'uSCSize']
+                          'uSCSize', 'uisSolid']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -216,6 +216,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uHasHL', 0)                        
         self.set_uniform(glUniform1i,  'uLineStyle', -1)
         self.set_uniform(glUniform1i,  'uisFinal', 0)
+        self.set_uniform(glUniform1i,  'uisSolid', 0)        
         self.set_uniform(glUniform1i,  'uisClear', 0)        
         self.set_uniform(glUniform2iv,  'uSCSize', 1, (0, 0))        
         self._attrib_loc['Vertex2'] = glGetAttribLocation(self.shader,
@@ -431,7 +432,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniformMatrix4fv, 'uProjM', 1, GL_TRUE, I_M)
         self.set_uniform(glUniform1i,  'uUseClip', 0)           
         glDisable(GL_BLEND)
-        #glDepthMask(GL_FALSE)        
+        glDepthMask(GL_FALSE)        
         glColor4f(1., 1, 1,  0)
         glRecti(-1, -1, 2, 2)
         glFinish()        
@@ -532,20 +533,21 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         return (M, minZ, maxZ)
      
-    def use_oit_mode(self, frame, buf, texs, w, h, shadow_params = None):
+    def use_oit_mode(self, frame, buf, texs, w, h, shadow_params = None,
+                           firstpath = True):
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
                                GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_2D, 0, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT1, 
                                GL_TEXTURE_2D, 0, 0)
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
                                GL_COLOR_ATTACHMENT0, 
                                GL_TEXTURE_2D, texs[0], 0)
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
                                GL_COLOR_ATTACHMENT1, 
+                               GL_TEXTURE_2D, 0, 0)
+        if firstpath:
+            glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT1, 
                                GL_TEXTURE_2D, texs[1], 0)
-        self.set_uniform(glUniform1i,  'uisFinal', 1)
         #glBlendFunc(0, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA)
         glBlendFunc(1, GL_ONE, GL_ZERO)        
     def use_draw_mode(self, frame, buf, texs, w, h, shadow_params = None):
@@ -646,17 +648,22 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDisable(GL_BLEND)
         self._shadow = False
 
-    def do_draw_artists(self, tag,  update_id = True, do_clear = None):
-        id_dict = {}
+    def do_draw_artists(self, tag,  update_id = True, do_clear = None,
+                        draw_solid = True,
+                        draw_non_solid = True,
+                        do_clear_depth = False,
+                        id_dict = None, ignore_alpha = False):
+        if id_dict is None: id_dict = {}
         current_id = 1.0
         if do_clear is not None:
           #glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
           #glDepthMask(GL_TRUE)
           #glDisable(GL_BLEND)
           glClearColor(*do_clear)
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | 
-                  GL_STENCIL_BUFFER_BIT|GL_ACCUM_BUFFER_BIT)
-
+          glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT|GL_ACCUM_BUFFER_BIT)
+        if do_clear_depth:
+          glClear(GL_DEPTH_BUFFER_BIT)
+           
         for aa in self.artists_data:
              if not aa is tag: continue
              if not aa in self.vbo:
@@ -665,8 +672,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
              artists = [(a.get_alpha(), a)for a in self.artists_data[aa]] 
 #             for a in self.artists_data[aa]: # a: artist, aa:axes
              for alpha, a in reversed(sorted(artists)):
+                if alpha == 1 or alpha is None:
+                    if not draw_solid:
+                       current_id = current_id + 1                       
+                       continue
+                else:
+                    if not draw_non_solid:
+                       current_id = current_id + 1
+                       continue
+                if ignore_alpha: alpha = 1.0
                 if a.axes is not aa: continue
-                if self._artist_mask is not None and not  a in self._artist_mask: continue
+                if self._artist_mask is not None and not  a in self._artist_mask:
+                   continue
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
                            (int(current_id)/256 % 256)/255.,
@@ -779,50 +796,101 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.use_draw_mode(frame, buf, texs, w, h)
            self.set_uniform(glUniform1i, 'uUseShadowMap', 0)
            
-
-        #self.force_fill_screen()
-        self.set_uniform(glUniform1i, 'uisClear', 1)        
-        glBlendFunc(GL_ONE, GL_ZERO)
-        id_dict = self.do_draw_artists(tag, do_clear=(0,0,0,1))
-        
-        self.set_uniform(glUniform1i, 'uisClear', 0)
-        #glDepthMask(GL_FALSE);
-        glEnable(GL_BLEND);
-        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD)
-        glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA)
-        #glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ZERO)
-        self._do_depth_test = False
-        glDisable(GL_DEPTH_TEST)
-        #glEnable(GL_DEPTH_TEST)        
-        id_dict = self.do_draw_artists(tag)
-        self._do_depth_test = True
-
+        ##
+        ## draw solid first ...
+        ##
         self.make_oit_texture(texs)
         self.use_oit_mode(frame, buf, texs, w, h)
-        #glBlendFunc(GL_ONE, GL_ZERO)
-        
-        #self.set_uniform(glUniform1i, 'uisClear', 2)
-        #self.force_fill_screen()               
-        #self.set_uniform(glUniform1i, 'uisClear', 0)                
-
-        self.set_uniform(glUniform1i, 'uRT0', 1)
-        self.set_uniform(glUniform1i, 'uRT1', 2)             
-
-
         #glClear(GL_DEPTH_BUFFER_BIT)
         self.set_uniform(glUniform1i, 'uisClear', 1)        
         glBlendFunc(GL_ONE, GL_ZERO)
-        id_dict = self.do_draw_artists(tag)
+        self.do_draw_artists(tag)
         self.set_uniform(glUniform1i, 'uisClear', 0)
         
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        #glDisable(GL_BLEND)
-        #glEnable(GL_DEPTH_TEST)                
-        #glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE)
+        self.set_uniform(glUniform1i,  'uisSolid', 1)
+        glEnable(GL_DEPTH_TEST)
+        glDepthMask(GL_TRUE)
         id_dict = self.do_draw_artists(tag, update_id = True,
-                                       do_clear = (0,0,0,0))
+                                       do_clear = (0,0,0,0),
+                                       do_clear_depth = True,
+                                       ignore_alpha = True)        
+        glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
+        self.do_draw_artists(tag, update_id = True,
+                             do_clear = (0,0,0,0),
+                             draw_non_solid = False,
+                             do_clear_depth = True)        
+        self.set_uniform(glUniform1i,  'uisSolid', 0)
 
-           
+        draw_oit = True
+        if draw_oit:
+           ##
+           ## draw transparent....
+           ##
+           #self.force_fill_screen()
+           self.use_draw_mode(frame, buf, texs, w, h)        
+           self.set_uniform(glUniform1i, 'uisClear', 1)        
+           glBlendFunc(GL_ONE, GL_ZERO)
+           glDisable(GL_DEPTH_TEST)
+           self._do_depth_test = False        
+           self.do_draw_artists(tag, do_clear=(0,0,0,1))
+           self._do_depth_test = True
+           self.set_uniform(glUniform1i, 'uisClear', 0)
+
+           glDepthMask(GL_FALSE);
+           glEnable(GL_BLEND);
+           glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD)
+           glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA)
+           #glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ZERO)
+           #glDisable(GL_DEPTH_TEST)
+           glEnable(GL_DEPTH_TEST)        
+           self.do_draw_artists(tag, draw_solid = False)
+
+
+           ##
+           ## final path...
+           ##
+           self.make_oit_texture(texs)
+           self.use_oit_mode(frame, buf, texs, w, h, firstpath = False)
+           #glBlendFunc(GL_ONE, GL_ZERO)
+
+           #self.set_uniform(glUniform1i, 'uisClear', 2)
+           #self.force_fill_screen()               
+           #self.set_uniform(glUniform1i, 'uisClear', 0)                
+
+           self.set_uniform(glUniform1i, 'uRT0', 1)
+           self.set_uniform(glUniform1i, 'uRT1', 2)             
+
+
+           #glClear(GL_DEPTH_BUFFER_BIT)
+           #self.set_uniform(glUniform1i, 'uisClear', 1)        
+           #glBlendFunc(GL_ONE, GL_ZERO)
+           #id_dict = self.do_draw_artists(tag)
+           #self.set_uniform(glUniform1i, 'uisClear', 0)
+
+           #self.set_uniform(glUniform1i,  'uisSolid', 1)
+           #glEnable(GL_DEPTH_TEST)
+           #glDepthMask(GL_TRUE)                        
+           #id_dict = self.do_draw_artists(tag, update_id = True,
+           #                               do_clear = (0,0,0,0),
+           #                               draw_non_solid = False)
+           #self.set_uniform(glUniform1i,  'uisSolid', 0)
+        
+           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+           glDepthMask(GL_FALSE)                
+           #glDisable(GL_DEPTH_TEST)                                
+           #glDisable(GL_BLEND)
+           #glEnable(GL_DEPTH_TEST)                
+           #glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE)
+           self.set_uniform(glUniform1i,  'uisFinal', 1)
+           self._do_depth_test = False
+           glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])
+           self.do_draw_artists(tag, update_id = True,
+                             draw_solid = False)
+#                                       id_dict = id_dict)        
+#                                      do_clear = (0,0,0,0))
+           self.set_uniform(glUniform1i,  'uisFinal', 0)
+           self._do_depth_test = True        
+        
         glFinish()
         glPopMatrix()
 
@@ -836,7 +904,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
     def read_data(self, a):
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
-        glBindFramebuffer(GL_FRAMEBUFFER, frame);
+        glBindFramebuffer(GL_FRAMEBUFFER, frame)
+        self.use_oit_mode(frame, buf, texs, w, h)                
         glReadBuffer(GL_COLOR_ATTACHMENT0)
         data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)
         if self._hittest_map_update:
@@ -1220,11 +1289,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
-           if len(facecolor) != 0:
-               if facecolor.ndim == 3:
-                   if facecolor[0,0,3] != 1.0:glDepthMask(GL_FALSE)
-               else:
-                   if facecolor[0,3] != 1.0:glDepthMask(GL_FALSE)
            if stencil_test:
               for f, c in zip(first, counts): 
                   self._draw_polygon(f, c)
