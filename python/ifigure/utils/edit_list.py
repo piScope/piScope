@@ -3662,9 +3662,7 @@ class EditListCore(object):
            elif val[2] == 27: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
                                    setting=val[3])
-#              col = 0
-#              span = (1,2)
-              w.SetValue(val[1])
+              if val[1] is not None:  w.SetValue(val[1])
               p = w
            elif val[2] == 127: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
