@@ -288,16 +288,8 @@ def GetNextName(keys, header):
 def MoveItemInList(l, i1,i2):
    # move i1 to i2
    if i1 > i2:
-#      print l[0:i2]
-#      print [l[i1]] 
-#      print  l[i2:i1] 
-#      print l[i1+1:len(l)]
       return   l[0:i2] + [l[i1]] + l[i2:i1] + l[i1+1:len(l)]
    elif  i1 < i2: 
-#      print    l[0:i1]
-#      print    l[i1+1:i2+1]
-#      print    [l[i1]]
-#      print    l[i2+1:len(l)]
       return   l[0:i1] + l[i1+1:i2+1] + [l[i1]]+ l[i2+1:len(l)]
    else:
       raise ValueError("cbook::MoveItemInList :i1 should be different from i2")

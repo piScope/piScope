@@ -47,6 +47,8 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     else:
         id_dict = glcanvas.draw_mpl_artists(tag)
         im, im2, im3 = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
+        import wx
+        wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)

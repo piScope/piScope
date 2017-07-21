@@ -428,8 +428,10 @@ def call_getter(artist, ll, tab=''):
 class base_artist_widget(object):
    def __init__(self, target_type = 1):
        self.target_artist = None
+       self.target_artist_mul = None   # multiple selection
        self.target_type = target_type  # 1: first aritst 0: any artist
        self.target_figobj = None
+       self.target_figobj_type = ''       
    def set_value(self,  artist=None, value=None):
        ### this shouuld define how to update
        ### gui based on the data in ifigure_canvas
@@ -451,7 +453,13 @@ class base_artist_widget(object):
        self.target_artist = weakref.ref(a)
        if td is None: td = a.figobj
        self.target_figobj = weakref.ref(td)
-
+       
+   def set_target_artist_mul(self, sels):
+       if len(sels) > 1:
+          self.target_artist_mul = sels
+       else:
+          self.target_artist_mul = None  
+       
    def get_target_artist(self):
        if self.target_artist is None: return None
        return self.target_artist()
@@ -526,6 +534,7 @@ class artist_panel(wx.Panel):
            elp.Enable(value)
 
    def build_editlist_list(self, obj, ret):
+       self.target_figobj_type = type(obj)
        if isinstance(ret, tuple):
           tab = ret[0]
           props = ret[1]
@@ -550,9 +559,10 @@ class artist_panel(wx.Panel):
 #
 #   artist/figobj -> palette
 #
+       if type(artist.figobj) != self.target_figobj_type:
+           return
        self.adjust_elp(artist)
        for k in range(len(self.list)): 
-#          print k
           if not self.elp[k].IsEnabled(): continue
           value = ['']*len(self.list[k])
           for i in range(len(value)):
@@ -608,24 +618,27 @@ class artist_panel(wx.Panel):
        name = self.list[k][i][4]
        tab  = self.tab[k]
        v = value[i]
-#       hist = self.target_artist.figobj.get_root_parent().app.history
+       actions = []
+       targets = ([self.target_artist] if self.target_artist_mul is None
+                  else self.target_artist_mul)
        if self.list[k][i][5] == 0:
-          action = UndoRedoArtistProperty(self.target_artist(), 
-                                          name, v)
-#       elif self.list[k][i][5] == 10:
-#          action = UndoRedoArtistProperty(self.target_artist(), 
-#                                          name, v, all=True)
+           for t in targets:
+               action = UndoRedoArtistProperty(t(), name, v)
+               actions.append(action)
+              
        elif self.list[k][i][5] == 1:
-          action = UndoRedoFigobjProperty(self.target_artist(), 
-                                          name, v)
-#          self.Enable(False)
+           for t in targets:           
+              action = UndoRedoFigobjProperty(t(), name, v)
+              actions.append(action)          
        elif self.list[k][i][5] == 2:
-          action = UndoRedoFigobjMethod(self.target_artist(), 
-                                          name, v)
+           for t in targets:                      
+               action = UndoRedoFigobjMethod(t(), name, v)
+               actions.append(action)          
        elif self.list[k][i][5] == 3:
           action = UndoRedoFigobjMethod(self.target_artist(), 
                                           name, v)
           action.set_extrainfo(tab)
+          actions.append(action)
        elif self.list[k][i][5] == 12:    
           #print self.target_artist()
           m = getattr(self.target_artist().figobj, 'set_'+name)
@@ -635,7 +648,7 @@ class artist_panel(wx.Panel):
           m = getattr(self.target_artist().figobj, 'set_'+name)
           m((tab, v), self.target_artist())
           return None, None
-       return action, self.list[k][i][6]
+       return actions, self.list[k][i][6]
 
    def add_action_to_history(self, evt, actions, name = ''):
        window = evt.GetEventObject().GetTopLevelParent()
@@ -704,6 +717,9 @@ class artist_contour_widget(artist_panel, base_artist_widget):
        self.adjust_elp(self.target_artist())
 
    def set_value(self, artist):
+       if type(artist.figobj) != self.target_figobj_type:
+           print("wrong target")
+           return
        self.adjust_elp(artist)
        return artist_panel.set_value(self, artist)
 
@@ -880,6 +896,8 @@ class artist_plot_widget(artist_panel, base_artist_widget):
        self.tab, self.list = self.build_editlist_list(obj, ret)
        self.make_panel()
    def set_value(self, artist):
+       if type(artist.figobj) != self.target_figobj_type:
+           return
        self.elp[0].Enable(True)
        self.elp[1].Enable(True)
        if artist.figobj._mpl_cmd == 'errorbar':
@@ -1224,48 +1242,59 @@ class panel1(artist_widgets):
 #           print mode, self.artists[0]
            self.panels[mode].set_value(self.artists[0]())
            self.panels[mode].set_target_artist(self.artists[0]())
+           self.panels[mode].set_target_artist_mul(self.artists)
         if focus is not None: focus.SetFocus()
 
+    def change_artist_panel(self, figobj):
+        name = figobj.get_namebase()
+
+        if not self.panels.has_key(name):
+           if name in panel1.plistd:
+               self.append_panel(name)
+           else:
+               self.enable(False)
+               return
+
+        self.switch_panel(name)
+        self.enable(True)
+        self.update_panel(name)
+        
     def onTD_Selection(self, evt):
-       if len(evt.selections) == 1:
-          sel = evt.selections[0]()
-          if sel is None: return 
-          if sel.figobj is None:
-              return
-          name = sel.figobj.get_namebase()
+        if len(evt.selections) == 1:
+            sel = evt.selections[0]()                    
+            if sel is None: return 
+            if sel.figobj is None:
+               return
+            self.artists=evt.selections                      
+            self.change_artist_panel(sel.figobj)           
 
-          if not self.panels.has_key(name):
-              if name in panel1.plistd:
-                  self.append_panel(name)
-              else:
-                  self.enable(False)
-                  return
-          self.artists=evt.selections
+        elif len(evt.selections) == 0:
+            #no selection -> disable
+            self.enable(False)
+        else:
+            # multiple selection
+            #  only enabled when all artists has same type of figobj
+            #  and in the same axes
+            self.enable(False)            
+            if any([obj() is None for obj in evt.selections]): return
+            if any([obj().figobj is None for obj in evt.selections]): return
 
+            figobjs = [obj().figobj for obj in evt.selections]
+            parents = [obj().figobj.get_parent() for obj in evt.selections]
 
-          self.switch_panel(name)
-          self.enable(True)
-          self.update_panel(name)
+            if any([type(figobjs[0])!= type(obj) for obj in figobjs]): return
+            if any([parents[0] is not p for p in parents]): return
+                   
+            sel = evt.selections[0]()
+            self.artists=evt.selections                       
+            self.change_artist_panel(sel.figobj)           
 
-#          for elp in self.panels[name].elp:
-#              wx.CallAfter(elp.SetScrollRate, 0, 5)
-          
-#          self.panels[mode].set_value(self.artists[0]())
-#          self.panels[mode].set_target_artist(self.artists[0]())
-
-
-       elif len(evt.selections) == 0:
-          #no selection -> disable
-          self.enable(False)
-       else:
-          #multiple selection -> arrange palette...
-          #self.switch_panel("arrange")
-          self.enable(False)
+            self.enable(True)
 
     def onEL_Changed(self, evt):
-        action, name = evt.artist_panel.set_artist_property(evt)
-        if action is None: return
-        evt.artist_panel.add_action_to_history(evt, [action], name)
+        actions, name = evt.artist_panel.set_artist_property(evt)
+        if actions is None: return
+        evt.artist_panel.add_action_to_history(evt, actions, name)
 #       self.GetTopLevelParent().canvas.draw()
 
 class panel2(artist_widgets):
@@ -1365,9 +1394,8 @@ class panel2(artist_widgets):
             self.update_panel()
 
     def onEL_Changed(self, evt):
-        action, name = evt.artist_panel.set_artist_property(evt)
-        if action is None: return
-        actions = [action]
+        actions, name = evt.artist_panel.set_artist_property(evt)
+        if actions is None: return
         if hasattr(evt, 'signal'):
              if evt.signal == 'need_adjustscale':
                   actions.append(UndoRedoFigobjMethod(self.ax(), 

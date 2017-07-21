@@ -916,6 +916,9 @@ class Axes3DMod(Axes3D):
             self._3d_axes_icon[5]().set_x(pt[0])
             self._3d_axes_icon[5]().set_y(pt[1])
 
+    def get_gl_uniforms(self):
+        glcanvas = get_glcanvas()
+        return glcanvas.get_uniforms()
     @allow_rasterization
     def draw(self, renderer):
         self.patch.set_facecolor(self.figure.patch.get_facecolor())

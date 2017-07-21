@@ -40,6 +40,11 @@ uniform sampler2D uMarkerTex;
 uniform int  uUseShadowMap;
 uniform sampler2D uShadowTex;
 uniform sampler2D uShadowTex2;
+uniform sampler2D uRT0;
+uniform sampler2D uRT1;
+uniform int uisFinal;
+uniform int uisClear;
+uniform int uisSolid;
 uniform vec2 uShadowTexSize;
 
 uniform int uisImage;
@@ -47,6 +52,7 @@ uniform sampler2D uImageTex;
 
 uniform int uisAtlas;
 uniform vec3 uAtlasParam;
+uniform ivec2 uSCSize;
 
 uniform int uLineStyle;
 int dashed[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -104,7 +110,29 @@ float SPOT(sampler2D depths, vec2 size, vec2 uv, float compare){
 
 void main() {
      gl_FragDepth = gl_FragCoord.z; /* just to make sure to write this variable */
+     if (uisClear == 1){
+	 gl_FragData[0] = vec4(0,0,0,1);
+         gl_FragData[1] = vec4(0,0,0,1);
+	 return;
+     }
      
+     if (uisFinal == 1){
+         vec4 accum = texture2D(uRT1, vec2(gl_FragCoord.xy/uSCSize.xy));
+	 float r = accum.a;
+         float count = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).g;
+         float rrr = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).r;	 	 
+         // Blend Func: GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA
+         gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1)*(1-r);
+	 //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1);
+	 //gl_FragData[0] = vec4(r, 0,0,r);
+	 
+	 //gl_FragData[0] = vec4((gl_FragCoord.z-2)/20., 0,0,1);
+	 //gl_FragData[0] = vec4((gl_FragCoord.z-0.87)*20., 0,0,1);
+	 //gl_FragData[0] = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4),  1);	 
+         //gl_FragData[1] = uArtistID;
+ 	 //gl_FragData[1].a = 1.0;
+	 return;
+     }
      if (uisAtlas == 1){
          float data = length(vec2(atlas_data[0]*uAtlasParam[1], 
        	                          atlas_data[1]*uAtlasParam[2]));
@@ -191,7 +219,6 @@ void main() {
      }
      gl_FragData[0].a = aaa;   
      
-     gl_FragData[1] = uArtistID;
      if (uisMarker == 1){
         vec4 color = texture2D(uMarkerTex, gl_PointCoord);
         gl_FragData[0] = vec4(1, 1, 1, 1);
@@ -201,7 +228,8 @@ void main() {
         gl_FragData[0] = color; 
      }
 
-
+     vec4 color;
+     
      gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
 /*     gl_FragDepth = gl_FragDepth +  uViewOffset.z/10*     
                     (1 + 3 * sqrt(1-dot(n,c)*dot(n,c)));*/
@@ -238,8 +266,31 @@ void main() {
 	     discard;
          }
      }
-
-
-/*         gl_FragData[0] = vec4(atlas, 0, 0, 1);	 */
+     if (uisSolid == 1){
+        gl_FragData[1] = uArtistID;     
+     	return;
+     }
+     else
+     {
+        color = gl_FragData[0];
+        // Insert your favorite weighting function here. The color-based factor
+        // avoids color pollution from the edges of wispy clouds. The z-based
+        // factor gives precedence to nearer surfaces.
+        //float z = gl_FragCoord.z * 500.;     
+        //float weight = max(min(1.0, max(max(color[0], color[1]), color[2])*color[0]), color[0])*clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);
+        float z = gl_FragCoord.z*500;          
+        float weight = vColor0[3]*clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);
+        //
+        //float z = gl_FragCoord.z;     
+        //float weight =  vColor0[3]*max(1e-2, 3e3 * pow((1 - z),3.0));
+        // Blend Func: GL_ONE, GL_ONE
+        // Switch to premultiplied alpha and weight
+        gl_FragData[1] = vec4(color.rgb * weight, vColor0[3]);
+	
+        // Blend Func: GL_ZERO, GL_ONE_MINUS_SRC_ALPHA
+        gl_FragData[0].r = vColor0[3] * weight;
+        //gl_FragData[0].r = (1-gl_FragCoord.z);
+        //gl_FragData[0].g = 0.2;
+     }
 
 }

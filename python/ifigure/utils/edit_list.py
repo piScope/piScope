@@ -127,6 +127,7 @@ class LabelPanel(Panel):
         self.GetSizer().Add(self.tc, 1, wx.EXPAND|wx.ALL, 1)
         self.GetSizer().Add(bt, 1, wx.ALL, 1)
         self.Bind(wx.EVT_BUTTON, self.onSelect, bt)
+        
         self.val = ['', 'k', 'san-serif', 
                     'normal', 'normal',  12]
     def onSelect(self, evt):
@@ -3482,7 +3483,7 @@ class EditListCore(object):
                txt=wx.StaticText(self, wx.ID_ANY, val[0])
                sizer.Add(txt,(row, 0), span, 
                          wx.ALL|wx.ALIGN_CENTER_VERTICAL, edge)
-               if tip is not None:
+               if tip is not None and len(tip) > k:
                   if tip[k] is not None:
                       txt.SetToolTipString(tip[k])
            else:
@@ -3661,9 +3662,7 @@ class EditListCore(object):
            elif val[2] == 27: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
                                    setting=val[3])
-#              col = 0
-#              span = (1,2)
-              w.SetValue(val[1])
+              if val[1] is not None:  w.SetValue(val[1])
               p = w
            elif val[2] == 127: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
@@ -3952,7 +3951,7 @@ class EditListCore(object):
               span = (1,2)
               p = w
            elif val[2] == 99:               ## custom UI component
-              setting = v[3]
+              setting = val[3]
               UI = setting.pop('UI', None)
               noexpand = setting.pop('noexpand', False)
               col = setting.pop('col', col)

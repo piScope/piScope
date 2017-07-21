@@ -241,8 +241,14 @@ class WaveViewer(VideoViewerMode, BookViewer):
         self.sing = bool(value[1][3])        
         self.nframe = int(value[1][1])
 
-
-
+    def onResize(self, evt):
+        BookViewer.onResize(self, evt)
+        if self._playerbtn is not None:
+            self._playerbtn.Fit()
+            psize = self._playerbtn.GetSize()
+            csize = self.canvas.GetSize()
+            self._playerbtn.SetPosition((csize[0]-psize[0]-4,
+                                         csize[1]-psize[1]-4))
 
 
 
