@@ -2169,7 +2169,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             else:
                  if event.guiEvent.ShiftDown():
 #                 if event.key == 'shift':
-                    dprint1('adding')
+#                    dprint1('adding')
                     self.add_selection(self._pevent.artist)
                  else:
                     self.unselect_all()
