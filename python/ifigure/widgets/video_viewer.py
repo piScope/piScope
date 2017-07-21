@@ -17,7 +17,7 @@ from ifigure.widgets.book_viewer import BookViewer, BookViewerFrame, ID_KEEPDATA
 import ifigure.events
 import weakref
 import numpy as np
-from .videoplayer_buttons import VideoplayerButtons
+from .videoplayer_buttons import VideoplayerButtons, add_player_btn
 
 class VideoViewerMode(object):
     ID_PLAYERBUTTON = wx.NewId()        
@@ -158,8 +158,8 @@ class VideoViewerMode(object):
                         "Player Panel", "toggle player button panel",
                          self.onTogglePlayerButton,
                         kind = wx.ITEM_CHECK)
-        self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
-        wx.GetApp().add_palette(self._playerbtn)        
+        self._playerbtn = add_player_btn(self)
+        #wx.GetApp().add_palette(self._playerbtn)        
         self._mm_player.Check(True)        
         self.add_menu(viewmenu, BookViewerFrame.ID_PM[4], 
                      "Next Page",  "next page",
@@ -171,10 +171,10 @@ class VideoViewerMode(object):
     def onTogglePlayerButton(self, evt):
         if self._mm_player.IsChecked():
             if self._playerbtn is None:
-                self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
-                wx.GetApp().add_palette(self._playerbtn)                        
+                self._playerbtn = add_player_btn(self)
+                #wx.GetApp().add_palette(self._playerbtn)  
         else:
-            wx.GetApp().rm_palette(self._playerbtn)                                    
+            #wx.GetApp().rm_palette(self._playerbtn) 
             self._playerbtn.Destroy()
             self._playerbtn = None
             
@@ -340,13 +340,14 @@ class VideoViewer(VideoViewerMode, BookViewer):
             obj.show_videoframe(i)
         self._video_page = i
 
-
-
-        
-        
-
-
-
+    def onResize(self, evt):
+        BookViewer.onResize(self, evt)
+        if self._playerbtn is not None:
+            self._playerbtn.Fit()
+            psize = self._playerbtn.GetSize()
+            csize = self.canvas.GetSize()
+            self._playerbtn.SetPosition((csize[0]-psize[0]-4,
+                                         csize[1]-psize[1]-4))
 
 
 
