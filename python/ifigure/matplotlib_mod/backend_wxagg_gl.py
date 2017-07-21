@@ -653,6 +653,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                         draw_non_solid = True,
                         do_clear_depth = False,
                         id_dict = None, ignore_alpha = False):
+
         if id_dict is None: id_dict = {}
         current_id = 1.0
         if do_clear is not None:
@@ -663,7 +664,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
           glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT|GL_ACCUM_BUFFER_BIT)
         if do_clear_depth:
           glClear(GL_DEPTH_BUFFER_BIT)
-           
+
         for aa in self.artists_data:
              if not aa is tag: continue
              if not aa in self.vbo:
@@ -698,7 +699,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     xxx = [None]*len(self.artists_data[aa][a])
                 else:
                     xxx = self.vbo[aa][a]
-                    
+                  
                 for k, data in enumerate(self.artists_data[aa][a]):
                     m = getattr(self, 'makevbo_'+ data[0])
                     if len(xxx) == k: xxx.append(None)
@@ -831,16 +832,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.set_uniform(glUniform1i, 'uisClear', 1)        
            glBlendFunc(GL_ONE, GL_ZERO)
            glDisable(GL_DEPTH_TEST)
+           glDepthMask(GL_TRUE)
            self._do_depth_test = False        
            self.do_draw_artists(tag, do_clear=(0,0,0,1))
            self._do_depth_test = True
            self.set_uniform(glUniform1i, 'uisClear', 0)
 
-           glDepthMask(GL_FALSE);
-           glEnable(GL_BLEND);
+           glDepthMask(GL_FALSE)
+           glEnable(GL_BLEND)
            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD)
            glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA)
            #glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ZERO)
+
            #glDisable(GL_DEPTH_TEST)
            glEnable(GL_DEPTH_TEST)        
            self.do_draw_artists(tag, draw_solid = False)
@@ -1283,7 +1286,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
         
         if not lighting and self._p_shader is self.shader:
-            ambient, light,  specular, shadowmap, clip1, clip2 = self.set_lighting_off()
+            ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
         if facecolor is not None: 
            glEnable(GL_POLYGON_SMOOTH)
            glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
@@ -1338,6 +1341,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              (0, 0, 0., 0.))
             vbos['ec'].unbind()
 #            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glDepthFunc(GL_LESS)
 
         if not lighting and self._p_shader is self.shader:            
             self.set_lighting(ambient = ambient,
@@ -1345,14 +1349,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                               specular = specular,
                               shadowmap = shadowmap,
                               clip_limit1=clip1, clip_limit2=clip2)
-        glDepthFunc(GL_LESS)
         #for f, c in zip(first, counts): 
         #   glDrawArrays(GL_LINE_STRIP, f, c)
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
-        glDepthMask(GL_TRUE)
 
     def set_view_offset(self, offset_base = (0, 0, 0., 0)):
         offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))
