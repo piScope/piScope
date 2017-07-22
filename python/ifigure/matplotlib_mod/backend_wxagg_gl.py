@@ -1789,7 +1789,8 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         elif cleared:
             self.renderer.clear()
         return self.renderer
-
+    '''
+    This is the same as upper class
     def draw(self, drawDC = None, nogui_reprint = False):
         if self.figure is None: return
         if self.figure.figobj is None: return
@@ -1806,7 +1807,7 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
             if not nogui_reprint:
                 #print 'draw calling gui_repaint'
                 self.gui_repaint(drawDC=drawDC)
-
+    '''
     def draw_artist(self, drawDC=None, alist=None):
         if alist is None: alist = []
         gl_obj = [a for a in alist if hasattr(a, 'is_gl')]

@@ -116,7 +116,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             self.figure.draw_from_bitmap(self.renderer)
             self._isDrawn = True
             if not nogui_reprint:
-#                print 'draw calling gui_repaint'
+                #print 'draw calling gui_repaint'
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
@@ -153,7 +153,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
         for a in alist:
             a.draw(self.renderer)
-        self._prepare_bitmap()                
+        self._prepare_bitmap()
+        #print 'draw calling gui_repaint'        
         self.gui_repaint(drawDC=drawDC)
 
     def Copy_to_Clipboard_mod(self, event=None, bmp=None, pgbar=False):
@@ -418,3 +419,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         if self.HasCapture():
             self.ReleaseMouse()
         return super(FigureCanvasWxAggMod, self)._onMiddleButtonDown(evt)
+
+    def gui_repaint(self, *args, **kwargs):
+        super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)        
+        self.Refresh()

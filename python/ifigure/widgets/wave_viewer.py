@@ -16,7 +16,7 @@
              absolute: if true, the last frame is absolute 
 '''
 import wx
-from ifigure.widgets.video_viewer import VideoViewerMode
+from ifigure.widgets.video_viewer import VideoBookPlayer, VideoViewerMode
 from ifigure.widgets.book_viewer import BookViewer, BookViewerFrame
 from ifigure.widgets.book_viewer_interactive import allow_interactive_call
 import ifigure.events
@@ -117,13 +117,12 @@ def convert_figobj(obj):
         obj.__class__ = FigSurfacePhasor
     else:
         pass
-class WaveViewer(VideoViewerMode, BookViewer):
+class WaveViewer(VideoBookPlayer):
     def __init__(self, *args, **kwargs):
         self.nframe = kwargs.pop('nframe', 30)
         self.sign = kwargs.pop('sign',  -1)
+        super(WaveViewer, self).__init__( *args, **kwargs)
 
-        VideoViewerMode.__init__(self, *args, **kwargs)        
-        BookViewer.__init__(self, *args, **kwargs)
         if self.book is not None:
            self.add_all_video_obj()
 
@@ -240,15 +239,6 @@ class WaveViewer(VideoViewerMode, BookViewer):
         self._playloop = bool(value[1][2])
         self.sing = bool(value[1][3])        
         self.nframe = int(value[1][1])
-
-    def onResize(self, evt):
-        BookViewer.onResize(self, evt)
-        if self._playerbtn is not None:
-            self._playerbtn.Fit()
-            psize = self._playerbtn.GetSize()
-            csize = self.canvas.GetSize()
-            self._playerbtn.SetPosition((csize[0]-psize[0]-4,
-                                         csize[1]-psize[1]-4))
 
 
 

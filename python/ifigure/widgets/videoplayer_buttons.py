@@ -160,6 +160,13 @@ class VideoplayerBar(bp.ButtonPanel):
         self.set_toggle('')
         self.set_bitmap2('')
         self.refresh_button()
+        
+    def place_right_bottom(self):
+        self.Fit()
+        psize = self.GetSize()
+        csize = self.GetParent().GetSize()
+        self.SetPosition((csize[0]-psize[0]-4,
+                          csize[1]-psize[1]-4))
             
 
 from .miniframe_with_windowlist import MiniFrameWithWindowList
@@ -191,18 +198,13 @@ class VideoplayerButtons(MiniFrameWithWindowList):
         
     def reset_btn_toggle_bitmap(self):
         self.btn.reset_btn_toggle_bitmap()
- 
+
 
 def add_player_btn(parent):
     canvas = parent.canvas
     playerbtn = VideoplayerBar(canvas, wx.ID_ANY, container = parent)
     playerbtn.Show()
-    playerbtn.Fit()
-
-    psize = playerbtn.GetSize()
-    csize = canvas.GetSize()
-    playerbtn.SetPosition((csize[0]-psize[0]-4,
-                           csize[1]-psize[1]-4))
+    playerbtn.place_right_bottom()
     return playerbtn
 
 
