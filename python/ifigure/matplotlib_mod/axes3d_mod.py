@@ -118,8 +118,8 @@ class Axes3DMod(Axes3D):
         self._nomargin_mode = False
         self._offset_trans_changed = False
         self._mouse_hit = False
-        self._lighting = {'light'      : 0.,
-                          'ambient'    : 1.0,
+        self._lighting = {'light'      : 0.5,
+                          'ambient'    : 0.5,
                           'specular'   : .0,
                           'light_direction'  : (1., 0, 1, 0),
                           'light_color'      : (1., 1., 1), 

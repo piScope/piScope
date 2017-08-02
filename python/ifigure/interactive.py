@@ -1314,6 +1314,21 @@ def tscope(file = '',  book = None):
     v = scope(file = file, book = book, worker = workers)
     v.book.setvar('mdsplus_server', 'mdsplus.partenaires.cea.fr:8000:')
 
+try:
+    import petram
+    def petra(model = None):
+        from __main__ import ifig_app    
+        proj = ifig_app.proj
+        try:
+            model = proj.model1.mfem if model is None else model
+        except:
+            model = None
+        if model is not None:
+            model.scripts.helpers.open_gui()
+    has_petra = True
+except:
+    has_petra = False    
+
 def edit(file = ''):
     app = wx.GetApp().TopWindow
     app.open_editor_panel()

@@ -69,6 +69,10 @@ from ifigure.interactive import property
 from ifigure.interactive import view
 from ifigure.interactive import glinfo
 
+from ifigure.interactive import has_petra
+if has_petra:
+    from ifigure.interactive import petra
+
 import numpy as np
 
 def help(*args):
