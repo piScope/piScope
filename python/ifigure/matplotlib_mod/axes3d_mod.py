@@ -371,10 +371,6 @@ class Axes3DMod(Axes3D):
     @use_gl_switch
     def plot(self, *args, **kwargs):
         from art3d_gl import line_3d_to_gl
-        if len(args) == 4:
-            c = args[-1]
-            args = args[:3]
-        else: c = None
         fc = kwargs.pop('facecolor', None)
         gl_offset = kwargs.pop('gl_offset', (0,0,0))
         lines = Axes3D.plot(self, *args, **kwargs)
@@ -382,12 +378,6 @@ class Axes3DMod(Axes3D):
             line_3d_to_gl(l)
             l._facecolor = fc
             l._gl_offset = gl_offset
-#            if c is not None:
-#                l._gl_solid_edgecolor = None
-#                l._c_data = c
-#            else:
-#                print l.get_color()
-#                l._gl_solid_edgecolor = l.get_color()                
         return lines
 
     def fill(self, *args, **kwargs):

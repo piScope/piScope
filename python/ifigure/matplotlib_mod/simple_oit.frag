@@ -221,11 +221,7 @@ void main() {
      
      if (uisMarker == 1){
         vec4 color = texture2D(uMarkerTex, gl_PointCoord);
-        gl_FragData[0] = vec4(1, 1, 1, 1);
-	if (gl_PointCoord[0] > 0.5){
-            gl_FragData[0] = vec4(0,1,1,1);
-	}
-        gl_FragData[0] = color; 
+        gl_FragData[0] = color;
      }
 
      vec4 color;

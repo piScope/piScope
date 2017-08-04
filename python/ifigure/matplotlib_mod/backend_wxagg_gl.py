@@ -1196,7 +1196,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         marker_size = marker_trans[0]
         h, w,  void = marker_path.shape
-        
+
         marker_tex = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0 + 0)
         glBindTexture(GL_TEXTURE_2D, marker_tex)
@@ -1223,13 +1223,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         glPointSize(marker_size*2+1)
+        glAlphaFunc(GL_GREATER, 0.5);        
         glEnable(GL_POINT_SPRITE)
+        glEnable(GL_ALPHA_TEST);        
         self.set_view_offset()        
 #        self.set_uniform(glUniform4fv, 'uViewOffset', 1,
 #                         (0, 0, -0.005, 0.))
         glDrawArrays(GL_POINTS, 0, vbos['count'])
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
+        glDisable(GL_ALPHA_TEST);                
         glDisable(GL_POINT_SPRITE)
         
         self.set_uniform(glUniform1i, 'uisMarker', 0)
