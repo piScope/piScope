@@ -26,6 +26,7 @@ varying vec3 light_dir;
 varying vec3 LightDist;
 varying vec2 atlas_data;
 varying float atlas;
+varying float array_id;
 
 uniform mat4 uWorldM;
 uniform vec4 uWorldOffset;
@@ -42,6 +43,7 @@ uniform float uShadowMinZ;
 uniform int uisImage;
 uniform int uisAtlas;
 uniform int uLineStyle;
+uniform int uUseArrayID;
 uniform vec3 uAtlasParam;
 
 void main() {
@@ -85,6 +87,9 @@ void main() {
    }
    if (uLineStyle != -1){
        atlas = vertex_id;
+   }
+   if (uUseArrayID == 1){
+       array_id = vertex_id;
    }
 
 }

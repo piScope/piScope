@@ -1,0 +1,37 @@
+	* 08/04-06/2017
+
+	Various improvement of OpenGL graphics, which are needed
+	for Petra-M
+	
+	** array_idx keywords to 3D solid and plot command
+
+	array_idx is a number assigned to markers in a plot mode
+	or line/triangle/rectangle in solid plot
+
+	array_idx can be used to tell which part of 3D object is clicked.
+	an element of array_idx should be between 1 and 65535
+
+	** ArtGL::set_gl_pickable
+	This can be used in order to make GL artist
+	temporarilly unpickable.
+
+	** ArtGL::LineGL caches marker texture.
+
+	** ArtGL::get_gl_arrayid_hit
+	Returns the array_idx of the elements which a user
+	clicked.
+
+        ** ArtGL::set_gl_hl_use_array_idx
+	If True is give, it highlights of a part GL artist using
+	array_idx data.
+
+        ** Axes3DMod::gl_hl_setcolor
+	Change highlith color. Giving [1,0,0] shows highlight in red
+
+	* 07/21/2017
+
+	** OIT (order independent transparency) renderer is enabled.
+	** Videoplayer button relocation.
+
+	A technique used to place buttons in figure canvas
+	would be useful for placeig other palette-like buttons.

@@ -96,6 +96,8 @@ class FunctionButton(wx.Button):
         setting = kargs.pop("setting", {})
         func = setting.pop('func', None)
         label = setting.pop('label', 'Default')
+        style = setting.pop('style', 0)
+        kargs['style'] = style
         wx.Button.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_BUTTON, self.onSelect)
         if func is not None:
@@ -112,6 +114,22 @@ class FunctionButton(wx.Button):
         if self._handler is not None:
            self._handler(ev)
         ev.Skip()
+class FunctionButtons(Panel):
+    def __init__(self, *args, **kwargs):
+        setting = kwargs.pop('setting', [])
+        buttons = setting.pop('buttons', [])
+        super(FunctionButtons, self).__init__(*args, **kwargs)
+        self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
+        for s in buttons:
+           bt = FunctionButton(self, wx.ID_ANY,
+                               setting = s)
+
+           self.GetSizer().Add(bt, 0, wx.EXPAND|wx.ALL, 2)
+
+    def GetValue(self):
+        pass
+    def SetValue(self, v):
+        pass
             
 class LabelPanel(Panel):
     def __init__(self, *args, **kargs):
@@ -3924,6 +3942,15 @@ class EditListCore(object):
               w = FunctionButton(self, wx.ID_ANY, setting = setting)
               p = w
               noexpand = setting.pop('noexpand', False)
+           elif val[2] == 241:
+              if len(val)==4:
+                 setting=val[3]
+              else:
+                 setting = {}
+              w = FunctionButtons(self, wx.ID_ANY, setting = setting)
+              p = w
+              alignright = setting.pop('alignright', alignright)   
+              noexpand = setting.pop('noexpand', False)
            elif val[2] == 42:
               if len(val)==4:
                  setting=val[3]
@@ -3967,11 +3994,12 @@ class EditListCore(object):
 
 
            self.widgets.append((w, txt) )
-           alignright = setting.pop('alignright', alignright)                         
+           alignright = setting.pop('alignright', alignright)
 
            alignment = wx.ALL|wx.ALIGN_CENTER_VERTICAL
            if not noexpand: alignment  = wx.EXPAND|alignment
            if alignright: alignment  = wx.ALIGN_RIGHT|alignment
+           
            sizer.Add(p, (row, col), span, alignment, expand_space)
            row = row+1
            k = k + 1
@@ -4323,7 +4351,8 @@ def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
                     "text_box" : False}
       40: GL Lighting
       41: Dialog button (opens a custom dialog)
-     141: Function button (call a function)
+     141: Function button  (call a function)
+     241: Function buttons (multiple function buttons)
       42: TickLabelSizeSelector
       43: ArrayTextBox
       44: GL azim/elev panel

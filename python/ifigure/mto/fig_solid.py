@@ -59,7 +59,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cz', False, 'bool')
         p.add_key('cdata', None)
         p.add_key('shade', 'flat')
-
+        p.add_key('array_idx', None)
         v, kywds,d, flag = p.process(*args, **kywds)
         if not flag: 
             raise ValueError('Failed when processing argument')
@@ -168,7 +168,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         kywds = self._var["kywds"].copy()
         kywds['normals'] = norms
         kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
-        
+        kywds['array_idx'] = self.getvar('array_idx')
         fc = self.getp('facecolor')
         if isinstance(fc, str): fc = cc.to_rgba(fc)
         if fc is None: fc = [0,0,0,0]        

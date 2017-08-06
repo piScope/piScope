@@ -9,10 +9,10 @@
    2) set color using interpolated color
    3) use marker texture, when uisMarker = 1
    4) lighting based on diffuse, ambient, and specular
+   5) shadow map
+   6) line style
+   7) fixed artist color mode (color becomes a data along the path)
 
-   Todo.
-   1) shadow map
-   2) line style
 */
 #version 120
 varying vec4 vColor0;
@@ -53,6 +53,9 @@ uniform sampler2D uImageTex;
 uniform int uisAtlas;
 uniform vec3 uAtlasParam;
 uniform ivec2 uSCSize;
+
+uniform int uUseArrayID;
+varying float array_id;
 
 uniform int uLineStyle;
 int dashed[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -178,6 +181,7 @@ void main() {
         */
      }
      vec4 vColor = vColor0;
+
      if (uisImage == 1){
          vColor = texture2D(uImageTex, gl_TexCoord[0].st);
 	 if (vColor[3] == 0){
@@ -263,7 +267,16 @@ void main() {
          }
      }
      if (uisSolid == 1){
-        gl_FragData[1] = uArtistID;     
+        gl_FragData[1] = uArtistID;
+        if (uUseArrayID == 1){
+           gl_FragData[1].b = (array_id - 256*floor(array_id/256.))/255.;
+	   gl_FragData[1].a = floor(array_id/256)/255.;
+	}
+	else
+	{
+           gl_FragData[1].b = -1/255.;
+	   gl_FragData[1].a = 0;
+	}
      	return;
      }
      else

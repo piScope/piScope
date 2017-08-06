@@ -205,7 +205,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
                           'uLineStyle', 'uAmbient',
                           'uRT0', 'uRT1', 'uisFinal', 'uisClear', 
-                          'uSCSize', 'uisSolid']
+                          'uSCSize', 'uisSolid',
+                          'uUseArrayID']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -218,7 +219,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uisFinal', 0)
         self.set_uniform(glUniform1i,  'uisSolid', 0)        
         self.set_uniform(glUniform1i,  'uisClear', 0)        
-        self.set_uniform(glUniform2iv,  'uSCSize', 1, (0, 0))        
+        self.set_uniform(glUniform2iv,  'uSCSize', 1, (0, 0))
+        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+
         self._attrib_loc['Vertex2'] = glGetAttribLocation(self.shader,
                                                           "Vertex2")
         self._attrib_loc['vertex_id'] = glGetAttribLocation(self.shader,
@@ -435,7 +438,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDepthMask(GL_FALSE)        
         glColor4f(1., 1, 1,  0)
         glRecti(-1, -1, 2, 2)
-        glFinish()        
+        #glFinish()        
         #glDepthMask(GL_TRUE)                
 
     def use_depthmap_mode(self, frame, buf, texs, w, h):
@@ -688,7 +691,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
                            (int(current_id)/256 % 256)/255.,
-                           (int(current_id)/256**2 % 256)/255., 1.0)
+                           0.0, 1.0)
+                    #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
                 if a._gl_hl and not self._hittest_map_update:
                     # second condition indicate it is during pan/rotate
@@ -924,12 +928,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
            #print np.sort(np.unique(idmap[:,:, 0].flatten()))
            #print np.sort(np.unique(idmap[:,:, 1].flatten()))           
            #idmap = idmap.astype(int)
-
-           idmap = idmap[:,:,0] + idmap[:,:,1]*256 + idmap[:,:,2]*256**2
-           #print np.sort(np.unique(idmap.flatten()))
+           
+           idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
+           idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+           
            return (np.fromstring(data, np.uint8).reshape(h, w, -1),
                    #np.fromstring(data2, np.uint8).reshape(h, w),
-                   np.rint(idmap),
+                   np.rint(idmap0),
+                   np.rint(idmap2),                   
                    np.fromstring(data3, np.float32).reshape(h, w))
         else:
            glReadBuffer(GL_NONE)
@@ -1191,7 +1197,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return  vbos
      
     def draw_markers(self, vbos, gc, marker_path, marker_trans, path,
-                     trans, rgbFace=None):
+                     trans, rgbFace=None, array_idx = None):
 
 
         marker_size = marker_trans[0]
@@ -1226,10 +1232,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glAlphaFunc(GL_GREATER, 0.5);        
         glEnable(GL_POINT_SPRITE)
         glEnable(GL_ALPHA_TEST);        
-        self.set_view_offset()        
-#        self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-#                         (0, 0, -0.005, 0.))
+        self.set_view_offset()
+
+        vertex_id = vbos['vertex_id']
+        vertex_id.bind()
+        self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
+                                    0, None)
+        vertex_id.unbind()
+        self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
+        self.EnableVertexAttrib('vertex_id')
+        
         glDrawArrays(GL_POINTS, 0, vbos['count'])
+        
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
         glDisable(GL_ALPHA_TEST);                
@@ -1240,7 +1254,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     
         glDeleteTextures(marker_tex)
         glDisableClientState(GL_VERTEX_ARRAY)
-
+        self.DisableVertexAttrib('vertex_id')
+        
     def makevbo_markers(self, vbos, gc, marker_path, maker_trans,
                         path, *args, **kwargs):
        
@@ -1249,6 +1264,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                   np.array(path[1]).flatten(),
                                   np.array(path[2]).flatten()),
                                  *args, **kwargs)
+        array_idx = kwargs.pop("array_idx", None)
+        l = np.array(path[0]).flatten().shape[0]
+        if array_idx is not None:
+           array_idx = np.array(array_idx, copy=False).flatten()
+           if array_idx.shape[0] != l:
+              assert False, "array_idx length should be the same as the number of elements"
+        else:
+            array_idx = np.arange(l)
+        vertex_id = np.array(array_idx,dtype=np.float32,
+                             copy = False).transpose().flatten()
+        vbos['vertex_id'] = get_vbo(vertex_id,
+                                    usage='GL_STATIC_DRAW')
         return vbos
 
     def draw_path_collection(self, vbos, gc,  paths, 
@@ -1256,7 +1283,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           linewidth, linestyle, offset,
                                           stencil_test = False,
                                           lighting = True,
-                                          view_offset = (0, 0, 0, 0)):
+                                          view_offset = (0, 0, 0, 0),
+                                          array_idx = None):
+
+
 
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
@@ -1269,6 +1299,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glNormalPointer(GL_FLOAT, 0, None)
            vbos['n'].unbind()
 
+
+        if vbos['vertex_id'] is not None:
+           vertex_id = vbos['vertex_id']
+           vertex_id.bind()
+           self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
+                                    0, None)
+           vertex_id.unbind()
+           self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
+           self.EnableVertexAttrib('vertex_id')
+        else:
+           self.set_uniform(glUniform1i,  'uUseArrayID', 0)
         glEnableClientState(GL_COLOR_ARRAY)
         first, counts = vbos['first'], vbos['counts']
         offset = list(offset)+[0]
@@ -1357,6 +1398,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
+
+        if vbos['vertex_id'] is not None:        
+           self.DisableVertexAttrib('vertex_id')           
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
 
     def set_view_offset(self, offset_base = (0, 0, 0., 0)):
@@ -1434,7 +1478,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                 vbos['ec'].set_array(col)
             vbos['ec'].need_update = False
-
         return vbos
     '''
     (2015 05) I couldn't figure out how to use glMultiDrawElements with VBO
@@ -1516,12 +1559,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
     draw_path_collection_e = draw_path_collection
     
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor, 
-                                      edgecolor, *args, **kwargs):
+                                      edgecolor, *args,  **kwargs):
         ### paths is [X, Y, Z, norms, idxset]       
         if vbos is None:
             vbos  = {'v': None, 'n': None, 'i':None, 'fc':None,
-                     'ec': None, 'first':None, 'counts':None}
-
+                     'ec': None, 'first':None, 'counts':None, 
+                     'vertex_id': None}
+            
+        array_idx = kwargs.pop('array_idx', None)
         from matplotlib.path import Path
         #print 'draw_path_collection', len(facecolor)
 
@@ -1575,7 +1620,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['first'] = np.array(first)     ## 2016 06 27
             vbos['v'].need_update = False
             if vbos['n'] is not None: vbos['n'].need_update = False
-
+            if vbos['vertex_id'] is not None:
+                vbos['vertex_id'].need_update = True
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
             facecolor is not None):
             counts = vbos['counts']
@@ -1614,7 +1660,21 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                 vbos['ec'].set_array(col)
             
-            vbos['ec'].need_update = False        
+            vbos['ec'].need_update = False
+        if vbos['vertex_id'] is None  or vbos['vertex_id'].need_update:
+            counts = vbos['counts']
+            l = len(counts)
+            if array_idx is not None:
+                array_idx = np.array(array_idx, copy=False).flatten()
+                if array_idx.shape[0] != l:
+                   assert False, "array_idx length should be the same as the number of elements"
+            else:
+                array_idx = np.arange(l)
+            vertex_id = np.array([array_idx] * counts[0],
+                                 dtype=np.float32,
+                                 copy = False).transpose().flatten()
+            vbos['vertex_id'] = get_vbo(vertex_id,
+                                        usage='GL_STATIC_DRAW')
         return vbos
           
     def has_vbo_data(self, artist):

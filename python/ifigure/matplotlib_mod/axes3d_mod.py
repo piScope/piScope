@@ -138,6 +138,19 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
 
+        self._gl_hittest_exclude = []
+        self._gl_hl_color = [0,0,0]
+
+    def gl_hl_setcolor(self, value):
+        self._gl_hl_color = value
+        
+    def gl_hittest_exclude(self, id):
+        if not id in self._gl_hittest_exclude:
+            self._gl_hittest_exclude.append(id)
+    def gl_hittest_include(self, id):
+        if id in self._gl_hittest_exclude:
+            self._gl_hittest_exclude.remove(id)        
+            
     def gl_hit_test(self, x, y, id, radius = 3):
         #
         #  logic is
@@ -145,26 +158,43 @@ class Axes3DMod(Axes3D):
         #     and
         #     if it is the closet artist in the area of checking
         #     then return True
-        if self._gl_id_data is None: return False
+        if self._gl_id_data is None: return False, None
         
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         x, x0,  y, y0 = int(x), int(x0),  int(y), int(y0)        
-        d = np.rint((im[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten())
-        dd = (im2[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten()
-        if len(dd) == 0: return False
-        dist = np.min(dd)
-        for num, check in zip(d, dd):
-            if num in id_dict:
-                if id_dict[num] == id and check == dist:
-                   return True
+        d = np.rint((im[y-y0-radius:y-y0+radius,
+                        x-x0-radius:x-x0+radius]).flatten())
+        '''
+        print(im2[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius])
+        print(imd[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius])
+        '''
+        dd = (im2[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius]).flatten()
+        dd_extra = (imd[y-y0-radius:y-y0+radius,
+                        x-x0-radius:x-x0+radius]).flatten()        
+        if len(dd) == 0: return False, None
 
-        return False
+        idlist = [id_dict[x] if x in id_dict else -1
+                  for x in d]
+        mask = [not x in self._gl_hittest_exclude
+                for x in idlist]
+        dist = np.min(dd[mask])
+
+        for num, check, check2 in zip(d, dd, dd_extra):
+            if num in id_dict:
+                if id in self._gl_hittest_exclude: continue
+                if id_dict[num] == id and check == dist:
+                   return True, check2
+
+        return False, None
 
     def make_gl_hl_artist(self):
         if self._gl_id_data is None: return []
         self.del_gl_hl_artist()
             
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         a = ArtGLHighlight(self.figure, offsetx = x0,
                             offsety = y0, origin='lower')
         data = np.ones(im.shape)
@@ -181,7 +211,8 @@ class Axes3DMod(Axes3D):
             self._gl_mask_artist.remove()
         self._gl_mask_artist = None
         
-    def set_gl_hl_mask(self, id, cmask = 0.0, amask = 0.65):
+    def set_gl_hl_mask(self, id, hit_id = None,
+                       cmask = 0.0, amask = 0.65):
         #
         #  logic is
         #     if artist_id is found within raidus from (x, y)
@@ -196,28 +227,44 @@ class Axes3DMod(Axes3D):
         # do not do this when hitest_map is updating..this is when
         # mouse dragging is going on
         if not get_glcanvas()._hittest_map_update: return
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
               
         arr = self._gl_mask_artist.get_array()
         for k in id_dict.keys():
             if (id_dict[k] == id):
-               m = im == k
-               arr[:,:,0][m] = cmask
-               #arr[:,:,1][m] = cmask
-               #arr[:,:,2][m] = cmask
+               if hit_id is not None:
+                   if len(hit_id) > 0:
+                       m = np.logical_and(im == k, imd == hit_id[0])
+                       for x in hit_id[1:]:
+                           mm = np.logical_and(im == k, imd == x)
+                           m = np.logical_or(mm, m)
+                   else:
+                       m = (im == k)                       
+               else:
+                   m = (im == k)
+                   
+               c = self._gl_hl_color                   
+               arr[:,:,0][m] = c[0]
+               arr[:,:,1][m] = c[1]
+               arr[:,:,2][m] = c[2]
                arr[:,:,3][m] = amask               
                break
         # blur the mask,,,
 
-    def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.65):
+    def blur_gl_hl_mask(self, amask = 0.65):
         if self._gl_mask_artist is None: return
         arr = self._gl_mask_artist.get_array()
         #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         b = fftconvolve(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         #b = np.sqrt(b)
         b[b > amask] = amask
-        a = arr[:,:,0]; a[b > 0.0] = cmask        
-        arr = np.dstack((a,a,a,b))
+        
+        c = self._gl_hl_color        
+        a1 = arr[:,:,0]; a1[b > 0.0] = c[0]
+        a2 = arr[:,:,1]; a2[b > 0.0] = c[1]
+        a3 = arr[:,:,2]; a3[b > 0.0] = c[2]        
+
+        arr = np.dstack((a1,a2,a3,b))
         self._gl_mask_artist.set_array(arr)
 
     def set_nomargin_mode(self, mode):
@@ -373,11 +420,13 @@ class Axes3DMod(Axes3D):
         from art3d_gl import line_3d_to_gl
         fc = kwargs.pop('facecolor', None)
         gl_offset = kwargs.pop('gl_offset', (0,0,0))
+        array_idx = kwargs.pop('array_idx', None)
         lines = Axes3D.plot(self, *args, **kwargs)
         for l in lines:
             line_3d_to_gl(l)
             l._facecolor = fc
             l._gl_offset = gl_offset
+            l._gl_array_idx = array_idx
         return lines
 
     def fill(self, *args, **kwargs):

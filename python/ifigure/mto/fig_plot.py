@@ -63,6 +63,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('yerr', None)
         p.add_key('ecolor', None)
         p.add_key('elinewidth', None)
+        p.add_key('array_idx', None)        
         if 'cz' in kywds and kywds['cz']:
             p.add_key('cmap', 'jet')
         p.add_key('c',  None)                           
@@ -241,6 +242,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                                   if axes.get_3d():
                                        if z is None: z = np.array([0]*len(x))
                                        args.append(z)
+                                       kywds['array_idx'] = self.getvar('array_idx')
                                   args.append(s)
                                   self.set_artist(container.plot(*args,
                                                                  **kywds))
