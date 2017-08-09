@@ -559,8 +559,9 @@ class artist_panel(wx.Panel):
 #
 #   artist/figobj -> palette
 #
-       if type(artist.figobj) != self.target_figobj_type:
+       if not isinstance( artist.figobj, self.target_figobj_type):
            return
+       
        self.adjust_elp(artist)
        for k in range(len(self.list)): 
           if not self.elp[k].IsEnabled(): continue
@@ -588,7 +589,6 @@ class artist_panel(wx.Panel):
              elif sw == 3:
                 m = getattr(artist.figobj, 'get_'+self.list[k][i][4])
                 value[i] = m(artist, self.tab[k])
-
           self.elp[k].SetValue(value)
 
    def set_artist_property(self, evt):
@@ -1239,7 +1239,6 @@ class panel1(artist_widgets):
            return
         if self.panels.has_key(mode):
            if self.mode == mode: self.enable(True)
-#           print mode, self.artists[0]
            self.panels[mode].set_value(self.artists[0]())
            self.panels[mode].set_target_artist(self.artists[0]())
            self.panels[mode].set_target_artist_mul(self.artists)
@@ -1265,7 +1264,7 @@ class panel1(artist_widgets):
             if sel is None: return 
             if sel.figobj is None:
                return
-            self.artists=evt.selections                      
+            self.artists=evt.selections
             self.change_artist_panel(sel.figobj)           
 
         elif len(evt.selections) == 0:

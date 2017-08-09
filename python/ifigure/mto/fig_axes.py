@@ -1615,6 +1615,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         return self.get_3d_pane_colorname()
 
     def set_axis3d_bgalpha(self, value, artist):
+        if value is None: value = 1.0
         self.set_3d_pane_alpha([float(value)]*3)
 
     def get_axis3d_bgalpha(self, artist):

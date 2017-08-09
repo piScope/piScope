@@ -84,7 +84,6 @@ btasks1.extend([
                 ('xauto',  'xauto.png', 0, 'autoscale x', True),
                 ('yauto',  'yauto.png', 0, 'autoscale y', True),
                 ('grid',   'grid.png', 0, 'toggle grid', True, False),
-#                ('colorbar', 'colorbar.bmp', 0, 'color bar'),
                 ('nomargin', 'margin.png', 0, 'no margin mode', True, True),])
 #                ('3d',   'three_d.png', 0, '3D axis', False), ])
 

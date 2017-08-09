@@ -311,7 +311,8 @@ class Axes3DMod(Axes3D):
         get_glcanvas()._hittest_map_update = False
         events.SendPVDrawRequest(self.figobj, 
                                  w=None, wait_idle=False, 
-                                 refresh_hl=False)
+                                 refresh_hl=False,
+                                 caller = '_on_move')
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
@@ -407,14 +408,14 @@ class Axes3DMod(Axes3D):
 
     def _button_release(self, evt):
         if not self._mouse_hit:return
-        Axes3D._button_release(self, evt)
+
         fig_axes = self.figobj
-#        for obj in fig_axes.walk_tree():
-#            obj.switch_scale('fine')
         fig_axes.set_bmp_update(False)
-        events.SendPVDrawRequest(self.figobj, 
-                                 w=None, wait_idle=False, 
-                                 refresh_hl=False)
+        Axes3D._button_release(self, evt)        
+        #events.SendPVDrawRequest(self.figobj, 
+        #                         w=None, wait_idle=False, 
+        #                         refresh_hl=False,
+        #                         caller = '_on_release')
     @use_gl_switch
     def plot(self, *args, **kwargs):
         from art3d_gl import line_3d_to_gl

@@ -597,10 +597,13 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         ax._button_press(evt)
         self.dragging = True
         self._org = ax.figobj.get_axes3d_viewparam(ax)
+        self._st_evt = evt
         
     def dodrag(self, evt):
         canvas = self.panel
         ax = canvas.axes_selection()
+        if (abs(self._st_evt.x - evt.x) + abs(self._st_evt.y - evt.y)) < 5: return
+        self._st_evt = evt        
         ax._on_move(evt)
 
     def dragdone(self, evt):
