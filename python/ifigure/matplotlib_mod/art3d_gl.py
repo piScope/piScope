@@ -607,6 +607,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         convert a path on flat surface
         to 3d path
         '''
+        print("calling convert 2dpath to 3dpath")
         x1 = []; y1 = []; z1 =[]; norms = []; idxset = []
         idxbase = 0
         if zdir == 'x':

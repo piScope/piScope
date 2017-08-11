@@ -625,7 +625,6 @@ class Axes3DMod(Axes3D):
 #        v.plot(X, Z)
         #facecolor = kwargs.pop('facecolor', (0,0,1,1))
         X, Y, Z = np.broadcast_arrays(X, Y, Z)
-
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
         polyc._revolve_data = (X, Y, Z)
         return polyc
@@ -678,7 +677,8 @@ class Axes3DMod(Axes3D):
         :class:`~mpl_toolkits.mplot3d.art3d.Poly3DCollection`
         '''
         cz = kwargs.pop('cz', False)
-        cdata = kwargs.pop('cdata', None)        
+        cdata = kwargs.pop('cdata', None)
+        expanddata = kwargs.pop('expanddata', False)
 
         Z = np.atleast_2d(Z)
         # TODO: Support masked arrays
@@ -706,24 +706,36 @@ class Axes3DMod(Axes3D):
 
         idxset = np.array([x + offset for x in base], 'H')
 
-        #idxset = tri.get_masked_triangles()
-
-        verts = np.dstack((X3D[idxset], 
+        if expanddata:
+            verts = np.dstack((X3D[idxset], 
                            Y3D[idxset],
                            Z3D[idxset]))
-        if cz:
-            if cdata is not None:
-                cdata = cdata[r, :][:, c].flatten()[idxset]
-            else:
-                cdata = Z3D[idxset]
-            shade = kwargs.pop('shade', 'flat')
-            if shade != 'linear':
-                cdata = np.mean(cdata, -1)
-            kwargs['facecolordata'] = cdata.real
-            kwargs.pop('facecolor', None) # get rid of this keyword
-
-        kwargs['cz'] = cz
-        o =  self.plot_solid(verts, **kwargs)
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[r, :][:, c].flatten()[idxset]
+                else:
+                    cdata = Z3D[idxset]
+                shade = kwargs.pop('shade', 'flat')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, **kwargs)
+        else:
+            verts = np.vstack((X3D, Y3D, Z3D)).transpose()
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[r, :][:, c].flatten()[idxset]
+                else:
+                    cdata = Z3D
+                shade = kwargs.pop('shade', 'flat')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, idxset, **kwargs)
         o._idxset = (r, c, idxset)   # this is used for phasor
         return o
 
@@ -754,56 +766,108 @@ class Axes3DMod(Axes3D):
         Z3D = z
         idxset = tri.get_masked_triangles()
 
-        verts = np.dstack((X3D[idxset], 
+        if expanddata:
+            verts = np.dstack((X3D[idxset], 
                            Y3D[idxset],
                            Z3D[idxset]))
-        if cz:
-            if cdata is not None:
-                cdata = cdata[idxset]
-            else:
-                cdata = Z3D[idxset]
-            shade = kwargs.pop('shade', 'flat')
-            if shade != 'linear':
-                cdata = np.mean(cdata, -1)
-            kwargs['facecolordata'] = cdata.real
-            kwargs.pop('facecolor', None) # get rid of this keyword
-
-        kwargs['cz'] = cz
-
-        return self.plot_solid(verts, **kwargs)
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[idxset]
+                else:
+                    cdata = Z3D[idxset]
+                shade = kwargs.pop('shade', 'flat')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, **kwargs)
+        else:
+            verts = np.vstack((X3D, Y3D, Z3D)).transpose()
+            if cz:
+                if cdata is not None:
+                    cdata = cdata
+                else:
+                    cdata = Z3D
+                shade = kwargs.pop('shade', 'flat')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, idxset, **kwargs)
+        o._idxset = (r, c, idxset)   # this is used for phasor
+        return o
     
-    def plot_solid(self, v, **kwargs):
+    def plot_solid(self, *args,  **kwargs):
         '''
+        plot_solid(v)  or plot_solid(v, idx)
+ 
         v [element_index, points_in_element, xyz]
+
+        or 
+
+        v [vertex_index, xyz]
+        idx = [element_idx, point_in_element]
 
         kwargs: normals : normal vectors
         '''
         #gl_3dpath = kwargs.get('gl_3dpath', None)
-        
-        norms = kwargs.pop('normals', None)        
+        if len(args) == 1:
+            v = args[0]
+            vv = v.reshape(-1, v.shape[-1])# vertex
+            nv = len(v[:, :, 2].flatten())            
+            idxset = np.arange(nv, dtype=int).reshape(v.shape[0], v.shape[1])
+            nverts = v.shape[0]*v.shape[1]
+            ncounts = v.shape[1]
+            nele = v.shape[0]
+        else:
+            v = args[0]   # vertex
+            vv = v
+            idxset = args[1] # element index (element_idx, point_in_element)
+            nverts = v.shape[0]
+            ncounts = idxset.shape[1]
+            nele = idxset.shape[0]
+            
+        norms = kwargs.pop('normals', None)
+                
+        w = np.zeros((nverts)) # weight
         if norms is None:
-            norms = []
-            for xyz in v:
+            norms = np.zeros((nverts, 3), dtype=np.float32) # weight            
+            for i in idxset:                
+                xyz = vv[i]
                 if xyz.shape[0] > 2:
                     p0, p1, p2 = [xyz[k,:3] for k in range(3)]
                     n1 = np.cross(p0-p1, p1-p2)
                     d = np.sqrt(np.sum(n1**2))
                 else:
                     d = 0
-                if d == 0:
-                    norms.append([0,0,1]*xyz.shape[0])
+                if len(args) == 1:
+                    for ii in i:
+                        if d == 0:
+                            norms[ii, :] = [0,0,1]
+                        else:
+                            norms[ii, :] =  -n1/d
                 else:
-                    norms.extend([-n1/d]*xyz.shape[0])
-            norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
-        nv = len(v[:, :, 2].flatten())
-        kwargs['gl_3dpath'] = [v[:, :, 0].flatten(),
-                               v[:, :, 1].flatten(),
-                               v[:, :, 2].flatten(),
-                               norms,
-                               np.arange(nv).reshape(v.shape[0], v.shape[1])]
+                    for ii in i:
+                        if d == 0:
+                            norms[ii, :] = (norms[ii, :]*w[ii] + [0,0,1])/(w[ii]+1)
+                        else:
+                            n = -n1/d if np.sum(norms[ii,:]*(-n1/d)) >= 0 else n1/d
+                            norms[ii, :] = (norms[ii, :]*w[ii] + n)/(w[ii]+1.)
+                        w[ii] = w[ii] + 1.
+            norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
+        kwargs['gl_3dpath'] = [v[..., 0].flatten(),
+                               v[..., 1].flatten(),
+                               v[..., 2].flatten(),
+                               norms,  idxset]
+
         
         from art3d_gl import Poly3DCollectionGL
-        a = Poly3DCollectionGL(v, **kwargs)
+        if len(args) == 1:
+            a = Poly3DCollectionGL(v, **kwargs)                        
+        else:
+            a = Poly3DCollectionGL(v[idxset[:2,...]], **kwargs)
         Axes3D.add_collection3d(self, a)
         a.do_stencil_test = False
 
@@ -981,7 +1045,7 @@ class Axes3DMod(Axes3D):
             if gl_obj > 0:
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
-                    glcanvas.init): 
+                    glcanvas.init):
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return

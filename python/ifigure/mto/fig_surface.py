@@ -519,7 +519,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
     def handle_axes_change(self, data):
         name =  data['name']
-        if name.startswith('c'):
+        if name.startswith('c') and self.getvar('cz'):
             self.del_artist(delall=True)
             self.delp('loaded_property')
             self.generate_artist()
@@ -691,7 +691,7 @@ class FigRevolve(FigSurface):
         kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
-        
+
         m = getattr(container, self._method)
         self._artists = [m(r, z, **kywds)]
         self._fine_artist = self._artists[0]

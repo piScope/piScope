@@ -33,7 +33,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
 
         p = ArgsParser()
         p.add_var('v', ['iter|nonstr', 'dynamic']) 
-
+        p.add_opt('idxset', None, ['numbers|nonstr', 'dynamic']) 
 
         #p.add_key('cmap', None)
 
@@ -60,6 +60,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cdata', None)
         p.add_key('shade', 'flat')
         p.add_key('array_idx', None)
+
         v, kywds,d, flag = p.process(*args, **kywds)
         if not flag: 
             raise ValueError('Failed when processing argument')
@@ -141,6 +142,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         container=self.get_container()
 
         v = self._eval_v()
+        idxset = self.getvar('idxset')        
         ### use_var should be false if evaluation is
         ### okey.
         if self.getp('use_var'): return
@@ -186,16 +188,21 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
             if self.getvar('cdata') is not None:
                 cdata = self.getvar('cdata')
             else:
-                cdata = v[:,:, -1]
-            if self.getvar('shade') != 'linear':
-                kywds['facecolordata'] = np.mean(cdata, -1).real
+                cdata = v[..., -1]
+            if idxset is None:
+                if self.getvar('shade') != 'linear':
+                    kywds['facecolordata'] = np.mean(cdata, -1).real
+                else:
+                    kywds['facecolordata'] = cdata.real
             else:
-                kywds['facecolordata'] = cdata.real
+                kywds['facecolordata'] = cdata.real     
         else:
             kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
-        self._artists = [container.plot_solid(v[:,:,:3], **kywds)]
+
+        args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
+        self._artists = [container.plot_solid(*args, **kywds)]
 
         for artist in self._artists:
             artist.do_stencil_test = False
@@ -434,7 +441,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
     def _eval_xyz(self):
         v = self._eval_v()
         if v is None: return None, None, None
-        return v[:,:,0], v[:,:,1], v[:,:,2]
+        return v[...,0], v[...,1], v[...,2]
 
     def _eval_v(self):
         if self.getp('use_var'): 

@@ -1316,13 +1316,35 @@ class BookViewerInteractive(object):
         from ifigure.mto.fig_solid import FigSolid
         if args[0].shape[-1] == 4:
            kargs['cz'] = True
-           kargs['cdata'] = args[0][:,:,-1]
-           args = (args[0][:,:,:-1],)
-        if args[0].shape[-1] == 2:
-           zvalue = kargs.pop('zvalue', 0.0)
-           v = np.dstack((args[0], np.zeros((args[0].shape[0], args[0].shape[1], 1))
+           kargs['cdata'] = args[0][...,-1]
+           args = (args[0][...,:-1],)
+        
+        if len(args) == 2:
+             verts = args[0]
+             idxset= args[1]             
+             if verts.shape[-1] == 4:
+                  kargs['cz'] = True
+                  kargs['cdata'] = verts[...,-1]
+                  verts = verts[...,:-1]
+             elif verts.shape[-1] == 2:
+                 zvalue = kargs.pop('zvalue', 0.0)
+                 verts = np.dstack((args[0], np.zeros((args[0].shape[0], 1))
+                               +zvalue))
+             args = (verts, idxset)
+        elif len(args) == 1:
+             verts = args[0]
+             if verts.shape[-1] == 4:
+                  kargs['cz'] = True
+                  kargs['cdata'] = verts[...,-1]
+                  verts = verts[...,:-1]
+             elif args[0].shape[-1] == 2:
+                 zvalue = kargs.pop('zvalue', 0.0)
+                 verts = np.dstack((args[0], np.zeros((args[0].shape[0], args[0].shape[1], 1))
                           +zvalue))
-           args = (v,)
+             args = (verts,)
+        else:
+            assert False, "wrong number of arguments, solid(v, idx) or solid(v)"
+            
         fig_axes = self.get_axes(ipage=None, iaxes=self.isec())
         if not fig_axes.get_3d():
             fig_axes.set_3d(True)
