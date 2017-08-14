@@ -100,13 +100,11 @@ float PCF(sampler2D depths, vec2 size, vec2 uv, float compare){
             vec2 off = vec2(x,y)/size;
 	    pixel = texture2D(depths, uv + off)[0]/255. + texture2D(depths, uv + off)[1];
 	    if (pixel > compare){
-	       return 1;
-               //result += 1;
+               result += 1;
 	    }
         }
     }
-    return 0;
-    //return result/25.0;
+    return result/25.0;
 }
 float SPOT(sampler2D depths, vec2 size, vec2 uv, float compare){
      if (texture2D(depths, uv)[0] > compare){
