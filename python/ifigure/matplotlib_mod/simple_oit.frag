@@ -94,15 +94,19 @@ float VSM(sampler2D depths, sampler2D depths2, vec2 size, vec2 uv, float compare
 
 float PCF(sampler2D depths, vec2 size, vec2 uv, float compare){
     float result = 0.0;
+    float pixel = 0.0;
     for(int x=-2; x<=2; x++){
         for(int y=-2; y<=2; y++){
             vec2 off = vec2(x,y)/size;
-	    if (texture2D(depths, uv + off)[0] > compare){
-               result += 1;
+	    pixel = texture2D(depths, uv + off)[0]/255. + texture2D(depths, uv + off)[1];
+	    if (pixel > compare){
+	       return 1;
+               //result += 1;
 	    }
         }
     }
-    return result/25.0;
+    return 0;
+    //return result/25.0;
 }
 float SPOT(sampler2D depths, vec2 size, vec2 uv, float compare){
      if (texture2D(depths, uv)[0] > compare){
@@ -172,12 +176,12 @@ void main() {
      
      float sh  = 1.0;
      if (uUseShadowMap == 1){
-        float offset = 0.005+0.005*sqrt(1-dot(n,l)*dot(n,l));
+        float offset = 0.00005+0.00005*sqrt(1-dot(n,l)*dot(n,l));
         sh = PCF(uShadowTex, uShadowTexSize,
 	                LightDist.xy, LightDist.z-offset)*1;
         /*
         sh = VSM(uShadowTex, uShadowTex2, uShadowTexSize,
-	                 LightDist.xy, LightDist.z-0.005);
+	                 LightDist.xy, LightDist.z-0.0005);
         */
      }
      vec4 vColor = vColor0;
@@ -209,9 +213,11 @@ void main() {
 
      vec4 cAmbient = vColor * uAmbient;
 
-     vec4 cDiff = vColor * light_color * vec4(uLightPow*cT,
-                       uLightPow*cT, uLightPow*cT, 1);
-     //vec4 cDiff = vColor * light_color * vec4(cT, cT, cT, 1);
+     //vec4 cDiff = vColor * light_color * vec4(uLightPow*cT,
+     //                  uLightPow*cT, uLightPow*cT, 1);
+     vec4 cDiff = vColor * vec4(uLightPow*cT,
+                                uLightPow*cT,
+				uLightPow*cT, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
      gl_FragData[0] = cAmbient + cDiff + cSpec;

@@ -37,8 +37,10 @@ void main(){
     float dx = dFdx(gl_FragCoord.z);
     float dy = dFdy(gl_FragCoord.z);
     
-    moment2 += 0.25*(dx*dx+dy*dy) ;    
-    gl_FragData[0] = vec4(moment1, moment1,
+    moment2 += 0.25*(dx*dx+dy*dy) ;
+    moment1 = moment1*256*256;
+    gl_FragData[0] = vec4((moment1 - 256*floor(moment1/256.))/255.,
+                          floor(moment1/256)/255.,
                           moment1, moment1);
     gl_FragData[1] = vec4(gl_FragCoord.x, 1.0,
                           gl_FragCoord.z, moment2);

@@ -274,6 +274,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._use_shadow_map = shadowmap
         #print 'light power', self.shader, light
         
+    def get_uniforms(self):
+        #print self.shader.uniform_loc.keys()
+        a = (GLfloat * 4)()
+        b = (GLfloat * 1)()
+        c= (GLfloat * 1)()
+        glGetUniformfv(self.shader, self.shader.uniform_loc['uAmbient'], a)
+        glGetUniformfv(self.shader, self.shader.uniform_loc['uLightPow'], b)
+        glGetUniformfv(self.shader, self.shader.uniform_loc['uLightPowSpec'], c)
+        return list(a), list(b), list(c)        
     def set_lighting_off(self):
         #print('set_lighting_off')
         a = (GLfloat * 4)()
@@ -340,14 +349,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
                      w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
-        '''
+
         tex3 = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, tex3)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
                      w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
-        '''
+        
         tex2 = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, tex2)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -377,6 +386,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return otexx
         otex  = gen_otex()
         otex2 = gen_otex()
+        otex3 = gen_otex()        
 
         glBindTexture(GL_TEXTURE_2D, 0)
 
@@ -408,7 +418,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.bufs.append(buf)
         #self.stcs.append(buf)
         stc = None
-        return frame, [buf, dbuf], stc, [tex, tex2, dtex, otex, otex2,] #tex3]
+        return frame, [buf, dbuf], stc, [tex, tex2, dtex, otex, otex2, tex3]
  
     def get_frame_4_artist(self, a):
         c = self.get_container(a)
@@ -462,6 +472,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
                                GL_COLOR_ATTACHMENT1, 
                                GL_TEXTURE_2D, 0, 0)
+#        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+#                               GL_TEXTURE_2D, 0, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D, texs[0], 0)
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
@@ -525,7 +537,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
-
         #if self._alpha_blend:
         #    glEnable(GL_BLEND);
         #    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -663,7 +674,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                         id_dict = None, ignore_alpha = False):
 
         if id_dict is None: id_dict = {}
-        need_oit = False
         current_id = 1.0
         if do_clear is not None:
           #glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
@@ -687,7 +697,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                        current_id = current_id + 1                       
                        continue
                 else:
-                    need_oit = True
                     if not draw_non_solid:
                        current_id = current_id + 1
                        continue
@@ -721,7 +730,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 id_dict[long(current_id)] = id(a)
                 current_id = current_id + 1
         glFinish()                
-        return id_dict, need_oit
+        return id_dict
 
 #    def make_shadow_texture(self, w, h, data, data2 = None):
     def make_shadow_texture(self, w, h, data2 = None):
@@ -734,11 +743,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE)
         
 
-        #print('reading shadow data')
-        glReadBuffer(GL_COLOR_ATTACHMENT0)                
+        print('reading shadow data')
+        glReadBuffer(GL_COLOR_ATTACHMENT0)        
+        data = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT, GL_FLOAT)
         #data = glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE)
-        #data = (np.fromstring(data, np.uint8).reshape(h, w, -1))
-        #self.shadowc =  data.copy()
+        data = (np.fromstring(data, np.float32).reshape(h, w, -1))       
+        self.shadow =  data
         glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
                                      0, 0, w, h, 0)
         glActiveTexture(GL_TEXTURE0)                        
@@ -801,11 +811,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glPushMatrix()
         
         self.set_uniform(glUniform1i,  'uisSolid', 1)
+        
         if self._use_shadow_map:
            shadow_params = self.use_depthmap_mode(frame, buf, texs, w, h)
            self.do_draw_artists(tag,
-                                do_clear = (0,0,0,0),
-                                do_clear_depth = True,
                                 draw_non_solid = False)
            glFinish()
            shadow_tex = self.make_shadow_texture(w, h, None)
@@ -835,55 +844,57 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glEnable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
-        id_dict, need_oit = self.do_draw_artists(tag, update_id = True,
+        id_dict = self.do_draw_artists(tag, update_id = True,
                                        do_clear = (0,0,0,0),
                                        do_clear_depth = True,
-                                       ignore_alpha = True)
-        if need_oit:
-           glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
-           self.do_draw_artists(tag, do_clear = (0,0,0,0),
+                                       ignore_alpha = True)        
+        glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
+        self.do_draw_artists(tag, do_clear = (0,0,0,0),
                              draw_non_solid = False,
                              do_clear_depth = True)        
-           self.set_uniform(glUniform1i,  'uisSolid', 0)
-           self.set_uniform(glUniform1i, 'uUseShadowMap', 0)        
-           '''
-           self.set_uniform(glUniform1i,  'uisSolid', 1)
-           glEnable(GL_DEPTH_TEST)
-           glDepthMask(GL_TRUE)
-           #draw solid only
-           id_dict = self.do_draw_artists(tag, do_clear = (0,0,0,0),
-                                          update_id = True,
-                                          draw_non_solid = False,
-                                          do_clear_depth = True)        
-           #draw transparent
-           glBindTexture(GL_TEXTURE_2D, texs[5])
-           glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-           glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-           #glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE)
-           glReadBuffer(GL_COLOR_ATTACHMENT0)
-           #glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
-           #                             0, 0, w, h, 0)
-           glReadBuffer(GL_NONE)        
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, 0, 0)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, texs[5], 0)
-           id_dict = self.do_draw_artists(tag, update_id = True,
-                                          id_dict = id_dict,
-                                          #do_clear_depth = True,
-                                          draw_solid = False,
-                                          ignore_alpha = True)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, 0, 0)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, texs[0], 0)
-           self.set_uniform(glUniform1i,  'uisSolid', 0)
-           '''
-           ### to here
+        self.set_uniform(glUniform1i,  'uisSolid', 0)
+        self.set_uniform(glUniform1i, 'uUseShadowMap', 0)        
+        '''
+        self.set_uniform(glUniform1i,  'uisSolid', 1)
+        glEnable(GL_DEPTH_TEST)
+        glDepthMask(GL_TRUE)
+        #draw solid only
+        id_dict = self.do_draw_artists(tag, do_clear = (0,0,0,0),
+                                       update_id = True,
+                                       draw_non_solid = False,
+                                       do_clear_depth = True)        
+        #draw transparent
+        glBindTexture(GL_TEXTURE_2D, texs[5])
+        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        #glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE)
+        glReadBuffer(GL_COLOR_ATTACHMENT0)
+        #glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
+        #                             0, 0, w, h, 0)
+        glReadBuffer(GL_NONE)        
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, texs[5], 0)
+        id_dict = self.do_draw_artists(tag, update_id = True,
+                                       id_dict = id_dict,
+                                       #do_clear_depth = True,
+                                       draw_solid = False,
+                                       ignore_alpha = True)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, texs[0], 0)
+        self.set_uniform(glUniform1i,  'uisSolid', 0)
+        '''
+        ### to here
+
+        draw_oit = True
+        if draw_oit:
            ##
            ## draw transparent....
            ##
@@ -1369,10 +1380,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
-
-        # I don't remember why I needed this...
-        #if not lighting and self._p_shader is self.shader:
-        #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
+        
+        if not lighting and self._p_shader is self.shader:
+            ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
         if facecolor is not None: 
            glEnable(GL_POLYGON_SMOOTH)
            glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
@@ -1394,7 +1404,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)           
            vbos['fc'].unbind()
            
-        if linewidth[0] > 0.0 and not self._shadow:           
+        if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
             ''' 
             if linewidth[0] < 1.5:
@@ -1429,12 +1439,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             glDepthFunc(GL_LESS)
 
-        #if not lighting and self._p_shader is self.shader:            
-        #    self.set_lighting(ambient = ambient,
-        #                      light = light, 
-        #                      specular = specular,
-        #                      shadowmap = shadowmap,
-        #                      clip_limit1=clip1, clip_limit2=clip2)
+        if not lighting and self._p_shader is self.shader:            
+            self.set_lighting(ambient = ambient,
+                              light = light, 
+                              specular = specular,
+                              shadowmap = shadowmap,
+                              clip_limit1=clip1, clip_limit2=clip2)
         #for f, c in zip(first, counts): 
         #   glDrawArrays(GL_LINE_STRIP, f, c)
         glDisableClientState(GL_VERTEX_ARRAY)
@@ -1587,10 +1597,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
         
-        #if not lighting and self._p_shader is self.shader:
-        #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
-
-        if facecolor is not None:
+        if not lighting and self._p_shader is self.shader:
+            ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
+        if facecolor is not None: 
            glEnable(GL_POLYGON_SMOOTH)
            glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
            vbos['fc'].bind()
@@ -1607,8 +1616,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                   if self._wireframe == 1:
                       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)           
            vbos['fc'].unbind()
-
-        if linewidth[0] > 0.0 and not self._shadow:
+           
+        if linewidth[0] > 0.0:
             glLineWidth(linewidth[0])
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
@@ -1628,12 +1637,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             glDepthFunc(GL_LESS)
 
-        #if not lighting and self._p_shader is self.shader:            
-        #    self.set_lighting(ambient = ambient,
-        #                      light = light, 
-        #                      specular = specular,
-        #                      shadowmap = shadowmap,
-        #                      clip_limit1=clip1, clip_limit2=clip2)
+        if not lighting and self._p_shader is self.shader:            
+            self.set_lighting(ambient = ambient,
+                              light = light, 
+                              specular = specular,
+                              shadowmap = shadowmap,
+                              clip_limit1=clip1, clip_limit2=clip2)
 
         vbos['v'].unbind()
         vbos['n'].unbind()
