@@ -422,4 +422,4 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def gui_repaint(self, *args, **kwargs):
         super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)        
-        self.Refresh()
+        wx.CallAfter(self.Refresh)
