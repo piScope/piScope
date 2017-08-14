@@ -100,7 +100,14 @@ class FigSurfacePhasor(FigSurface):
 #           if len(z.shape) == 2:
 #              z =  np.mean(z, -1)
         r, c, idxset =  self._artists[0]._idxset
-        self._artists[0]._gl_facecolordata = z[r,:][:,c].flatten()[idxset]
+        if r is not None:
+            # surface plot
+            fc = z[r,:][:,c].flatten()[idxset]
+        else:
+            # trisurf plot
+            fc = z.flatten()
+        if idxset is not None: fc = fc[idxset]
+        self._artists[0]._gl_facecolordata = fc
         self._artists[0]._update_fc = True
 
         

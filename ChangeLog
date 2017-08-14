@@ -1,6 +1,20 @@
-	* 08/08/2017
+	* 08/08-/2017
 
 	** Solid/Revolve/Surface
+
+	The use of index array in OpenGL driver is fixed which reduces
+	the number of vertices to be transfered to GPU. solid command
+	accept,,,
+
+   	1) solid(vertices)
+	2) solid(vertices, index)
+
+	1) is old version. vertices are already expanded.
+	2) is equivalent to solid(vertices[index]), but internally
+	it uses the index array pointer, so that CPU does not send
+	duplicate vertex information to GPU.
+
+	
 	** API for custom figure menu palette.
 
 	Canvas::InstallPalette2D(mode, palette): define palette for 2D mode

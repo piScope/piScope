@@ -58,7 +58,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('normals', None)
         p.add_key('cz', False, 'bool')
         p.add_key('cdata', None)
-        p.add_key('shade', 'flat')
+        p.add_key('shade', 'linear')
         p.add_key('array_idx', None)
 
         v, kywds,d, flag = p.process(*args, **kywds)

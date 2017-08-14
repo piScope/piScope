@@ -722,21 +722,20 @@ class Axes3DMod(Axes3D):
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, **kwargs)
+            o._idxset = (r, c, idxset)   # this is used for phasor            
         else:
             verts = np.vstack((X3D, Y3D, Z3D)).transpose()
             if cz:
                 if cdata is not None:
-                    cdata = cdata[r, :][:, c].flatten()[idxset]
+                    cdata = cdata[r, :][:, c].flatten()
                 else:
                     cdata = Z3D
                 shade = kwargs.pop('shade', 'flat')
-                if shade != 'linear':
-                    cdata = np.mean(cdata, -1)
                 kwargs['facecolordata'] = cdata.real
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, idxset, **kwargs)
-        o._idxset = (r, c, idxset)   # this is used for phasor
+            o._idxset = (r, c, None)   # this is used for phasor
         return o
 
     def plot_trisurf(self, *args, **kwargs):
@@ -751,7 +750,9 @@ class Axes3DMod(Axes3D):
         from matplotlib.tri.triangulation import Triangulation
 
         cz = kwargs.pop('cz', False)
-        cdata = kwargs.pop('cdata', None)        
+        cdata = kwargs.pop('cdata', None)
+        expanddata = kwargs.pop('expanddata', False)
+        
         tri, args, kwargs = Triangulation.get_from_args_and_kwargs(*args, **kwargs)
         if 'Z' in kwargs:
             z = np.asarray(kwargs.pop('Z'))
@@ -775,13 +776,14 @@ class Axes3DMod(Axes3D):
                     cdata = cdata[idxset]
                 else:
                     cdata = Z3D[idxset]
-                shade = kwargs.pop('shade', 'flat')
+                shade = kwargs.pop('shade', 'linear')
                 if shade != 'linear':
                     cdata = np.mean(cdata, -1)
                 kwargs['facecolordata'] = cdata.real
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, **kwargs)
+            o._idxset = (None, None, idxset)   # this is used for phasor
         else:
             verts = np.vstack((X3D, Y3D, Z3D)).transpose()
             if cz:
@@ -789,14 +791,11 @@ class Axes3DMod(Axes3D):
                     cdata = cdata
                 else:
                     cdata = Z3D
-                shade = kwargs.pop('shade', 'flat')
-                if shade != 'linear':
-                    cdata = np.mean(cdata, -1)
                 kwargs['facecolordata'] = cdata.real
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, idxset, **kwargs)
-        o._idxset = (r, c, idxset)   # this is used for phasor
+            o._idxset = (None, None, None)   # this is used for phasor            
         return o
     
     def plot_solid(self, *args,  **kwargs):

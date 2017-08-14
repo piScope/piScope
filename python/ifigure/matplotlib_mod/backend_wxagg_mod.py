@@ -421,5 +421,9 @@ class FigureCanvasWxAggMod(CanvasAgg):
         return super(FigureCanvasWxAggMod, self)._onMiddleButtonDown(evt)
 
     def gui_repaint(self, *args, **kwargs):
-        super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)        
-        wx.CallAfter(self.Refresh)
+        super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)
+        if hasattr(self.GetTopLevelParent(), "_playerbtn"):
+            bp = self.GetTopLevelParent()._playerbtn
+            if bp is not None: bp.Refresh()
+
+        

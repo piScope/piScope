@@ -30,6 +30,7 @@ class VideoplayerBar(bp.ButtonPanel):
         self.p0  = self.make_button_group(self, btasks0)
         self.btasks0 = btasks0[:]
         self.refresh_button()
+        self.Fit()
         
     def make_button_group(self, parent, btasks):
       
@@ -97,7 +98,7 @@ class VideoplayerBar(bp.ButtonPanel):
            self.AddSeparator()
     def Clear(self):
         self.allbinfo = []
-        self.Freeze()        
+        self.Freeze()                
         bp.ButtonPanel.Clear(self)
         
     def set_toggle(self, btask):
@@ -117,9 +118,11 @@ class VideoplayerBar(bp.ButtonPanel):
                 p.SetBitmap(p.bitmap1)
                 
     def refresh_button(self):
+
         self.Clear()        
         for b in self.p0: self.AddButtonOrS(b)
-        self.DoLayout()        
+        self.DoLayout()
+
 #    def OnKeyUp(self, evt):
 #       if evt.GetKeyCode() == wx.WXK_SHIFT:
 #           if self.mode == 'zoom': self.SetZoomUpDown('Up')
@@ -137,7 +140,6 @@ class VideoplayerBar(bp.ButtonPanel):
             self.set_toggle(btask)
             self.set_bitmap2(btask)
             self.refresh_button()
-            
         elif btask == 'play_rev':
             v.play_rev()
             self.set_toggle(btask)
@@ -162,7 +164,7 @@ class VideoplayerBar(bp.ButtonPanel):
         self.refresh_button()
         
     def place_right_bottom(self):
-        self.Fit()
+        #self.Fit()
         psize = self.GetSize()
         csize = self.GetParent().GetSize()
         self.SetPosition((csize[0]-psize[0]-4,
@@ -201,10 +203,11 @@ class VideoplayerButtons(MiniFrameWithWindowList):
 
 
 def add_player_btn(parent):
-    canvas = parent.canvas
+    canvas = parent.canvas.canvas
     playerbtn = VideoplayerBar(canvas, wx.ID_ANY, container = parent)
     playerbtn.Show()
     playerbtn.place_right_bottom()
+    
     return playerbtn
 
 
