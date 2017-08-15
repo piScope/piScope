@@ -1792,15 +1792,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
             counts = vbos['counts']
             if len(facecolor) == 0:
                 facecolor = np.array([[1,1,1, 0]])
-            if  facecolor.ndim == 2:
+            if  facecolor.ndim == 3:
+                # non index array/linear
                 col = [facecolor]
-            elif len(facecolor) == len(paths[0]):
-#                col = [list(f)*c  for f, c in  zip(facecolor, counts)]
-                col = facecolor#[idxset,:]
+            elif  facecolor.ndim == 2 and len(paths[0]) == len(facecolor):
+                # index array/linear
+                col = [facecolor]
             elif len(facecolor) == len(counts):
+                # non index array/flat               
                 col = [list(f)*c  for f, c in  zip(facecolor, counts)]
             else:
-                col = [facecolor]*np.sum(counts)
+                col = [facecolor]*np.sum(counts) # single color
             
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
