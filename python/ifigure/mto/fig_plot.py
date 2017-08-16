@@ -246,6 +246,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                                   args.append(s)
                                   self.set_artist(container.plot(*args,
                                                                  **kywds))
+                                  if axes.get_3d():                                  
+                                      self.__class__ = FigPlotGL
 #                             self._artists[0].set_lod(True)
                          else:
                              cax = self.get_caxisparam()
@@ -1023,3 +1025,7 @@ class TimeTrace(FigPlot):
         return FigPlot.save_data2(self, data)
     def load_data2(self, data):
         return FigPlot.load_data2(self, data)
+
+from .gl_compound import GLCompound    
+class FigPlotGL(GLCompound, FigPlot):
+    pass

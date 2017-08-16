@@ -12,6 +12,4 @@ class GLCompound(object):
     def setSelectedIndex(self, ll):
         self._artists[0]._gl_hit_array_id = ll
         
-    def setSelectable(self, value):
-        self._pickable = value
     

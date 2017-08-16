@@ -115,7 +115,6 @@ class FigObj(TreeDict, MetadataHolder):
         obj._cursor_data= [tuple(),tuple(),tuple()]
         obj._eval_fifo_length = 100
         obj._eval_mode = 'replace'
-        obj._pickable = True
         return obj
 
 #    def __repr__(self):
@@ -469,11 +468,11 @@ class FigObj(TreeDict, MetadataHolder):
            return self._artists[idx]
         return self._artists
 
+    def set_pickmask(self, value):
+        self._pickmask = value
+        
     def get_artists_for_pick(self):
-        if self._pickable:
-           return self._artists
-        else:
-           return []            
+        return self._artists
 
     def get_first_artist(self):
         if len(self._artists) == 0: return None
