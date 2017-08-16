@@ -2160,7 +2160,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                    figobj=item().figobj
 #                  if figobj is not None: figobj.highlight_artist(False)
                    if (self._pevent.artist == item() and
-                       figobj._picker_a_mode==0):
+                       figobj._picker_a_mode==0 and not figobj.isCompound()):
                         already_selected=True
             if already_selected and not double_click:
                  dprint2('already_select')
@@ -2170,13 +2170,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                  else:
                     self.unselect_all()
             else:
-                 if event.guiEvent.ShiftDown():
-#                 if event.key == 'shift':
-#                    dprint1('adding')
-                    self.add_selection(self._pevent.artist)
+                 if not event.guiEvent.ShiftDown():
+                     self.unselect_all()
+                 figobj = self._pevent.artist.figobj
+                 if figobj.isSelected():
+                     self.add_selection(self._pevent.artist)
                  else:
-                    self.unselect_all()
-                    self.add_selection(self._pevent.artist)
+                     self.unselect(self._pevent.artist)
+                        
             td = self._pevent.artist.figobj
             if td is not None:
                ifigure.events.SendSelectionEvent(td, self, self.selection)
@@ -3932,3 +3933,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        f.Show()
 
 
+   def install_navibar_palette(self, name, tasks,  mode = '2D'):
+        self.toolbar.install_palette(name, tasks,  mode)
+
+   def use_navibar_palette(self, name, mode = '2D'):
+        self.toolbar.use_palette(name, mode)
+
+   def use_navibar_std_palette(self):
+        self.toolbar.use_std_palette()
+        

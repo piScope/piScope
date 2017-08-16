@@ -113,7 +113,10 @@ class ArtGL(object):
                                          id(self), radius = 3)
 
         if check:
-            self._gl_hit_array_id = [array_id]
+            if int(array_id) in self._gl_hit_array_id:
+                self._gl_hit_array_id.remove(int(array_id))
+            else:
+                self._gl_hit_array_id.append(int(array_id))
             return True, {'child_artist':self} 
         else:
             self._gl_hit_array_id = []

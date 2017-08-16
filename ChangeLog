@@ -17,17 +17,21 @@
 	
 	** API for custom figure menu palette.
 
-	Canvas::InstallPalette2D(mode, palette): define palette for 2D mode
-	Canvas::InstallPalette3D(mode, palette): define palette for 3D mode
+	Canvas::install_navibar_palette(name, tasks,  mode = '2D'):
+	Canvas::use_navibar_palette(palette_name, mode = '2D')
+	Canvas::use_navibar_std_palette()
 
-	mode : name of palette
-	palette : definition of palette
+	** GLCompound
 
-	FigAxes::useFigurePalette2D(mode):  declare to use a palette
-	FigAxes::useFigurePaletteStd2D(mode):  use default palette
-	FigAxes::useFigurePalette3D(mode):  declare to use a palette
-	FigAxes::useFigurePaletteStd3D(mode):  use default palette
+	GLCompound supports a GL artists which has multiple pickalbe
+	objects. This allows for picking a different part of 3D object
+	without using many FigObj.
 
+	GLCompound::isCompound
+	GLCompound::getSelectedIndex :: get which index is selected
+	GLCompound::setSelectedIndex :: set which index is selected
+	GLCompound::isSelected       :: called from canvas 
+        GLCompound::setSelectable    :: set if artist is pickable
 	
 	* 08/04-06/2017
 

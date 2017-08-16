@@ -115,6 +115,7 @@ class FigObj(TreeDict, MetadataHolder):
         obj._cursor_data= [tuple(),tuple(),tuple()]
         obj._eval_fifo_length = 100
         obj._eval_mode = 'replace'
+        obj._pickable = True
         return obj
 
 #    def __repr__(self):
@@ -242,6 +243,20 @@ class FigObj(TreeDict, MetadataHolder):
     @classmethod  
     def can_have_child(self, child=None):
         return isinstance(child, FigObj)
+    
+    @classmethod 
+    def isCompound(cls):
+        '''
+        Compount FigObj is a type of FigObj which has a mulltiple
+        pickable objects. This is introduced to support GL object
+        using array_idx. See FigCompound
+        '''
+        return False
+    def isSelected(self):
+        '''
+        Compound FigObj could return False
+        '''
+        return True
 
     def var2p(self, list):
         '''
@@ -455,7 +470,10 @@ class FigObj(TreeDict, MetadataHolder):
         return self._artists
 
     def get_artists_for_pick(self):
-        return self._artists        
+        if self._pickable:
+           return self._artists
+        else:
+           return []            
 
     def get_first_artist(self):
         if len(self._artists) == 0: return None

@@ -19,7 +19,8 @@ dprint1, dprint2, dprint3 = debug.init_dprints('FigSolid')
 
 #from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
+from .gl_compound import GLCompound
+class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
     def __new__(cls, *args, **kywds):
         def set_hidden_vars(obj):
             obj._objs=[]  ## for debug....     
