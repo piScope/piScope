@@ -718,7 +718,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     m = getattr(self, 'draw_'+ data[0])
                     m(xxx[k], *data[1], **data[2])
                 self.vbo[aa][a] = xxx
-                id_dict[long(current_id)] = id(a)
+                id_dict[long(current_id)] = weakref.ref(a)
                 current_id = current_id + 1
         glFinish()                
         return id_dict, need_oit

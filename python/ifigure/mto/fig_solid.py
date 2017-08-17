@@ -204,7 +204,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
 
         args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
         self._artists = [container.plot_solid(*args, **kywds)]
-
+        self.set_pickmask(self._pickmask)
         for artist in self._artists:
             artist.do_stencil_test = False
             artist.figobj=self

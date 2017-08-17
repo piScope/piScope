@@ -138,20 +138,12 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
 
-        self._gl_hittest_exclude = []
         self._gl_hl_color = [0,0,0]
 
     def gl_hl_setcolor(self, value):
         self._gl_hl_color = value
         
-    def gl_hittest_exclude(self, id):
-        if not id in self._gl_hittest_exclude:
-            self._gl_hittest_exclude.append(id)
-    def gl_hittest_include(self, id):
-        if id in self._gl_hittest_exclude:
-            self._gl_hittest_exclude.remove(id)        
-            
-    def gl_hit_test(self, x, y, id, radius = 3):
+    def gl_hit_test(self, x, y, artist, radius = 3):
         #
         #  logic is
         #     if artist_id is found within raidus from (x, y)
@@ -176,16 +168,15 @@ class Axes3DMod(Axes3D):
                         x-x0-radius:x-x0+radius]).flatten()        
         if len(dd) == 0: return False, None
 
-        idlist = [id_dict[x] if x in id_dict else -1
-                  for x in d]
-        mask = [not x in self._gl_hittest_exclude
-                for x in idlist]
+        mask = np.array([id_dict[x]()._gl_pickable if x in id_dict else False
+                         for x in d])
+        if not any(mask): return False, None
+
         dist = np.min(dd[mask])
 
         for num, check, check2 in zip(d, dd, dd_extra):
             if num in id_dict:
-                if id in self._gl_hittest_exclude: continue
-                if id_dict[num] == id and check == dist:
+                if id_dict[num]() == artist and check == dist:
                    return True, check2
 
         return False, None
@@ -211,7 +202,7 @@ class Axes3DMod(Axes3D):
             self._gl_mask_artist.remove()
         self._gl_mask_artist = None
         
-    def set_gl_hl_mask(self, id, hit_id = None,
+    def set_gl_hl_mask(self, artist, hit_id = None,
                        cmask = 0.0, amask = 0.65):
         #
         #  logic is
@@ -231,7 +222,7 @@ class Axes3DMod(Axes3D):
               
         arr = self._gl_mask_artist.get_array()
         for k in id_dict.keys():
-            if (id_dict[k] == id):
+            if (id_dict[k]() == artist):
                if hit_id is not None:
                    if len(hit_id) > 0:
                        m = np.logical_and(im == k, imd == hit_id[0])

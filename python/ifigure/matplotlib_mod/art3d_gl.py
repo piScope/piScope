@@ -104,13 +104,10 @@ class ArtGL(object):
         elif self.figure is not None:
             c = self.figure
         if not self._gl_pickable:
-            c.gl_hittest_exclude(id(self))
             return False, {}
-        else:
-            c.gl_hittest_include(id(self))
         
         check, array_id =  c.gl_hit_test(evt.x, evt.y,
-                                         id(self), radius = 3)
+                                         self, radius = 3)
 
         if check:
             if int(array_id) in self._gl_hit_array_id:
@@ -147,10 +144,10 @@ class ArtGL(object):
             c = self.figure
         if c is None: return
         if self._gl_hl_use_array_idx:
-            c.set_gl_hl_mask(id(self),
+            c.set_gl_hl_mask(self,
                              hit_id = self._gl_hit_array_id)
         else:
-            c.set_gl_hl_mask(id(self))
+            c.set_gl_hl_mask(self)
             
         self._gl_hl = True
         return []
