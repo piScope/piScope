@@ -599,6 +599,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._update_ec = True
         self._update_fc = True
         self._update_v = True
+        self._update_i = True
         Poly3DCollection.__init__(self, *args, **kargs)
         
 
@@ -771,6 +772,10 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
         Poly3DCollection.update_scalarmappable(self)
 
+    def update_idxset(self, idxset):
+        self._gl_3dpath[4] = idxset
+        self._update_i = True
+    
     def draw(self, renderer):
         v = None
         if isSupportedRenderer(renderer):
@@ -799,6 +804,9 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                if self._update_ec:
                    d[0]['ec'].need_update = True
                    self._gl_edgecolor = self.to_rgba(cz)
+               if self._update_i:
+                   d[0]['i'].need_update = True
+                   
            if self._update_ec or self._update_fc:
                self.update_scalarmappable()
 
@@ -806,7 +814,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
            glcanvas.frame_request(self, trans)
 #           renderer.do_stencil_test = self.do_stencil_test
            glcanvas.start_draw_request(self)
-           if self._gl_3dpath is not None:
+           if (self._gl_3dpath is not None and 
+               len(self._gl_3dpath[4] > 0)):
                 renderer.gl_draw_path_collection_e(
                    gc, None, self._gl_3dpath,
                    self.get_transforms(), self._gl_offset, None,

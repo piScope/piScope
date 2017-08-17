@@ -14,14 +14,13 @@
 	it uses the index array pointer, so that CPU does not send
 	duplicate vertex information to GPU.
 
-	
 	** API for custom figure menu palette.
 
 	Canvas::install_navibar_palette(name, tasks,  mode = '2D'):
 	Canvas::use_navibar_palette(palette_name, mode = '2D')
 	Canvas::use_navibar_std_palette()
 
-	** GLCompound
+	** GLCompound to support GL artist with multiple elements
 
 	GLCompound supports a GL artists which has multiple pickalbe
 	objects. This allows for picking a different part of 3D object
@@ -32,6 +31,7 @@
 	GLCompound::setSelectedIndex :: set which index is selected
 	GLCompound::isSelected       :: called from canvas 
         GLCompound::setSelectable    :: set if artist is pickable
+	GLCompound::hide_component   :: hide a part of 3D object using array_idx
 	
 	* 08/04-06/2017
 

@@ -1740,6 +1740,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # make indexset when it is needed
         # index set is changed to uint32 instead of uint16 (2016 06 28)
         if ((vbos['v'] is None or vbos['v'].need_update) or
+            (vbos['i'] is None or vbos['i'].need_update) or
             ((vbos['fc'] is None or vbos['fc'].need_update) and
              facecolor is not None) or 
             (vbos['ec'] is None or vbos['ec'].need_update)):           
@@ -1787,6 +1788,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if vbos['n'] is not None: vbos['n'].need_update = False
             if vbos['vertex_id'] is not None:
                 vbos['vertex_id'].need_update = True
+            vbos['i'].need_update = False
+        if vbos['i'].need_update:
+            vbos['i'].set_array(idxset)
+            vbos['i'].need_update = False            
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
             facecolor is not None):
             counts = vbos['counts']
@@ -1830,17 +1835,24 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['vertex_id'] is None  or vbos['vertex_id'].need_update:
             counts = vbos['counts']
             l = len(counts)
+            nverts = len(paths[0])            
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()
-                if array_idx.shape[0] != l:
-                   assert False, "array_idx length should be the same as the number of elements"
+                if array_idx.shape[0] == l:
+                    array_idx = [array_idx]*counts[0]
+                elif array_idx.shape[0] == nverts:
+                    pass
+                else:
+                   assert False, "array_idx length should be the same as the number of vertex"
             else:
-                array_idx = np.arange(l)
-            vertex_id = np.array([array_idx] * counts[0],
+                # each element has a different number
+                array_idx = [np.arange(l)]*counts[0]
+            vertex_id = np.array(array_idx,
                                  dtype=np.float32,
                                  copy = False).transpose().flatten()
             vbos['vertex_id'] = get_vbo(vertex_id,
                                         usage='GL_STATIC_DRAW')
+            vbos['vertex_id'].need_update = False                        
         return vbos
           
     def has_vbo_data(self, artist):
