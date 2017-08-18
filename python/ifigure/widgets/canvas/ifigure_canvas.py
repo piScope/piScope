@@ -1949,7 +1949,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       hit = False
 
 #      hit, extra = cpicker.figure_picker(self._figure, event)
-      if not (self.toolbar.mode in ('zoom', 'pan')) and event.button == 1:
+      if (not (self.toolbar.mode in ('zoom', 'pan', '3dzoom'))
+          and event.button == 1):
          self.run_picker(event)
       elif event.button == 2:
          self.toolbar.ExitInsertMode()

@@ -914,10 +914,10 @@ class navibar(ButtonPanel):
              self._extra_buttons[btask](evt)                     
              for b in btnls:
                  if b == btnl:
-                     b.SetToggled(False)
+                     b.SetToggled(True)
                      b.SetBitmap(b.bitmap2)
                  else:
-                     b.SetToggled(True)                             
+                     b.SetToggled(False)                             
                      b.SetBitmap(b.bitmap1)
 
 
