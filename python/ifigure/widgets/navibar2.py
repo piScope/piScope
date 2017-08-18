@@ -175,7 +175,9 @@ class navibar(ButtonPanel):
         self.p1_choice = ['std2d', 'std3d']
         self.p1_std_tasks = [btasks1_std2d[:],
                              btasks1_std3d[:],]
-        self._extra_buttons = {}  # store callbacks
+        
+        self._extra_buttons = {}          # store callbacks
+        self._extra_buttons_refresh = {}  # store button refresh
                
         self.p0  = self.make_button_group(self, btasks0)
         self.p2  = self.make_button_group(self, btasks2)
@@ -215,7 +217,7 @@ class navibar(ButtonPanel):
         else:
             return self.p1_btns[self.p1_choice[0]]
 
-    def install_palette(self, name, tasks,  mode = '2D'):
+    def install_palette(self, name, tasks,  mode = '2D', refresh = None):
         '''
         tasks shou
 
@@ -228,7 +230,9 @@ class navibar(ButtonPanel):
                                                      btasks)
 
         for t in tasks:
-            self._extra_buttons[t[0]] = t[-1]                    
+            self._extra_buttons[t[0]] = t[-1]
+        if refresh is not None:
+            self._extra_buttons_refresh[name] = refresh
 
         evt = FakeEvent(); evt.obj = self
         
@@ -255,6 +259,12 @@ class navibar(ButtonPanel):
     def use_std_palette(self):
         self.p1_choice = ['std2d', 'std3d']
         self.SetPMode()
+
+    def refresh_palette(self):
+        for name in self.p1_choice:
+           if name in self._extra_buttons_refresh:
+               self._extra_buttons_refresh[name](self,
+                                                 self.p1_btns[name])
         
     def add_extra_group1_button(self, idx, data, 
                                 use_in_2d_menu = True, 

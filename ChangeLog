@@ -14,11 +14,12 @@
 	it uses the index array pointer, so that CPU does not send
 	duplicate vertex information to GPU.
 
-	** API for custom figure menu palette.
+	** API for custom figure menu palette is added
 
-	Canvas::install_navibar_palette(name, tasks,  mode = '2D'):
-	Canvas::use_navibar_palette(palette_name, mode = '2D')
-	Canvas::use_navibar_std_palette()
+	BookViewerFrame::install_toolbar_palette(name, tasks,  mode = '2D'):
+	BookViewerFrame::use_toolbar_palette(palette_name, mode = '2D')
+	BookViewerFrame::use_toolbar_std_palette()
+	BookViewerFrame::refresh_toolbar_buttons()
 
 	** GLCompound to support GL artist with multiple elements
 

@@ -1620,7 +1620,18 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
 #    def close_figurebook(self):
 #        self.onWindowClose()
- 
+    def install_toolbar_palette(self, name, tasks,  mode = '2D', refresh = None):
+        self.canvas.install_toolbar_palette(name, tasks,  mode, refresh)
+
+    def use_toolbar_palette(self, name, mode = '2D'):
+        self.canvas.use_toolbar_palette(name, mode)
+
+    def use_toolbar_std_palette(self):
+        self.canvas.use_std_palette()
+
+    def refresh_toolbar_buttons(self):
+        self.canvas.toolbar.refresh_palette()
+        
 
 class BookViewer(BookViewerFrame):
     def __init__(self, *args, **kargs):    

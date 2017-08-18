@@ -3933,12 +3933,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        f.Show()
 
 
-   def install_navibar_palette(self, name, tasks,  mode = '2D'):
-        self.toolbar.install_palette(name, tasks,  mode)
+   def install_toolbar_palette(self, name, tasks,  mode = '2D', refresh=None):
+        self.toolbar.install_palette(name, tasks,  mode, refresh)
 
-   def use_navibar_palette(self, name, mode = '2D'):
+   def use_toolbar_palette(self, name, mode = '2D'):
         self.toolbar.use_palette(name, mode)
 
-   def use_navibar_std_palette(self):
+   def use_toolbar_std_palette(self):
         self.toolbar.use_std_palette()
         
