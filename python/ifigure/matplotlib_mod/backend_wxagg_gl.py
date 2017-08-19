@@ -832,67 +832,34 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_oit_mode_tex(texs)
 
         #self.set_uniform(glUniform1i, 'uisClear', 1)        
-        #glBlendFunc(GL_ONE, GL_ZERO)
+        #
         #self.do_draw_artists(tag)
         #self.set_uniform(glUniform1i, 'uisClear', 0)
         glClearColor(*[0,0,0,1])
         glClear(GL_COLOR_BUFFER_BIT)
         
-        ### from here
-
+        #
+        #  We draw id_dict first. Since RG BA are both used
+        #  I need to disable blending...
+        #
         glEnable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glDisable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO) 
         id_dict, need_oit = self.do_draw_artists(tag, update_id = True,
                                        do_clear = (0,0,0,0),
                                        do_clear_depth = True,
                                        ignore_alpha = True)
-        if need_oit:
-           glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
-           self.do_draw_artists(tag, do_clear = (0,0,0,0),
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
+        self.do_draw_artists(tag, do_clear = (0,0,0,0),
                              draw_non_solid = False,
-                             do_clear_depth = True)        
+                             do_clear_depth = True)
+        if need_oit:           
            self.set_uniform(glUniform1i,  'uisSolid', 0)
            self.set_uniform(glUniform1i, 'uUseShadowMap', 0)        
-           '''
-           self.set_uniform(glUniform1i,  'uisSolid', 1)
-           glEnable(GL_DEPTH_TEST)
-           glDepthMask(GL_TRUE)
-           #draw solid only
-           id_dict = self.do_draw_artists(tag, do_clear = (0,0,0,0),
-                                          update_id = True,
-                                          draw_non_solid = False,
-                                          do_clear_depth = True)        
-           #draw transparent
-           glBindTexture(GL_TEXTURE_2D, texs[5])
-           glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-           glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-           #glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE)
-           glReadBuffer(GL_COLOR_ATTACHMENT0)
-           #glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
-           #                             0, 0, w, h, 0)
-           glReadBuffer(GL_NONE)        
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, 0, 0)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, texs[5], 0)
-           id_dict = self.do_draw_artists(tag, update_id = True,
-                                          id_dict = id_dict,
-                                          #do_clear_depth = True,
-                                          draw_solid = False,
-                                          ignore_alpha = True)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, 0, 0)
-           glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                                  GL_COLOR_ATTACHMENT0, 
-                                  GL_TEXTURE_2D, texs[0], 0)
-           self.set_uniform(glUniform1i,  'uisSolid', 0)
-           '''
-           ### to here
+
            ##
            ## draw transparent....
            ##
@@ -1432,7 +1399,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 glMultiDrawArrays(GL_LINE_STRIP, first, counts, 
                                  len(counts))
             else:
-                glDrawArrays(GL_LINES, 0, len(counts)*counts[0])
+                glDrawArrays(primitive_mode, 0, len(counts)*counts[0])
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
             if self._wireframe == 2: self.set_depth_test()
             self.set_uniform(glUniform4fv, 'uViewOffset', 1,
@@ -1624,10 +1591,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self.set_view_offset(offset_base = view_offset)
             if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            glDepthMask(GL_FALSE)
+            #glDepthMask(GL_FALSE)
             glDrawElements(primitive_mode, len(counts)*counts[0],
                                  GL_UNSIGNED_INT, None)
-            self.set_depth_mask()
+            #self.set_depth_mask()
             if self._wireframe == 2: self.set_depth_test()                        
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
             if self._wireframe == 2: self.set_depth_test()
