@@ -1558,7 +1558,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glEnableClientState(GL_INDEX_ARRAY)               
         vbos['i'].bind()
-        glIndexPointer(GL_SHORT, 0, None)
+        #glIndexPointer(GL_SHORT, 0, None)  not used
         #vbos['i'].unbind()
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
@@ -1790,8 +1790,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 vbos['vertex_id'].need_update = True
             vbos['i'].need_update = False
         if vbos['i'].need_update:
+            #vbos['i'] = get_vbo(idxset, usage='GL_STATIC_DRAW',
+            #                        target = 'GL_ELEMENT_ARRAY_BUFFER')
             vbos['i'].set_array(idxset)
-            vbos['i'].need_update = False            
+            vbos['counts'] = [len(idx) for idx in paths[4]]
+            vbos['i'].need_update = False
+            
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
             facecolor is not None):
             counts = vbos['counts']

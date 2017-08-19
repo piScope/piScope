@@ -27,6 +27,7 @@ class GLCompound(object):
                              copy=False)
             mask2 = np.array([not any(mask[iv]) for iv in idxset], copy = False)
             a.update_idxset(idxset[mask2])
+            self.setSelectedIndex([])
         else:
             assert False, "hide_component is not supported for non-indexed artist"
 
