@@ -207,7 +207,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         self.set_pickmask(self._pickmask)
         if len(self.hidden_component) > 0:
             self.hide_component(self.hidden_component)
-            
+
         for artist in self._artists:
             artist.do_stencil_test = False
             artist.figobj=self

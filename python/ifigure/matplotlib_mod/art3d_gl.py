@@ -88,6 +88,7 @@ class ArtGL(object):
         self._gl_pickable = True
         self._gl_hl_use_array_idx = False
         self._gl_marker_tex = weakref.WeakKeyDictionary()
+        self._gl_isLast = False  # an aritst which should be drawn last
         # extra index number assined to
         # each triangle/line segment/...
         

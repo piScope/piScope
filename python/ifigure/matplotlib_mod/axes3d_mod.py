@@ -858,7 +858,10 @@ class Axes3DMod(Axes3D):
             a = Poly3DCollectionGL(v, **kwargs)                        
         else:
             a = Poly3DCollectionGL(v[idxset[:2,...]], **kwargs)
-        Axes3D.add_collection3d(self, a)
+
+        #For GL aritsts, it is not necesasry to put in collections??
+        #Axes3D.add_collection3d(self, a)
+        Axes3D.add_artist(self, a)
         a.do_stencil_test = False
 
         return a
@@ -1029,6 +1032,7 @@ class Axes3DMod(Axes3D):
             artists.extend(self.lines)
             artists.extend(self.texts)
             artists.extend(self.artists)
+            
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
 
             gl_len = len(gl_obj)
