@@ -422,7 +422,8 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
         self._c_data = kargs.pop('c_data', None)
         self._gl_solid_edgecolor = kargs.pop('gl_solid_edgecolor', None)
         self._gl_lighting = kargs.pop('gl_lighting', True)
-        self._gl_array_idx = kargs.pop('array_idx', None)                
+        self._gl_array_idx = kargs.pop('array_idx', None)
+        self._gl_voffset = kargs.pop('view_offset', (0,0,0,0.))        
         self._update_ec = True
         self._update_v = True
         Line3DCollection.__init__(self, *args, **kargs)

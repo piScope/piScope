@@ -1627,7 +1627,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.canvas.use_toolbar_palette(name, mode)
 
     def use_toolbar_std_palette(self):
-        self.canvas.use_std_palette()
+        self.canvas.use_toolbar_std_palette()
 
     def refresh_toolbar_buttons(self):
         self.canvas.toolbar.refresh_palette()

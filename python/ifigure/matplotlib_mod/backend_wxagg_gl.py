@@ -121,6 +121,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._hittest_map_update = True
         self._alpha_blend = True
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
+        
         if MyGLCanvas.offscreen: 
             self.SetSize((2,2))
             self.SetMaxSize((2,2))
@@ -210,7 +211,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         fs = compile_file('simple_oit.frag', GL_FRAGMENT_SHADER)
         vs = compile_file('simple.vert', GL_VERTEX_SHADER)
         self.shader = shaders.compileProgram(vs, fs)
-        print(glGetProgramInfoLog(self.shader))
+        #print(glGetProgramInfoLog(self.shader))
         self.select_shader(self.shader)
         names = names0 + ['uLightDir', 'uLightColor',                         
                          'uLightPow', 'uLightPowSpec',
@@ -788,7 +789,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glActiveTexture(GL_TEXTURE0)                                
 
     def draw_mpl_artists(self, tag):
-#        print("draw_mpl_artists")
         self._use_frustum = tag._use_frustum
         self._use_clip = tag._use_clip        
         self.gc_artist_data()
@@ -824,7 +824,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
            self.use_draw_mode(frame, buf, texs, w, h)
            self.set_uniform(glUniform1i, 'uUseShadowMap', 0)
-           
+
         ##
         ## draw solid first ...
         ##
@@ -844,15 +844,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #
         glEnable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
-        glDisable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO) 
+        glDisable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO)
         id_dict, need_oit = self.do_draw_artists(tag, update_id = True,
                                        do_clear = (0,0,0,0),
                                        do_clear_depth = True,
                                        ignore_alpha = True)
+        if self._hittest_map_update:
+            self.read_hit_map_data(tag)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])        
+        #glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])
         self.do_draw_artists(tag, do_clear = (0,0,0,0),
                              draw_non_solid = False,
                              do_clear_depth = True)
@@ -879,7 +881,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.do_draw_artists(tag, do_clear=(0,0,0,1))
            self._do_depth_test = True
            self.set_uniform(glUniform1i, 'uisClear', 0)
-           ''' 
+           '''
            ### to here
            glDepthMask(GL_FALSE)
            glEnable(GL_BLEND)
@@ -888,7 +890,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            #glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ZERO)
 
            #glDisable(GL_DEPTH_TEST)
-           glEnable(GL_DEPTH_TEST)        
+           glEnable(GL_DEPTH_TEST)
            self.do_draw_artists(tag, draw_solid = False)
 
 
@@ -925,7 +927,21 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._do_draw_mpl_artists = False
         self._artist_mask = None
         return id_dict
+     
+    def read_hit_map_data(self, a):
+        w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)       
+        glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
+        data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
+        data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)        
+        glReadBuffer(GL_NONE)
+        idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
+        idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
+        idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
         
+        self._hit_map_data = (np.rint(idmap0),
+                              np.rint(idmap2),                   
+                              np.fromstring(data3, np.float32).reshape(h, w))
+       
     def read_data(self, a):
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
         glBindFramebuffer(GL_FRAMEBUFFER, frame)
@@ -933,27 +949,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glReadBuffer(GL_COLOR_ATTACHMENT0)
         data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)
         if self._hittest_map_update:
+           '''
            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-           #data2 = glReadPixels(0,0, w, h, GL_RED, GL_UNSIGNED_BYTE)
            data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
-           # this is to read depth buffer
            data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)
-           #self.depth =  np.fromstring(data3, np.float32).reshape(h, w)
-           #glBindFramebuffer(GL_FRAMEBUFFER, 0)
            glReadBuffer(GL_NONE)
            idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
-           #print np.sort(np.unique(idmap[:,:, 0].flatten()))
-           #print np.sort(np.unique(idmap[:,:, 1].flatten()))           
-           #idmap = idmap.astype(int)
-           
            idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
            idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+           '''
            
            return (np.fromstring(data, np.uint8).reshape(h, w, -1),
-                   #np.fromstring(data2, np.uint8).reshape(h, w),
-                   np.rint(idmap0),
-                   np.rint(idmap2),                   
-                   np.fromstring(data3, np.float32).reshape(h, w))
+                   self._hit_map_data[0],
+                   self._hit_map_data[1],
+                   self._hit_map_data[2])                   
         else:
            glReadBuffer(GL_NONE)
            return np.fromstring(data, np.uint8).reshape(h, w, -1)

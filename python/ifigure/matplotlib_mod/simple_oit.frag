@@ -114,7 +114,9 @@ float SPOT(sampler2D depths, vec2 size, vec2 uv, float compare){
 }    
 
 void main() {
-     gl_FragDepth = gl_FragCoord.z; /* just to make sure to write this variable */
+     /* just to make sure to write this variable */
+     gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
+     
      if (uisClear == 1){
 	 gl_FragData[0] = vec4(0,0,0,1);
          gl_FragData[1] = vec4(0,0,0,1);
@@ -234,7 +236,7 @@ void main() {
 
      vec4 color;
      
-     gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
+
 /*     gl_FragDepth = gl_FragDepth +  uViewOffset.z/10*     
                     (1 + 3 * sqrt(1-dot(n,c)*dot(n,c)));*/
 
