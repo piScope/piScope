@@ -445,7 +445,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 if (id == BookViewerFrame.ID_EXPORTBOOK): 
                     if self.book.hasvar("original_filename"):
                         fname = self.book.getvar("original_filename")
-                        if (os.path.exists(fname) and 
+                        if (fname is not None and
+                            os.path.exists(fname) and 
                             os.access(fname, os.W_OK)):
                             evt.Enable(True) 
                         else:
