@@ -217,11 +217,19 @@ class navibar(ButtonPanel):
         else:
             return self.p1_btns[self.p1_choice[0]]
 
-    def install_palette(self, name, tasks,  mode = '2D', refresh = None):
+    def install_palette(self, name, tasks0,  mode = '2D', refresh = None):
         '''
         tasks shou
 
-        '''            
+        '''
+        # we use taskname + '_' + name to avoid name conflict
+        tasks = []
+        for t in tasks0:
+            if t[0] == '---':
+                tasks.append(t)
+            else:
+                tasks.append([t[0]+'_'+ name]+list(t[1:]))
+                
         if mode == '2D':
             btasks = btasks1_std2d_base + list(tasks)                             
         else:
@@ -266,7 +274,7 @@ class navibar(ButtonPanel):
                self._extra_buttons_refresh[name](self,
                                                  self.p1_btns[name])
         
-    def add_extra_group1_button(self, idx, data, 
+    def add_extra_group1_button(self, idx, data,
                                 use_in_2d_menu = True, 
                                 use_in_3d_menu = False):
         xx =list(data[:4])
