@@ -410,16 +410,18 @@ class BookViewerInteractive(object):
         axes.reset_color_cycle()
         
     @allow_interactive_call2
-    def cls(self):
-        self.clf()
+    def cls(self, obj = None):
+        self.clf(obj = obj)
     @allow_interactive_call2
-    def clf(self):
+    def clf(self, obj = None):
         fig_p = self.get_page(ipage=None)
         if fig_p is None: 
            raise NoPageError('no page exists')
         for axes in fig_p.walk_axes():
             axes.reset_color_cycle()
             children = [child for child in axes.walk_tree()]
+            if obj is not None:
+               children = [obj] if obj in children else []
             for child in children:
                 if (not hasattr(child, '_generic_axes') or
                     not child._generic_axes):

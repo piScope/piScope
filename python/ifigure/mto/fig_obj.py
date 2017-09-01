@@ -1085,7 +1085,7 @@ class FigObj(TreeDict, MetadataHolder):
         return p
 
 
-    def onDelete(self, e):
+    def onDelete(self, e = None):
         ifigure.events.SendPVDeleteFigobj(self)
         return
 

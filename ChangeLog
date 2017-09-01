@@ -1,4 +1,14 @@
-	* 08/08-/2017
+	* 08/31-2017
+
+	** obj keyword is added to cls to delete plot selectively
+	
+    	   >>> figure();
+    	   >>> o1 = plot(np.arange(30))
+           >>> o2 = oplot(np.arange(40))
+           >>> cls(obj=obj)
+
+	
+	* 08/08-20 2017
 
 	** Solid/Revolve/Surface
 
