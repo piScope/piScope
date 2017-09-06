@@ -729,7 +729,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self.vbo[aa][a] = xxx
                 id_dict[long(current_id)] = weakref.ref(a)
                 current_id = current_id + 1
-        glFinish()                
+        #glFinish()                
         return id_dict, need_oit
 
 #    def make_shadow_texture(self, w, h, data, data2 = None):
@@ -920,7 +920,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.set_uniform(glUniform1i,  'uisFinal', 0)
            self._do_depth_test = True        
         
-        glFinish()
+        #glFinish()
         glPopMatrix()
 
         if self._use_shadow_map:        

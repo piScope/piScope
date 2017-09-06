@@ -44,12 +44,14 @@ class GLCompound(object):
         else:
             assert False, "hide_component is not supported for non-indexed artist"
 
-    def get_subset(self, components):
+    def get_subset(self, component = None):
         if not self.hasvar('idxset'): return
+        if component is None:
+            component = self.shown_component
         array_idx = self.getvar('array_idx')
         idxset = self.getvar('idxset')
             
-        mask  = np.array([ii in components for ii in array_idx],
+        mask  = np.array([ii in component for ii in array_idx],
                              copy=False)
         mask2 = np.array([all(mask[iv]) for iv in idxset], copy = False)
 

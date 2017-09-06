@@ -7,13 +7,21 @@
 
 	** methods to extract subset of gl_component plot data
 
-	v, idx, cdata = gl_component::get_subset(components)
+	v, idx, cdata = gl_component::get_subset(component = None)
 	gl_component::shown_component property to get shown component
 
 	example to plot a subset of solid plot
+
+        >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset()
+        >> figure();solid(v, idx),
+	
+	which is equivalent to
+	
 	>> s = proj.model1.mfem.mfembook.page1.axes1.face.shown_component
         >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset(s)
         >> figure();solid(v, idx)
+
+	
 
 	** inverse keyword to gl_component::hide_component
 	
