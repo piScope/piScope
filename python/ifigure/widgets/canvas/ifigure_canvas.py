@@ -110,6 +110,10 @@ dprint1, dprint2, dprint3 = debug.init_dprints('iFigureCanvas')
 bitmap_names = ['xauto.png', 'yauto.png', 'samex.png', 'samey.png']
 bitmaps = {}
 
+### popup menu stype (bit)
+popup_style_default = 0
+popup_skip_2d = 1
+
 class ifigure_DropTarget(wx.TextDropTarget):
     def __init__(self, canvas):
         self._canvas=weakref.ref(canvas)
@@ -848,7 +852,8 @@ class ifigure_popup(wx.Menu):
                               len(parent.axes_selection().figobj._cursor1) > 0):
                               for cur in parent.axes_selection().figobj._cursor1:
                                   self._cur_paths.extend(cur.get_paths())
-                              menus.append(('Add CursorPath Plot',  self.onGeneratePath, None))
+                              menus.append(('Add CursorPath Plot',  self.onGeneratePath,
+                                            None))
                except:
                   pass
                menus.append(
@@ -857,33 +862,34 @@ class ifigure_popup(wx.Menu):
         if parent.toolbar.ptype != 'amode':
                if len(menus) != 0:
                    menus = menus + [('---', None, None)]
-               if parent.axes_selection() is None:
-                  menus = menus + \
-                  [('Autoscale all', self.onXYauto_all, None),
-                   ('Autoscale all X', self.onXauto_all, None),
-                   ('Autoscale all Y', self.onYauto_all, None), ]
-               else:
-                  menus = menus + \
-                  [('Autoscale', self.onXYauto, None),
-                   ('Autoscale X', self.onXauto, None, bitmaps['xauto'],),
-                   ('Autoscale Y', self.onYAuto, None, bitmaps['yauto'],),
-                   ('Autoscale all', self.onXYauto_all, None),
-                   ('Autoscale all X', self.onXauto_all, None),
-                   ('Autoscale all Y', self.onYauto_all, None),]
-                  a = parent.axes_selection()
-                  fig_axes = a.figobj
-                  if len(fig_axes._caxis) > 0:
-                     menus = menus + \
-                             [('Autoscale C' , self.onCAuto, None),]
-                  menus = menus + \
-                          [('All same scale', self.onSameXY, None),
-                           ('All same X scale', self.onSameX, None, bitmaps['samex']),
-                           ('All same X (Y auto)', self.onSameX_autoY, None),
-                           ('All same Y scale' , self.onSameY, None, bitmaps['samey']),]
-                  if len(fig_axes._caxis) > 0:
-                     menus = menus + \
-                             [('All same C scale' , self.onSameC, None),]
-               menus.extend(parent.GetTopLevelParent().extra_canvas_range_menu())
+               if parent._popup_style & popup_skip_2d == 0:
+                   if parent.axes_selection() is None:
+                      menus = menus + \
+                      [('Autoscale all', self.onXYauto_all, None),
+                       ('Autoscale all X', self.onXauto_all, None),
+                       ('Autoscale all Y', self.onYauto_all, None), ]
+                   else:
+                      menus = menus + \
+                      [('Autoscale', self.onXYauto, None),
+                       ('Autoscale X', self.onXauto, None, bitmaps['xauto'],),
+                       ('Autoscale Y', self.onYAuto, None, bitmaps['yauto'],),
+                       ('Autoscale all', self.onXYauto_all, None),
+                       ('Autoscale all X', self.onXauto_all, None),
+                       ('Autoscale all Y', self.onYauto_all, None),]
+                      a = parent.axes_selection()
+                      fig_axes = a.figobj
+                      if len(fig_axes._caxis) > 0:
+                         menus = menus + \
+                                 [('Autoscale C' , self.onCAuto, None),]
+                      menus = menus + \
+                              [('All same scale', self.onSameXY, None),
+                               ('All same X scale', self.onSameX, None, bitmaps['samex']),
+                               ('All same X (Y auto)', self.onSameX_autoY, None),
+                               ('All same Y scale' , self.onSameY, None, bitmaps['samey']),]
+                      if len(fig_axes._caxis) > 0:
+                         menus = menus + \
+                                 [('All same C scale' , self.onSameC, None),]
+                   menus.extend(parent.GetTopLevelParent().extra_canvas_range_menu())
                try:
                   if parent.axes_selection().figobj.get_3d():
                        menus.extend([
@@ -902,12 +908,12 @@ class ifigure_popup(wx.Menu):
                              menus.append(('Clip off',self.on3DClipOff, None))
                        else:
                              menus.append(('Clip on',self.on3DClipOn, None))
-                             
+
                        if parent.axes_selection()._show_3d_axes:
                              menus.append(('Hide Axes Icon',self.on3DAxesIconOff, None))
                        else:
                              menus.append(('Show Axes Icon',self.on3DAxesIconOn, None))
-                             
+
                        menus.append(('Equal Aspect',self.on3DEqualAspect, None))
                        menus.extend([                           
                                      ('!',  None, None),])
@@ -1286,6 +1292,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._cursor_owner = []
       self._cursor_target = None
       self._txt_box = None
+      self._popup_style  = popup_style_default
       self._mailpic_format = 'pdf'
       self._mpl_artist_click = None ### mpl artist not directly managed by ifigure
       from numpy import inf

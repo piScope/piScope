@@ -1,3 +1,26 @@
+	* 09/04
+
+	** mode 341 (CallMethod button is added to EditList)
+	This button is used to call object method. In the construction,
+	string name of method should be give. An object is passed via
+	SetValue to tell which object's method should be called.
+
+	** methods to extract subset of gl_component plot data
+
+	v, idx, cdata = gl_component::get_subset(components)
+	gl_component::shown_component property to get shown component
+
+	example to plot a subset of solid plot
+	>> s = proj.model1.mfem.mfembook.page1.axes1.face.shown_component
+        >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset(s)
+        >> figure();solid(v, idx)
+
+	** inverse keyword to gl_component::hide_component
+	
+	gl_component::hide_component(idx, inverse=False): if inverse is True,
+	it hides everything except for the components list.
+	
+	
 	* 08/31-2017
 
 	** obj keyword is added to cls to delete plot selectively

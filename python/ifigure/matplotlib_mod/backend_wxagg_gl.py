@@ -120,6 +120,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._attrib_loc = {}
         self._hittest_map_update = True
         self._alpha_blend = True
+        self._no_smooth = False
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
         
         if MyGLCanvas.offscreen: 
@@ -845,12 +846,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glEnable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO)
+        self._no_smooth = True
         id_dict, need_oit = self.do_draw_artists(tag, update_id = True,
                                        do_clear = (0,0,0,0),
                                        do_clear_depth = True,
                                        ignore_alpha = True)
         if self._hittest_map_update:
             self.read_hit_map_data(tag)
+        self._no_smooth = False            
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -1343,16 +1346,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         use_multdrawarrays = False
         if counts[0] == 3:
            primitive_mode = GL_TRIANGLES
-           glEnable(GL_POLYGON_SMOOTH)
+           if not self._no_smooth: glEnable(GL_POLYGON_SMOOTH)
            glDisable(GL_LINE_SMOOTH)        
         elif counts[0] == 4:
            primitive_mode = GL_QUADS
-           glEnable(GL_POLYGON_SMOOTH)
+           if not self._no_smooth: glEnable(GL_POLYGON_SMOOTH)
            glDisable(GL_LINE_SMOOTH)        
         elif counts[0] == 2:
            primitive_mode = GL_LINES
            glDisable(GL_POLYGON_SMOOTH)
-           glEnable(GL_LINE_SMOOTH)        
+           if not self._no_smooth: glEnable(GL_LINE_SMOOTH)        
         else:           
            use_multdrawarrays = True
            
@@ -1514,18 +1517,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         first, counts = vbos['first'], vbos['counts']
 
+        
         if counts[0] == 3:
            primitive_mode = GL_TRIANGLES
-           glEnable(GL_POLYGON_SMOOTH)
+           if not self._no_smooth: glEnable(GL_POLYGON_SMOOTH)
            glDisable(GL_LINE_SMOOTH)        
         elif counts[0] == 4:
            primitive_mode = GL_QUADS
-           glEnable(GL_POLYGON_SMOOTH)
+           if not self._no_smooth: glEnable(GL_POLYGON_SMOOTH)
            glDisable(GL_LINE_SMOOTH)        
         elif counts[0] == 2:
            primitive_mode = GL_LINES
+           if not self._no_smooth: glEnable(GL_LINE_SMOOTH)        
            glDisable(GL_POLYGON_SMOOTH)
-           glEnable(GL_LINE_SMOOTH)        
+
         else:
            self.draw_path_collection(vbos, gc,  paths, 
                                      facecolor, edgecolor,

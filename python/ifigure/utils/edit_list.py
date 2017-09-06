@@ -104,16 +104,29 @@ class FunctionButton(wx.Button):
             self._handler = func
         else:
             self._handler = None
+        self._handler_obj = None
+        
+        self._call_method = False
         self.SetLabel(label)            
         
     def GetValue(self):
         pass
+     
     def SetValue(self, v):
-        pass
+        self._handler_obj = v
+
     def onSelect(self, ev):
-        if self._handler is not None:
-           self._handler(ev)
+        if self._call_method:
+            if hasattr(self._handler_obj, self._handler):
+                _handler = getattr(self._handler_obj, self._handler)
+            else:
+                _hander = Noen
+        else:
+            _handler = self._handler
+        if _handler is not None:
+           _handler(ev)
         ev.Skip()
+        
 class FunctionButtons(Panel):
     def __init__(self, *args, **kwargs):
         setting = kwargs.pop('setting', [])
@@ -3951,6 +3964,15 @@ class EditListCore(object):
               p = w
               alignright = setting.pop('alignright', alignright)   
               noexpand = setting.pop('noexpand', False)
+           elif val[2] == 341:
+              if len(val)==4:
+                 setting=val[3]
+              else:
+                 setting = {}
+              w = FunctionButton(self, wx.ID_ANY, setting = setting)
+              w._call_method = True
+              p = w
+              noexpand = setting.pop('noexpand', False)
            elif val[2] == 42:
               if len(val)==4:
                  setting=val[3]
@@ -4353,6 +4375,7 @@ def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
       41: Dialog button (opens a custom dialog)
      141: Function button  (call a function)
      241: Function buttons (multiple function buttons)
+     341: Method buttons   (object method call. note that SetValue shoudl set object)
       42: TickLabelSizeSelector
       43: ArrayTextBox
       44: GL azim/elev panel

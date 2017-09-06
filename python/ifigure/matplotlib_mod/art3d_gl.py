@@ -798,17 +798,18 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                elif self._gl_cz is not None: cz = self._gl_cz
                else: cz = self._gl_3dpath[2]
                if self._update_v:
-                   d[0]['v'].need_update = True
+                   if len(d) > 0: d[0]['v'].need_update = True
                    self._gl_facecolor = self.to_rgba(cz)
                if self._update_fc:
-                   d[0]['fc'].need_update = True
+                   if len(d) > 0: d[0]['fc'].need_update = True
                    self._gl_facecolor = self.to_rgba(cz)
                if self._update_ec:
-                   d[0]['ec'].need_update = True
+                   if len(d) > 0: d[0]['ec'].need_update = True
                    self._gl_edgecolor = self.to_rgba(cz)
                if self._update_i:
-                   d[0]['i'].need_update = True
-                   
+                   if len(d) > 0: d[0]['i'].need_update = True
+               # this happens when all surfaces are hidden.
+               # if (len(d)) == 0: print('vbo zero length', self.figobj)   
            if self._update_ec or self._update_fc:
                self.update_scalarmappable()
 

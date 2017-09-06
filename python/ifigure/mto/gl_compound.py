@@ -1,4 +1,5 @@
-import numpy as np
+import numpy as np 
+
 class GLCompound(object):
     def isCompound(self):
         return self.hasvar('array_idx')
@@ -9,10 +10,23 @@ class GLCompound(object):
             self._hidden_component = []
         return self._hidden_component
     
-    def hide_component(self, idx):
+    @property    
+    def shown_component(self):
+        h = self._hidden_component
+        array_idx = list(np.unique(self.getvar('array_idx')))
+        for x in h:
+            if x in array_idx: array_idx.remove(x)
+        return array_idx
+
+    def hide_component(self, idx, inverse = False):
         '''
         idx = list
         '''
+        if inverse:
+            array_idx = list(np.unique(self.getvar('array_idx')))
+            for x in idx:
+               if x in array_idx: array_idx.remove(x)
+            idx = array_idx
         if not self.isCompound(): return
         self._hidden_component = idx  
         if len(self._artists) == 0: return
@@ -23,14 +37,32 @@ class GLCompound(object):
         if self.hasvar('idxset'):
             idxset = self.getvar('idxset')
             
-            mask  = np.array([ii in self._hidden_component for ii in array_idx],
-                             copy=False)
-            mask2 = np.array([not any(mask[iv]) for iv in idxset], copy = False)
+            mask  = np.in1d(array_idx, self._hidden_component)
+            mask2 = np.logical_not(np.any(mask[idxset], axis=1))
             a.update_idxset(idxset[mask2])
             self.setSelectedIndex([])
         else:
             assert False, "hide_component is not supported for non-indexed artist"
 
+    def get_subset(self, components):
+        if not self.hasvar('idxset'): return
+        array_idx = self.getvar('array_idx')
+        idxset = self.getvar('idxset')
+            
+        mask  = np.array([ii in components for ii in array_idx],
+                             copy=False)
+        mask2 = np.array([all(mask[iv]) for iv in idxset], copy = False)
+
+        s = idxset[mask2]
+        ii, arr = np.unique(s.flatten(), return_inverse=True)
+        idx = arr.reshape(s.shape)
+        v = self.getvar('v')[ii]
+        if not self.hasvar('cdata'): 
+            cdata = self.hasvar('cdata')[idx]
+        else:
+            cdata = None
+        return v, idx, cdata
+                          
     def isSelected(self):
         return (len(self._artists[0]._gl_hit_array_id) > 0)
 
