@@ -1,6 +1,7 @@
 import weakref
 import ifigure.events as events
 from scipy.signal import convolve2d, fftconvolve
+from scipy.sparse import coo_matrix
 
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -823,29 +824,41 @@ class Axes3DMod(Axes3D):
                 
         w = np.zeros((nverts)) # weight
         if norms is None:
-            norms = np.zeros((nverts, 3), dtype=np.float32) # weight            
-            for i in idxset:                
-                xyz = vv[i]
-                if xyz.shape[0] > 2:
-                    p0, p1, p2 = [xyz[k,:3] for k in range(3)]
-                    n1 = np.cross(p0-p1, p1-p2)
-                    d = np.sqrt(np.sum(n1**2))
+            norms = np.zeros((nverts, 3), dtype=np.float32) # weight
+            if idxset.shape[1] > 2:
+                xyz = vv[idxset[:, :3]]
+                p0 = xyz[:, 0, :] - xyz[:, 1, :]
+                p1 = xyz[:, 0, :] - xyz[:, 2, :]
+                n1a = np.cross(p0, p1)
+                da = np.sqrt(np.sum(n1a**2, 1))
+                n1a[:,0] /= -da
+                n1a[:,1] /= -da
+                n1a[:,2] /= -da                
+            else:
+                da = np.zeros(idxset.shape[0])
+                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight                
+                n1a[:,2] = 1.0
+                
+            if len(args) == 1:
+                if da[0] == 0.:
+                    norms[:,2] = 1  # all [0. 0. 1]
                 else:
-                    d = 0
-                if len(args) == 1:
-                    for ii in i:
-                        if d == 0:
-                            norms[ii, :] = [0,0,1]
-                        else:
-                            norms[ii, :] =  -n1/d
-                else:
-                    for ii in i:
-                        if d == 0:
-                            norms[ii, :] = (norms[ii, :]*w[ii] + [0,0,1])/(w[ii]+1)
-                        else:
-                            n = -n1/d if np.sum(norms[ii,:]*(-n1/d)) >= 0 else n1/d
-                            norms[ii, :] = (norms[ii, :]*w[ii] + n)/(w[ii]+1.)
-                        w[ii] = w[ii] + 1.
+                    for k in range(idxset.shape[1]):
+                        norms[idxset[:,k], :] = n1a
+            else:
+                data = np.ones(idxset.flatten().shape[0])
+                jj = np.array([np.arange(idxset.shape[0])]*idxset.shape[-1]).flatten()
+                ii = idxset.transpose().flatten()
+                table = coo_matrix((data, (ii, jj)),
+                                    shape = (nverts, idxset.shape[0]))
+                csr = table.tocsr()
+                indptr = csr.indptr; indices = csr.indices
+                for i in range(csr.shape[0]):
+                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
+                    sign = np.sign(np.sum(nn*nn[0], 1))
+                    nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                    norms[i, :] = np.mean(nn, 0)
+
             norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),

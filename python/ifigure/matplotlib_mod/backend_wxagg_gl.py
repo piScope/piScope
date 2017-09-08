@@ -1,16 +1,19 @@
 # uncomment the following to use wx rather than wxagg
+import numpy as np
+import time
+import wx
+import weakref
+import array
+from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
+
 import matplotlib
-import wx, weakref, array
+
 from functools import wraps
 from matplotlib.backends.backend_wx import FigureCanvasWx as Canvas
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as CanvasAgg
 from matplotlib.backends.backend_wx import RendererWx
 from ifigure.utils.cbook import EraseBitMap 
 from operator import itemgetter
-
-import numpy as np
-import time, ctypes
-
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('BackendWXAggGL')
@@ -722,7 +725,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     xxx = self.vbo[aa][a]
                 for k, data in enumerate(self.artists_data[aa][a]):
                     m = getattr(self, 'makevbo_'+ data[0])
-                    if len(xxx) == k: xxx.append(None)
+                    if len(xxx) == k:
+                       xxx.append(None)
                     xxx[k] = m(xxx[k], *data[1], **data[2])
                     m = getattr(self, 'draw_'+ data[0])
                     m(xxx[k], *data[1], **data[2])
@@ -930,27 +934,78 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._do_draw_mpl_artists = False
         self._artist_mask = None
         return id_dict
-     
+
+
+    def stream_read(self):
+	
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, c_void_p(0))
+	data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size)
+
+        
     def read_hit_map_data(self, a):
-        w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)       
-        glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-        data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
-        data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)        
-        glReadBuffer(GL_NONE)
-        idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
-        idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
-        idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+        stream_read = True
+        w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
+
+
+        stream_read = True
+        if stream_read:
+            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
+            
+            pixel_buffers = glGenBuffers(2)
+            size = w*h
+            
+    	    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[0])
+	    glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+
+            glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
+   	    data2 = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+            idmap = (np.fromstring(data2, np.uint8).reshape(h, w, -1))#*255.
+            idmap2 = idmap[:,:,2] + idmap[:,:,3]*256
+            idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+            
+    	    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[1])
+	    glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+            glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT, c_void_p(0))
+
+   	    data3 = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+            depth = np.fromstring(data3, np.float32).reshape(h, w)
+            
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+	    glDeleteBuffers(2, pixel_buffers)
+        else:
+            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
+            data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
+            data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)        
+            glReadBuffer(GL_NONE)
+            idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
+            idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
+            idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+            depth = np.fromstring(data3, np.float32).reshape(h, w)
         
         self._hit_map_data = (np.rint(idmap0),
                               np.rint(idmap2),                   
-                              np.fromstring(data3, np.float32).reshape(h, w))
+                              depth)
        
     def read_data(self, a):
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
         glBindFramebuffer(GL_FRAMEBUFFER, frame)
         self.set_oit_mode_tex(texs)
         glReadBuffer(GL_COLOR_ATTACHMENT0)
-        data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)
+
+        pixel_buffer = glGenBuffers(1)
+        size = w*h
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)
+        glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+        glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
+   	data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+        #data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
+        image = np.fromstring(data, np.uint8).reshape(h, w, -1)
+        
+        glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+	glDeleteBuffers(1, [pixel_buffer])
+
         if self._hittest_map_update:
            '''
            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
@@ -962,13 +1017,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
            idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
            '''
            
-           return (np.fromstring(data, np.uint8).reshape(h, w, -1),
+           return (image,
                    self._hit_map_data[0],
                    self._hit_map_data[1],
                    self._hit_map_data[2])                   
         else:
            glReadBuffer(GL_NONE)
-           return np.fromstring(data, np.uint8).reshape(h, w, -1)
+           return image
     #
     #  drawing routines
     # 
@@ -1638,7 +1693,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
     
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor, 
                                       edgecolor, *args,  **kwargs):
-        ### paths is [X, Y, Z, norms, idxset]       
+        ### paths is [X, Y, Z, norms, idxset]
         if vbos is None:
             vbos  = {'v': None, 'n': None, 'i':None, 'fc':None,
                      'ec': None, 'first':None, 'counts':None, 
@@ -1656,7 +1711,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
              facecolor is not None) or 
             (vbos['ec'] is None or vbos['ec'].need_update)):           
            idxset = np.hstack(paths[4]).astype(np.uint32).flatten()
-        
         if vbos['v'] is None or vbos['v'].need_update:
 #        if True:
             #xyzs = np.transpose(np.vstack((paths[0][idxset],
@@ -1701,8 +1755,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 vbos['vertex_id'].need_update = True
             vbos['i'].need_update = False
         if vbos['i'].need_update:
-            #vbos['i'] = get_vbo(idxset, usage='GL_STATIC_DRAW',
-            #                        target = 'GL_ELEMENT_ARRAY_BUFFER')
             vbos['i'].set_array(idxset)
             vbos['counts'] = [len(idx) for idx in paths[4]]
             vbos['i'].need_update = False

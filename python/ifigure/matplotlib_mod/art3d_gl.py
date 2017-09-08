@@ -837,7 +837,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
            self._update_fc = False
            self._update_ec = False
            self._update_v = False
-
+           self._update_i = False
            finish_gl_drawing(glcanvas, renderer, tag, trans)
 
            renderer.use_gl = False
