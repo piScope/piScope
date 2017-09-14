@@ -85,6 +85,11 @@ def wait_gl_finish(method):
         method(self, *args, **kargs)
         glFinish()                
     return method
+def check_gl_error():
+    error = glGetError()
+    if error != 0:
+       print("GL error ", error)
+       
 class vbos_dict(dict):
     def __del__(self, *args, **kwargs):
        if 'im' in self:
@@ -92,7 +97,9 @@ class vbos_dict(dict):
                 dprint2('deleteing texture', self['im'])
                 glDeleteTextures(self['im'])
                 self['im'] = None
-       return 
+       return
+
+    
     
 class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
@@ -910,7 +917,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
            #self.set_uniform(glUniform1i, 'uisClear', 2)
            #self.force_fill_screen()               
-           #self.set_uniform(glUniform1i, 'uisClear', 0)                
+           #self.set_uniform(glUniform1i, 'uisClear', 0)
+           glFinish()
+           glFlush()
 
            self.set_uniform(glUniform1i, 'uRT0', 1)
            self.set_uniform(glUniform1i, 'uRT1', 2)             
@@ -945,12 +954,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def read_hit_map_data(self, a):
         stream_read = True
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
-
-
+        glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
         stream_read = True
+        
         if stream_read:
-            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-            
             pixel_buffers = glGenBuffers(2)
             size = w*h
             
@@ -962,6 +969,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             idmap = (np.fromstring(data2, np.uint8).reshape(h, w, -1))#*255.
             idmap2 = idmap[:,:,2] + idmap[:,:,3]*256
             idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
             
     	    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[1])
 	    glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
@@ -974,15 +983,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
 	    glDeleteBuffers(2, pixel_buffers)
         else:
-            glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
+
             data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
             data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)        
-            glReadBuffer(GL_NONE)
             idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
             idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
             idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
             depth = np.fromstring(data3, np.float32).reshape(h, w)
-        
+            
+        glReadBuffer(GL_NONE)        
         self._hit_map_data = (np.rint(idmap0),
                               np.rint(idmap2),                   
                               depth)
@@ -993,18 +1002,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_oit_mode_tex(texs)
         glReadBuffer(GL_COLOR_ATTACHMENT0)
 
-        pixel_buffer = glGenBuffers(1)
-        size = w*h
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)
-        glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
-        glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
-   	data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
-        #data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
+        stream_read = True
+        if stream_read:
+            pixel_buffer = glGenBuffers(1)
+            size = w*h
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)
+            glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+            glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
+      	    data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+            glDeleteBuffers(1, [pixel_buffer])
+        else:
+            data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(h, w, -1)
-        
-        glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
-	glDeleteBuffers(1, [pixel_buffer])
 
         if self._hittest_map_update:
            '''
@@ -1572,7 +1583,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         first, counts = vbos['first'], vbos['counts']
 
-        
         if counts[0] == 3:
            primitive_mode = GL_TRIANGLES
            if not self._no_smooth: glEnable(GL_POLYGON_SMOOTH)
@@ -1633,7 +1643,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         #if not lighting and self._p_shader is self.shader:
         #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
-
         if facecolor is not None:
            vbos['fc'].bind()
            glColorPointer(4, GL_FLOAT, 0, None)
@@ -1644,6 +1653,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
               if self._wireframe != 2:
                   if self._wireframe == 1:
                       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
+                  check_gl_error()                      
                   glDrawElements(primitive_mode, len(counts)*counts[0],
                                  GL_UNSIGNED_INT, None)
                   if self._wireframe == 1:
@@ -1709,10 +1719,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
             (vbos['i'] is None or vbos['i'].need_update) or
             ((vbos['fc'] is None or vbos['fc'].need_update) and
              facecolor is not None) or 
-            (vbos['ec'] is None or vbos['ec'].need_update)):           
-           idxset = np.hstack(paths[4]).astype(np.uint32).flatten()
+            (vbos['ec'] is None or vbos['ec'].need_update)):
+            idxset = np.hstack(paths[4]).astype(np.uint32).flatten()
+            
         if vbos['v'] is None or vbos['v'].need_update:
-#        if True:
             #xyzs = np.transpose(np.vstack((paths[0][idxset],
             #                               paths[1][idxset],
             #                               paths[2][idxset])))
@@ -1778,12 +1788,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
-                vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
+                vbos['fc'] = get_vbo(col, usage='GL_DYNAMIC_DRAW')
             else:
                 vbos['fc'].set_array(col)
             
             vbos['fc'].need_update = False
         if vbos['ec'] is None or vbos['ec'].need_update:
+
             counts = vbos['counts']
             if len(edgecolor) == 0:
                 edgecolor = np.array([[1,1,1, 0]])
@@ -1792,9 +1803,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 col = edgecolor#[idxset, :]               
             else:
                 col = [edgecolor]*np.sum(counts)
-            col = np.hstack(col).astype(np.float32) 
+            col = np.hstack(col).astype(np.float32)
+
             if vbos['ec'] is None:
-                vbos['ec'] = get_vbo(col, usage='GL_STATIC_DRAW')
+                vbos['ec'] = get_vbo(col, usage='GL_DYNAMIC_DRAW')
             else:
                 vbos['ec'].set_array(col)
             
