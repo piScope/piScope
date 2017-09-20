@@ -1133,6 +1133,38 @@ class PyFolder(TreeDict, AbsModuleContainer, AbsScriptContainer,
         self.add_extfolder(dir)
         if evt is not None: evt.Skip()
 
+    def load_script_folder(self, basepath, skip_underscore = False):
+        from ifigure.mto.py_script import PyScript        
+        warning = []
+        for dirpath, dirname, filenames in os.walk(basepath):
+            if '.' in os.path.basename(dirpath): continue
+            dirname = [x for x in dirname if not '.'in x]
+            relpath = os.path.relpath(dirpath, basepath)
+            if relpath == '.': relpath =''
+            p = self
+
+            tmp = relpath.split(os.sep)
+            if any(['.' in x for x in tmp]): continue
+            for name in relpath.split(os.sep):
+                if name == '': continue
+                p = p.get_child(name = name)
+
+            for name in dirname:
+                obj = PyFolder()
+                p.add_child(name, obj, warning = warning)
+            for f in filenames:
+                fpath = os.path.join(dirpath, f)                
+
+                if fpath.endswith('.py'):
+                    newname = str(os.path.basename(fpath).split('.')[0])
+                    if skip_underscore and newname.startswith('_'): continue
+                    child=PyScript()
+                    idx  =p.add_child(newname, child, warning = warning)
+                    child.import_script(fpath)
+#                    script.onImportScriptFile(file = fpath)
+        for x in warning:
+            if len(x) != 0: print(x)
+
 class PySol(TreeDict):
     """
     PySol is a folder to store solution

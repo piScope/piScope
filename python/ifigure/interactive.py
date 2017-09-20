@@ -1315,16 +1315,7 @@ def tscope(file = '',  book = None):
     v.book.setvar('mdsplus_server', 'mdsplus.partenaires.cea.fr:8000:')
 
 try:
-    import petram
-    def petra(model = None):
-        from __main__ import ifig_app    
-        proj = ifig_app.proj
-        try:
-            model = proj.model1.mfem if model is None else model
-        except:
-            model = None
-        if model is not None:
-            model.scripts.helpers.open_gui()
+    from petram.pi.shell_commands import petra
     has_petra = True
 except:
     has_petra = False    
