@@ -946,6 +946,8 @@ def solid(v, **kargs):
 
     cdata: used with cz  cdata[ielement, ivertex]
 
+    draw_last : draw this artists last on GL canvas, useful for getting
+                cleanin line smoothing
     '''
     pass
 @redirect_to_aviewer

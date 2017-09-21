@@ -61,6 +61,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cdata', None)
         p.add_key('shade', 'linear')
         p.add_key('array_idx', None)
+        p.add_key('draw_last', False)
 
         v, kywds,d, flag = p.process(*args, **kywds)
         if not flag: 
@@ -204,6 +205,9 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
 
         args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
         self._artists = [container.plot_solid(*args, **kywds)]
+
+        if self.getvar('draw_last'):
+             self._artists[0]._gl_isLast = True            
         self.set_pickmask(self._pickmask)
         if len(self.hidden_component) > 0:
             self.hide_component(self.hidden_component)
