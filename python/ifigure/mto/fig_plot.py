@@ -796,6 +796,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         else:
             return x3, y3
 
+    def set_alpha(self, v, a):
+        a.set_alpha(v)
 
 class StepPlot(FigPlot):
     '''
