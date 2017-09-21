@@ -1010,7 +1010,9 @@ class TreeDict(object):
     def is_suppress(self):
         return self._suppress
 
-
+    @property
+    def isSuppressed(self):
+        return self._suppress
 
     #
     #  visibility in tree viewer

@@ -1109,21 +1109,21 @@ class FigObj(TreeDict, MetadataHolder):
         app=id.GetTopLevelParent()
         app.deffered_force_layout()
 
-    def onSuppress(self, evt):
+    def onSuppress(self, evt = None):
         self.set_suppress(True)
 #        self.realize()
         ifigure.events.SendPVDrawRequest(self)
 #        app.draw()
-        evt.Skip()
+        if evt is not None: evt.Skip()
 
-    def onUnSuppress(self, evt):
+    def onUnSuppress(self, evt = None):
 #        id=evt.GetEventObject()
 #        app=id.GetTopLevelParent()
         self.set_suppress(False)
 #        self.realize()
         ifigure.events.SendPVDrawRequest(self)
 #        app.draw()
-        evt.Skip()
+        if evt is not None: evt.Skip()
 
     def set_suppress(self, val):
         super(FigObj, self).set_suppress(val)
