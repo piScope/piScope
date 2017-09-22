@@ -82,4 +82,7 @@ class GLCompound(object):
         for a in self._artists:
             a._gl_pickable = not value
         
+    def set_gl_hl_use_array_idx(self, value):
+        for a in self._artists:
+            a.set_gl_hl_use_array_idx(value)    
     

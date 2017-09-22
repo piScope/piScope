@@ -1,3 +1,6 @@
+	* 09/22
+	** set_gl_hl_use_array_idx is added to gl_component
+
 	* 09/04
 
 	** mode 341 (CallMethod button is added to EditList)
