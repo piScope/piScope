@@ -1,3 +1,8 @@
+	* 09/24
+        ** navibar::ClickP1Button
+	ClickP1Button(self, name) allows to click navigation
+	bar button from program.
+	
 	* 09/22
 	** set_gl_hl_use_array_idx is added to gl_component
 

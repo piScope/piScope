@@ -927,8 +927,38 @@ class navibar(ButtonPanel):
                  else:
                      b.SetToggled(False)                             
                      b.SetBitmap(b.bitmap1)
+                     
+    def ClickP1Button(self, name):
+        '''
+        programatically click a button, whose
+        task is name
+        '''
+        p1 = self.p1
+        if self.three_d_bar:
+            choice = self.p1_choice[1]
+        else:
+            choice = self.p1_choice[0]
 
+        pt = None
+        for info in self.p1:
+            if isinstance(info, str): continue
+            if (info.btask == name or
+                info.btask == name + '_'+choice):
+                rect = info.GetRect()
+                pt = wx.Point(int(rect[0]+rect[1]/2.),
+                              int(rect[1]+rect[3]/2.))
 
+        if pt is None: return
+        evt1 = wx.MouseEvent(wx.wxEVT_LEFT_DOWN)
+        evt2 = wx.MouseEvent(wx.wxEVT_LEFT_UP)
+        evt1.SetEventObject(self)
+        evt2.SetEventObject(self)        
+        evt1.SetPosition(pt)
+        evt2.SetPosition(pt)
+        self.ProcessEvent(evt1)
+        self.ProcessEvent(evt2)                
+        self.Refresh()
+        
     def _set_zoomcxr(self):
         if self.zoom_up_down == 'up':
            self.GetParent().canvas.SetCursor(self.zoom_crs[0 + self.zoom_menu*2])
