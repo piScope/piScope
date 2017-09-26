@@ -138,6 +138,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.SetMaxSize((2,2))
             self.SetMinSize((2,2))
 
+        self._merge_check = 1
+            
+
     def gc_artist_data(self):
         keys = self.artists_data.keys()
         for aa in keys:
@@ -847,7 +850,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #
         #self.do_draw_artists(tag)
         #self.set_uniform(glUniform1i, 'uisClear', 0)
-        glClearColor(*[0,0,0,1])
+        glClearColor(0,0,0,1.0)
         glClear(GL_COLOR_BUFFER_BIT)
         
         #
@@ -884,7 +887,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1])
            ### From here           
-           glClearColor(*[0,0,0,1])
+           glClearColor(0,0,0,1.0)
            glClear(GL_COLOR_BUFFER_BIT)
            '''
            self.set_uniform(glUniform1i, 'uisClear', 1)        
@@ -1016,18 +1019,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(h, w, -1)
-
+        #self._debug_image = image
         if self._hittest_map_update:
-           '''
-           glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-           data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
-           data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)
-           glReadBuffer(GL_NONE)
-           idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
-           idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
-           idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
-           '''
-           
            return (image,
                    self._hit_map_data[0],
                    self._hit_map_data[1],
@@ -1120,6 +1113,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDrawArrays(GL_LINE_STRIP, 0, w)
         glReadBuffer(GL_COLOR_ATTACHMENT2)
         data = glReadPixels(0, 0, w, 1, GL_RED, GL_FLOAT)
+        glReadBuffer(GL_NONE)        
         atlas =  np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
 
         vertex_id.set_array(atlas.astype(np.float32))
@@ -1610,7 +1604,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            ## assert False, "use_multdrawarrays not supported"
            ##
 
-        glEnableClientState(GL_INDEX_ARRAY)               
+        #glEnableClientState(GL_INDEX_ARRAY)               
         vbos['i'].bind()
         #glIndexPointer(GL_SHORT, 0, None)  not used
         #vbos['i'].unbind()
@@ -1696,7 +1690,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
-        glDisableClientState(GL_INDEX_ARRAY)               
+        #glDisableClientState(GL_INDEX_ARRAY)               
         if vbos['vertex_id'] is not None:        
            self.DisableVertexAttrib('vertex_id')           
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))

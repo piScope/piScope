@@ -129,15 +129,12 @@ void main() {
          float count = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).g;
          float rrr = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).r;	 	 
          // Blend Func: GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA
-         gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1)*(1-r);
+	 // sqrt in below is my adjustment
+	 // here r is alpha_1*alpha_2*alpha_3.... (products of alphas of transparent layer)
+         //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1)*(1-r);
+	 gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
 	 //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1);
-	 //gl_FragData[0] = vec4(r, 0,0,r);
-	 
-	 //gl_FragData[0] = vec4((gl_FragCoord.z-2)/20., 0,0,1);
-	 //gl_FragData[0] = vec4((gl_FragCoord.z-0.87)*20., 0,0,1);
-	 //gl_FragData[0] = vec4(accum.rgb / clamp(accum.a, 1e-4, 5e4),  1);	 
-         //gl_FragData[1] = uArtistID;
- 	 //gl_FragData[1].a = 1.0;
+	 //gl_FragData[0] = vec4(r, r, r,  1);
 	 return;
      }
      if (uisAtlas == 1){
@@ -288,9 +285,6 @@ void main() {
      else
      {
         color = gl_FragData[0];
-        // Insert your favorite weighting function here. The color-based factor
-        // avoids color pollution from the edges of wispy clouds. The z-based
-        // factor gives precedence to nearer surfaces.
         //float z = gl_FragCoord.z * 500.;     
         //float weight = max(min(1.0, max(max(color[0], color[1]), color[2])*color[0]), color[0])*clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);
         float z = gl_FragCoord.z*500;          
