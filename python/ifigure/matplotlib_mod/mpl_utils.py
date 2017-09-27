@@ -13,12 +13,13 @@ def reset_color_cycle(axes):
     if parse_version(mpl_version) >= parse_version('1.5'):
         axes.set_prop_cycle(None)  # this reset color cycle
     else:
-        cycle = get_color_cycle(a)
-        i = 0
-        while i < 50:
-            c = cycle.next()
-            if c == color_cycle[-1]: break
-            i = i + 1
+        pass
+        #cycle = get_color_cycle(axes)
+        #i = 0
+        #while i < 50:
+        #    c = cycle.next()
+        #    if c == color_cycle[-1]: break
+        #    i = i + 1
 
 def get_color_cycle_list(axes):
     if parse_version(mpl_version) >= parse_version('1.5'):

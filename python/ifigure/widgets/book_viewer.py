@@ -757,14 +757,17 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onCut(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
             self.canvas.Cut()
         else:
             e.Skip()
 
     def onCopy(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        print(fc)
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
            self.canvas.Copy()
            wx.GetApp().TopWindow.proj_tree_viewer.update_widget()               
         else:
@@ -779,7 +782,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onPaste(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
             val = self.canvas.Paste()
             wx.GetApp().TopWindow.proj_tree_viewer.update_widget()
             return val

@@ -263,6 +263,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glEnable(GL_MULTISAMPLE)
         glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        glDisable(GL_ALPHA_TEST)     
         
            
     def EnableVertexAttrib(self, name):
