@@ -96,7 +96,7 @@ btasks1_std3d_base=[('select', 'select.png', 1, 'select',),
           '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction'])),
          ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']),),
          ('cursor',   'cursor.png', 1, 'cursor',),
-          ('3dzoom',   'threed_rot.png', 1, '3D zoom',),
+          ('3dzoom',   'threed_rot.png', 1, '3D zoom\n shift: pan\n alt: zoom',),
           ('---',    (10,10), 0, ''),]
 
 btasks1_std3d = btasks1_std3d_base + [

@@ -1629,6 +1629,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #       print self._press_key, evt.guiEvent.GetKeyCode()
    def onKey2(self, evt):
 #       print 'onKey2 in ifigure canvas'
+
+       if self.axes_selection() is not None:
+           ax = self.axes_selection()
+           is3Dax = ax.figobj.get_3d()
+       else: 
+           ax = None
+           is3Dax = False
+          
        if self._txt_box is not None and self._txt_box.IsShown():
            self.onKey3(evt)
            return
@@ -1640,7 +1648,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           return
 
        if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
-           if self.toolbar.mode == 'zoom':
+           if is3Dax:
+               if self.toolbar.mode == 'pan':
+                   self.toolbar.ClickP1Button('3dzoom')               
+               else:
+                   self.toolbar.ClickP1Button('pan')               
+           elif self.toolbar.mode == 'zoom':
                self.toolbar.ToggleZoomUpDown()
            elif self.toolbar.mode == 'pan':
                self.toolbar.TogglePanAll()
@@ -1652,7 +1665,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                    self.toolbar.Set3DZoomCursor()
                    self._3d_rot_mode = 0
        elif evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
-           if self.toolbar.mode == 'zoom':
+           if is3Dax:
+               if self.toolbar.mode == 'zoom':
+                   self.toolbar.ClickP1Button('3dzoom')               
+               else:
+                   self.toolbar.ClickP1Button('zoom')               
+           elif self.toolbar.mode == 'zoom':
                self.toolbar.ToggleZoomMenu()
            elif self.toolbar.mode == '3dzoom':
                if self._3d_rot_mode == 0:
@@ -1956,6 +1974,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       hit = False
 
 #      hit, extra = cpicker.figure_picker(self._figure, event)
+
       if (not (self.toolbar.mode in ('zoom', 'pan', '3dzoom'))
           and event.button == 1):
          self.run_picker(event)
