@@ -765,7 +765,6 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onCopy(self, e):
         fc = self.FindFocus()
-        print(fc)
         if (fc is self.canvas.canvas or
             fc in self.canvas.canvas.GetChildren()):
            self.canvas.Copy()

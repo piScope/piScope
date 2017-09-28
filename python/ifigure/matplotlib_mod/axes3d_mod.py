@@ -845,6 +845,8 @@ class Axes3DMod(Axes3D):
                 else:
                     for k in range(idxset.shape[1]):
                         norms[idxset[:,k], :] = n1a
+            elif idxset.shape[-1] < 3:
+                norms = n1a
             else:
                 data = np.ones(idxset.flatten().shape[0])
                 jj = np.array([np.arange(idxset.shape[0])]*idxset.shape[-1]).flatten()

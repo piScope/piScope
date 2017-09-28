@@ -31,7 +31,15 @@ class VideoplayerBar(bp.ButtonPanel):
         self.btasks0 = btasks0[:]
         self.refresh_button()
         self.Fit()
-        
+        self.Bind(wx.EVT_KEY_DOWN, self._onKeyDown)
+        self.Bind(wx.EVT_KEY_UP, self._onKeyUp)
+
+    def _onKeyDown(self, evt):
+        wx.PostEvent(self.GetParent(), evt)
+
+    def _onKeyUp(self, evt):
+        wx.PostEvent(self.GetParent(), evt)
+
     def make_button_group(self, parent, btasks):
       
         bts = TaskBtnList()

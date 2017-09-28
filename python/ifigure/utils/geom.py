@@ -377,7 +377,7 @@ def s_path(path, idx = None):
         lidx = long(idx)
         didx = idx - lidx
         return cumsum[lidx] + norm_dpath[lidx] * didx
-
+'''
 def connect_pairs(ll):
     d = {}
 
@@ -409,4 +409,112 @@ def connect_pairs(ll):
     if d[key] == pt[0]: pt.append(pt[0])
 
     return pt
-   
+'''   
+def connect_pairs(ll):
+    '''
+    connect paris of indices to make a loop
+
+    (example)
+    >>> idx = array([[1, 4],  [3, 4], [1,2], [2, 3],])
+    >>> connect_pairs(idx)
+    [[1, 2, 3, 4, 1]]
+    ''' 
+    if not isinstance(ll, np.ndarray):
+       ll = np.array(ll)
+
+    idx = np.where(ll[:,0] > ll[:,1])[0]
+    t1 = ll[idx,0]
+    t2 = ll[idx,1]
+    ll[idx,0] = t2
+    ll[idx,1] = t1
+
+    ii = np.vstack([np.arange(ll.shape[0]),]*2).transpose()
+    d  = np.ones(ll.shape[0]*ll.shape[1]).reshape(ll.shape)
+    from scipy.sparse import csr_matrix, coo_matrix
+    m = coo_matrix((d.flatten(), (ii.flatten(), ll.flatten())), 
+                   shape=(len(ll),np.max(ll+1)))
+    mm = m.tocsc()
+    ic = mm.indices; icp = mm.indptr
+    mm = m.tocsr()
+    ir = mm.indices; irp = mm.indptr
+
+    def get_start(taken):
+       idx = np.where(np.logical_and(np.diff(icp) == 1, taken == 0))[0]
+       nz  = np.where(np.logical_and(np.diff(icp) != 0, taken == 0))[0]
+       if len(nz) == 0: return
+       if len(idx) > 0:
+          print('Open end found')
+          pt = (ic[icp[idx[0]]], idx[0])
+       else:
+          pt = (ic[icp[nz[0]]], nz[0])
+       pts = [pt]
+       return pts
+
+    def hop_v(pt):
+       ii = pt[1]
+       ii = [icp[ii],icp[ii+1]-1]
+       next = ic[ii[1]] if ic[ii[0]] == pt[0] else ic[ii[0]]
+       return (next, pt[1])
+    def hop_h(pt):
+       ii = pt[0]
+       ii = [irp[ii],irp[ii+1]-1]
+       next = ir[ii[1]] if ir[ii[0]] == pt[1] else ir[ii[0]]
+       return (pt[0], next)
+
+    def trace(pts):
+        loop = [pts[-1][1]]
+        while True:
+            pts.append(hop_v(pts[-1]))
+            #rows.append(pts[-1][0])
+            pts.append(hop_h(pts[-1]))
+            loop.append(pts[-1][1])
+            if pts[-1] == pts[0]: break
+        return loop
+
+    taken = (icp*0)[:-1]
+    loops = []
+    while True:
+        pts = get_start(taken)
+        if pts is None: break
+        loop = trace(pts)
+        loops.append(loop)
+        taken[loop] = 1
+
+    return loops
+
+def make_loop_idx(loop):
+    ''' 
+    make indexset array from loop
+
+    (example)
+    a = connect_pairs(idx)
+    figure()
+    solid(v,  make_loop_idx(a[0]))
+    '''
+    if loop[0] == loop[-1]:
+       loop = loop[:-1]
+    return np.vstack((loop, np.roll(loop, 1))).transpose()
+
+def find_edges(idxset):
+    '''
+    find exterior edges of triangulation, but the algorith
+    is not limited to triangles.
+
+    idxset is an array defining patch.
+    for example :idxset[:, 3] is idx of triangles
+    this routine findds edges which appears once
+    patch
+
+    '''
+    s = idxset.shape
+    l = []  # loop
+    for i in range(s[-1]-1):
+       l.append(idx[:,[i,i+1]])
+    l.append(idx[:,[s[-1]-1, 0]])
+    c = np.vstack(l)
+    from collections import defaultdict
+    d = defaultdict(int)
+    for i in c: d[tuple(np.sort(i))] += 1
+    e = [k for k in d if d[k] == 1]
+
+    return e

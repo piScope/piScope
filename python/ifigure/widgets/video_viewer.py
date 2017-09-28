@@ -286,7 +286,7 @@ class VideoBookPlayer(VideoViewerMode, BookViewer):
         BookViewer.call_draw_after_resize(self)
         
     def onPaste(self, e):
-        BookViewer.onPaste(e)
+        BookViewer.onPaste(self, e)
         self.add_all_video_obj()
 
     def add_all_video_obj(self):

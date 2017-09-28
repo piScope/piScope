@@ -45,6 +45,12 @@ class GLCompound(object):
             assert False, "hide_component is not supported for non-indexed artist"
 
     def get_subset(self, component = None):
+        '''
+        v, idx, cdata = gl_compound::get_subset(component = None)
+  
+        return the vertex information of components
+        if component is None, it returns visible components
+        '''
         if not self.hasvar('idxset'): return
         if component is None:
             component = self.shown_component
