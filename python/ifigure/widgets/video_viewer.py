@@ -284,6 +284,13 @@ class VideoBookPlayer(VideoViewerMode, BookViewer):
         if self._playerbtn is not None:
             self._playerbtn.place_right_bottom()
         BookViewer.call_draw_after_resize(self)
+        
+    def onPaste(self, e):
+        BookViewer.onPaste(e)
+        self.add_all_video_obj()
+
+    def add_all_video_obj(self):
+        raise NotImplementedError('Need to implement in subclass')
     
 class VideoViewer(VideoBookPlayer):
     def __init__(self, *args, **kwargs):

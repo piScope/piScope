@@ -6,7 +6,11 @@ import numpy as np
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('cbook')
 
-
+try:
+    import Image
+except ImportError:
+    from PIL import Image
+    
 def is_safename(txt):
     try:
        exec txt + '= 3' in {}, {}
@@ -106,7 +110,7 @@ def pick_unused_port():
 #
 def pil_to_image(pil, alpha=True):
     #from PIL import Image
-    import Image
+    #import Image
     """ Method will convert PIL Image to wx.Image """
     if alpha:
         image = apply( wx.EmptyImage, pil.size )
@@ -124,7 +128,7 @@ def pil_to_image(pil, alpha=True):
 #
 def image_to_pil(image):
     #
-    import Image
+    #import Image
     """ Method will convert wx.Image to PIL Image """
     #pil = Image.new('RGB', (image.GetWidth(), image.GetHeight()))
     #pil.fromstring(image.GetData())

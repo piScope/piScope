@@ -1650,7 +1650,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
            if is3Dax:
                if self.toolbar.mode == 'pan':
-                   self.toolbar.ClickP1Button('3dzoom')               
+                   self.toolbar.ClickP1Button('3dzoom')
+               elif self.toolbar.mode == '3dzoom':
+                   self.toolbar.ClickP1Button('select')                   
                else:
                    self.toolbar.ClickP1Button('pan')               
            elif self.toolbar.mode == 'zoom':
@@ -1667,7 +1669,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        elif evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
            if is3Dax:
                if self.toolbar.mode == 'zoom':
-                   self.toolbar.ClickP1Button('3dzoom')               
+                   self.toolbar.ClickP1Button('3dzoom')
+               elif self.toolbar.mode == '3dzoom':
+                   self.toolbar.ClickP1Button('select')                   
                else:
                    self.toolbar.ClickP1Button('zoom')               
            elif self.toolbar.mode == 'zoom':
