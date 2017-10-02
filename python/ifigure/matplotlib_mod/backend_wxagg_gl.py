@@ -1338,7 +1338,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
-        glPointSize(marker_size*2+1)
+        glPointSize(marker_size*2*multisample+1)
         glAlphaFunc(GL_GREATER, 0.5);        
         glEnable(GL_POINT_SPRITE)
         glEnable(GL_ALPHA_TEST);        
