@@ -1,3 +1,10 @@
+	* 10/02
+	** 3D graphics in an inset axes is on
+	** background alpha of 3D axes is set to transparent by default
+	this is forced when calling set_3D(True), when swithching the
+	mode from 2D to 3D
+	
+
 	* 09/24
         ** navibar::ClickP1Button
 	ClickP1Button(self, name) allows to click navigation

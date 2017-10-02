@@ -1033,7 +1033,7 @@ class Axes3DMod(Axes3D):
         return glcanvas.get_uniforms()
     @allow_rasterization
     def draw(self, renderer):
-        self.patch.set_facecolor(self.figure.patch.get_facecolor())
+
 
 #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0

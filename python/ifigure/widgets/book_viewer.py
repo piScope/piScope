@@ -798,7 +798,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                        title= "Paste Page",
                        style=4)                 
         if ret == 'yes':
-            self.del_page(self.ipage)            
+            self.del_page(self.ipage)
+            self.set_window_title()
 #            ifigure.events.SendShowPageEvent(np, id)            
         else:
             self.show_page(self.ipage+1)

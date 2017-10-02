@@ -210,6 +210,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         tab =  ["common"]
         if self._3D:
            item = [["title", "aspect", "axis",   ## frameon is not used in 3D
+                    "axis_bgcolor", "axis_bgalpha",                     
                     "axis3d_bgcolor", "axis3d_bgalpha"], ]
         else:
            item = [["title", "aspect", "frame", "axis",
@@ -331,9 +332,11 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
                for k, artist in enumerate(self._artists):
                    self.set_artist_property(artist, lp[k])
                    #print lp[k]
-               self.delp("loaded_property") 
+               self.delp("loaded_property")
+
            self.set_title(self.getp('title_labelinfo'), self._artists[0])
            self.set_axis_bgedgecolor(self.getp('axis_bgedgecolor'), None)
+           self.set_axis_bgfacecolor(self.getp('axis_bgfacecolor'))           
            self.set_axis_bgalpha(self.getp('axis_bgalpha'), None)           
            self.set_axis_bglinestyle(self.getp('axis_bglinestyle'), None)
            self.set_axis_bglinewidth(self.getp('axis_bglinewidth'), None)           
@@ -1566,11 +1569,10 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
             m.append((txt, self.onRemoveC, None))                        
         if not isinstance(self, FigInsetAxes):
             m.append(('Add Inset Axes', self.onAddInsetAxesCanvas, None))
-            if self.get_3d():
-                m.append(('Use 2D Axes', self.onToggle3D, None))
-            else:
-                m.append(('Use 3D Axes', self.onToggle3D, None))            
-            
+        if self.get_3d():
+            m.append(('Use 2D Axes', self.onToggle3D, None))
+        else:
+            m.append(('Use 3D Axes', self.onToggle3D, None))
             
         return m
     
@@ -1595,7 +1597,8 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
             self.add_axis_param(dir='z')
         if self._3D: # going to 3d
             self.get_axis_bgfacecolor()
-            self.get_axis_bgedgecolor()            
+            self.get_axis_bgedgecolor()
+            self.set_axis_bgalpha(0.0, None)                       
         if not self._3D:
             self._zaxis = []
         self.del_artist(delall=True)
@@ -1603,6 +1606,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         if not self._3D:
             self.set_axis_bgedgecolor(self.getp('axis_bgedgecolor'))
             self.set_axis_bgfacecolor(self.getp('axis_bgfacecolor'))
+            self.set_axis_bgalpha(1.0, None)                                   
         self.set_bmp_update(False)
         
     def get_3d(self):
@@ -1722,6 +1726,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
             a.patch.set_alpha(0)
         value = list(value)
         if not any(value): alpha = 0.0
+        if alpha is None: alpha = 1.0
         value[3] = alpha
         self._artists[0].patch.set_facecolor(value)
         self._artists[0].patch.set_alpha(value[3])
@@ -1863,13 +1868,13 @@ class FigInsetAxes(FigAxes):
 
     def tree_viewer_menu(self):
      # return MenuString, Handler, MenuImage
-       m=[('Add Plot',     self.onAddPlot, None),
-          ('Add Contour',  self.onAddContour, None),
-          ('Add Image',    self.onAddImage, None),
-          ('---',        None, None),
-          ('Realize',    self.onRealize, None)]
-
-       return m+super(FigAxes, self).tree_viewer_menu()
+     #  m=[('Add Plot',     self.onAddPlot, None),
+     #     ('Add Contour',  self.onAddContour, None),
+     #     ('Add Image',    self.onAddImage, None),
+     #     ('---',        None, None),
+     #     ('Realize',    self.onRealize, None)]
+       return super(FigAxes, self).tree_viewer_menu()
+   
     def isDraggable(self):
         return  self._var["draggable"]
 

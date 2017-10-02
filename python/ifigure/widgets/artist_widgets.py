@@ -312,9 +312,9 @@ listparam["axis_bgedgecolor"] = ["edge",   'red', 206, {}, 'axis_bgedgecolor', 2
 listparam["axis_bglinewidth"] = ["width",     0, 107, {}, 'axis_bglinewidth', 2]
 listparam["axis_bglinestyle"] = ["style",   'solid', 10, {}, 'axis_bglinestyle', 2]
 listparam["axis_bgalpha"] = ["alpha",       1.0, 105, {}, 'axis_bgalpha', 2]
-listparam["axis3d_bgcolor"]  =["b.g.", ('grey','grey','grey'),
+listparam["axis3d_bgcolor"]  =["b.g.(3D)", ('grey','grey','grey'),
                                23, {}, 'axis3d_bgcolor', 2]
-listparam["axis3d_bgalpha"] = ["alpha", "1",
+listparam["axis3d_bgalpha"] = ["alpha(3D)", "1",
                                 105, {}, 'axis3d_bgalpha', 2]
 s1={"style":wx.CB_READONLY,
            "choices": ["serif", "sans-serif",
