@@ -3,6 +3,13 @@
 	** background alpha of 3D axes is set to transparent by default
 	this is forced when calling set_3D(True), when swithching the
 	mode from 2D to 3D
+	** OpenGL mutlisampling
+	backend_wxagg_gl has multisample and multisample_init_done to 
+	control how the mutlisampling is done. A user can change setting
+	from Preference->Appearance tab. When mutltisampling is off,
+	it uses a texture size exactly the same as screen size. It
+	saves memory, but it uses hardware smoothing, which does not look
+	very good expecially when transparency is used.
 	
 
 	* 09/24

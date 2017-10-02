@@ -4,6 +4,7 @@ import time
 import wx
 import weakref
 import array
+from scipy.misc import imresize
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
 import matplotlib
@@ -45,6 +46,9 @@ except ImportError:
     haveOpenGL = False
 
 near_clipping = 8
+
+multisample = 1
+multisample_init_done = False
 
 import os
 basedir = os.path.dirname(__file__)
@@ -868,7 +872,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                        ignore_alpha = True)
         if self._hittest_map_update:
             self.read_hit_map_data(tag)
-        self._no_smooth = False            
+
+        if multisample == 1: #use OpenGL hardware smoothing in this case
+            self._no_smooth = False            
+
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
@@ -996,9 +1003,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
             depth = np.fromstring(data3, np.float32).reshape(h, w)
             
         glReadBuffer(GL_NONE)        
-        self._hit_map_data = (np.rint(idmap0),
-                              np.rint(idmap2),                   
-                              depth)
+        if multisample > 1:
+           ms =multisample
+           self._hit_map_data = (np.rint(idmap0)[::ms, ::ms],
+                                 np.rint(idmap2)[::ms, ::ms],                   
+                                 depth[::ms, ::ms])
+        else:
+           self._hit_map_data = (np.rint(idmap0),
+                                 np.rint(idmap2),                   
+                                 depth)
        
     def read_data(self, a):
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
@@ -1021,6 +1034,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
             data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(h, w, -1)
         #self._debug_image = image
+        if multisample > 1:
+           w,h,d = image.shape
+           a1 = imresize(image[:,:,0], (w/multisample , h/multisample))
+           a2 = imresize(image[:,:,1], (w/multisample , h/multisample))
+           a3 = imresize(image[:,:,2], (w/multisample , h/multisample))
+           a4 = imresize(image[:,:,3], (w/multisample , h/multisample))
+           image = np.dstack((a1,a2,a3,a4))
         if self._hittest_map_update:
            return (image,
                    self._hit_map_data[0],
@@ -1156,7 +1176,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['n'].unbind()
         
         lw = gc.get_linewidth()
-        if lw > 0: glLineWidth(lw)
+        if lw > 0: glLineWidth(lw*multisample)
         if rgbFace is None:
             glColor(gc._rgb)
             if self._wireframe == 2: glDisable(GL_DEPTH_TEST)            
@@ -1447,7 +1467,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['fc'].unbind()
            
         if linewidth[0] > 0.0 and not self._shadow:           
-            glLineWidth(linewidth[0])
+            glLineWidth(linewidth[0]*multisample)
             ''' 
             if linewidth[0] < 1.5:
                glLineWidth(max(linewidth[0]-0.5, 0.5))
@@ -1656,7 +1676,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['fc'].unbind()
 
         if linewidth[0] > 0.0 and not self._shadow:
-            glLineWidth(linewidth[0])
+            glLineWidth(linewidth[0]*multisample)
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
             glDepthFunc(GL_LEQUAL)
@@ -1872,11 +1892,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return None
 
     def frame_request(self, a, trans):
+        if not multisample_init_done:
+           globals()['multisample_init_done'] = True
+           s = wx.GetApp().TopWindow.appearanceconfig.setting
+           if s['gl_multisample']:
+               globals()['multisample'] = 2
+           else:
+               globals()['multisample'] = 1
         from art3d_gl import frame_range
         target = self.get_container(a)
         box = trans.transform([frame_range[0:2], frame_range[2:4]])
         d = box[1] - box[0]
-        w, h = long(d[0]), long(d[1])
+        w, h = long(d[0])*multisample, long(d[1])*multisample
         make_new = False
 
 
