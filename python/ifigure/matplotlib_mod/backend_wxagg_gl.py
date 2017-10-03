@@ -135,6 +135,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._hittest_map_update = True
         self._alpha_blend = True
         self._no_smooth = False
+        self.PIXBUFS = (None, None, None)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
         
         if MyGLCanvas.offscreen: 
@@ -170,7 +171,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
            glDepthMask(GL_FALSE)                              
            
-    @wait_gl_finish           
+    #@wait_gl_finish           
     def set_uniform(self, func, name, *args, **kwargs):
         loc = self._p_uniform_loc[name]       
         func(loc, *args, **kwargs)
@@ -264,7 +265,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_lighting()
 
 
-        glEnable(GL_MULTISAMPLE)
+        #glEnable(GL_MULTISAMPLE)
         glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glDisable(GL_ALPHA_TEST)     
@@ -364,16 +365,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindTexture(GL_TEXTURE_2D, tex)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
-        '''
-        tex3 = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, tex3)
-        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
-                     w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
-        '''
+
         tex2 = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, tex2)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -389,7 +383,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                         GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                         GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      w, h, 0,GL_RGBA, GL_UNSIGNED_BYTE, None)
 
 
@@ -400,6 +394,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
                         w, h, 0, GL_RGBA, GL_FLOAT, None)
+#                        w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None) 
             return otexx
         otex  = gen_otex()
         otex2 = gen_otex()
@@ -834,7 +829,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                 do_clear = (0,0,0,0),
                                 do_clear_depth = True,
                                 draw_non_solid = False)
-           glFinish()
+           #glFinish()
            shadow_tex = self.make_shadow_texture(w, h, None)
            self.use_draw_mode(frame, buf, texs, w, h, shadow_params)
            self.set_uniform(glUniform1i, 'uShadowTex', 1)
@@ -929,7 +924,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            #self.set_uniform(glUniform1i, 'uisClear', 2)
            #self.force_fill_screen()               
            #self.set_uniform(glUniform1i, 'uisClear', 0)
-           glFinish()
+           #glFinish()
            glFlush()
 
            self.set_uniform(glUniform1i, 'uRT0', 1)
@@ -955,15 +950,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._artist_mask = None
         return id_dict
 
-
-    def stream_read(self):
-	
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, c_void_p(0))
-	data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size)
-
-        
     def read_hit_map_data(self, a):
-        stream_read = True
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
         stream_read = True
@@ -1012,24 +999,54 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self._hit_map_data = (np.rint(idmap0),
                                  np.rint(idmap2),                   
                                  depth)
-       
+
     def read_data(self, a):
         w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
         glBindFramebuffer(GL_FRAMEBUFFER, frame)
         self.set_oit_mode_tex(texs)
         glReadBuffer(GL_COLOR_ATTACHMENT0)
-
-        stream_read = True
-        if stream_read:
-            pixel_buffer = glGenBuffers(1)
-            size = w*h
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)
+        size = w*h
+        
+        def read_pixbuf(pixel_buffer):
             glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
-            glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
-      	    data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+            glReadPixels(0,0, w, h, GL_RGBA, 
+                         GL_UNSIGNED_BYTE, c_void_p(0))
+        def map_pixbuf(pixel_buffer):
+ 	    data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER,
+                                             GL_READ_ONLY), size*4)
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
-            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
-            glDeleteBuffers(1, [pixel_buffer])
+            return data
+        stream_read = True
+        nump = 2  # number of buffering
+        if stream_read:
+            if self._hittest_map_update:
+                pixel_buffer = glGenBuffers(1)
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)                
+                read_pixbuf(pixel_buffer)
+                data = map_pixbuf(pixel_buffer)
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+                glDeleteBuffers(1, [pixel_buffer])
+                if self.PIXBUFS[0] is not None:
+                    glDeleteBuffers(1, self.PIXBUFS[:2])
+                    self.PIXBUFS = (None, None, None)
+            elif self.PIXBUFS[0] is None:
+                bufs = glGenBuffers(nump)
+                self.PIXBUFS = list(bufs) + [1]
+                pixel_buffer = self.PIXBUFS[0]
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)                
+                read_pixbuf(pixel_buffer)
+                data = map_pixbuf(pixel_buffer)
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+                self._data_bk = data
+            else:
+                read_buffer = self.PIXBUFS[(self.PIXBUFS[-1]) % nump]
+                map_buffer =  self.PIXBUFS[(self.PIXBUFS[-1]+1) % nump]
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, read_buffer)                
+                read_pixbuf(read_buffer)
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, map_buffer)
+                data = map_pixbuf(map_buffer)
+                glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+                self.PIXBUFS[-1] += 1
         else:
             data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(h, w, -1)
@@ -1041,13 +1058,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
            a3 = imresize(image[:,:,2], (w/multisample , h/multisample))
            a4 = imresize(image[:,:,3], (w/multisample , h/multisample))
            image = np.dstack((a1,a2,a3,a4))
+           
+        glReadBuffer(GL_NONE)
         if self._hittest_map_update:
            return (image,
                    self._hit_map_data[0],
                    self._hit_map_data[1],
                    self._hit_map_data[2])                   
         else:
-           glReadBuffer(GL_NONE)
            return image
     #
     #  drawing routines
@@ -1297,7 +1315,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBindTexture(GL_TEXTURE_2D, image_tex)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mode)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mode)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
                      w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                      im)
             glBindTexture(GL_TEXTURE_2D, 0)           
@@ -1318,7 +1336,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindTexture(GL_TEXTURE_2D, marker_tex)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
                      w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                      marker_path)
         glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE)        
