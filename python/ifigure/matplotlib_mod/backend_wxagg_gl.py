@@ -392,7 +392,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBindTexture(GL_TEXTURE_2D, otexx)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA12, 
                         w, h, 0, GL_RGBA, GL_FLOAT, None)
 #                        w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None) 
             return otexx
