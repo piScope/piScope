@@ -335,6 +335,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.figure.frameon = False
         for zorder, a in dsu:
             self.figure.draw_axes(self.renderer, a)
+            a.figobj._bmp_update = True
+            
         self.figure.frameon = o
 
     def _prepare_bitmap(self):

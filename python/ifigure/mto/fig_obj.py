@@ -351,6 +351,7 @@ class FigObj(TreeDict, MetadataHolder):
     def set_bmp(self, bmp, x, y):
         self._bmp = (bmp, x, y)
         self._bmp_update = True
+                
     def get_bmp(self):
         return self._bmp
     def get_bmp_update(self):

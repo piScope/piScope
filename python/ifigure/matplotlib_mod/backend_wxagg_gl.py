@@ -1027,8 +1027,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
                 glDeleteBuffers(1, [pixel_buffer])
                 if self.PIXBUFS[0] is not None:
-                    glDeleteBuffers(1, self.PIXBUFS[:2])
+                    glDeleteBuffers(nump, self.PIXBUFS[:-1])
                     self.PIXBUFS = (None, None, None)
+                glFlush()                    
             elif self.PIXBUFS[0] is None:
                 bufs = glGenBuffers(nump)
                 self.PIXBUFS = list(bufs) + [1]
@@ -1037,6 +1038,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 read_pixbuf(pixel_buffer)
                 data = map_pixbuf(pixel_buffer)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
+                glFlush()
+                # self.PIXBUFS = (None, None, None) # disable buffering
                 self._data_bk = data
             else:
                 read_buffer = self.PIXBUFS[(self.PIXBUFS[-1]) % nump]
@@ -1047,6 +1050,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 data = map_pixbuf(map_buffer)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
                 self.PIXBUFS[-1] += 1
+                glFlush()                
         else:
             data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(h, w, -1)

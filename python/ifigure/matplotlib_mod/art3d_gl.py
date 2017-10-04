@@ -50,8 +50,8 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         id_dict = glcanvas.draw_mpl_artists(tag)
         # im : image, im2, im2d: id, im3: depth
         im, im2, im2d, im3 = glcanvas.read_data(tag) 
-        import wx
-        wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
+        #import wx
+        #wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
@@ -68,11 +68,27 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
            renderer.draw_image(gc, round(x), round(y), im)
         renderer.update_id_data((x, y, id_dict, im2, im2d, im3), tag = tag)
         gc.restore()
+    tag._gl_img = im
 
 def get_glcanvas():
     from ifigure.matplotlib_mod.backend_wxagg_gl import FigureCanvasWxAggModGL
     return FigureCanvasWxAggModGL.glcanvas
 
+def draw_wrap(func):
+    def func_wrap(self, renderer):
+        axes = self.axes
+        bmp_update = self.axes.figobj._bmp_update
+        if bmp_update and axes._gl_id_data is not None:
+            renderer._k_globj += 1
+            if (renderer._k_globj != renderer._num_globj): return
+            x0, y0, id_dict, im, imd, im2 = axes._gl_id_data
+            gc = renderer.new_gc()
+            #print("drawing stored image", axes.figobj)
+            renderer.draw_image(gc, round(x0), round(y0), axes._gl_img)
+            gc.restore()            
+        else:
+            return func(self, renderer)
+    return func_wrap
 
 class ArtGL(object):
     is_gl = True
@@ -229,7 +245,8 @@ class LineGL(ArtGL, Line3D):
                           m_facecolor, m_edgewidth) }
         self._gl_marker_tex[self._marker] = data
         return marker_path
-        
+    
+    @draw_wrap
     def draw(self, renderer):
         if isSupportedRenderer(renderer):                        
            if self._invalidy or self._invalidx or self._invalidz:
@@ -369,6 +386,8 @@ class AxesImageGL(ArtGL, AxesImage):
 #           path.zvalues =  self.get_zdata()
 
         self._gl_texture_update = False
+        
+    @draw_wrap        
     def draw(self, renderer):
         v = None
         if isSupportedRenderer(renderer):
@@ -514,6 +533,7 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
 #        hl.set_edgecolor(([1, 1, 1, 0.5],))
         return [hl]
 
+    @draw_wrap            
     def draw(self, renderer):
         v = None
         if isSupportedRenderer(renderer):                
@@ -777,7 +797,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     def update_idxset(self, idxset):
         self._gl_3dpath[4] = idxset
         self._update_i = True
-    
+
+    @draw_wrap                
     def draw(self, renderer):
         v = None
         if isSupportedRenderer(renderer):
@@ -888,7 +909,8 @@ class Polygon3DGL(ArtGL, Polygon):
         
     def do_3d_projection(self, renderer):
         pass
-
+    
+    @draw_wrap        
     def draw(self, renderer):
         if isSupportedRenderer(renderer):        
            renderer.use_gl = True
