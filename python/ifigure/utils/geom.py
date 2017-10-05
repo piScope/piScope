@@ -443,7 +443,7 @@ def connect_pairs(ll):
        nz  = np.where(np.logical_and(np.diff(icp) != 0, taken == 0))[0]
        if len(nz) == 0: return
        if len(idx) > 0:
-          print('Open end found')
+          #print('Open end found')
           pt = (ic[icp[idx[0]]], idx[0])
        else:
           pt = (ic[icp[nz[0]]], nz[0])
@@ -467,6 +467,7 @@ def connect_pairs(ll):
             pts.append(hop_v(pts[-1]))
             #rows.append(pts[-1][0])
             pts.append(hop_h(pts[-1]))
+            if pts[-1][1] in loop : break # open ended
             loop.append(pts[-1][1])
             if pts[-1] == pts[0]: break
         return loop
