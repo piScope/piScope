@@ -214,7 +214,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                  'uArtistID', 'uClipLimit1',
                  'uClipLimit2',
                  'uisMarker', 'uMarkerTex', 'uisImage', 'uImageTex',
-                 'uUseClip', 'uHasHL','uUseArrayID']
+                  'uUseClip', 'uHasHL','uUseArrayID', 'nearZ', 'farZ',
+                  'isFrust']
         names = names0
         for name in names:  define_unform(self.dshader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
@@ -392,7 +393,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBindTexture(GL_TEXTURE_2D, otexx)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA12, 
                         w, h, 0, GL_RGBA, GL_FLOAT, None)
 #                        w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None) 
             return otexx
@@ -506,12 +507,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #maxZ = dist+1
         minZ = dist-near_clipping
         maxZ = dist+near_clipping
+        self.set_uniform(glUniform1f,  'nearZ', -minZ)
+        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
         if self._use_frustum:
 #           glFrustum(-1, 1, -1, 1, minZ, maxZ) #this is original (dist = 10, so 9 is adjustment)
-           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)           
+           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           self.set_uniform(glUniform1i,  'isFrust',  1)           
         else:
             a = (dist+1.)/dist
-            glOrtho(-a, a, -a, a, minZ, maxZ)                      
+            glOrtho(-a, a, -a, a, minZ, maxZ)
+            self.set_uniform(glUniform1i,  'isFrust',  0)
 
         projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
 
@@ -629,12 +634,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #maxZ = dist+1
         minZ = dist-near_clipping
         maxZ = dist+near_clipping
+        self.set_uniform(glUniform1f,  'nearZ', -minZ)
+        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
+        
         if self._use_frustum:
 #           glFrustum(-1, 1, -1, 1, minZ, maxZ) this is original (dist = 10, so 9 is adjustment)
-           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)           
+           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
            a = (dist+1.)/dist
-           glOrtho(-a, a, -a, a, minZ, maxZ)           
+           glOrtho(-a, a, -a, a, minZ, maxZ)
+           self.set_uniform(glUniform1i,  'isFrust',  0)           
         self.projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
 
         glMatrixMode(GL_MODELVIEW)
@@ -868,8 +878,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._hittest_map_update:
             self.read_hit_map_data(tag)
 
-        if multisample == 1: #use OpenGL hardware smoothing in this case
-            self._no_smooth = False            
+        #if multisample == 1: #use OpenGL hardware smoothing in this case
+        #    self._no_smooth = False            
 
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -931,6 +941,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.set_uniform(glUniform1i, 'uRT1', 2)             
 
            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+           #glBlendFunc(GL_SRC_ALPHA, GL_ZERO)
+           #glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA)
            glDepthMask(GL_FALSE)                
            self.set_uniform(glUniform1i,  'uisFinal', 1)
            self._do_depth_test = False
@@ -1057,11 +1069,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #self._debug_image = image
         if multisample > 1:
            w,h,d = image.shape
-           a1 = imresize(image[:,:,0], (w/multisample , h/multisample))
-           a2 = imresize(image[:,:,1], (w/multisample , h/multisample))
-           a3 = imresize(image[:,:,2], (w/multisample , h/multisample))
-           a4 = imresize(image[:,:,3], (w/multisample , h/multisample))
-           image = np.dstack((a1,a2,a3,a4))
+           image = imresize(image, (w/multisample , h/multisample, d))           
+           #a1 = imresize(image[:,:,0], (w/multisample , h/multisample))
+           #a2 = imresize(image[:,:,1], (w/multisample , h/multisample))
+           #a3 = imresize(image[:,:,2], (w/multisample , h/multisample))
+           #a4 = imresize(image[:,:,3], (w/multisample , h/multisample))
+           #image = np.dstack((a1,a2,a3,a4))
            
         glReadBuffer(GL_NONE)
         if self._hittest_map_update:

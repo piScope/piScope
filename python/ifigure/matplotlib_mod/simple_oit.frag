@@ -36,6 +36,10 @@ uniform int  uisMarker;
 uniform int  uUseClip;
 uniform int  uHasHL;
 uniform sampler2D uMarkerTex;
+uniform float nearZ;
+uniform float farZ;
+uniform int isFrust;
+
 
 uniform int  uUseShadowMap;
 uniform sampler2D uShadowTex;
@@ -131,10 +135,9 @@ void main() {
          // Blend Func: GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA
 	 // sqrt in below is my adjustment
 	 // here r is alpha_1*alpha_2*alpha_3.... (products of alphas of transparent layer)
-         //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1)*(1-r);
-	 gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
-	 //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1);
-	 //gl_FragData[0] = vec4(r, r, r,  1);
+         gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
+	 //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
+	 //gl_FragData[0] = vec4(accum.rgb,  1);
 	 return;
      }
      if (uisAtlas == 1){
@@ -224,7 +227,7 @@ void main() {
 	    during rot/pan */
          gl_FragData[0] = gl_FragData[0]/4.;
      }
-     gl_FragData[0].a = aaa;   
+     gl_FragData[0].a = vColor[3];
      
      if (uisMarker == 1){
         vec4 color = texture2D(uMarkerTex, gl_PointCoord);
@@ -285,21 +288,36 @@ void main() {
      else
      {
         color = gl_FragData[0];
-        //float z = gl_FragCoord.z * 500.;     
-        //float weight = max(min(1.0, max(max(color[0], color[1]), color[2])*color[0]), color[0])*clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);
-        float z = gl_FragCoord.z*500;          
-        float weight = vColor0[3]*clamp(0.03 / (1e-5 + pow(z / 200, 4.0)), 1e-2, 3e3);
-        //
-        //float z = gl_FragCoord.z;     
-        //float weight =  vColor0[3]*max(1e-2, 3e3 * pow((1 - z),3.0));
-        // Blend Func: GL_ONE, GL_ONE
-        // Switch to premultiplied alpha and weight
-        gl_FragData[1] = vec4(color.rgb * weight, vColor0[3]);
+
+        // calculating weighting dependent on z
+	// first we need z....
+        float z_ndc = 0.0;
+	float z_eye = 0.0;
+        if (isFrust == 1){
+            z_ndc = 2.0 * gl_FragCoord.z - 1.0;
+            z_eye = 2.0 * nearZ * farZ/ (farZ + nearZ - z_ndc * (farZ - nearZ));
+	}
+	else
+	{
+            z_eye = gl_FragCoord.z * (farZ-nearZ) + nearZ;
+        }
+	// here scale is scaling factor
+	// if scale is 1, z is 1 at nearZ, 1 at far 0
+	float scale = 1;
+	float z = clamp((z_eye - (nearZ + farZ)/2.0)/(nearZ- farZ)*scale+0.5, 0, 1);
+
+        // (debug) gl_FragData[0].r = z;
 	
-        // Blend Func: GL_ZERO, GL_ONE_MINUS_SRC_ALPHA
+        //float weight = max(min(1.0, max(max(color[0], color[1]), color[2])*color[0]), color[0])*clamp(0.03 / (1e-5 + pow(z * 500 / 200, 4.0)), 1e-2, 3e3);
+        //float weight = vColor0[3]*clamp(0.03 / (1e-5 + pow(z*500./ 200, 4.0)), 1e-2, 3e3)
+	;
+	float weight =  clamp(3e3*pow(z, 3), 1e-2, 3e3)/3e3;
+	//float weight =  1.;
+        gl_FragData[1] = vec4(color.rgb * weight, vColor0[3]);
         gl_FragData[0].r = vColor0[3] * weight;
-        //gl_FragData[0].r = (1-gl_FragCoord.z);
-        //gl_FragData[0].g = 0.2;
+
+        //weight = clamp(0.03 / (1e-5 + pow(z*500./ 200, 4.0)), 1e-2, 3e3);
+        //gl_FragData[0].r = pow(z, 3);
      }
 
 }

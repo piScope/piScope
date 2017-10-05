@@ -826,7 +826,7 @@ class Axes3DMod(Axes3D):
         if norms is None:
             norms = np.zeros((nverts, 3), dtype=np.float32) # weight
             if idxset.shape[1] > 2:
-                xyz = vv[idxset[:, :3]]
+                xyz = vv[idxset[:, :3]].astype(float, copy=False)
                 p0 = xyz[:, 0, :] - xyz[:, 1, :]
                 p1 = xyz[:, 0, :] - xyz[:, 2, :]
                 n1a = np.cross(p0, p1)
