@@ -33,6 +33,9 @@ class VideoViewerMode(object):
     def add_all_video_obj(self):
         raise NotImplementedError('VideoViewerMode::add_all_video_obj should be overwritten')
 
+    def reset_video_obj_set(self):
+        self._video_obj = weakref.WeakSet()        
+
     def add_video_obj(self, figobj):
         self._video_obj.add(figobj)
     
@@ -326,6 +329,7 @@ class VideoViewer(VideoBookPlayer):
         return o
     
     def add_all_video_obj(self):                
+        self.reset_video_obj_set()
         for obj in self.book.walk_tree():
             if isinstance(obj, FigImageVideo): self.add_video_obj(obj)
 

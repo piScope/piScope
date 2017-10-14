@@ -113,14 +113,17 @@ class FigSurfacePhasor(FigSurface):
         
 def convert_figobj(obj):
     if obj.__class__ == FigTripcolor:
+        if obj.getvar('cdata') is None: return
         obj.__class__ = FigTripcolorPhasor
     elif obj.__class__ == FigPlot:        
         obj.__class__ = FigPlotPhasor
     elif obj.__class__ == FigQuiver:        
         obj.__class__ = FigQuiverPhasor
     elif obj.__class__ == FigSolid:        
+        if obj.getvar('cdata') is None: return
         obj.__class__ = FigSolidPhasor
-    elif obj.__class__ == FigSurface:        
+    elif obj.__class__ == FigSurface:      
+        if obj.getvar('cdata') is None: return
         obj.__class__ = FigSurfacePhasor
     else:
         pass
@@ -197,6 +200,7 @@ class WaveViewer(VideoBookPlayer):
         return self.nframe
     
     def add_all_video_obj(self):        
+        self.reset_video_obj_set()
         for obj in self.book.walk_tree():
             if isinstance(obj, FigTripcolorPhasor): self.add_video_obj(obj)
             if isinstance(obj, FigPlotPhasor): self.add_video_obj(obj)
