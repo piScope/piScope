@@ -1330,7 +1330,7 @@ class BookViewerInteractive(object):
                   verts = verts[...,:-1]
              elif verts.shape[-1] == 2:
                  zvalue = kargs.pop('zvalue', 0.0)
-                 verts = np.dstack((args[0], np.zeros((args[0].shape[0], 1))
+                 verts = np.hstack((args[0], np.zeros((args[0].shape[0], 1))
                                +zvalue))
              args = (verts, idxset)
         elif len(args) == 1:
