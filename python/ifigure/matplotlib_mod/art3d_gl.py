@@ -101,6 +101,9 @@ class ArtGL(object):
         self._gl_hl = False
         self._gl_hit_array_id = []
         self._gl_array_idx = kargs.pop('array_idx', None)
+        if self._gl_array_idx is not None:
+            self._gl_array_idx = np.array(self._gl_array_idx, dtype = int,
+                                          copy=False)
         self._gl_pickable = True
         self._gl_hl_use_array_idx = False
         self._gl_marker_tex = weakref.WeakKeyDictionary()
@@ -127,7 +130,6 @@ class ArtGL(object):
         
         check, array_id =  c.gl_hit_test(evt.x, evt.y,
                                          self, radius = 3)
-
         if check:
             if int(array_id) in self._gl_hit_array_id:
                 self._gl_hit_array_id.remove(int(array_id))

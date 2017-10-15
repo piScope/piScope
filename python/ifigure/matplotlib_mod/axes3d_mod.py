@@ -811,7 +811,8 @@ class Axes3DMod(Axes3D):
         else:
             v = args[0]   # vertex
             vv = v
-            idxset = args[1] # element index (element_idx, point_in_element)
+            idxset = np.array(args[1], dtype=int, copy=False)
+            # element index (element_idx, point_in_element)
             nverts = v.shape[0]
             ncounts = idxset.shape[1]
             nele = idxset.shape[0]

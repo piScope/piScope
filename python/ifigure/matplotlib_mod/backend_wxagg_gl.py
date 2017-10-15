@@ -1864,7 +1864,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['vertex_id'] is None  or vbos['vertex_id'].need_update:
             counts = vbos['counts']
             l = len(counts)
-            nverts = len(paths[0])            
+            nverts = len(paths[0])
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()
                 if array_idx.shape[0] == l:

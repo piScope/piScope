@@ -1,4 +1,5 @@
 import numpy as np 
+import ifigure
 
 class GLCompound(object):
     def isCompound(self):
@@ -103,27 +104,37 @@ class GLCompound(object):
 
     def onHidePickedComponent(self, evt):
         idx = self.getSelectedIndex()
-        self.hide_component(idx)
+        hidx = self.hidden_component
+        self.hide_component(idx+hidx)
         self.set_bmp_update(False)
+        ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
+                             wait_idle=True, refresh_hl=False)
 
     def onShowPickedOnly(self, evt):
         idx = self.getSelectedIndex()
         self.hide_component(idx, inverse = True)
         self.set_bmp_update(False)
+        ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
+                             wait_idle=True, refresh_hl=False)
 
     def onShowAllComponent(self, evt):
+        self.hide_component([])
         self.setSelectedIndex([])
         self.set_bmp_update(False)
+        ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
+                             wait_idle=True, refresh_hl=False)
 
     def canvas_menu(self):
         if not self.isCompound: return []
+        m = []
         if not self.get_gl_hl_use_array_idx():
-            m =  [("Pick component", self.onPickComponent, None),]
+            m.append(("Pick by component", self.onPickComponent, None))
         else:
-            m =  [("Pick object", self.onUnpickComponent, None),]
+            m.append(("Hide selected", self.onHidePickedComponent, None))
+            m.append(("Show selected only", self.onShowPickedOnly, None))
+            if len(self.hidden_component)>0:
+                m.append(("Show all",  self.onShowAllComponent, None))            
+            m.append(("Pick as object", self.onUnpickComponent, None))
 
-        if self.isSelected():
-            m.append([("Hide selected", self.onHidePickedComponent, None),])
-            m.append([("Show selected only", self.onShowPickedOnly, None),])
-        return [("Show all",  self.onShowAllComponent, None),]
+        return m
     
