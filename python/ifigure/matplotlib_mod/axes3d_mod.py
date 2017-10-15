@@ -226,19 +226,15 @@ class Axes3DMod(Axes3D):
             if (id_dict[k]() == artist):
                if hit_id is not None:
                    if len(hit_id) > 0:
-                       m = np.logical_and(im == k, imd == hit_id[0])
-                       for x in hit_id[1:]:
-                           mm = np.logical_and(im == k, imd == x)
-                           m = np.logical_or(mm, m)
+                       mask = np.isin(imd, hit_id)
+                       m = np.logical_and(im == k, mask)
                    else:
                        m = (im == k)                       
                else:
                    m = (im == k)
                    
                c = self._gl_hl_color                   
-               arr[:,:,0][m] = c[0]
-               arr[:,:,1][m] = c[1]
-               arr[:,:,2][m] = c[2]
+               arr[:,:,:3][m] = np.array(c, copy=False)
                arr[:,:,3][m] = amask               
                break
         # blur the mask,,,

@@ -464,5 +464,10 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
             val['cdata'] = self.getvar("cdata")
         return val
 
+    def canvas_menu(self):
+        m = FigObj.canvas_menu(self)
+        m2 = GLCompound.canvas_menu(self)
+        return m[:1]+m2+m[1:]
+
         
 

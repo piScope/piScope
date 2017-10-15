@@ -91,4 +91,39 @@ class GLCompound(object):
     def set_gl_hl_use_array_idx(self, value):
         for a in self._artists:
             a.set_gl_hl_use_array_idx(value)    
+
+    def get_gl_hl_use_array_idx(self):
+        return any([a.get_gl_hl_use_array_idx() for a in self._artists])
+
+    def onPickComponent(self, evt):
+        self.set_gl_hl_use_array_idx(True)
+
+    def onUnpickComponent(self, evt):
+        self.set_gl_hl_use_array_idx(False)
+
+    def onHidePickedComponent(self, evt):
+        idx = self.getSelectedIndex()
+        self.hide_component(idx)
+        self.set_bmp_update(False)
+
+    def onShowPickedOnly(self, evt):
+        idx = self.getSelectedIndex()
+        self.hide_component(idx, inverse = True)
+        self.set_bmp_update(False)
+
+    def onShowAllComponent(self, evt):
+        self.setSelectedIndex([])
+        self.set_bmp_update(False)
+
+    def canvas_menu(self):
+        if not self.isCompound: return []
+        if not self.get_gl_hl_use_array_idx():
+            m =  [("Pick component", self.onPickComponent, None),]
+        else:
+            m =  [("Pick object", self.onUnpickComponent, None),]
+
+        if self.isSelected():
+            m.append([("Hide selected", self.onHidePickedComponent, None),])
+            m.append([("Show selected only", self.onShowPickedOnly, None),])
+        return [("Show all",  self.onShowAllComponent, None),]
     

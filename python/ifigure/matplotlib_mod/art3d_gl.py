@@ -114,7 +114,9 @@ class ArtGL(object):
         self._gl_pickable = value
     def set_gl_hl_use_array_idx(self, value):
         self._gl_hl_use_array_idx = value
-        
+    def get_gl_hl_use_array_idx(self):
+        return self._gl_hl_use_array_idx
+
     def contains(self, evt):
         if self.axes is not None:
             c = self.axes
