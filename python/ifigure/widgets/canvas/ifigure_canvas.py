@@ -1401,11 +1401,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
    def onCanvasFocus(self, e):
 #       print 'get focus', self._figure.figobj
        self.mpl_connect(mode = self._mpl_mode)
-
+       e.Skip()
+       
    def onCanvasKillFocus(self, e):
 #       print 'kill focus'
        self.mpl_connect(mode = self._mpl_mode)
-
+       e.Skip()
+       
    def enter_layout_mode(self):
        self._layout_mode = True
 
