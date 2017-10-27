@@ -35,6 +35,7 @@ uniform vec3  uClipLimit2;
 uniform int  uisMarker;
 uniform int  uUseClip;
 uniform int  uHasHL;
+uniform vec4  uHLColor;
 uniform sampler2D uMarkerTex;
 uniform float nearZ;
 uniform float farZ;
@@ -224,9 +225,10 @@ void main() {
      float aaa = gl_FragData[0].a * vColor[3];
      if (uHasHL == 1){
         if (((uUseArrayID == 1) && (array_id < 0)) || (uUseArrayID != 1)){
-            /* make it darker when it is highlighted. effective only
+            /* alpha blend wiht uHLColor when it is highlighted. effective only
    	      during rot/pan */
-            gl_FragData[0] = gl_FragData[0]/4.;
+            gl_FragData.a = uHLColor.a + (1-uHLColor.a)*gl_FragData[0].a;
+            gl_FragData.rgb = uHLColor.rbg + (1-uHLColor.a)*gl_FragData[0].rgb;
 	}
      }
 

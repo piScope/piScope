@@ -1300,6 +1300,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._a_mode_scale_mode = False
       self._3d_rot_mode = 0
       self._frameart_mode = False
+      self._hl_color = (0, 0, 0, 1)
 
       self.selection=[]
       self.axes_selection=cbook.WeakNone()
@@ -3974,4 +3975,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def use_toolbar_std_palette(self):
         self.toolbar.use_std_palette()
-        
+ 
+   @property       
+   def hl_color(self):
+       return self._hl_color

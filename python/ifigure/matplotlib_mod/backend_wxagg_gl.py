@@ -135,7 +135,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._hittest_map_update = True
         self._alpha_blend = True
         self._no_smooth = False
-        self.PIXBUFS = (None, None, None)        
+        self._hl_color = (0., 0., 0., 1.0)
+        self.PIXBUFS = (None, None, None)  
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
         
         if MyGLCanvas.offscreen: 
@@ -242,7 +243,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
                           'uLineStyle', 'uAmbient',
                           'uRT0', 'uRT1', 'uisFinal', 'uisClear', 
-                          'uSCSize', 'uisSolid',]
+                          'uSCSize', 'uisSolid', 'uHLColor']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -250,7 +251,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uisImage', 0)
         self.set_uniform(glUniform1i,  'uisAtlas', 0)
         self.set_uniform(glUniform1i,  'uUseClip', 1)
-        self.set_uniform(glUniform1i,  'uHasHL', 0)                        
+        self.set_uniform(glUniform1i,  'uHasHL', 0)                    
+        self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0))    
         self.set_uniform(glUniform1i,  'uLineStyle', -1)
         self.set_uniform(glUniform1i,  'uisFinal', 0)
         self.set_uniform(glUniform1i,  'uisSolid', 0)        
@@ -520,32 +522,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #self.force_fill_screen()
 
         projM, minZ, maxZ= self.prepare_proj_matrix()
-        ### from here
-        '''
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-
-        dist = self.M[-1]
-
-        # viwe range shoud be wide enough to avoid near clipping
-        #minZ = dist-1
-        #maxZ = dist+1
-        minZ = dist-near_clipping
-        maxZ = dist+near_clipping
-        self.set_uniform(glUniform1f,  'nearZ', -minZ)
-        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
-        if self._use_frustum:
-#           glFrustum(-1, 1, -1, 1, minZ, maxZ) #this is original (dist = 10, so 9 is adjustment)
-           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
-           self.set_uniform(glUniform1i,  'isFrust',  1)           
-        else:
-            a = (dist+1)/dist
-            glOrtho(-a, a, -a, a, minZ, maxZ)
-            self.set_uniform(glUniform1i,  'isFrust',  0)
-
-        projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
-        '''
-        ### to here
 
         glMatrixMode(GL_MODELVIEW)
         glEnable(GL_NORMALIZE)
@@ -2142,6 +2118,7 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
             self.renderer.no_update_id()
 #            self.renderer.no_lighting = no_lighting
             FigureCanvasWxAggModGL.glcanvas._artist_mask = alist
+            FigureCanvasWxAggModGL.glcanvas._hl_color = self.hl_color
         v =  FigureCanvasWxAggMod.draw_artist(self, drawDC=drawDC, alist=alist)
 #        self.renderer.no_lighting = False
         return v

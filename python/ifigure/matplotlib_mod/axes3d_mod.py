@@ -247,7 +247,7 @@ class Axes3DMod(Axes3D):
         #b = np.sqrt(b)
         b[b > amask] = amask
         
-        c = self._gl_hl_color        
+        c = self.figure.canvas.hl_color        
         a1 = arr[:,:,0]; a1[b > 0.0] = c[0]
         a2 = arr[:,:,1]; a2[b > 0.0] = c[1]
         a3 = arr[:,:,2]; a3[b > 0.0] = c[2]        
