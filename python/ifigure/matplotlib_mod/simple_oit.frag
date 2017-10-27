@@ -223,10 +223,13 @@ void main() {
      gl_FragData[0] = cAmbient + cDiff + cSpec;
      float aaa = gl_FragData[0].a * vColor[3];
      if (uHasHL == 1){
-         /* make it darker when it is highlighted. effective only
-	    during rot/pan */
-         gl_FragData[0] = gl_FragData[0]/4.;
+        if (((uUseArrayID == 1) && (array_id < 0)) || (uUseArrayID != 1)){
+            /* make it darker when it is highlighted. effective only
+   	      during rot/pan */
+            gl_FragData[0] = gl_FragData[0]/4.;
+	}
      }
+
      gl_FragData[0].a = vColor[3];
      
      if (uisMarker == 1){
@@ -275,8 +278,9 @@ void main() {
      if (uisSolid == 1){
         gl_FragData[1] = uArtistID;
         if (uUseArrayID == 1){
-           gl_FragData[1].b = (array_id - 256*floor(array_id/256.))/255.;
-	   gl_FragData[1].a = floor(array_id/256)/255.;
+	   float id = abs(array_id);
+           gl_FragData[1].b = (id - 256*floor(id/256.))/255.;
+	   gl_FragData[1].a = floor(id/256)/255.;
 	}
 	else
 	{

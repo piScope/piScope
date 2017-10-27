@@ -464,6 +464,28 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #glFinish()        
         #glDepthMask(GL_TRUE)                
 
+    def prepare_proj_matrix(self):
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        dist = self.M[-1]
+
+        # viwe range shoud be wide enough to avoid near clipping 
+        minZ = dist-near_clipping
+        maxZ = dist+near_clipping
+        self.set_uniform(glUniform1f,  'nearZ', -minZ)
+        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
+        
+        if self._use_frustum:
+#           glFrustum(-1, 1, -1, 1, minZ, maxZ) this is original (dist = 10, so 9 is adjustment)
+           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           self.set_uniform(glUniform1i,  'isFrust',  1)
+        else:
+           a = (dist+1.)/dist
+           glOrtho(-a, a, -a, a, minZ, maxZ)
+           self.set_uniform(glUniform1i,  'isFrust',  0)           
+        projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
+        return projM, minZ, maxZ
+
     def use_depthmap_mode(self, frame, buf, texs, w, h):
         glBindFramebuffer(GL_FRAMEBUFFER, frame)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, 
@@ -497,6 +519,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.dshader)        
         #self.force_fill_screen()
 
+        projM, minZ, maxZ= self.prepare_proj_matrix()
+        ### from here
+        '''
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
@@ -514,11 +539,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
            self.set_uniform(glUniform1i,  'isFrust',  1)           
         else:
-            a = (dist+1.)/dist
+            a = (dist+1)/dist
             glOrtho(-a, a, -a, a, minZ, maxZ)
             self.set_uniform(glUniform1i,  'isFrust',  0)
 
         projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
+        '''
+        ### to here
 
         glMatrixMode(GL_MODELVIEW)
         glEnable(GL_NORMALIZE)
@@ -624,7 +651,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i, 'uUseShadowMap', 0) 
         self.force_fill_screen()
         if self._use_shadow_map:
-            self.set_uniform(glUniform1i, 'uUseShadowMap', 1) 
+            self.set_uniform(glUniform1i, 'uUseShadowMap', 1)
+
+        ### from here
+        self.projM, minZ, maxZ = self.prepare_proj_matrix()
+        '''
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         dist = self.M[-1]
@@ -646,6 +677,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glOrtho(-a, a, -a, a, minZ, maxZ)
            self.set_uniform(glUniform1i,  'isFrust',  0)           
         self.projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
+        '''
+        ## to here
 
         glMatrixMode(GL_MODELVIEW)
         glEnable(GL_NORMALIZE)
@@ -726,7 +759,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                        continue
                 if ignore_alpha: alpha = 1.0
                 if a.axes is not aa: continue
-                if self._artist_mask is not None and not  a in self._artist_mask:
+                if self._artist_mask is not None and not a in self._artist_mask:
                    continue
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
@@ -734,7 +767,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
-                if a._gl_hl and not self._hittest_map_update:
+                if (a._gl_hl and not self._hittest_map_update):
                     # second condition indicate it is during pan/rotate
                     self.set_uniform(glUniform1i, 'uHasHL', 1)
                 else:
@@ -1838,7 +1871,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
-                vbos['fc'] = get_vbo(col, usage='GL_DYNAMIC_DRAW')
+                vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
                 vbos['fc'].set_array(col)
             
@@ -1856,7 +1889,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             col = np.hstack(col).astype(np.float32)
 
             if vbos['ec'] is None:
-                vbos['ec'] = get_vbo(col, usage='GL_DYNAMIC_DRAW')
+                vbos['ec'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
                 vbos['ec'].set_array(col)
             
@@ -1879,8 +1912,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vertex_id = np.array(array_idx,
                                  dtype=np.float32,
                                  copy = False).transpose().flatten()
-            vbos['vertex_id'] = get_vbo(vertex_id,
+
+            if vbos['vertex_id'] is None:            
+                 vbos['vertex_id'] = get_vbo(vertex_id,
                                         usage='GL_STATIC_DRAW')
+            else:
+                 vbos['vertex_id'].set_array(vertex_id)
             vbos['vertex_id'].need_update = False                        
         return vbos
      

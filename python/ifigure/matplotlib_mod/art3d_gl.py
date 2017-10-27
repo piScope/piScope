@@ -135,10 +135,22 @@ class ArtGL(object):
                 self._gl_hit_array_id.remove(int(array_id))
             else:
                 self._gl_hit_array_id.append(int(array_id))
+            self.mask_array_idx()                
             return True, {'child_artist':self} 
         else:
-            self._gl_hit_array_id = []
+            if len(self._gl_hit_array_id) > 0:
+                self._gl_hit_array_id = []
+                self.mask_array_idx()
             return False, {}
+
+    def mask_array_idx(self):
+        if self._gl_array_idx is not None:
+             array_idx = np.abs(self._gl_array_idx)
+             mask = np.isin(array_idx, self._gl_hit_array_id)
+             array_idx[mask] *= -1
+             self._gl_array_idx  = array_idx                       
+        self._update_a = True
+        self.axes.figobj._bmp_update = False # ugly...!?
         
     def get_gl_data_extent(self):
         if self._gl_data_extent is None:
@@ -626,6 +638,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._update_fc = True
         self._update_v = True
         self._update_i = True
+        self._update_a = True        
         Poly3DCollection.__init__(self, *args, **kargs)
         
 
@@ -833,6 +846,10 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                    self._gl_edgecolor = self.to_rgba(cz)
                if self._update_i:
                    if len(d) > 0: d[0]['i'].need_update = True
+               if self._update_a:
+                   if len(d) > 0 and 'vertex_id' in d[0]:
+                       d[0]['vertex_id'].need_update = True
+                   
                # this happens when all surfaces are hidden.
                # if (len(d)) == 0: print('vbo zero length', self.figobj)   
            if self._update_ec or self._update_fc:

@@ -79,8 +79,15 @@ class GLCompound(object):
         return self._artists[0]._gl_hit_array_id
 
     def setSelectedIndex(self, ll):
-        self._artists[0]._gl_hit_array_id = ll
-
+        array_idx = self.getvar('array_idx').copy()
+        if array_idx is None: return
+        mask = np.isin(array_idx, np.array(ll, copy=False))
+        array_idx[mask] *= -1
+        for a in self._artists:                  
+            a._gl_hit_array_id = ll                  
+            a._gl_array_idx  = array_idx                       
+            a._update_a = True
+            
     def set_pickmask(self, value):
         '''
         mask = True :: not pickable 
