@@ -1,3 +1,12 @@
+        * 10/27
+	** fixed an issue of 3d highlighting. refresh_hl was called
+	everytime during pan/zoom/rotation.
+	** ifigure_canvas.hl_color is added. Currently this property
+	affect only 3D object drawing. It will be used for 2D object
+	highlighting too. hl_color alpha is hard-coded to 0.65.
+	** fig_surface::get_export_val is added
+
+	
 	* 10/02
 	** 3D graphics in an inset axes is on
 	** background alpha of 3D axes is set to transparent by default

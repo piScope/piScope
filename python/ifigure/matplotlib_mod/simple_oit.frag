@@ -227,8 +227,8 @@ void main() {
         if (((uUseArrayID == 1) && (array_id < 0)) || (uUseArrayID != 1)){
             /* alpha blend wiht uHLColor when it is highlighted. effective only
    	      during rot/pan */
-            gl_FragData.a = uHLColor.a + (1-uHLColor.a)*gl_FragData[0].a;
-            gl_FragData.rgb = uHLColor.rbg + (1-uHLColor.a)*gl_FragData[0].rgb;
+            gl_FragData[0].a = uHLColor.a + (1-uHLColor.a)*gl_FragData[0].a;
+            gl_FragData[0].rgb = uHLColor.a*uHLColor.rbg + (1-uHLColor.a)*gl_FragData[0].rgb;
 	}
      }
 

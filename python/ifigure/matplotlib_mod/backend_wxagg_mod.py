@@ -61,6 +61,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._isDrawn = False
         self._dsu_check = []
         self._auto_update_ax = []
+        self._hl_color = (0, 0, 0,)
+        
         super(FigureCanvasWxAggMod, self).__init__(*args, **kargs)
 
         #self.Unbind(wx.EVT_SIZE)
@@ -405,6 +407,13 @@ class FigureCanvasWxAggMod(CanvasAgg):
         im[:,:,3] = out.astype(np.uint8)
        
         return im
+    
+    @property       
+    def hl_color(self):
+        return self._hl_color
+    @hl_color.setter
+    def hl_color(self, value):
+        self._hl_color = value
 
     ### following code is added since when a user press right button 
     ### while dragging a mouse, mouse is already captured and backend_wx

@@ -139,11 +139,6 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
 
-        self._gl_hl_color = [0,0,0]
-
-    def gl_hl_setcolor(self, value):
-        self._gl_hl_color = value
-        
     def gl_hit_test(self, x, y, artist, radius = 3):
         #
         #  logic is
@@ -233,7 +228,7 @@ class Axes3DMod(Axes3D):
                else:
                    m = (im == k)
                    
-               c = self._gl_hl_color                   
+               c = self.figure.canvas.hl_color                           
                arr[:,:,:3][m] = np.array(c, copy=False)
                arr[:,:,3][m] = amask               
                break
@@ -247,12 +242,9 @@ class Axes3DMod(Axes3D):
         #b = np.sqrt(b)
         b[b > amask] = amask
         
-        c = self.figure.canvas.hl_color        
-        a1 = arr[:,:,0]; a1[b > 0.0] = c[0]
-        a2 = arr[:,:,1]; a2[b > 0.0] = c[1]
-        a3 = arr[:,:,2]; a3[b > 0.0] = c[2]        
-
-        arr = np.dstack((a1,a2,a3,b))
+        c = self.figure.canvas.hl_color
+        arr[b>0.0,:3] = c
+        arr[...,-1] = b        
         self._gl_mask_artist.set_array(arr)
 
     def set_nomargin_mode(self, mode):
@@ -347,7 +339,7 @@ class Axes3DMod(Axes3D):
 #            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
 #            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
         elif self.button_pressed in self._pan_btn:
             dx = 1-((w - dx)/w)
@@ -372,12 +364,11 @@ class Axes3DMod(Axes3D):
             self.set_zlim3d(minz + dz, maxz + dz)
 
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
             # pan view
             # project xv,yv,zv -> xw,yw,zw
             # pan
-#            pass
 
         # Zoom
         elif self.button_pressed in self._zoom_btn:
@@ -392,7 +383,7 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d(miny - dy, maxy + dy)
             self.set_zlim3d(minz - dz, maxz + dz)
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
     def _button_release(self, evt):
         if not self._mouse_hit:return

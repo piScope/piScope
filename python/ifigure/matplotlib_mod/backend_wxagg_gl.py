@@ -135,7 +135,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._hittest_map_update = True
         self._alpha_blend = True
         self._no_smooth = False
-        self._hl_color = (0., 0., 0., 1.0)
+        self._hl_color = (0., 0., 0., 0.65)
         self.PIXBUFS = (None, None, None)  
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
         
@@ -562,40 +562,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #    glDisable(GL_BLEND);                
 
         self._shadow = True
-        
         return (M, minZ, maxZ)
-
-    def set_oit_mode_tex(self, texs, firstpath = True):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_2D, 0, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_2D, texs[0], 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT1, 
-                               GL_TEXTURE_2D, 0, 0)
-        if firstpath:
-            glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT1, 
-                               GL_TEXTURE_2D, texs[1], 0)
-        glBlendFunc(1, GL_ONE, GL_ZERO)
-
-    def set_draw_mode_tex(self, texs):
-       
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_2D, 0, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT1, 
-                               GL_TEXTURE_2D, 0, 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT0, 
-                               GL_TEXTURE_2D, texs[3], 0)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, 
-                               GL_COLOR_ATTACHMENT1, 
-                               GL_TEXTURE_2D, texs[4], 0)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     def use_draw_mode(self, frame, buf, texs, w, h, shadow_params = None):
        
@@ -629,32 +596,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._use_shadow_map:
             self.set_uniform(glUniform1i, 'uUseShadowMap', 1)
 
-        ### from here
         self.projM, minZ, maxZ = self.prepare_proj_matrix()
-        '''
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        dist = self.M[-1]
-
-        # viwe range shoud be wide enough to avoid near clipping 
-        #minZ = dist-1
-        #maxZ = dist+1
-        minZ = dist-near_clipping
-        maxZ = dist+near_clipping
-        self.set_uniform(glUniform1f,  'nearZ', -minZ)
-        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
-        
-        if self._use_frustum:
-#           glFrustum(-1, 1, -1, 1, minZ, maxZ) this is original (dist = 10, so 9 is adjustment)
-           glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
-           self.set_uniform(glUniform1i,  'isFrust',  1)
-        else:
-           a = (dist+1.)/dist
-           glOrtho(-a, a, -a, a, minZ, maxZ)
-           self.set_uniform(glUniform1i,  'isFrust',  0)           
-        self.projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
-        '''
-        ## to here
 
         glMatrixMode(GL_MODELVIEW)
         glEnable(GL_NORMALIZE)
@@ -693,8 +635,42 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         else:
             glDisable(GL_BLEND)
+            
+        self.set_uniform(glUniform4fv, 'uHLColor', 1, self._hl_color)
         self._shadow = False
         
+    def set_oit_mode_tex(self, texs, firstpath = True):
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, texs[0], 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT1, 
+                               GL_TEXTURE_2D, 0, 0)
+        if firstpath:
+            glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT1, 
+                               GL_TEXTURE_2D, texs[1], 0)
+        glBlendFunc(1, GL_ONE, GL_ZERO)
+
+    def set_draw_mode_tex(self, texs):
+       
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT1, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT0, 
+                               GL_TEXTURE_2D, texs[3], 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT1, 
+                               GL_TEXTURE_2D, texs[4], 0)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
 
     def do_draw_artists(self, tag,  update_id = False, do_clear = None,
                         draw_solid = True,
@@ -1404,6 +1380,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisable(GL_POINT_SPRITE)
         
         self.set_uniform(glUniform1i, 'uisMarker', 0)
+        self.set_uniform(glUniform1i,  'uUseArrayID', 0)                   
         if self._wireframe == 2: self.set_depth_test()
                     
         glDeleteTextures(marker_tex)
@@ -1690,7 +1667,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
                                     0, None)
            vertex_id.unbind()
-           self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
+           self.set_uniform(glUniform1i,  'uUseArrayID', 1)
            self.EnableVertexAttrib('vertex_id')
         else:
            self.set_uniform(glUniform1i,  'uUseArrayID', 0)
@@ -1882,6 +1859,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     pass
                 else:
                    assert False, "array_idx length should be the same as the number of vertex"
+                vertex_id = np.array(array_idx,
+                                 dtype=np.float32,
+                                 copy = False).transpose().flatten()
+
+                if vbos['vertex_id'] is None:            
+                     vbos['vertex_id'] = get_vbo(vertex_id,
+                                        usage='GL_STATIC_DRAW')
+                else:
+                     vbos['vertex_id'].set_array(vertex_id)
+                vbos['vertex_id'].need_update = False
+            '''    
             else:
                 # each element has a different number
                 array_idx = [np.arange(l)]*counts[0]
@@ -1895,6 +1883,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                  vbos['vertex_id'].set_array(vertex_id)
             vbos['vertex_id'].need_update = False                        
+            '''
         return vbos
      
     def set_view_offset(self, offset_base = (0, 0, 0., 0)):
@@ -2087,25 +2076,11 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         elif cleared:
             self.renderer.clear()
         return self.renderer
-    '''
-    This is the same as upper class
-    def draw(self, drawDC = None, nogui_reprint = False):
-        if self.figure is None: return
-        if self.figure.figobj is None: return
-
-        for fig_axes in self._auto_update_ax:
-            fig_axes.set_bmp_update(False)
-
-        #st =time.time()       
-        if not self.resize_happend:
-            s = self.draw_by_bitmap()
-            # this makes draw_event
-            self.figure.draw_from_bitmap(self.renderer)
-            self._isDrawn = True
-            if not nogui_reprint:
-                #print 'draw calling gui_repaint'
-                self.gui_repaint(drawDC=drawDC)
-    '''
+     
+    def draw(self, *args, **kargs):
+        self._update_hl_color()
+        return FigureCanvasWxAggMod.draw(self,  *args, **kargs)
+     
     def draw_artist(self, drawDC=None, alist=None):
         if alist is None: alist = []
         gl_obj = [a for a in alist if hasattr(a, 'is_gl')]
@@ -2117,13 +2092,19 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
             self.renderer._num_globj =  len(gl_obj)
             self.renderer.no_update_id()
 #            self.renderer.no_lighting = no_lighting
+            self._update_hl_color()            
             FigureCanvasWxAggModGL.glcanvas._artist_mask = alist
-            FigureCanvasWxAggModGL.glcanvas._hl_color = self.hl_color
+
         v =  FigureCanvasWxAggMod.draw_artist(self, drawDC=drawDC, alist=alist)
 #        self.renderer.no_lighting = False
         return v
 
-
+    def _update_hl_color(self):
+        value = self.hl_color
+        vv = list([float(x) for x in value]) + [1.0]
+        vv[3] = 0.65
+        FigureCanvasWxAggModGL.glcanvas._hl_color = tuple(vv[:4])
+        
     def _onPaint(self, evt):
 #        self.glcanvas.OnPaint(evt)
 #        evt.Skip()

@@ -593,7 +593,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
     calls on_move and button_release of axes3D
     '''
     def __init__(self, *args, **kargs):
-        draghandler_base2.__init__(self, *args, **kargs)
+        draghandler_base2.__init__(self, *args, **kargs)        
 
     def dragstart(self, evt):
         canvas = self.panel
@@ -602,6 +602,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         self.dragging = True
         self._org = ax.figobj.get_axes3d_viewparam(ax)
         self._st_evt = evt
+        canvas.mpl_connect(mode = '3dpanrotzoom')
         
     def dodrag(self, evt):
         canvas = self.panel
@@ -613,6 +614,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
     def dragdone(self, evt):
         self.dragging = False
         self.unbind_mpl()
+        self.panel.mpl_connect(mode = 'normal')        
         self.st_event = None
         canvas = self.panel
         ax = canvas.axes_selection()
@@ -1300,7 +1302,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._a_mode_scale_mode = False
       self._3d_rot_mode = 0
       self._frameart_mode = False
-      self._hl_color = (0, 0, 0, 1)
 
       self.selection=[]
       self.axes_selection=cbook.WeakNone()
@@ -1504,6 +1505,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if self.canvas.HasFocus():
             self._mplc.append(self.canvas.mpl_connect('motion_notify_event',
                                          self.motion_event))
+      elif mode == '3dpanrotzoom':
+         self._mplc=[self.canvas.mpl_connect('button_press_event', 
+                                            self.buttonpress),
+                     self.canvas.mpl_connect('button_release_event', 
+                                         self.buttonrelease),
+                     ]
 
       elif mode == 'axesselection':
          self._mplc=[#self.canvas.mpl_connect('button_press_event', 
@@ -2432,15 +2439,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
 #           pass
            dprint2('skipping draw since screen is already updated')
+           
    def onDraw(self, evt):
-#       print 'draw_event'
+       #print 'draw_event'
        if self._show_cursor:
            self.draw_cursor()
        elif self._layout_mode:
            self.layout_editor.draw_all()
        else:
           self.refresh_hl()
-
 
    def draw_later(self, all = False, delay = 0.0):
        from ifigure.events import SendCanvasDrawRequest
@@ -3978,4 +3985,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
  
    @property       
    def hl_color(self):
-       return self._hl_color
+       return self.canvas.hl_color
+   @hl_color.setter
+   def hl_color(self, value):
+       self.canvas.hl_color = value
+   
+
+

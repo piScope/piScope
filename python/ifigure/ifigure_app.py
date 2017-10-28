@@ -2167,7 +2167,7 @@ class ifigure_app(BookViewerFrame):
 #           viewer.canvas.refresh_hl_idle()
 #        else:
         if evt.time >  viewer.last_draw_time():
-             viewer.draw()
+             viewer.draw(refresh_hl = evt.refresh_hl)
 
     def onPV_AddFigobj(self, evt):
         td = evt.GetTreeDict()

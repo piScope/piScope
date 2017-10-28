@@ -1118,10 +1118,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def adjust_attach_menu(self):
         pass
 
-    def draw(self):
-        self.canvas.draw()
+    def draw(self, *args, **kwargs):
+        self.canvas.draw(*args, **kwargs)
+        
     def draw_all(self):
         self.canvas.draw_all()
+        
     def last_draw_time(self):
         return self.canvas._last_draw_time
     
@@ -1636,7 +1638,10 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def refresh_toolbar_buttons(self):
         self.canvas.toolbar.refresh_palette()
-        
+
+    def set_hl_color(self, value):
+        assert len(value)==3,  "Highlight color should be RGB (lenght = 3)"
+        self.canvas.hl_color = tuple(value)
 
 class BookViewer(BookViewerFrame):
     def __init__(self, *args, **kargs):    

@@ -565,7 +565,13 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
                 return [None]*len(names)
         return self.getp(names)
 
-
+    def get_export_val(self, a):
+        x, y, z = self.getvar("x", "y", "z")
+        val = {"x":x, "y":y, "z":z}
+        if self.getvar('cz'):
+            val['cdata'] = self.getvar("cdata")
+        return val
+    
 class FigRevolve(FigSurface):
     def __new__(cls, *args, **kywds):
         def set_hidden_vars(obj):
