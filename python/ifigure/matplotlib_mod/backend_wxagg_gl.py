@@ -562,6 +562,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #    glDisable(GL_BLEND);                
 
         self._shadow = True
+        self.set_uniform(glUniform4fv, 'uHLColor', 1, self._hl_color)
         return (M, minZ, maxZ)
 
     def use_draw_mode(self, frame, buf, texs, w, h, shadow_params = None):
