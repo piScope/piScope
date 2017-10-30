@@ -65,21 +65,29 @@ def check_aviewer(func):
 def redirect_to_aviewer(func):
     @wraps(func)
     def checker(*args, **kargs):
-        def func2(*args, **kargs):
-              return figure()
-#              from ifigure.utils.cbook import message
-#              message("*** No current viewer (no plot) ***")
-#              return None
         if aviewer is None:
             figure()
             wx.Yield() # yield let wx to process event including
                        # project_tree_widget update
-#           return func2(*args, **kargs)
-#        else:
-
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = _hold
         kargs['update'] = _update
+        ret =  m(*args, **kargs)
+        aviewer.Raise()
+        return ret
+    return checker
+
+def redirect_to_aviewer_3D(func):
+    @wraps(func)
+    def checker(*args, **kargs):
+        if aviewer is None:
+            figure()
+            wx.Yield() # yield let wx to process event including
+                       # project_tree_widget update
+        m = getattr(aviewer, func.__name__)
+        kargs['hold'] = _hold
+        kargs['update'] = _update
+        aviewer.threed('on')
         ret =  m(*args, **kargs)
         aviewer.Raise()
         return ret
@@ -894,7 +902,7 @@ def fill_betweenx(*args, **kargs):
     pass
 
 
-@redirect_to_aviewer
+@redirect_to_aviewer_3D
 def surf(*args, **kargs):
     '''
     surf or surface : surface plot in 3D 
@@ -904,7 +912,7 @@ def surf(*args, **kargs):
     pass
 
 
-@redirect_to_aviewer
+@redirect_to_aviewer_3D
 def surface(x, y, z, **kargs):
     '''
     surf/surface : surface plot in 3D 
@@ -913,7 +921,7 @@ def surface(x, y, z, **kargs):
     '''
     pass
 
-@redirect_to_aviewer
+@redirect_to_aviewer_3D
 def revolve(*args, **kargs):
     '''
     revolve r, z : revolve (r, z) data 
@@ -927,7 +935,7 @@ def revolve(*args, **kargs):
     pass
 
 
-@redirect_to_aviewer
+@redirect_to_aviewer_3D
 def solid(v, **kargs):
     '''
     solid: plot soild volume complsed by triangle
@@ -950,7 +958,7 @@ def solid(v, **kargs):
                 cleanin line smoothing
     '''
     pass
-@redirect_to_aviewer
+@redirect_to_aviewer_3D
 def trisurf(v, **kargs):
     '''
     triangle surface plot

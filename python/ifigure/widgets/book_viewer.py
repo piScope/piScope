@@ -822,7 +822,23 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         fid = open(cs+'_area', 'wb')
         pickle.dump(data, fid)
         fid.close()
-
+        
+    def onCopyToCB(self, e = None):
+        '''
+        Copy_to_Clipboard_mod copys the buffer data
+        which does not have highlight drawn
+        '''
+        canvas = self.canvas.canvas
+        figure_image = canvas.figure_image[0]
+        h, w, d  = figure_image.shape
+        image = wx.EmptyImage(w, h)
+        image.SetData(figure_image[:,:,0:3].tostring())
+        image.SetAlphaData(figure_image[:,:,3].tostring())
+        bmp = wx.BitmapFromImage(image)
+        canvas.Copy_to_Clipboard_mod(pgbar=True,
+                                     bmp=bmp)
+        if e is not None: e.Skip()
+        
     def onPasteArea(self, e):
         from ifigure.ifigure_config import scratch as cs
         if not os.path.exists(cs+'_area'): 
@@ -841,7 +857,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def onCopyS(self, e):
         from ifigure.utils.edit_list import DialogEditList
         s ={"style":wx.CB_DROPDOWN,
-            "choices": ["Section", "Page", "Section Layout"]}
+            "choices": ["Section", "Page", "Section Layout", "ToClipboard"]}
         list6 = [[None, 'Choose item to copy', 102., None],
                  [None, 'Section',  104,  s],]
 
@@ -858,6 +874,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             self.onCopyPage(e)
         elif idx == 2:
             self.onCopyArea(e)
+        elif idx == 3:
+            self.onCopyToCB(e)
 
     def onPasteS(self, e):
         from ifigure.utils.edit_list import DialogEditList

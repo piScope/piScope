@@ -71,8 +71,8 @@ def read_glmatrix(mode):
 def define_unform(shader, name):
     shader.uniform_loc[name] = glGetUniformLocation(shader, name)
 
-def check_framebuffer(message):
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) !=
+def check_framebuffer(message, mode = GL_FRAMEBUFFER):
+    if (glCheckFramebufferStatus(mode) !=
         GL_FRAMEBUFFER_COMPLETE):
          print('Framebuffer imcomplete (' + message + ')')
          print(str(glCheckFramebufferStatus(GL_FRAMEBUFFER)))
@@ -216,7 +216,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                  'uClipLimit2',
                  'uisMarker', 'uMarkerTex', 'uisImage', 'uImageTex',
                   'uUseClip', 'uHasHL','uUseArrayID', 'nearZ', 'farZ',
-                  'isFrust']
+                  'isFrust', 'uHLColor']
         names = names0
         for name in names:  define_unform(self.dshader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
@@ -228,7 +228,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (0, 0, 0))
         self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (1, 1, 1))
         self.set_uniform(glUniform1i,  'uUseArrayID', 0)
-
+        self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0.65))
+        
         fs = compile_file('simple_oit.frag', GL_FRAGMENT_SHADER)
         vs = compile_file('simple.vert', GL_VERTEX_SHADER)
         self.shader = shaders.compileProgram(vs, fs)
@@ -243,7 +244,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          'uStyleTex', 'uisAtlas', 'uAtlasParam',
                           'uLineStyle', 'uAmbient',
                           'uRT0', 'uRT1', 'uisFinal', 'uisClear', 
-                          'uSCSize', 'uisSolid', 'uHLColor']
+                          'uSCSize', 'uisSolid']
         for name in names:  define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
@@ -252,7 +253,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uisAtlas', 0)
         self.set_uniform(glUniform1i,  'uUseClip', 1)
         self.set_uniform(glUniform1i,  'uHasHL', 0)                    
-        self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0))    
+        self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0.65))    
         self.set_uniform(glUniform1i,  'uLineStyle', -1)
         self.set_uniform(glUniform1i,  'uisFinal', 0)
         self.set_uniform(glUniform1i,  'uisSolid', 0)        
@@ -427,12 +428,45 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #        glBindTexture(GL_TEXTURE_2D, 0)
 #        glBindRenderbuffer(GL_RENDERBUFFER, 0);
 #        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        texs = [tex, tex2, dtex, otex, otex2]
+        frames = [frame]
+        bufs = [buf, dbuf]
+        
+        if multisample > 1:
+            wim = w/multisample
+            him = h/multisample
+           
+            frame2 = glGenFramebuffers(1)
+            glBindFramebuffer(GL_FRAMEBUFFER, frame2)
+            smallTexId = glGenTextures(1)
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, smallTexId)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                         wim, him, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
 
-        self.frames.append(frame)
+            smallTexId2 = glGenTextures(1)
+            glBindTexture(GL_TEXTURE_2D, smallTexId2)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                         wim, him, 0, GL_RGBA, GL_FLOAT, None)
+
+            smallbuf = glGenRenderbuffers(1)
+            glBindRenderbuffer(GL_RENDERBUFFER, smallbuf)
+            glRenderbufferStorage(GL_RENDERBUFFER,
+                                  GL_DEPTH24_STENCIL8,
+                                  wim, him)
+            
+            texs.append(smallTexId)
+            texs.append(smallTexId2)
+            bufs.append(smallbuf)
+            frames.append(frame2)
+
         self.bufs.append(buf)
+        self.frames.extend(frames)
         #self.stcs.append(buf)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)        
         stc = None
-        return frame, [buf, dbuf], stc, [tex, tex2, dtex, otex, otex2,] #tex3]
+        
+        return frames, bufs, stc, texs
  
     def get_frame_4_artist(self, a):
         c = self.get_container(a)
@@ -804,10 +838,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._use_clip = tag._use_clip        
         self.gc_artist_data()
         if MyGLCanvas.offscreen:
-            w, h, frame, buf, stc, texs = self.get_frame_4_artist(tag)
+            w, h, frames, buf, stc, texs = self.get_frame_4_artist(tag)
+            frame = frames[0]
             glBindFramebuffer(GL_FRAMEBUFFER, frame)
-#            print w, h, frame, buf
-#            glBindFramebuffer(GL_FRAMEBUFFER, self.frames[0])
         else:
             w, h = self.GetClientSize()
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -949,20 +982,54 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return id_dict
 
     def read_hit_map_data(self, a):
-        w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
+        w, h, frames, buf, stc, texs = self.get_frame_4_artist(a)
+        frame = frames[0]
+        
+        if multisample > 1:
+            frame2 = frames[1]
+            wim = w/multisample
+            him = h/multisample
+           
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, frame);
+            glReadBuffer(GL_COLOR_ATTACHMENT1)
+                        
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame2)
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texs[-2], 0)
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+                                   GL_TEXTURE_2D, texs[-1], 0)
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, 
+                                  GL_STENCIL_ATTACHMENT, 
+                                  GL_RENDERBUFFER, buf[2])
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, 
+                                  GL_DEPTH_ATTACHMENT, 
+                                  GL_RENDERBUFFER, buf[2])
+            glDrawBuffer(GL_COLOR_ATTACHMENT1)                        
+            glBlitFramebuffer(0, 0, w, h,
+                              0, 0, wim, him, 
+                              GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,
+                              GL_NEAREST)
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)            
+            glBindFramebuffer(GL_FRAMEBUFFER, frame2)
+        else:
+            wim = w
+            him = h
+            glBindFramebuffer(GL_FRAMEBUFFER, frame)
+        ###
+
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
         stream_read = True
         
         if stream_read:
             pixel_buffers = glGenBuffers(2)
-            size = w*h
+            size = wim*him
             
     	    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[0])
 	    glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
 
-            glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
+            glReadPixels(0,0, wim, him, GL_RGBA, GL_UNSIGNED_BYTE, c_void_p(0))
    	    data2 = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
-            idmap = (np.fromstring(data2, np.uint8).reshape(h, w, -1))#*255.
+            idmap = (np.fromstring(data2, np.uint8).reshape(him, wim, -1))#*255.
             idmap2 = idmap[:,:,2] + idmap[:,:,3]*256
             idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -970,44 +1037,67 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
     	    glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[1])
 	    glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
-            glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT, c_void_p(0))
+            glReadPixels(0,0, wim, him, GL_DEPTH_COMPONENT,GL_FLOAT, c_void_p(0))
 
    	    data3 = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
-            depth = np.fromstring(data3, np.float32).reshape(h, w)
+            depth = np.fromstring(data3, np.float32).reshape(him, wim)
             
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
 	    glDeleteBuffers(2, pixel_buffers)
         else:
 
-            data2 = glReadPixels(0,0, w, h, GL_RGBA, GL_FLOAT)
-            data3 = glReadPixels(0,0, w, h, GL_DEPTH_COMPONENT,GL_FLOAT)        
-            idmap = (np.fromstring(data2, np.float32).reshape(h, w, -1))*255.
+            data2 = glReadPixels(0,0, wim, him, GL_RGBA, GL_FLOAT)
+            data3 = glReadPixels(0,0, wim, him, GL_DEPTH_COMPONENT,GL_FLOAT)        
+            idmap = (np.fromstring(data2, np.float32).reshape(him, wim, -1))*255.
             idmap2 = idmap[:,:,2] + idmap[:,:,3]*256 
             idmap0 = idmap[:,:,0] + idmap[:,:,1]*256
-            depth = np.fromstring(data3, np.float32).reshape(h, w)
+            depth = np.fromstring(data3, np.float32).reshape(him, wim)
             
         glReadBuffer(GL_NONE)        
-        if multisample > 1:
-           ms =multisample
-           self._hit_map_data = (np.rint(idmap0)[::ms, ::ms],
-                                 np.rint(idmap2)[::ms, ::ms],                   
-                                 depth[::ms, ::ms])
-        else:
-           self._hit_map_data = (np.rint(idmap0),
-                                 np.rint(idmap2),                   
-                                 depth)
+        #if multisample > 1:
+        #   ms =multisample
+        #   self._hit_map_data = (np.rint(idmap0)[::ms, ::ms],
+        #                         np.rint(idmap2)[::ms, ::ms],                   
+        #                         depth[::ms, ::ms])
+        #else:
+        self._hit_map_data = (np.rint(idmap0),
+                              np.rint(idmap2),                   
+                              depth)
 
     def read_data(self, a):
-        w, h, frame, buf, stc, texs = self.get_frame_4_artist(a)
-        glBindFramebuffer(GL_FRAMEBUFFER, frame)
-        self.set_oit_mode_tex(texs)
+        w, h, frames, buf, stc, texs = self.get_frame_4_artist(a)
+        frame  = frames[0]
+        ###
+        if multisample > 1:
+            frame2 = frames[1]
+            wim = w/multisample
+            him = h/multisample
+           
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, frame);
+            glReadBuffer(GL_COLOR_ATTACHMENT0)
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame2)
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, texs[-2], 0)
+            glDrawBuffer(GL_COLOR_ATTACHMENT0)
+            glBlitFramebuffer(0, 0, w, h,
+                              0, 0, wim, him, 
+                              GL_COLOR_BUFFER_BIT, GL_LINEAR)
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)            
+            glBindFramebuffer(GL_FRAMEBUFFER, frame2)
+        else:
+            wim = w
+            him = h
+            glBindFramebuffer(GL_FRAMEBUFFER, frame)
+            self.set_oit_mode_tex(texs)            
+        ###
+
         glReadBuffer(GL_COLOR_ATTACHMENT0)
-        size = w*h
+        size = wim*him
         
         def read_pixbuf(pixel_buffer):
             glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
-            glReadPixels(0,0, w, h, GL_RGBA, 
+            glReadPixels(0,0, wim, him, GL_RGBA, 
                          GL_UNSIGNED_BYTE, c_void_p(0))
         def map_pixbuf(pixel_buffer):
  	    data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER,
@@ -1015,7 +1105,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             return data
         stream_read = True
-        nump = 2  # number of buffering
+        nump = 2  # number of buffering (> 3 does not work well, show noise on screen)
         if stream_read:
             if self._hittest_map_update:
                 pixel_buffer = glGenBuffers(1)
@@ -1050,17 +1140,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self.PIXBUFS[-1] += 1
                 glFlush()                
         else:
-            data = glReadPixels(0,0, w, h, GL_RGBA,GL_UNSIGNED_BYTE)        
-        image = np.fromstring(data, np.uint8).reshape(h, w, -1)
-        #self._debug_image = image
-        if multisample > 1:
-           w,h,d = image.shape
-           image = imresize(image, (w/multisample , h/multisample, d))           
-           #a1 = imresize(image[:,:,0], (w/multisample , h/multisample))
-           #a2 = imresize(image[:,:,1], (w/multisample , h/multisample))
-           #a3 = imresize(image[:,:,2], (w/multisample , h/multisample))
-           #a4 = imresize(image[:,:,3], (w/multisample , h/multisample))
-           #image = np.dstack((a1,a2,a3,a4))
+            data = glReadPixels(0,0, wim, him, GL_RGBA,GL_UNSIGNED_BYTE)        
+        image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
+
+        #if multisample > 1:
+           #glDeleteFramebuffers(1, [frame2])
+           #w,h,d = image.shape
+           #image = imresize(image, (w/multisample , h/multisample, d))           
            
         glReadBuffer(GL_NONE)
         if self._hittest_map_update:
@@ -1946,15 +2032,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
 
         if target in self.frame_list:
-             w2, h2, frame, bufs, stc, texs = self.frame_list[target]
+             w2, h2, frames, bufs, stc, texs = self.frame_list[target]
              if w2 != w or h2 != h:
                  glDeleteTextures(texs)
                  glBindFramebuffer(GL_FRAMEBUFFER, 0)
                  glBindRenderbuffer(GL_RENDERBUFFER, 0)
-                 glDeleteFramebuffers(1, [frame])
+                 glDeleteFramebuffers(len(frames), frames)
                  glDeleteRenderbuffers(len(bufs), bufs)
                  del self.frame_list[target]
-                 self.frames.remove(frame)
+                 for f in frames:
+                    self.frames.remove(f)
                  make_new = True
         else:
             make_new = True

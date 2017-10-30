@@ -1,4 +1,13 @@
-        * 10/27
+        * 10/28
+	** Copy To Clipboard is added to CopySpecial menu
+	** following interactive commands calles threed('on') automatically
+	solid, revolve, surf, trisurf, surface. Note that plot command still
+	does not change axes to 3D mode automatically. A user must call threed('on')
+	if axes is in 2D mode.
+	** fig_revolve::get_export_val is added	
+        ** resolution downscaling on GPU side is added
+	
+	* 10/27
 	** fixed an issue of 3d highlighting. refresh_hl was called
 	everytime during pan/zoom/rotation.
 	** ifigure_canvas.hl_color is added. Currently this property

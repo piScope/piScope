@@ -759,3 +759,9 @@ class FigRevolve(FigSurface):
 
     def get_shade(self, a=None):
         return self.getvar('shade')
+
+    def get_export_val(self, a):
+        r, z = self.getvar("r", "z",)
+        val = {"r":r, "z":z}
+        return val
+    

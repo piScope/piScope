@@ -764,15 +764,8 @@ class navibar(ButtonPanel):
         Copy_to_Clipboard_mod copys the buffer data
         which does not have highlight drawn
         '''
-        canvas = self.GetParent().canvas
-        figure_image = canvas.figure_image[0]
-        h, w, d  = figure_image.shape
-        image = wx.EmptyImage(w, h)
-        image.SetData(figure_image[:,:,0:3].tostring())
-        image.SetAlphaData(figure_image[:,:,3].tostring())
-        bmp = wx.BitmapFromImage(image)
-        canvas.Copy_to_Clipboard_mod(pgbar=True,
-                                     bmp=bmp)
+        frame = self.GetTopLevelParent()
+        frame.onCopyToCB(None)
 
     def ToggleGridRight(self, evt):
         asel = self.GetParent().axes_selection
