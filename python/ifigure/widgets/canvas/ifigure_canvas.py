@@ -1302,6 +1302,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._a_mode_scale_mode = False
       self._3d_rot_mode = 0
       self._frameart_mode = False
+      self._alt_shift_hit = False
 
       self.selection=[]
       self.axes_selection=cbook.WeakNone()
@@ -1496,6 +1497,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                          self.buttonrelease),
                  self.canvas.mpl_connect('scroll_event', 
                                          self.mousescroll),
+                 self.canvas.mpl_connect('key_press_event', 
+                                         self.onKey),
                  self.canvas.mpl_connect('key_release_event', 
                                          self.onKey2),
 #                 self.canvas.mpl_connect('resize_event', 
@@ -1626,17 +1629,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
             self.toolbar.Show()
    def onKey(self, evt):
-       '''
-       this event is not binded. it was used before and
-       I found I was recieveing two key press events per
-       one acutal key press...'
-       '''
-       if evt.guiEvent.GetKeyCode() == wx.WXK_ESCAPE:
-            self.GetTopLevelParent().onFullScreen(value = False)
+       if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
+           self._alt_shift_hit = True
+       if evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
+           self._alt_shift_hit = True
 
-#       print 'onKey (press)'
-#       self._press_key = evt.key
-#       print self._press_key, evt.guiEvent.GetKeyCode()
    def onKey2(self, evt):
 #       print 'onKey2 in ifigure canvas'
 
@@ -1658,7 +1655,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           return
 
        if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
-           if is3Dax:
+           if is3Dax and self._alt_shift_hit:
                if self.toolbar.mode == 'pan':
                    self.toolbar.ClickP1Button('3dzoom')
                elif self.toolbar.mode == '3dzoom':
@@ -1677,7 +1674,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                    self.toolbar.Set3DZoomCursor()
                    self._3d_rot_mode = 0
        elif evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
-           if is3Dax:
+           if is3Dax and self._alt_shift_hit:           
                if self.toolbar.mode == 'zoom':
                    self.toolbar.ClickP1Button('3dzoom')
                elif self.toolbar.mode == '3dzoom':
@@ -1953,6 +1950,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return
 
    def buttonpress(self, event):
+      self._alt_shift_hit = False       
       if self.toolbar.mode  == '':
           hit = 0
           if (abs(self._a_mode_scale_anchor[0] - event.x) < 10 and
@@ -2153,7 +2151,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.draghandler.d_mode = 'a'
 
    def buttonrelease(self, event):
-      ### check double click 
+      ### check double click
+      self._alt_shift_hit = False
       double_click = False
       if event.guiEvent.LeftUp():
           if ((time.time()-self._previous_lclick) < 0.3 and
@@ -2843,7 +2842,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
              if a().figobj is not None: 
                   a().figobj.highlight_artist(False, artist=[ain])
                   a().figobj.canvas_unselected()
-             if hasattr(a(), 'is_gl'): a()._gl_hl = False                              
+             if hasattr(a(), 'is_gl'):
+                 a().unselect_gl_artist()
+             
       self.selection = [x for x in self.selection if x() != ain]
 
    def unselect_all(self):
@@ -2854,7 +2855,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if figobj is not None: 
             figobj.canvas_unselected()
             figobj.highlight_artist(False)
-         if hasattr(a(), 'is_gl'): a()._gl_hl = False            
+         if hasattr(a(), 'is_gl'):
+             a().unselect_gl_artist()
       self.selection=[]
 
 #   def set_axesselection(self, fig_axes):

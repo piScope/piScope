@@ -136,13 +136,15 @@ class ArtGL(object):
             else:
                 self._gl_hit_array_id.append(int(array_id))
             self.mask_array_idx()                
-            return True, {'child_artist':self} 
-        else:
-            if len(self._gl_hit_array_id) > 0:
-                self._gl_hit_array_id = []
-                self.mask_array_idx()
-            return False, {}
-
+            return True, {'child_artist':self}
+        return  False, {}
+        
+    def unselect_gl_artist(self):
+        self._gl_hl = False        
+        if len(self._gl_hit_array_id) > 0:
+             self._gl_hit_array_id = []
+             self.mask_array_idx()
+        
     def mask_array_idx(self):
         if self._gl_array_idx is not None:
              array_idx = np.abs(self._gl_array_idx)

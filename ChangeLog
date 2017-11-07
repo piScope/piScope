@@ -1,4 +1,13 @@
-        * 10/28
+        * 11/07
+	** GLComponent::set_gl_hl_use_array_idx, GLComponent::get_gl_hl_use_array_idx
+	is modified to record the setting in setp. This allows to configure use_array_idx
+	before an artist is made
+	
+	* 11/05
+	** ArgGL::unselect_gl_artist is added to handle unselecting array_indexed
+	artist correctly.
+	
+	* 10/28
 	** Copy To Clipboard is added to CopySpecial menu
 	** following interactive commands calles threed('on') automatically
 	solid, revolve, surf, trisurf, surface. Note that plot command still

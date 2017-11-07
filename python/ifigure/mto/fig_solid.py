@@ -79,6 +79,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         YUser.__init__(self)
         ZUser.__init__(self)
         CUser.__init__(self)
+        GLCompound.__init__(self)
 
         args = []
         if not kywds.has_key('src'):
@@ -211,7 +212,8 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         self.set_pickmask(self._pickmask)
         if len(self.hidden_component) > 0:
             self.hide_component(self.hidden_component)
-
+        self.set_gl_hl_use_array_idx(self.get_gl_hl_use_array_idx())
+        
         for artist in self._artists:
             artist.do_stencil_test = False
             artist.figobj=self

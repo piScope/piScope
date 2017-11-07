@@ -97,11 +97,12 @@ class GLCompound(object):
             a._gl_pickable = not value
         
     def set_gl_hl_use_array_idx(self, value):
+        self.setp('_hl_use_array_idx', value)
         for a in self._artists:
             a.set_gl_hl_use_array_idx(value)    
 
     def get_gl_hl_use_array_idx(self):
-        return any([a.get_gl_hl_use_array_idx() for a in self._artists])
+        return self.getp('_hl_use_array_idx') == True        
 
     def onPickComponent(self, evt):
         self.set_gl_hl_use_array_idx(True)
