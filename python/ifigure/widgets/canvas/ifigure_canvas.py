@@ -1616,23 +1616,26 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return
 
    def turn_on_key_press(self):
-       self._onkey_id = self.canvas.mpl_connect('key_press_event', 
-                                                 self.onKey)
+       self._full_screen_mode = True
+
    def turn_off_key_press(self):
-       if self._onkey_id is not None:
-           self.canvas.mpl_disconnect(self._onkey_id)
-           self._onkey_id = None
+       self._full_screen_mode = False       
 
    def full_screen(self, value):
        if value:
             self.toolbar.Hide()
        else:
             self.toolbar.Show()
+            
    def onKey(self, evt):
        if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
            self._alt_shift_hit = True
        if evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
            self._alt_shift_hit = True
+       if evt.guiEvent.GetKeyCode() == wx.WXK_ESCAPE:
+           if self._full_screen_mode:
+               self.GetTopLevelParent().onFullScreen(evt = evt, value = False)
+           
 
    def onKey2(self, evt):
 #       print 'onKey2 in ifigure canvas'
