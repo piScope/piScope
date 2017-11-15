@@ -504,8 +504,8 @@ class FigSpline(FigObj, XUser, YUser):
         ycm = np.ma.masked_array(yc)
         ym[x < xrange[0]]  = np.ma.masked
         ym[x > xrange[1]]  = np.ma.masked
-        ycm[x < xrange[0]] = np.ma.masked
-        ycm[x > xrange[1]] = np.ma.masked
+        ycm[xc < xrange[0]] = np.ma.masked
+        ycm[xc > xrange[1]] = np.ma.masked
         if scale == 'log': 
            ym[x < 0] = np.ma.masked
            ycm[xc < 0] = np.ma.masked
