@@ -50,7 +50,11 @@ __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
 import wx, time
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    # wx4
+    PyDeadObjectError = RuntimeError
 import matplotlib
 import numpy as np
 #from numpy import arange, sin, pi
@@ -2797,7 +2801,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           if 'cmap_hint' in header:
              cax = objs[0].get_caxisparam() 
              if cax.num_member() == 1:
-                  action = UndoRedoFigobjMethod(objs[0]._artists[0].get_axes(),
+                  action = UndoRedoFigobjMethod(objs[0]._artists[0].axes,
                                                'cmap3', 
                                                 header['cmap_hint'])
                   action.set_extrainfo(cax.name)
@@ -3257,7 +3261,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           for a in self.selection:
                h.append(UndoRedoFigobjMethod(a(), 'caxis_idx', value))
-       ax = a().get_axes()
+       ax = a().axes
        h.append(UndoRedoFigobjMethod(ax, 'adjustrange', None))
                
        window = self.GetTopLevelParent()

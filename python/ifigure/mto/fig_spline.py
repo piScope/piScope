@@ -245,7 +245,7 @@ class FigSpline(FigObj, XUser, YUser):
         self._hit_seg = -1
         self._hit_idx = -1
         self._hit_artist = -1
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {}
         x = self.getp("x")
         y = self.getp("y")

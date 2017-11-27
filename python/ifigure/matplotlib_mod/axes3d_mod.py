@@ -132,7 +132,7 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip =    kargs.pop('use_clip', True)        
         super(Axes3DMod, self).__init__(*args, **kargs)
-        self.axesPatch.set_alpha(0)
+        self.patch.set_alpha(0)
         self._gl_id_data = None
         self._gl_mask_artist = None
         self._3d_axes_icon = None

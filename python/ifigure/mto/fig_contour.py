@@ -516,7 +516,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         from matplotlib.collections import LineCollection
         from ifigure.matplotlib_mod.art3d_gl import Poly3DCollectionGL
         from ifigure.widgets.canvas.custom_picker import CheckLineHit
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {} 
         trans = axes.transData
         self._hit_path = None

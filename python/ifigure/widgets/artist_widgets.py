@@ -1379,7 +1379,7 @@ class panel2(artist_widgets):
             self.enable(False)
             return
         
-        ax = evt.GetTreeDict()._artists[0].get_axes()
+        ax = evt.GetTreeDict()._artists[0].axes
         if ax is None:
             self.ax = None
             self.enable(False)

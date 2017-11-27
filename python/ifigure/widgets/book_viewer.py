@@ -48,6 +48,8 @@ ID_HIDEAPP = wx.NewId()
 ID_WINDOWS = wx.NewId()
 ID_HDF_EXPORT = wx.NewId()
 
+from ifigure.utils.wx3to4 import wxEmptyImage, menu_Append
+
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
         self._atable = []
@@ -196,7 +198,7 @@ class FrameWithWindowList(wx.Frame):
                      "Bring previous window forward",
                      self.onPrevWindow)
         self._windowmenu= wx.Menu()
-        helpmenu.AppendMenu(ID_WINDOWS, 'Viewers...', self._windowmenu)
+        menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, ID_HIDEAPP,
                      "Hide App",
@@ -542,7 +544,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def add_bookmenus(self, editmenu, viewmenu):
         subm = wx.Menu()
-        editmenu.AppendMenu(BookViewerFrame.ID_PM[0], 'Add Page', subm)
+        menu_Append(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
 #        self.add_menu(editmenu, wx.ID_ANY, 
 #                     "Add Page",  "add a new page",  self.onAddPage)
         self.add_menu(subm, BookViewerFrame.ID_PM[1], 
@@ -611,7 +613,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def append_screen_ratio_menu(self, viewmenu):
         ratiomenu = wx.Menu()
-        viewmenu.AppendMenu(wx.ID_ANY, 'Canvas Size', ratiomenu)
+        menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
         self.add_menu(ratiomenu, wx.ID_ANY, 
                       "Aspect = 3:4", "set canvas x y ratio to 3:4",
                        self.onCanvasRatio3_4)
@@ -831,7 +833,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         canvas = self.canvas.canvas
         figure_image = canvas.figure_image[0]
         h, w, d  = figure_image.shape
-        image = wx.EmptyImage(w, h)
+        image = wxEmptyImage(w, h)
         image.SetData(figure_image[:,:,0:3].tostring())
         image.SetAlphaData(figure_image[:,:,3].tostring())
         bmp = wx.BitmapFromImage(image)
@@ -1731,16 +1733,11 @@ class BookViewer(BookViewerFrame):
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
         # File Menu
-#        newmenu = wx.Menu()
-#        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
-#        self.add_menu(newmenu, wx.ID_ANY, 
-#                     "Book in new window", "Create Book", 
-#                     self.onNewBook)
         self.add_menu(self.filemenu, wx.ID_ANY, 
                      "New Figure", "Create Book", 
                      self.onNewBook)
         openmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'Open', openmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                      "Book...",
                      "Import Book file (.bfz). Current book is deleted from project", 
@@ -1752,7 +1749,7 @@ class BookViewer(BookViewerFrame):
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         exportmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'Export...', exportmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
         self.export_book_menu = self.add_menu(exportmenu,
                                         BookViewerFrame.ID_EXPORTBOOK, 
                                         "Export Book", "Export Book",

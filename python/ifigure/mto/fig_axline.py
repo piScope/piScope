@@ -206,7 +206,7 @@ class FigAxline(FigObj, XUser, YUser):
 #
     def picker_a(self, a, evt): 
         hit = False
-        axes = a.get_axes()
+        axes = a.axes
         if axes is None: return False, {}
         x = a.get_xdata()[0]
         xd, yd= transform_point(axes.transData,
@@ -240,7 +240,7 @@ class FigAxline(FigObj, XUser, YUser):
         if evt.inaxes is None: return 0
         if evt.xdata is None:return
 
-        axes = a.get_axes()
+        axes = a.axes
         x, y = self._eval_xy()
         dxd = evt.x - self._drag_backup[2]
         dyd = evt.y - self._drag_backup[3]
@@ -284,7 +284,7 @@ class FigAxline(FigObj, XUser, YUser):
     def dragdone_a(self, a, evt, shift=None, scale=None):
         return self.dragdone(a, evt), scale
     def dragdone(self, a, evt):
-        axes = a.get_axes()
+        axes = a.axes
         x, y = self._eval_xy()
         dxd, dyd = self._drag_delta
    

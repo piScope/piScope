@@ -1,5 +1,6 @@
 import wx, weakref
 
+from ifigure.utils.wx3to4 import menu_Append, menu_RemoveItem, menu_AppendItem
 from ifigure.utils.cbook import FindFrame
 class SplitterWindow(wx.SplitterWindow):
     pass
@@ -187,9 +188,9 @@ class PanelCheckbox(object):
         for i, pinfo, cb in pinfos:
             id = root2.FindItem(pinfo["name"])
             if id != wx.NOT_FOUND and not pinfo["toggle_menu"]:
-                root2.RemoveItem(pinfo["menu"])
+                menu_RemoveItem(root2, pinfo["menu"])
             elif id == wx.NOT_FOUND and pinfo["toggle_menu"]:
-                root2.AppendItem(pinfo["menu"])
+                menu_AppendItem(root2, pinfo["menu"])
 
     def append_menu(self, root, use_panel_menu = False):
         pinfos = sorted([(p[0]["idx"], p[0], p[1]) 
@@ -202,7 +203,7 @@ class PanelCheckbox(object):
         else:
             root2=wx.Menu()
             self.panel_menu = root2
-            root.AppendMenu(wx.ID_ANY, 'Panels', root2)
+            menu_Append(root, wx.ID_ANY, 'Panels', root2)
             self._make_menu(root2, pinfos)
             self._apply_toggle(root2, pinfos)
 

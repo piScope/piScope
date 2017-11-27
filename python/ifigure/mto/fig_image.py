@@ -549,7 +549,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
         app = self.get_root_parent().app
         for a in self._artists:
-            axes = a.get_axes()
+            axes = a.axes
             if axes is None: return     
             data1, data2 = self.get_slice(event.mpl_xy[0],
                                           event.mpl_xy[1], a)

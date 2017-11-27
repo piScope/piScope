@@ -342,7 +342,7 @@ from ifigure.widgets.appearance_config import AppearanceConfig
 import ifigure.utils.cbook as cbook
 import ifigure.server
 import wx, sys, weakref, time
-from wx._core import PyDeadObjectError
+from ifigure.utils.wx3to4 import PyDeadObjectError, menu_Append
 
 try:
     from wx import glcanvas
@@ -465,6 +465,7 @@ class ifigure_app(BookViewerFrame):
           wx.CallAfter(self.Show, True)
           wx.CallAfter(self.Raise)
           wx.CallAfter(self.proj_tree_viewer.get_shellvar_viewer().update, self.shell)
+
 #       self.Show()
 #       self.Raise()       
 
@@ -557,7 +558,7 @@ class ifigure_app(BookViewerFrame):
 
        # File Menu
        newmenu = wx.Menu()
-       self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
+       menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
        self.add_menu(newmenu, wx.ID_ANY, 
                      "piScope", "Start new piScope application", 
                      self.onNewApp)
@@ -577,7 +578,7 @@ class ifigure_app(BookViewerFrame):
                      "non-project Text", "Create new untitled text (file is not stored in project)", 
                      self.onNewDoc)
        openmenu = wx.Menu()
-       self.filemenu.AppendMenu(wx.ID_ANY, 'Open', openmenu)
+       menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
        self.add_menu(openmenu, wx.ID_ANY,
                      "Project...", "Open an existing project", 
                      self.onOpen)
@@ -599,7 +600,7 @@ class ifigure_app(BookViewerFrame):
                      "File...", "Open File", 
                      self.onOpenFile)
        self._recentmenu = wx.Menu()
-       self.filemenu.AppendMenu(ID_RECENT,
+       menu_Append(self.filemenu, ID_RECENT,
                                 "Open Recent", self._recentmenu)
        self.filemenu.AppendSeparator()
        self.append_save_project_menu(self.filemenu)
@@ -663,7 +664,7 @@ class ifigure_app(BookViewerFrame):
        self.add_cutpaste_menu(self.editmenu)
 
        panelmenu = wx.Menu()
-       self.viewmenu.AppendMenu(wx.ID_ANY, 'Panels', panelmenu)
+       menu_Append(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
        self.gui_tree.append_menu(panelmenu)
        self.viewmenu.AppendSeparator()
        self.gui_tree.update_check()
@@ -2327,16 +2328,17 @@ class MyApp(wx.App):
         if len(x) == 0: self._palettes[window.GetParent()]
 
     def clean_palette(self):
-        from wx._core import _wxPyDeadObject
-        dead_keys = [key for key in self._palettes
-                     if isinstance(key, _wxPyDeadObject)]
+#        from wx._core import _wxPyDeadObject
+        dead_keys = [key for key in self._palettes if not key]
+#                     if isinstance(key, _wxPyDeadObject)]
         for key in dead_keys:
             del self._palettes[key]
         dead_keys = []
         for key in self._palettes:
             dead_window = []
             for x in self._palettes[key]:
-               if isinstance(x, _wxPyDeadObject):
+#               if isinstance(x, _wxPyDeadObject):
+                if not x:
                    dead_window.append(x)
             for x in dead_window:
                 self._palettes[key].remove(x)

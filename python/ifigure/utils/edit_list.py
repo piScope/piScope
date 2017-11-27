@@ -12,7 +12,7 @@
 #             2:  text label (static text)
 #             3:  check box 
 #               setting = {"text":'check box label'}
-import wx, wx.combo, os, ifigure
+import wx, os, ifigure
 import  wx.stc  as  stc
 import numpy as np
 from ifigure.numerical_function import *
@@ -41,6 +41,7 @@ EDITLIST_CHANGING = wx.PyEventBinder(EditorChanging, 1)
 EditorSetFocus = wx.NewEventType()
 EDITLIST_SETFOCUS = wx.PyEventBinder(EditorSetFocus, 1)
 
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog
 
 class EditListEvent(wx.PyCommandEvent):
     """
@@ -309,7 +310,7 @@ class LogLinScale(Panel):
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.GetSizer().Add(self.cb, 0, wx.EXPAND)
         self.GetSizer().Add(self.tc, 0, wx.EXPAND)
-        hsizer = wx.GridSizer(1,2)
+        hsizer = GridSizer(1,2)
         self.GetSizer().Add(hsizer, 0, wx.EXPAND)
         hsizer.Add(self.tc2, 1, wx.EXPAND)
         hsizer.Add(self.tc3, 1, wx.EXPAND)                
@@ -405,8 +406,8 @@ class AxisRange(wx.Panel):
 
         self.panel2 = Panel(self)
         self.panel2.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
-        s1 = wx.GridSizer(3,1)
-        s2 = wx.GridSizer(3,1)
+        s1 = GridSizer(3,1)
+        s2 = GridSizer(3,1)
         self.panel2.GetSizer().Add(s1, 0, wx.EXPAND)
         self.panel2.GetSizer().Add(s2, 0, wx.EXPAND)
         self.cb_auto = CheckBox(self.panel2, wx.ID_ANY,'auto')
@@ -548,7 +549,7 @@ class BitmapButtons(wx.Panel):
         self.Controls=[]
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
-        self.gsizer = wx.GridSizer(10, 5)
+        self.gsizer = GridSizer(10, 5)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
         self._btn = None
         self._val = None
@@ -598,9 +599,9 @@ class BitmapButtons(wx.Panel):
                    print('Cannot find bitmap for ' + ftitle + '=' + fname)
                bitmap=wx.Bitmap(imageFile)
                h, w = bitmap.GetSize()
+
                image = bitmap.ConvertToImage()
-               array = np.fromstring(image.GetData(), 
-                       dtype=np.uint8)
+               array = np.fromstring(bytes(image.GetData()), dtype=np.uint8)
                array = array.reshape(w, h, array.shape[0]/w/h)
             else:
                array = imagearray[name]
@@ -617,7 +618,7 @@ class BitmapButtons(wx.Panel):
             array[:,:2,2]=0
             array[:,-2:,2]=0
 
-            image = wx.EmptyImage(h, w)
+            image = wxEmptyImage(h, w)
             image.SetData(array.tostring())
             bitmap2 = image.ConvertToBitmap()
             btn = wx.BitmapButton(self, bitmap=bitmap)
@@ -825,7 +826,7 @@ def colorbutton_bitmap(data):
     v = [int(data[0]*255), int(data[1]*255), int(data[2]*255)]
     w, h = bitmap_size
     array = np.array([v,]*w*h, dtype=np.uint8).reshape((w, h, -1))
-    image = wx.EmptyImage(w, h)
+    image = wxEmptyImage(w, h)
     image.SetData(array.tostring())
     bitmap = image.ConvertToBitmap()
     return bitmap
@@ -909,7 +910,7 @@ class TickLabelSizeSelector(Panel):
         self.cb2 = ComboBox_Float(self, wx.ID_ANY, 
                             style=wx.TE_PROCESS_ENTER,
                             choices=setting["choices"])
-        gsizer =  wx.GridSizer()        
+        gsizer =  wx.GridSizer(11)        
         self.SetSizer(gsizer)        
         gsizer.Add(self.cb1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         gsizer.Add(self.cb2, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
@@ -937,7 +938,7 @@ class TickLabelSizeSelector(Panel):
 class TickLabelColorSelector(Panel):
     def __init__(self, parent, id):
         Panel.__init__(self, parent, id)
-        gsizer =  wx.FlexGridSizer()        
+        gsizer =  FlexGridSizer()        
         self.SetSizer(gsizer)        
         self.bt1 = ColorSelector(self, wx.ID_ANY)
         self.bt2 = ColorSelector(self, wx.ID_ANY)
@@ -1094,7 +1095,7 @@ class ColorOrder(Panel):
     def make_buttons(self, color_list):
         self.Hide()
         l = len(color_list)
-        self.SetSizer(wx.GridSizer(min((l%7, 1))+l/7, 7))
+        self.SetSizer(GridSizer(min((l%7, 1))+l/7, 7))
         self.btn = [None]*l
         for i in range(l):
             name = color_list[i]
@@ -1147,7 +1148,7 @@ class ColorMapButton(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = colormap_list()
-        self.gsizer = wx.FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
 
@@ -1173,7 +1174,7 @@ class ColorMapButtonExtra(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps =['idl'+str(x) for x in range(40)]
-        self.gsizer = wx.FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
 
@@ -1662,7 +1663,7 @@ class ArrayTextCtrl(Panel):
         col = setting.pop('col', 1)
         textsetting = setting.pop('text_setting', [])
         super(ArrayTextCtrl, self).__init__(parent, id, **setting)
-        sizer=wx.GridSizer(rows=row, cols=col)
+        sizer=GridSizer(row, col)
         self.SetSizer(sizer)
         self._text_ctrl = [None]*len(textsetting)
         for i, s in enumerate(textsetting):
@@ -2060,7 +2061,7 @@ class AlphaPanel(CSliderWithCB):
 
 class RotationPanel(CSliderWithCB):
     def __init__(self, parent, id):
-        setting = {"style":wx.wx.TE_PROCESS_ENTER,
+        setting = {"style":wx.TE_PROCESS_ENTER,
                    "choices": ["0", "45", "90", "135", "180",
                                "225",  "270", "315"]}
         s = {"minV": 0.,"maxV": 359., "val" : 90, "res" : 1, 
@@ -2541,7 +2542,7 @@ class GenericCoordsTransform(wx.Panel):
        self.widgets=[]
        p2 = wx.Panel(self, wx.ID_ANY)
        sizer0=wx.BoxSizer(wx.HORIZONTAL)
-       sizer=wx.FlexGridSizer(rows=2, cols=2)
+       sizer = FlexGridSizer(rows=2, cols=2)
        st1=wx.StaticText(p2, wx.ID_ANY, 'x: ')
        self.cb1 = ComboBoxCompact(p2, wx.ID_ANY, 
                       size=(-1, -1),
@@ -2744,7 +2745,7 @@ class ArrowStylePanel(wx.Panel):
         evt.SetEventObject(self)
         self.GetParent().send_event(self, evt)
 
-class ArrowStyleCombobox(wx.combo.BitmapComboBox):
+class ArrowStyleCombobox(wxBitmapComboBox):
     def __init__(self, *args, **kargs):
         from ifigure.ifigure_config import arrowstyle_list
         from ifigure.ifigure_config import icondir
@@ -2851,7 +2852,7 @@ class MDSServerDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, id, title)
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer =  wx.FlexGridSizer(3,2)
+        sizer =  FlexGridSizer(3,2)
         sizer.AddGrowableCol(1,1)
         st1 = wx.StaticText(self, label="Server")
         self.field  = wx.TextCtrl(self, value="alcdata.psfc.mit.edu", size = (300,-1))
@@ -3256,7 +3257,7 @@ class MDSSource0(wx.Panel):
         evt.Skip()
         
     def onAddVar(self, evt):
-        dlg = wx.TextEntryDialog(self.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.GetTopLevelParent(), 
                "Enter the name of variable", "Add variable", "")
         if dlg.ShowModal() == wx.ID_OK:
 #            self.Freeze()
@@ -3381,7 +3382,7 @@ class MDSSource(wx.Panel):
 class MDSGlobalSelection(wx.Panel):
     def __init__(self, parent, id, *args, **kargs):
        wx.Panel.__init__(self, parent, id)
-       sizer = wx.GridSizer(4, 4)
+       sizer = GridSizer(4, 4)
        self.SetSizer(sizer)
        
        self.cb = [None]*16

@@ -5,6 +5,8 @@ import random
 from ifigure.widgets.section_editor import section_editor
 from ifigure.widgets.artist_widgets import panel1, panel2
 
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer
+
 class property_editor(wx.Panel):
     screen_width = None
 #    screen_width = 290
@@ -34,7 +36,7 @@ class property_editor(wx.Panel):
 #        self.Bind(self.CP3.events, self.hndl_event)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        button_sizer=wx.GridSizer(1, 3)
+        button_sizer=GridSizer(1, 3)
         button_sizer.Add(self.b1,0)
         button_sizer.Add(self.b2,0)
         button_sizer.Add(self.b3,0)

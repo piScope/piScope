@@ -25,7 +25,7 @@ from ifigure.widgets.command_history import CommandHistory
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('ProjTreeViewerAUI')
 
-
+from ifigure.utils.wx3to4 import tree_InsertItemBefore, wxNamedColour, tree_GetItemData, tree_SetItemData
 
 class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
@@ -302,7 +302,7 @@ class ProjTreeViewerPopUp(wx.Menu):
     def onMoveUp(self, e):
         tv=e.GetEventObject()
         item = tv.tree.GetSelection()
-        data= tv.tree.GetPyData(item)
+        data= tv.tree.GetPyData(item)        
         if not isinstance(data, TreeDict): return
         if data._parent is None: return
         data._parent.move_child(data.get_ichild(), 
@@ -312,7 +312,7 @@ class ProjTreeViewerPopUp(wx.Menu):
     def onSortUp(self, e):
         tv=e.GetEventObject()
         item = tv.tree.GetSelection()
-        td= tv.tree.GetPyData(item)
+        td= tv.tree.GetPyData(item)                
         if not isinstance(td, TreeDict): return
         td.sort_children_up()
         tv.update_widget()
@@ -320,7 +320,7 @@ class ProjTreeViewerPopUp(wx.Menu):
     def onSortDown(self, e):
         tv=e.GetEventObject()
         item = tv.tree.GetSelection()
-        td= tv.tree.GetPyData(item)
+        td= tv.tree.GetPyData(item)                        
         if not isinstance(td, TreeDict): return
         td.sort_children_down()
         tv.update_widget()
@@ -356,12 +356,13 @@ class ProjTreeViewerPopUp(wx.Menu):
     def onShowContents(self, e):
         tv=e.GetEventObject()
         item = tv.tree.GetSelection()
-        dictobj= tv.tree.GetPyData(item)
+        dictobj = tv.tree.GetPyData(item)
         tv.show_contents(dictobj, item)
+        
     def onHideContents(self, e):
         tv=e.GetEventObject()
         item = tv.tree.GetSelection()
-        dictobj= tv.tree.GetPyData(item)
+        dictobj = tv.tree.GetPyData(item)
         tv.hide_contents(dictobj, item)
 
 class TreeCtrl(wx.TreeCtrl):
@@ -379,10 +380,16 @@ class TreeCtrl(wx.TreeCtrl):
            return t1[2].OnCompareItems(t1, t2)
     def GetPyData(self, *args):
         try:
-           val = wx.TreeCtrl.GetPyData(self, *args)
+           o = super(self.__class__, self)
+           val = tree_GetItemData(o, *args)
            return val
         except:
            return None
+
+    def SetPyData(self, *args, **kwargs):
+        o = super(self.__class__, self)       
+        return tree_SetItemData(o, *args, **kwargs)
+       
 #    def SelectItem(self, *args, **kargs):
 #        wx.TreeCtrl.SelectItem(self, *args, **kargs)
 #        print 'Selcting', args
@@ -483,12 +490,11 @@ class ProjTreeViewer(wx.Panel):
         # panel2-2 (shell variable viewer)        
         self.varviewer= VarViewerG(self.nb)
         self.svarviewer= ShellVarViewer(self.nb)        
-        
         dt2 = VarViewerGDropTarget(self)
         self.varviewer.SetDropTarget(dt2)
-        
         self.nb.AddPage(self.varviewer, 'Tree Variables')
-        self.nb.AddPage(self.svarviewer, 'Shell Variables')        
+        self.nb.AddPage(self.svarviewer, 'Shell Variables')
+
         wx.CallAfter(self.nb.Split,0, wx.TOP)
         # panel3 (consol)
    
@@ -529,7 +535,7 @@ class ProjTreeViewer(wx.Panel):
 
         self._first_click = False
         self.timer = wx.Timer(self, wx.ID_ANY)
-
+ 
     def onKeyPressed(self, evetn):
         print('process at viewer')
 #    def init_sash_pos(self):
@@ -638,10 +644,10 @@ class ProjTreeViewer(wx.Panel):
                treedict._image_update = True
            if treedict.is_suppress():
                self.tree.SetItemTextColour(item, 
-                              wx.NamedColour('Grey'))
+                              wxNamedColour('Grey'))
            else:
                self.tree.SetItemTextColour(item, 
-                              wx.NamedColour('Black'))
+                              wxNamedColour('Black'))
 
 #        print time.time()-t0; t0=time.time()
 #        print sdict.get_full_path()
@@ -1276,7 +1282,7 @@ class ProjTreeViewer(wx.Panel):
 #         print 'adding '+treedict.get_full_path()
          if sib is None:
             if first is True:
-                parent2 = self.tree.InsertItemBefore(pitem, 0, 
+                parent2 = tree_InsertItemBefore(self.tree, pitem, 0, 
                                                      label, img) 
             else:
                 parent2 = self.tree.AppendItem(pitem, label, img)
@@ -1289,7 +1295,7 @@ class ProjTreeViewer(wx.Panel):
             self.tree.SelectItem(parent2)
          if treedict.is_suppress():
             self.tree.SetItemTextColour(parent2, 
-                                      wx.NamedColour('Grey'))
+                                      wxNamedColour('Grey'))
 #         if treedict.can_have_child():
          if treedict.num_child() != 0:
             self.tree.SetItemHasChildren(parent2)
@@ -1389,8 +1395,8 @@ class ProjTreeViewer(wx.Panel):
          img = treedict.get_classimage()
          if sib is None:
             if first is True:
-                parent2 = self.tree.InsertItemBefore(pitem, 0, 
-                                                     label, img) 
+                parent2 = tree_InsertItemBefore(self.tree. pitem, 0, 
+                                                label, img) 
             else:
                 parent2 = self.tree.AppendItem(pitem, label, img)
          else:
@@ -1399,8 +1405,8 @@ class ProjTreeViewer(wx.Panel):
             self.tree.SelectItem(parent2)
          if treedict.is_suppress():
             self.tree.SetItemTextColour(parent2, 
-                                      wx.NamedColour('Grey'))
-#         if treedict.can_have_child():
+                                      wxNamedColour('Grey'))
+
          if treedict.num_child() != 0:
             self.tree.SetItemHasChildren(parent2)
 

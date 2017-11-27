@@ -89,9 +89,9 @@ def readdir(parent=None,  message='Directory to read'):
         return None
 
 def textentry(parent=None, message='', title='', def_string='', center=False):
-
-    dlg = wx.TextEntryDialog(parent, 
-          message, title, def_string)
+    from ifigure.utils.wx3to4 import TextEntryDialog
+    dlg = TextEntryDialog(parent, 
+          message, caption=title, value=def_string)
     if center: dlg.Centre()
     if dlg.ShowModal() == wx.ID_OK:
         new_name = str(dlg.GetValue())

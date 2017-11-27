@@ -29,6 +29,8 @@ import  ifigure.events
 from  ifigure.utils.minifier import minify
 import ifigure.widgets.dialog as dialog
 import  sys, os, logging, time
+
+from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append
 #----------------------------------------------------------------------
 
 demoText = ""
@@ -1123,7 +1125,10 @@ class ScriptEditor(wx.Panel):
 
         self.ic = 0
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.onClose)
-        self.Bind(aui.EVT__AUINOTEBOOK_TAB_RIGHT_UP, self.onTabRightUp)
+
+
+        self.Bind(EVT_AUINOTEBOOK_TAB_RIGHT_UP, self.onTabRightUp)
+
         self.ShowDebugPanel()
         self.HideDebugPanel()
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChanged)
@@ -1572,6 +1577,7 @@ class ScriptEditor(wx.Panel):
 
 from ifigure.widgets.statusbar import StatusBarSimple
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
+
 class ScriptEditorFrame(FrameWithWindowList):
     def __init__(self, *args, **kargs):
         kargs["style"] = (wx.CAPTION|
@@ -1591,7 +1597,7 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.menuBar.Append(self.viewmenu,"&View")
 
         newmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
         self.add_menu(newmenu, wx.ID_ANY, 
                     "Script", "Create new script in Project", 
                      self.onNewScript)

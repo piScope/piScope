@@ -21,7 +21,7 @@ class FindPanel(wx.Panel):
                                style=wx.TE_PROCESS_ENTER)
         self.btn_bw = wx.Button(self, wx.ID_ANY, 'Backward')
         self.btn_fw = wx.Button(self, wx.ID_ANY, 'Forward')
-        gsizer = wx.GridSizer()
+        gsizer = wx.GridSizer(1,)
         gsizer.Add(self.btn_bw, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         gsizer.Add(self.btn_fw, wx.ALL|wx.ALIGN_CENTER_VERTICAL)        
         self.btn_cl = wx.Button(self, wx.ID_ANY, 'x', size = (25, -1))

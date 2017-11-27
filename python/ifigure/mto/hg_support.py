@@ -22,7 +22,11 @@ from   ifigure.mto.treedict    import TreeDict
 from   ifigure.utils.edit_list import DialogEditList
 
 from   ifigure.utils.cbook import isBinary
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    # wx4
+    PyDeadObjectError = RuntimeError
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('HGSupport')

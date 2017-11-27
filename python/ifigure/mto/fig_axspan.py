@@ -316,7 +316,7 @@ class FigAxspan(FigObj, XUser, YUser):
         return self.dragstart(a, evt)
     def dragstart(self, a, evt):
         if evt.inaxes is None: return 0
-        axes = a.get_axes()
+        axes = a.axes
         if axes is None: return 0
 
         if not a in self._artists:return False, {}
@@ -361,7 +361,7 @@ class FigAxspan(FigObj, XUser, YUser):
     def drag(self, a, evt, idx = 'all'):
         if evt.xdata is None: return
         if evt.inaxes is None: return
-        axes = a.get_axes()
+        axes = a.axes
         x, y = self._eval_xy()
         dx = evt.xdata - self._drag_backup[0]
         dy = evt.ydata - self._drag_backup[1]
@@ -441,7 +441,7 @@ class FigAxspan(FigObj, XUser, YUser):
     def dragdone_a(self, a, evt, shift=None, scale=None):
         return self.dragdone(a, evt), scale
     def dragdone(self, a, evt, idx = 'all'):
-        axes = a.get_axes()
+        axes = a.axes
         x, y = self._eval_xy()
         x = x.copy()
         y = y.copy()
