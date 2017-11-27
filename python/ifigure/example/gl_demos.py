@@ -141,7 +141,9 @@ def solid_demo(**kwargs):
         v = np.dstack((tri.x[tri.triangles], 
                    tri.y[tri.triangles],
                    Z.flatten()[tri.triangles],))
+        v = np.vstack((tri.x, tri.y, Z.flatten()))        
         kwargs['cdata'] =  5*Z.flatten()[tri.triangles]
+        kwargs['cdata'] =  5*Z.flatten()        
         kwargs['cz'] = True
 
         # or #
@@ -149,29 +151,36 @@ def solid_demo(**kwargs):
                    tri.y[tri.triangles],
                    Z.flatten()[tri.triangles],
                    5 * Z.flatten()[tri.triangles],))
+        v = np.vstack((tri.x, tri.y, Z.flatten(), 5*Z.flatten()))        
     elif 'twod' in kwargs and kwargs['twod']: 
         v = np.dstack((tri.x[tri.triangles], 
                    tri.y[tri.triangles]),)
+        v = np.vstack((tri.x, tri.y, ))
         kwargs.pop('twod')
         kwargs['zvalue'] = 1.0
     else:
         v = np.dstack((tri.x[tri.triangles], 
                    tri.y[tri.triangles],
                    Z.flatten()[tri.triangles],))
+        v = np.vstack((tri.x, tri.y, Z.flatten()))
 
+    idxset=tri.triangles
+    v = v.transpose()
+    
+    print v.shape, idxset.shape
     viewer = figure()
     nsec(3)
     isec(0)
     threed('on')
-    solid(v, edgecolor = 'k', facecolor = 'b')
+    solid(v, idxset, edgecolor = 'k', facecolor = 'b')
     lighting(light = 0.5, ambient = 0.5)            
     isec(1)
     threed('on')
-    solid(v, cz = True)
-    lighting(light = 0.5, ambient = 0.5)            
+    solid(v, idxset, cz = True)
+    lighting(light = 0.5, ambient = 0.5)
     isec(2)
     threed('on')
-    solid(v, cz = True, cdata = v[:,:,0], shade='linear')
+    solid(v, idxset, cz = True, cdata = v[...,0], shade='linear')
     lighting(light = 0.5, ambient = 0.5)        
     
 

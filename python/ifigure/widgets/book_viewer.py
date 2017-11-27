@@ -445,7 +445,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 if (id == BookViewerFrame.ID_EXPORTBOOK): 
                     if self.book.hasvar("original_filename"):
                         fname = self.book.getvar("original_filename")
-                        if (os.path.exists(fname) and 
+                        if (fname is not None and
+                            os.path.exists(fname) and 
                             os.access(fname, os.W_OK)):
                             evt.Enable(True) 
                         else:
@@ -756,14 +757,16 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onCut(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
             self.canvas.Cut()
         else:
             e.Skip()
 
     def onCopy(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
            self.canvas.Copy()
            wx.GetApp().TopWindow.proj_tree_viewer.update_widget()               
         else:
@@ -778,7 +781,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def onPaste(self, e):
         fc = self.FindFocus()
-        if fc is self.canvas.canvas:
+        if (fc is self.canvas.canvas or
+            fc in self.canvas.canvas.GetChildren()):
             val = self.canvas.Paste()
             wx.GetApp().TopWindow.proj_tree_viewer.update_widget()
             return val
@@ -794,7 +798,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                        title= "Paste Page",
                        style=4)                 
         if ret == 'yes':
-            self.del_page(self.ipage)            
+            self.del_page(self.ipage)
+            self.set_window_title()
 #            ifigure.events.SendShowPageEvent(np, id)            
         else:
             self.show_page(self.ipage+1)
@@ -817,7 +822,23 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         fid = open(cs+'_area', 'wb')
         pickle.dump(data, fid)
         fid.close()
-
+        
+    def onCopyToCB(self, e = None):
+        '''
+        Copy_to_Clipboard_mod copys the buffer data
+        which does not have highlight drawn
+        '''
+        canvas = self.canvas.canvas
+        figure_image = canvas.figure_image[0]
+        h, w, d  = figure_image.shape
+        image = wx.EmptyImage(w, h)
+        image.SetData(figure_image[:,:,0:3].tostring())
+        image.SetAlphaData(figure_image[:,:,3].tostring())
+        bmp = wx.BitmapFromImage(image)
+        canvas.Copy_to_Clipboard_mod(pgbar=True,
+                                     bmp=bmp)
+        if e is not None: e.Skip()
+        
     def onPasteArea(self, e):
         from ifigure.ifigure_config import scratch as cs
         if not os.path.exists(cs+'_area'): 
@@ -836,7 +857,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def onCopyS(self, e):
         from ifigure.utils.edit_list import DialogEditList
         s ={"style":wx.CB_DROPDOWN,
-            "choices": ["Section", "Page", "Section Layout"]}
+            "choices": ["Section", "Page", "Section Layout", "ToClipboard"]}
         list6 = [[None, 'Choose item to copy', 102., None],
                  [None, 'Section',  104,  s],]
 
@@ -853,6 +874,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             self.onCopyPage(e)
         elif idx == 2:
             self.onCopyArea(e)
+        elif idx == 3:
+            self.onCopyToCB(e)
 
     def onPasteS(self, e):
         from ifigure.utils.edit_list import DialogEditList
@@ -1113,10 +1136,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def adjust_attach_menu(self):
         pass
 
-    def draw(self):
-        self.canvas.draw()
+    def draw(self, *args, **kwargs):
+        self.canvas.draw(*args, **kwargs)
+        
     def draw_all(self):
         self.canvas.draw_all()
+        
     def last_draw_time(self):
         return self.canvas._last_draw_time
     
@@ -1620,7 +1645,21 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
 #    def close_figurebook(self):
 #        self.onWindowClose()
- 
+    def install_toolbar_palette(self, name, tasks,  mode = '2D', refresh = None):
+        self.canvas.install_toolbar_palette(name, tasks,  mode, refresh)
+
+    def use_toolbar_palette(self, name, mode = '2D'):
+        self.canvas.use_toolbar_palette(name, mode)
+
+    def use_toolbar_std_palette(self):
+        self.canvas.use_toolbar_std_palette()
+
+    def refresh_toolbar_buttons(self):
+        self.canvas.toolbar.refresh_palette()
+
+    def set_hl_color(self, value):
+        assert len(value)==3,  "Highlight color should be RGB (lenght = 3)"
+        self.canvas.hl_color = tuple(value)
 
 class BookViewer(BookViewerFrame):
     def __init__(self, *args, **kargs):    

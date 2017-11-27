@@ -238,13 +238,13 @@ class property_editor(wx.Panel):
     #   self.parent.Fit() 
 
     def onTD_Selection(self, evt):
-       if self.IsShown():
-          self.CP1.onTD_Selection(evt)
-          self.CP2.onTD_Selection(evt)          
-          self.CP3.onTD_Selection(evt)
-       self.Layout()
-       # this will make sure that button size is right..!?          
-#     
+        if self.IsShown():
+            self.CP1.onTD_Selection(evt)
+            self.CP2.onTD_Selection(evt)          
+            self.CP3.onTD_Selection(evt)
+        self.Layout()
+        # this will make sure that button size is right..!?
+         
     def onTD_ShowPage(self, evt):
        if self.IsShown():
            self.CP1.update_panel()

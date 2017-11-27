@@ -17,7 +17,7 @@ from ifigure.widgets.book_viewer import BookViewer, BookViewerFrame, ID_KEEPDATA
 import ifigure.events
 import weakref
 import numpy as np
-from .videoplayer_buttons import VideoplayerButtons
+from .videoplayer_buttons import VideoplayerButtons, add_player_btn
 
 class VideoViewerMode(object):
     ID_PLAYERBUTTON = wx.NewId()        
@@ -29,9 +29,12 @@ class VideoViewerMode(object):
         self._playinterval = 100
         self._playloop = False
         self._is_playing = 0 # 0: stop, 1: forward, -1: backward        
-
+        
     def add_all_video_obj(self):
         raise NotImplementedError('VideoViewerMode::add_all_video_obj should be overwritten')
+
+    def reset_video_obj_set(self):
+        self._video_obj = weakref.WeakSet()        
 
     def add_video_obj(self, figobj):
         self._video_obj.add(figobj)
@@ -158,8 +161,8 @@ class VideoViewerMode(object):
                         "Player Panel", "toggle player button panel",
                          self.onTogglePlayerButton,
                         kind = wx.ITEM_CHECK)
-        self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
-        wx.GetApp().add_palette(self._playerbtn)        
+        self._playerbtn = add_player_btn(self)
+        #wx.GetApp().add_palette(self._playerbtn)        
         self._mm_player.Check(True)        
         self.add_menu(viewmenu, BookViewerFrame.ID_PM[4], 
                      "Next Page",  "next page",
@@ -171,10 +174,10 @@ class VideoViewerMode(object):
     def onTogglePlayerButton(self, evt):
         if self._mm_player.IsChecked():
             if self._playerbtn is None:
-                self._playerbtn = VideoplayerButtons(self, wx.ID_ANY, self.book.name)
-                wx.GetApp().add_palette(self._playerbtn)                        
+                self._playerbtn = add_player_btn(self)
+                #wx.GetApp().add_palette(self._playerbtn)  
         else:
-            wx.GetApp().rm_palette(self._playerbtn)                                    
+            #wx.GetApp().rm_palette(self._playerbtn) 
             self._playerbtn.Destroy()
             self._playerbtn = None
             
@@ -236,11 +239,14 @@ class VideoViewerMode(object):
         interval = min([50,int(float(value[1][0])*1000.)])
         self._playinterval = interval
         self._playloop = bool(value[1][1])
+        
+
     
 from ifigure.mto.fig_image import FigImage
 class FigImageVideo(FigImage):
     def set_video_data(self, value):
         self._video = value
+        
     def get_nframe(self):
         return self._video.shape[0]
     
@@ -266,19 +272,37 @@ class FigImageVideo(FigImage):
 def convert_figobj(obj):
     if obj.__class__ == FigImage:
         obj.__class__ = FigImageVideo
+
+class VideoBookPlayer(VideoViewerMode, BookViewer):
+    def __init__(self, *args, **kwargs):
+        VideoViewerMode.__init__(self, *args, **kwargs)
+        BookViewer.__init__(self, *args, **kwargs)
     
-class VideoViewer(VideoViewerMode, BookViewer):
+    def onResize(self, evt):
+        BookViewer.onResize(self, evt)
+        if self._playerbtn is not None:
+            self._playerbtn.place_right_bottom()            
+        
+    def call_draw_after_resize(self):
+        if self._playerbtn is not None:
+            self._playerbtn.place_right_bottom()
+        BookViewer.call_draw_after_resize(self)
+        
+    def onPaste(self, e):
+        BookViewer.onPaste(self, e)
+        self.add_all_video_obj()
+
+    def add_all_video_obj(self):
+        raise NotImplementedError('Need to implement in subclass')
+    
+class VideoViewer(VideoBookPlayer):
     def __init__(self, *args, **kwargs):
         self._video_obj = []
         kwargs['isattachable'] = False
-        VideoViewerMode.__init__(self, *args, **kwargs)
-        BookViewer.__init__(self, *args, **kwargs)
+        super(VideoViewer, self).__init__( *args, **kwargs)
+        
         if self.book is not None:
            self.add_all_video_obj()
-        #self.Bind(wx.EVT_ACTIVATE, self.onActivate)
-        
-#    def onActivate(self, evt):
-#        VideoViewerMode.onActivate(self, evt)
         
     def image(self, *args, **kwargs):
         '''
@@ -305,6 +329,7 @@ class VideoViewer(VideoViewerMode, BookViewer):
         return o
     
     def add_all_video_obj(self):                
+        self.reset_video_obj_set()
         for obj in self.book.walk_tree():
             if isinstance(obj, FigImageVideo): self.add_video_obj(obj)
 
@@ -342,16 +367,9 @@ class VideoViewer(VideoViewerMode, BookViewer):
 
 
 
+
+
+
+
+
         
-        
-
-
-
-
-
-
-
-
-
-
-

@@ -55,7 +55,7 @@ class PyConnection(TreeDict):
               ({'text': 'use SSH'}, {'elp':l2})]]
 
         proj_tree_viewer = wx.GetApp().TopWindow.proj_tree_viewer
-        proj_tree_viewer.OpenPanel(l1, self, 'setSetting')
+        proj_tree_viewer.OpenPanel(l1, self, 'setSetting', title='Connection setting')
 
     def PutFile(self, src, dest, nowait = False):
         '''

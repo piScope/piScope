@@ -61,6 +61,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._isDrawn = False
         self._dsu_check = []
         self._auto_update_ax = []
+        self._hl_color = (0, 0, 0,)
+        
         super(FigureCanvasWxAggMod, self).__init__(*args, **kargs)
 
         #self.Unbind(wx.EVT_SIZE)
@@ -116,7 +118,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             self.figure.draw_from_bitmap(self.renderer)
             self._isDrawn = True
             if not nogui_reprint:
-#                print 'draw calling gui_repaint'
+                #print 'draw calling gui_repaint'
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
@@ -153,7 +155,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
         for a in alist:
             a.draw(self.renderer)
-        self._prepare_bitmap()                
+        self._prepare_bitmap()
+        #print 'draw calling gui_repaint'        
         self.gui_repaint(drawDC=drawDC)
 
     def Copy_to_Clipboard_mod(self, event=None, bmp=None, pgbar=False):
@@ -334,6 +337,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.figure.frameon = False
         for zorder, a in dsu:
             self.figure.draw_axes(self.renderer, a)
+            a.figobj._bmp_update = True
+            
         self.figure.frameon = o
 
     def _prepare_bitmap(self):
@@ -402,6 +407,13 @@ class FigureCanvasWxAggMod(CanvasAgg):
         im[:,:,3] = out.astype(np.uint8)
        
         return im
+    
+    @property       
+    def hl_color(self):
+        return self._hl_color
+    @hl_color.setter
+    def hl_color(self, value):
+        self._hl_color = value
 
     ### following code is added since when a user press right button 
     ### while dragging a mouse, mouse is already captured and backend_wx
@@ -418,3 +430,11 @@ class FigureCanvasWxAggMod(CanvasAgg):
         if self.HasCapture():
             self.ReleaseMouse()
         return super(FigureCanvasWxAggMod, self)._onMiddleButtonDown(evt)
+
+    def gui_repaint(self, *args, **kwargs):
+        super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)
+        if hasattr(self.GetTopLevelParent(), "_playerbtn"):
+            bp = self.GetTopLevelParent()._playerbtn
+            if bp is not None: bp.Refresh()
+
+        

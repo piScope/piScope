@@ -336,10 +336,11 @@ def SendPageShownEvent(td, w=None):
     SendSimpleTDEvent(evt, td=td, w=w)
 
 def SendPVDrawRequest(td, w=None, wait_idle=False, refresh_hl=False,
-                      useProcessEvent=False):
+                      useProcessEvent=False, caller = ''):
     evt=TreeDictEvent(PV_DrawRequest, wx.ID_ANY)
     evt.wait_idle = wait_idle
     evt.refresh_hl = refresh_hl
+    evt.caller = caller
     SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=useProcessEvent)
 
 def SendPVAddFigobj(td, w=None, useProcessEvent=False):

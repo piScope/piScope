@@ -100,6 +100,9 @@ if __name__ == '__main__':
           lflag = True
         elif p == '-g':
           print('turn on OpenGL')
+          import OpenGL
+          OpenGL.ERROR_LOGGING = False   
+          OpenGL.ERROR_ON_COPY = True          
           import ifigure.widgets.canvas.ifigure_canvas
           ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = True
         else:

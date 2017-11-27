@@ -68,13 +68,15 @@ class MPTarzip(object):
 
     def CheckFinished(self):
         if MPTarzip.worker.is_alive():
-            wx.GetApp().TopWindow.set_window_title()
+            top = wx.GetApp().TopWindow
+            if top is not None: top.set_window_title()
             wx.CallLater(2000, self.CheckFinished)
         else:
             if self.odir != self.d:
                 app = wx.GetApp().TopWindow
                 app.proj._delete_tempdir(self.odir)
-            wx.GetApp().TopWindow.set_window_title()
+            top = wx.GetApp().TopWindow
+            if top is not None: top.set_window_title()
             print("...finished (save)")
 
     def isReady(self):

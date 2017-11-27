@@ -242,6 +242,20 @@ class FigObj(TreeDict, MetadataHolder):
     @classmethod  
     def can_have_child(self, child=None):
         return isinstance(child, FigObj)
+    
+    @classmethod 
+    def isCompound(cls):
+        '''
+        Compount FigObj is a type of FigObj which has a mulltiple
+        pickable objects. This is introduced to support GL object
+        using array_idx. See FigCompound
+        '''
+        return False
+    def isSelected(self):
+        '''
+        Compound FigObj could return False
+        '''
+        return True
 
     def var2p(self, list):
         '''
@@ -337,6 +351,7 @@ class FigObj(TreeDict, MetadataHolder):
     def set_bmp(self, bmp, x, y):
         self._bmp = (bmp, x, y)
         self._bmp_update = True
+                
     def get_bmp(self):
         return self._bmp
     def get_bmp_update(self):
@@ -454,8 +469,11 @@ class FigObj(TreeDict, MetadataHolder):
            return self._artists[idx]
         return self._artists
 
+    def set_pickmask(self, value):
+        self._pickmask = value
+        
     def get_artists_for_pick(self):
-        return self._artists        
+        return self._artists
 
     def get_first_artist(self):
         if len(self._artists) == 0: return None
@@ -1068,7 +1086,7 @@ class FigObj(TreeDict, MetadataHolder):
         return p
 
 
-    def onDelete(self, e):
+    def onDelete(self, e = None):
         ifigure.events.SendPVDeleteFigobj(self)
         return
 
@@ -1092,21 +1110,21 @@ class FigObj(TreeDict, MetadataHolder):
         app=id.GetTopLevelParent()
         app.deffered_force_layout()
 
-    def onSuppress(self, evt):
+    def onSuppress(self, evt = None):
         self.set_suppress(True)
 #        self.realize()
         ifigure.events.SendPVDrawRequest(self)
 #        app.draw()
-        evt.Skip()
+        if evt is not None: evt.Skip()
 
-    def onUnSuppress(self, evt):
+    def onUnSuppress(self, evt = None):
 #        id=evt.GetEventObject()
 #        app=id.GetTopLevelParent()
         self.set_suppress(False)
 #        self.realize()
         ifigure.events.SendPVDrawRequest(self)
 #        app.draw()
-        evt.Skip()
+        if evt is not None: evt.Skip()
 
     def set_suppress(self, val):
         super(FigObj, self).set_suppress(val)

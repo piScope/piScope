@@ -96,22 +96,53 @@ class FunctionButton(wx.Button):
         setting = kargs.pop("setting", {})
         func = setting.pop('func', None)
         label = setting.pop('label', 'Default')
+        style = setting.pop('style', 0)
+        kargs['style'] = style
         wx.Button.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_BUTTON, self.onSelect)
         if func is not None:
             self._handler = func
         else:
             self._handler = None
+        self._handler_obj = None
+        
+        self._call_method = False
         self.SetLabel(label)            
         
     def GetValue(self):
         pass
+     
+    def SetValue(self, v):
+        self._handler_obj = v
+
+    def onSelect(self, ev):
+        if self._call_method:
+            if hasattr(self._handler_obj, self._handler):
+                _handler = getattr(self._handler_obj, self._handler)
+            else:
+                _hander = Noen
+        else:
+            _handler = self._handler
+        if _handler is not None:
+           _handler(ev)
+        ev.Skip()
+        
+class FunctionButtons(Panel):
+    def __init__(self, *args, **kwargs):
+        setting = kwargs.pop('setting', [])
+        buttons = setting.pop('buttons', [])
+        super(FunctionButtons, self).__init__(*args, **kwargs)
+        self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
+        for s in buttons:
+           bt = FunctionButton(self, wx.ID_ANY,
+                               setting = s)
+
+           self.GetSizer().Add(bt, 0, wx.EXPAND|wx.ALL, 2)
+
+    def GetValue(self):
+        pass
     def SetValue(self, v):
         pass
-    def onSelect(self, ev):
-        if self._handler is not None:
-           self._handler(ev)
-        ev.Skip()
             
 class LabelPanel(Panel):
     def __init__(self, *args, **kargs):
@@ -127,6 +158,7 @@ class LabelPanel(Panel):
         self.GetSizer().Add(self.tc, 1, wx.EXPAND|wx.ALL, 1)
         self.GetSizer().Add(bt, 1, wx.ALL, 1)
         self.Bind(wx.EVT_BUTTON, self.onSelect, bt)
+        
         self.val = ['', 'k', 'san-serif', 
                     'normal', 'normal',  12]
     def onSelect(self, evt):
@@ -3482,7 +3514,7 @@ class EditListCore(object):
                txt=wx.StaticText(self, wx.ID_ANY, val[0])
                sizer.Add(txt,(row, 0), span, 
                          wx.ALL|wx.ALIGN_CENTER_VERTICAL, edge)
-               if tip is not None:
+               if tip is not None and len(tip) > k:
                   if tip[k] is not None:
                       txt.SetToolTipString(tip[k])
            else:
@@ -3661,9 +3693,7 @@ class EditListCore(object):
            elif val[2] == 27: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
                                    setting=val[3])
-#              col = 0
-#              span = (1,2)
-              w.SetValue(val[1])
+              if val[1] is not None:  w.SetValue(val[1])
               p = w
            elif val[2] == 127: 
               w = CheckBoxModifiedELP(self, wx.ID_ANY, 
@@ -3925,6 +3955,24 @@ class EditListCore(object):
               w = FunctionButton(self, wx.ID_ANY, setting = setting)
               p = w
               noexpand = setting.pop('noexpand', False)
+           elif val[2] == 241:
+              if len(val)==4:
+                 setting=val[3]
+              else:
+                 setting = {}
+              w = FunctionButtons(self, wx.ID_ANY, setting = setting)
+              p = w
+              alignright = setting.pop('alignright', alignright)   
+              noexpand = setting.pop('noexpand', False)
+           elif val[2] == 341:
+              if len(val)==4:
+                 setting=val[3]
+              else:
+                 setting = {}
+              w = FunctionButton(self, wx.ID_ANY, setting = setting)
+              w._call_method = True
+              p = w
+              noexpand = setting.pop('noexpand', False)
            elif val[2] == 42:
               if len(val)==4:
                  setting=val[3]
@@ -3952,7 +4000,7 @@ class EditListCore(object):
               span = (1,2)
               p = w
            elif val[2] == 99:               ## custom UI component
-              setting = v[3]
+              setting = val[3]
               UI = setting.pop('UI', None)
               noexpand = setting.pop('noexpand', False)
               col = setting.pop('col', col)
@@ -3968,11 +4016,12 @@ class EditListCore(object):
 
 
            self.widgets.append((w, txt) )
-           alignright = setting.pop('alignright', alignright)                         
+           alignright = setting.pop('alignright', alignright)
 
            alignment = wx.ALL|wx.ALIGN_CENTER_VERTICAL
            if not noexpand: alignment  = wx.EXPAND|alignment
            if alignright: alignment  = wx.ALIGN_RIGHT|alignment
+           
            sizer.Add(p, (row, col), span, alignment, expand_space)
            row = row+1
            k = k + 1
@@ -4324,7 +4373,9 @@ def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
                     "text_box" : False}
       40: GL Lighting
       41: Dialog button (opens a custom dialog)
-     141: Function button (call a function)
+     141: Function button  (call a function)
+     241: Function buttons (multiple function buttons)
+     341: Method buttons   (object method call. note that SetValue shoudl set object)
       42: TickLabelSizeSelector
       43: ArrayTextBox
       44: GL azim/elev panel

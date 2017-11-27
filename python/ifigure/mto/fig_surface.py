@@ -519,7 +519,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 
     def handle_axes_change(self, data):
         name =  data['name']
-        if name.startswith('c'):
+        if name.startswith('c') and self.getvar('cz'):
             self.del_artist(delall=True)
             self.delp('loaded_property')
             self.generate_artist()
@@ -565,7 +565,13 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
                 return [None]*len(names)
         return self.getp(names)
 
-
+    def get_export_val(self, a):
+        x, y, z = self.getvar("x", "y", "z")
+        val = {"x":x, "y":y, "z":z}
+        if self.getvar('cz'):
+            val['cdata'] = self.getvar("cdata")
+        return val
+    
 class FigRevolve(FigSurface):
     def __new__(cls, *args, **kywds):
         def set_hidden_vars(obj):
@@ -691,7 +697,7 @@ class FigRevolve(FigSurface):
         kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
-        
+
         m = getattr(container, self._method)
         self._artists = [m(r, z, **kywds)]
         self._fine_artist = self._artists[0]
@@ -753,3 +759,9 @@ class FigRevolve(FigSurface):
 
     def get_shade(self, a=None):
         return self.getvar('shade')
+
+    def get_export_val(self, a):
+        r, z = self.getvar("r", "z",)
+        val = {"r":r, "z":z}
+        return val
+    

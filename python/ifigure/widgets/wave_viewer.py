@@ -16,7 +16,7 @@
              absolute: if true, the last frame is absolute 
 '''
 import wx
-from ifigure.widgets.video_viewer import VideoViewerMode
+from ifigure.widgets.video_viewer import VideoBookPlayer, VideoViewerMode
 from ifigure.widgets.book_viewer import BookViewer, BookViewerFrame
 from ifigure.widgets.book_viewer_interactive import allow_interactive_call
 import ifigure.events
@@ -27,6 +27,7 @@ from ifigure.mto.fig_tripcolor import FigTripcolor
 from ifigure.mto.fig_quiver import FigQuiver
 from ifigure.mto.fig_plot import FigPlot
 from ifigure.mto.fig_solid import FigSolid
+from ifigure.mto.fig_surface import FigSurface
 from matplotlib.collections import TriMesh
 
 class FigTripcolorPhasor(FigTripcolor):
@@ -85,25 +86,53 @@ class FigSolidPhasor(FigSolid):
 #              z =  np.mean(z, -1)
         self._artists[0]._gl_facecolordata = z
         self._artists[0]._update_fc = True
+
+class FigSurfacePhasor(FigSurface):
+    def set_phasor(self, angle = None):
+        if angle is not None:
+           z = self.getvar('cdata') * np.exp(1j*angle)
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1).real
+#           else:
+           z =  z.real               
+        else:
+           z = np.absolute(self.getvar('cdata'))
+#           if len(z.shape) == 2:
+#              z =  np.mean(z, -1)
+        r, c, idxset =  self._artists[0]._idxset
+        if r is not None:
+            # surface plot
+            fc = z[r,:][:,c].flatten()[idxset]
+        else:
+            # trisurf plot
+            fc = z.flatten()
+        if idxset is not None: fc = fc[idxset]
+        self._artists[0]._gl_facecolordata = fc
+        self._artists[0]._update_fc = True
+
         
 def convert_figobj(obj):
     if obj.__class__ == FigTripcolor:
+        if obj.getvar('cdata') is None: return
         obj.__class__ = FigTripcolorPhasor
     elif obj.__class__ == FigPlot:        
         obj.__class__ = FigPlotPhasor
     elif obj.__class__ == FigQuiver:        
         obj.__class__ = FigQuiverPhasor
     elif obj.__class__ == FigSolid:        
+        if obj.getvar('cdata') is None: return
         obj.__class__ = FigSolidPhasor
+    elif obj.__class__ == FigSurface:      
+        if obj.getvar('cdata') is None: return
+        obj.__class__ = FigSurfacePhasor
     else:
         pass
-class WaveViewer(VideoViewerMode, BookViewer):
+class WaveViewer(VideoBookPlayer):
     def __init__(self, *args, **kwargs):
         self.nframe = kwargs.pop('nframe', 30)
         self.sign = kwargs.pop('sign',  -1)
+        super(WaveViewer, self).__init__( *args, **kwargs)
 
-        VideoViewerMode.__init__(self, *args, **kwargs)        
-        BookViewer.__init__(self, *args, **kwargs)
         if self.book is not None:
            self.add_all_video_obj()
 
@@ -155,6 +184,14 @@ class WaveViewer(VideoViewerMode, BookViewer):
         self.add_video_obj(o)       
         return o
     
+    def surf(self, *args, **kwargs):
+        try:
+           o = BookViewer.surf(self, *args, **kwargs)            
+        except ValueError as x:
+           return
+        convert_figobj(o)       
+        self.add_video_obj(o)       
+        return o
         
     def _get_phase(self, ipage):
         return self.sign*np.pi*2*ipage/self.nframe
@@ -163,11 +200,13 @@ class WaveViewer(VideoViewerMode, BookViewer):
         return self.nframe
     
     def add_all_video_obj(self):        
+        self.reset_video_obj_set()
         for obj in self.book.walk_tree():
             if isinstance(obj, FigTripcolorPhasor): self.add_video_obj(obj)
             if isinstance(obj, FigPlotPhasor): self.add_video_obj(obj)
             if isinstance(obj, FigQuiverPhasor): self.add_video_obj(obj)
-            if isinstance(obj, FigSolidPhasor): self.add_video_obj(obj)                                    
+            if isinstance(obj, FigSolidPhasor): self.add_video_obj(obj)
+            if isinstance(obj, FigSurfacePhasor): self.add_video_obj(obj)                                    
 
     def UpdateImage(self, i):
         phase = self._get_phase(i)
@@ -211,9 +250,6 @@ class WaveViewer(VideoViewerMode, BookViewer):
         self._playloop = bool(value[1][2])
         self.sing = bool(value[1][3])        
         self.nframe = int(value[1][1])
-
-
-
 
 
 

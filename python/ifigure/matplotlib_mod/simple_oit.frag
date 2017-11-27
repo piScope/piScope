@@ -9,10 +9,10 @@
    2) set color using interpolated color
    3) use marker texture, when uisMarker = 1
    4) lighting based on diffuse, ambient, and specular
+   5) shadow map
+   6) line style
+   7) fixed artist color mode (color becomes a data along the path)
 
-   Todo.
-   1) shadow map
-   2) line style
 */
 #version 120
 varying vec4 vColor0;
@@ -35,11 +35,21 @@ uniform vec3  uClipLimit2;
 uniform int  uisMarker;
 uniform int  uUseClip;
 uniform int  uHasHL;
+uniform vec4  uHLColor;
 uniform sampler2D uMarkerTex;
+uniform float nearZ;
+uniform float farZ;
+uniform int isFrust;
+
 
 uniform int  uUseShadowMap;
 uniform sampler2D uShadowTex;
 uniform sampler2D uShadowTex2;
+uniform sampler2D uRT0;
+uniform sampler2D uRT1;
+uniform int uisFinal;
+uniform int uisClear;
+uniform int uisSolid;
 uniform vec2 uShadowTexSize;
 
 uniform int uisImage;
@@ -47,6 +57,10 @@ uniform sampler2D uImageTex;
 
 uniform int uisAtlas;
 uniform vec3 uAtlasParam;
+uniform ivec2 uSCSize;
+
+uniform int uUseArrayID;
+varying float array_id;
 
 uniform int uLineStyle;
 int dashed[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
@@ -85,10 +99,12 @@ float VSM(sampler2D depths, sampler2D depths2, vec2 size, vec2 uv, float compare
 
 float PCF(sampler2D depths, vec2 size, vec2 uv, float compare){
     float result = 0.0;
+    float pixel = 0.0;
     for(int x=-2; x<=2; x++){
         for(int y=-2; y<=2; y++){
             vec2 off = vec2(x,y)/size;
-	    if (texture2D(depths, uv + off)[0] > compare){
+	    pixel = texture2D(depths, uv + off)[0]/255. + texture2D(depths, uv + off)[1];
+	    if (pixel > compare){
                result += 1;
 	    }
         }
@@ -103,8 +119,28 @@ float SPOT(sampler2D depths, vec2 size, vec2 uv, float compare){
 }    
 
 void main() {
-     gl_FragDepth = gl_FragCoord.z; /* just to make sure to write this variable */
+     /* just to make sure to write this variable */
+     gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
      
+     if (uisClear == 1){
+	 gl_FragData[0] = vec4(0,0,0,1);
+         gl_FragData[1] = vec4(0,0,0,1);
+	 return;
+     }
+     
+     if (uisFinal == 1){
+         vec4 accum = texture2D(uRT1, vec2(gl_FragCoord.xy/uSCSize.xy));
+	 float r = accum.a;
+         float count = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).g;
+         float rrr = texture2D(uRT0, vec2(gl_FragCoord.xy/uSCSize.xy)).r;	 	 
+         // Blend Func: GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA
+	 // sqrt in below is my adjustment
+	 // here r is alpha_1*alpha_2*alpha_3.... (products of alphas of transparent layer)
+         gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
+	 //gl_FragData[0] = vec4(accum.rgb / clamp(rrr, 1e-4, 5e4),  1-sqrt(r));
+	 //gl_FragData[0] = vec4(accum.rgb,  1);
+	 return;
+     }
      if (uisAtlas == 1){
          float data = length(vec2(atlas_data[0]*uAtlasParam[1], 
        	                          atlas_data[1]*uAtlasParam[2]));
@@ -141,15 +177,16 @@ void main() {
      
      float sh  = 1.0;
      if (uUseShadowMap == 1){
-        float offset = 0.005+0.005*sqrt(1-dot(n,l)*dot(n,l));
+        float offset = 0.00005+0.00005*sqrt(1-dot(n,l)*dot(n,l));
         sh = PCF(uShadowTex, uShadowTexSize,
 	                LightDist.xy, LightDist.z-offset)*1;
         /*
         sh = VSM(uShadowTex, uShadowTex2, uShadowTexSize,
-	                 LightDist.xy, LightDist.z-0.005);
+	                 LightDist.xy, LightDist.z-0.0005);
         */
      }
      vec4 vColor = vColor0;
+
      if (uisImage == 1){
          vColor = texture2D(uImageTex, gl_TexCoord[0].st);
 	 if (vColor[3] == 0){
@@ -177,32 +214,34 @@ void main() {
 
      vec4 cAmbient = vColor * uAmbient;
 
-     vec4 cDiff = vColor * light_color * vec4(uLightPow*cT,
-                       uLightPow*cT, uLightPow*cT, 1);
-     //vec4 cDiff = vColor * light_color * vec4(cT, cT, cT, 1);
+     //vec4 cDiff = vColor * light_color * vec4(uLightPow*cT,
+     //                  uLightPow*cT, uLightPow*cT, 1);
+     vec4 cDiff = vColor * vec4(uLightPow*cT,
+                                uLightPow*cT,
+				uLightPow*cT, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
      gl_FragData[0] = cAmbient + cDiff + cSpec;
      float aaa = gl_FragData[0].a * vColor[3];
      if (uHasHL == 1){
-         /* make it darker when it is highlighted. effective only
-	    during rot/pan */
-         gl_FragData[0] = gl_FragData[0]/4.;
+        if (((uUseArrayID == 1) && (array_id < 0)) || (uUseArrayID != 1)){
+            /* alpha blend wiht uHLColor when it is highlighted. effective only
+   	      during rot/pan */
+            gl_FragData[0].a = uHLColor.a + (1-uHLColor.a)*gl_FragData[0].a;
+            gl_FragData[0].rgb = uHLColor.a*uHLColor.rbg + (1-uHLColor.a)*gl_FragData[0].rgb;
+	}
      }
-     gl_FragData[0].a = aaa;   
+
+     gl_FragData[0].a = vColor[3];
      
-     gl_FragData[1] = uArtistID;
      if (uisMarker == 1){
         vec4 color = texture2D(uMarkerTex, gl_PointCoord);
-        gl_FragData[0] = vec4(1, 1, 1, 1);
-	if (gl_PointCoord[0] > 0.5){
-            gl_FragData[0] = vec4(0,1,1,1);
-	}
-        gl_FragData[0] = color; 
+        gl_FragData[0] = color;
      }
 
+     vec4 color;
+     
 
-     gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
 /*     gl_FragDepth = gl_FragDepth +  uViewOffset.z/10*     
                     (1 + 3 * sqrt(1-dot(n,c)*dot(n,c)));*/
 
@@ -238,8 +277,53 @@ void main() {
 	     discard;
          }
      }
+     if (uisSolid == 1){
+        gl_FragData[1] = uArtistID;
+        if (uUseArrayID == 1){
+	   float id = abs(array_id);
+           gl_FragData[1].b = (id - 256*floor(id/256.))/255.;
+	   gl_FragData[1].a = floor(id/256)/255.;
+	}
+	else
+	{
+           gl_FragData[1].b = -1/255.;
+	   gl_FragData[1].a = 0;
+	}
+     	return;
+     }
+     else
+     {
+        color = gl_FragData[0];
 
+        // calculating weighting dependent on z
+	// first we need z....
+        float z_ndc = 0.0;
+	float z_eye = 0.0;
+        if (isFrust == 1){
+            z_ndc = 2.0 * gl_FragCoord.z - 1.0;
+            z_eye = 2.0 * nearZ * farZ/ (farZ + nearZ - z_ndc * (farZ - nearZ));
+	}
+	else
+	{
+            z_eye = gl_FragCoord.z * (farZ-nearZ) + nearZ;
+        }
+	// here scale is scaling factor
+	// if scale is 1, z is 1 at nearZ, 1 at far 0
+	float scale = 1;
+	float z = clamp((z_eye - (nearZ + farZ)/2.0)/(nearZ- farZ)*scale+0.5, 0, 1);
 
-/*         gl_FragData[0] = vec4(atlas, 0, 0, 1);	 */
+        // (debug) gl_FragData[0].r = z;
+	
+        //float weight = max(min(1.0, max(max(color[0], color[1]), color[2])*color[0]), color[0])*clamp(0.03 / (1e-5 + pow(z * 500 / 200, 4.0)), 1e-2, 3e3);
+        //float weight = vColor0[3]*clamp(0.03 / (1e-5 + pow(z*500./ 200, 4.0)), 1e-2, 3e3)
+	;
+	float weight =  clamp(3e3*pow(z, 3), 1e-2, 3e3)/3e3;
+	//float weight =  1.;
+        gl_FragData[1] = vec4(color.rgb * weight, vColor0[3]);
+        gl_FragData[0].r = vColor0[3] * weight;
+
+        //weight = clamp(0.03 / (1e-5 + pow(z*500./ 200, 4.0)), 1e-2, 3e3);
+        //gl_FragData[0].r = pow(z, 3);
+     }
 
 }

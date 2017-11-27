@@ -1,0 +1,163 @@
+        * 11/07
+	** GLComponent::set_gl_hl_use_array_idx, GLComponent::get_gl_hl_use_array_idx
+	is modified to record the setting in setp. This allows to configure use_array_idx
+	before an artist is made
+	
+	* 11/05
+	** ArgGL::unselect_gl_artist is added to handle unselecting array_indexed
+	artist correctly.
+	
+	* 10/28
+	** Copy To Clipboard is added to CopySpecial menu
+	** following interactive commands calles threed('on') automatically
+	solid, revolve, surf, trisurf, surface. Note that plot command still
+	does not change axes to 3D mode automatically. A user must call threed('on')
+	if axes is in 2D mode.
+	** fig_revolve::get_export_val is added	
+        ** resolution downscaling on GPU side is added
+	
+	* 10/27
+	** fixed an issue of 3d highlighting. refresh_hl was called
+	everytime during pan/zoom/rotation.
+	** ifigure_canvas.hl_color is added. Currently this property
+	affect only 3D object drawing. It will be used for 2D object
+	highlighting too. hl_color alpha is hard-coded to 0.65.
+	** fig_surface::get_export_val is added
+
+	
+	* 10/02
+	** 3D graphics in an inset axes is on
+	** background alpha of 3D axes is set to transparent by default
+	this is forced when calling set_3D(True), when swithching the
+	mode from 2D to 3D
+	** OpenGL mutlisampling
+	backend_wxagg_gl has multisample and multisample_init_done to 
+	control how the mutlisampling is done. A user can change setting
+	from Preference->Appearance tab. When mutltisampling is off,
+	it uses a texture size exactly the same as screen size. It
+	saves memory, but it uses hardware smoothing, which does not look
+	very good expecially when transparency is used.
+	
+
+	* 09/24
+        ** navibar::ClickP1Button
+	ClickP1Button(self, name) allows to click navigation
+	bar button from program.
+	
+	* 09/22
+	** set_gl_hl_use_array_idx is added to gl_component
+
+	* 09/04
+
+	** mode 341 (CallMethod button is added to EditList)
+	This button is used to call object method. In the construction,
+	string name of method should be give. An object is passed via
+	SetValue to tell which object's method should be called.
+
+	** methods to extract subset of gl_component plot data
+
+	v, idx, cdata = gl_component::get_subset(component = None)
+	gl_component::shown_component property to get shown component
+
+	example to plot a subset of solid plot
+
+        >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset()
+        >> figure();solid(v, idx),
+	
+	which is equivalent to
+	
+	>> s = proj.model1.mfem.mfembook.page1.axes1.face.shown_component
+        >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset(s)
+        >> figure();solid(v, idx)
+
+	
+
+	** inverse keyword to gl_component::hide_component
+	
+	gl_component::hide_component(idx, inverse=False): if inverse is True,
+	it hides everything except for the components list.
+	
+	
+	* 08/31-2017
+
+	** obj keyword is added to cls to delete plot selectively
+	
+    	   >>> figure();
+    	   >>> o1 = plot(np.arange(30))
+           >>> o2 = oplot(np.arange(40))
+           >>> cls(obj=obj)
+
+	
+	* 08/08-20 2017
+
+	** Solid/Revolve/Surface
+
+	The use of index array in OpenGL driver is fixed which reduces
+	the number of vertices to be transfered to GPU. solid command
+	accept,,,
+
+   	1) solid(vertices)
+	2) solid(vertices, index)
+
+	1) is old version. vertices are already expanded.
+	2) is equivalent to solid(vertices[index]), but internally
+	it uses the index array pointer, so that CPU does not send
+	duplicate vertex information to GPU.
+
+	** API for custom figure menu palette is added
+
+	BookViewerFrame::install_toolbar_palette(name, tasks,  mode = '2D'):
+	BookViewerFrame::use_toolbar_palette(palette_name, mode = '2D')
+	BookViewerFrame::use_toolbar_std_palette()
+	BookViewerFrame::refresh_toolbar_buttons()
+
+	** GLCompound to support GL artist with multiple elements
+
+	GLCompound supports a GL artists which has multiple pickalbe
+	objects. This allows for picking a different part of 3D object
+	without using many FigObj.
+
+	GLCompound::isCompound
+	GLCompound::getSelectedIndex :: get which index is selected
+	GLCompound::setSelectedIndex :: set which index is selected
+	GLCompound::isSelected       :: called from canvas 
+        GLCompound::setSelectable    :: set if artist is pickable
+	GLCompound::hide_component   :: hide a part of 3D object using array_idx
+	
+	* 08/04-06/2017
+
+	Various improvement of OpenGL graphics, which are needed
+	for Petra-M
+	
+	** array_idx keywords to 3D solid and plot command
+
+	array_idx is a number assigned to markers in a plot mode
+	or line/triangle/rectangle in solid plot
+
+	array_idx can be used to tell which part of 3D object is clicked.
+	an element of array_idx should be between 1 and 65535
+
+	** ArtGL::set_gl_pickable
+	This can be used in order to make GL artist
+	temporarilly unpickable.
+
+	** ArtGL::LineGL caches marker texture.
+
+	** ArtGL::get_gl_arrayid_hit
+	Returns the array_idx of the elements which a user
+	clicked.
+
+        ** ArtGL::set_gl_hl_use_array_idx
+	If True is give, it highlights of a part GL artist using
+	array_idx data.
+
+        ** Axes3DMod::gl_hl_setcolor
+	Change highlith color. Giving [1,0,0] shows highlight in red
+
+	* 07/21/2017
+
+	** OIT (order independent transparency) renderer is enabled.
+	** Videoplayer button relocation.
+
+	A technique used to place buttons in figure canvas
+	would be useful for placeig other palette-like buttons.

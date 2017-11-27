@@ -19,6 +19,8 @@ btasks0 = [('goto_first', 'arrow_firstpage.png', 0, 'first page'),
 
 class VideoplayerBar(bp.ButtonPanel):
     def __init__(self, parent, id=-1, text='', *args, **kargs):
+        self.container = kargs.pop('container')
+        
         super(VideoplayerBar, self).__init__(parent, id,  text, *args, **kargs)
         self.mode = ''    # mode of action (''=select, 'pan', 'zoom', 'text'....)
         self.ptype = ''   # palette type ('pmode', 'amode')
@@ -28,7 +30,16 @@ class VideoplayerBar(bp.ButtonPanel):
         self.p0  = self.make_button_group(self, btasks0)
         self.btasks0 = btasks0[:]
         self.refresh_button()
-        
+        self.Fit()
+        self.Bind(wx.EVT_KEY_DOWN, self._onKeyDown)
+        self.Bind(wx.EVT_KEY_UP, self._onKeyUp)
+
+    def _onKeyDown(self, evt):
+        wx.PostEvent(self.GetParent(), evt)
+
+    def _onKeyUp(self, evt):
+        wx.PostEvent(self.GetParent(), evt)
+
     def make_button_group(self, parent, btasks):
       
         bts = TaskBtnList()
@@ -80,7 +91,7 @@ class VideoplayerBar(bp.ButtonPanel):
         
         bp.ButtonPanel.OnLeftUp(self, evt)                    
         btask = self.allbinfo[ret[0]].btask    
-        self.GetParent().OnButton(evt, btask)
+        self.OnButton(evt, btask)
     
         
     def AddButtonOrS(self, b):
@@ -95,7 +106,7 @@ class VideoplayerBar(bp.ButtonPanel):
            self.AddSeparator()
     def Clear(self):
         self.allbinfo = []
-        self.Freeze()        
+        self.Freeze()                
         bp.ButtonPanel.Clear(self)
         
     def set_toggle(self, btask):
@@ -115,43 +126,17 @@ class VideoplayerBar(bp.ButtonPanel):
                 p.SetBitmap(p.bitmap1)
                 
     def refresh_button(self):
+
         self.Clear()        
         for b in self.p0: self.AddButtonOrS(b)
-        self.DoLayout()        
+        self.DoLayout()
+
 #    def OnKeyUp(self, evt):
 #       if evt.GetKeyCode() == wx.WXK_SHIFT:
 #           if self.mode == 'zoom': self.SetZoomUpDown('Up')
 
-from .miniframe_with_windowlist import MiniFrameWithWindowList
-class VideoplayerButtons(MiniFrameWithWindowList):
-    def __init__(self, parent, id, title='', 
-                 style=wx.CAPTION|
-                       wx.CLOSE_BOX|
-                       wx.MINIMIZE_BOX| 
-                       wx.RESIZE_BORDER|
-                       wx.FRAME_FLOAT_ON_PARENT,
-                       pos=None):
-        MiniFrameWithWindowList.__init__(self, parent, id, title, style=style)
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        self.btn = VideoplayerBar(self)
-        self.SetSizer(vbox)
-        vbox.Add(self.btn, 1, wx.EXPAND|wx.ALIGN_CENTER, 3)
-
-        self.Layout()
-        self.Fit()
-        self.Show()
-        self.Bind(wx.EVT_CLOSE, self.onClose)
-        wx.GetApp().add_palette(self)
-        wx.CallAfter(self.CentreOnParent)
-        
-    def onClose(self, evt):
-        wx.GetApp().rm_palette(self)        
-        self.GetParent().onPlayerButtonClose()
-        evt.Skip()
-
     def OnButton(self, evt, btask):
-
-        v = self.GetParent()
+        v = self.container
         if btask == 'goto_first':
             v.goto_first()
         elif btask == 'goto_last':
@@ -160,15 +145,14 @@ class VideoplayerButtons(MiniFrameWithWindowList):
             v.videoviewer_config()
         elif btask == 'play_fwd':
             v.play_fwd()
-            self.btn.set_toggle(btask)
-            self.btn.set_bitmap2(btask)
-            self.btn.refresh_button()
-            
+            self.set_toggle(btask)
+            self.set_bitmap2(btask)
+            self.refresh_button()
         elif btask == 'play_rev':
             v.play_rev()
-            self.btn.set_toggle(btask)
-            self.btn.set_bitmap2(btask)
-            self.btn.refresh_button()
+            self.set_toggle(btask)
+            self.set_bitmap2(btask)
+            self.refresh_button()
             
         elif btask == 'stop_play':
             v.stop_play()
@@ -183,12 +167,56 @@ class VideoplayerButtons(MiniFrameWithWindowList):
             print btask
             
     def reset_btn_toggle_bitmap(self):
-        self.btn.set_toggle('')
-        self.btn.set_bitmap2('')
-        self.btn.refresh_button()
-    
-
-               
+        self.set_toggle('')
+        self.set_bitmap2('')
+        self.refresh_button()
+        
+    def place_right_bottom(self):
+        #self.Fit()
+        psize = self.GetSize()
+        csize = self.GetParent().GetSize()
+        self.SetPosition((csize[0]-psize[0]-4,
+                          csize[1]-psize[1]-4))
             
+
+from .miniframe_with_windowlist import MiniFrameWithWindowList
+class VideoplayerButtons(MiniFrameWithWindowList):
+    def __init__(self, parent, id, title='', 
+                 style=wx.CAPTION|
+                       wx.CLOSE_BOX|
+                       wx.MINIMIZE_BOX| 
+                       wx.RESIZE_BORDER|
+                       wx.FRAME_FLOAT_ON_PARENT,
+                       pos=None):
+        MiniFrameWithWindowList.__init__(self, parent, id, title, style=style)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.btn = VideoplayerBar(self, container = self.GetParent())
+        self.SetSizer(vbox)
+        vbox.Add(self.btn, 1, wx.EXPAND|wx.ALIGN_CENTER, 3)
+
+        self.Layout()
+        self.Fit()
+        self.Show()
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+        wx.GetApp().add_palette(self)
+        wx.CallAfter(self.CentreOnParent)
+        
+    def onClose(self, evt):
+        wx.GetApp().rm_palette(self)        
+        self.GetParent().onPlayerButtonClose()
+        evt.Skip()
+        
+    def reset_btn_toggle_bitmap(self):
+        self.btn.reset_btn_toggle_bitmap()
+
+
+def add_player_btn(parent):
+    canvas = parent.canvas.canvas
+    playerbtn = VideoplayerBar(canvas, wx.ID_ANY, container = parent)
+    playerbtn.Show()
+    playerbtn.place_right_bottom()
+    
+    return playerbtn
+
 
 

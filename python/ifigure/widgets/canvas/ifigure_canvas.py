@@ -110,6 +110,10 @@ dprint1, dprint2, dprint3 = debug.init_dprints('iFigureCanvas')
 bitmap_names = ['xauto.png', 'yauto.png', 'samex.png', 'samey.png']
 bitmaps = {}
 
+### popup menu stype (bit)
+popup_style_default = 0
+popup_skip_2d = 1
+
 class ifigure_DropTarget(wx.TextDropTarget):
     def __init__(self, canvas):
         self._canvas=weakref.ref(canvas)
@@ -589,7 +593,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
     calls on_move and button_release of axes3D
     '''
     def __init__(self, *args, **kargs):
-        draghandler_base2.__init__(self, *args, **kargs)
+        draghandler_base2.__init__(self, *args, **kargs)        
 
     def dragstart(self, evt):
         canvas = self.panel
@@ -597,15 +601,20 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         ax._button_press(evt)
         self.dragging = True
         self._org = ax.figobj.get_axes3d_viewparam(ax)
+        self._st_evt = evt
+        canvas.mpl_connect(mode = '3dpanrotzoom')
         
     def dodrag(self, evt):
         canvas = self.panel
         ax = canvas.axes_selection()
+        if (abs(self._st_evt.x - evt.x) + abs(self._st_evt.y - evt.y)) < 5: return
+        self._st_evt = evt        
         ax._on_move(evt)
 
     def dragdone(self, evt):
         self.dragging = False
         self.unbind_mpl()
+        self.panel.mpl_connect(mode = 'normal')        
         self.st_event = None
         canvas = self.panel
         ax = canvas.axes_selection()
@@ -845,7 +854,8 @@ class ifigure_popup(wx.Menu):
                               len(parent.axes_selection().figobj._cursor1) > 0):
                               for cur in parent.axes_selection().figobj._cursor1:
                                   self._cur_paths.extend(cur.get_paths())
-                              menus.append(('Add CursorPath Plot',  self.onGeneratePath, None))
+                              menus.append(('Add CursorPath Plot',  self.onGeneratePath,
+                                            None))
                except:
                   pass
                menus.append(
@@ -854,33 +864,34 @@ class ifigure_popup(wx.Menu):
         if parent.toolbar.ptype != 'amode':
                if len(menus) != 0:
                    menus = menus + [('---', None, None)]
-               if parent.axes_selection() is None:
-                  menus = menus + \
-                  [('Autoscale all', self.onXYauto_all, None),
-                   ('Autoscale all X', self.onXauto_all, None),
-                   ('Autoscale all Y', self.onYauto_all, None), ]
-               else:
-                  menus = menus + \
-                  [('Autoscale', self.onXYauto, None),
-                   ('Autoscale X', self.onXauto, None, bitmaps['xauto'],),
-                   ('Autoscale Y', self.onYAuto, None, bitmaps['yauto'],),
-                   ('Autoscale all', self.onXYauto_all, None),
-                   ('Autoscale all X', self.onXauto_all, None),
-                   ('Autoscale all Y', self.onYauto_all, None),]
-                  a = parent.axes_selection()
-                  fig_axes = a.figobj
-                  if len(fig_axes._caxis) > 0:
-                     menus = menus + \
-                             [('Autoscale C' , self.onCAuto, None),]
-                  menus = menus + \
-                          [('All same scale', self.onSameXY, None),
-                           ('All same X scale', self.onSameX, None, bitmaps['samex']),
-                           ('All same X (Y auto)', self.onSameX_autoY, None),
-                           ('All same Y scale' , self.onSameY, None, bitmaps['samey']),]
-                  if len(fig_axes._caxis) > 0:
-                     menus = menus + \
-                             [('All same C scale' , self.onSameC, None),]
-               menus.extend(parent.GetTopLevelParent().extra_canvas_range_menu())
+               if parent._popup_style & popup_skip_2d == 0:
+                   if parent.axes_selection() is None:
+                      menus = menus + \
+                      [('Autoscale all', self.onXYauto_all, None),
+                       ('Autoscale all X', self.onXauto_all, None),
+                       ('Autoscale all Y', self.onYauto_all, None), ]
+                   else:
+                      menus = menus + \
+                      [('Autoscale', self.onXYauto, None),
+                       ('Autoscale X', self.onXauto, None, bitmaps['xauto'],),
+                       ('Autoscale Y', self.onYAuto, None, bitmaps['yauto'],),
+                       ('Autoscale all', self.onXYauto_all, None),
+                       ('Autoscale all X', self.onXauto_all, None),
+                       ('Autoscale all Y', self.onYauto_all, None),]
+                      a = parent.axes_selection()
+                      fig_axes = a.figobj
+                      if len(fig_axes._caxis) > 0:
+                         menus = menus + \
+                                 [('Autoscale C' , self.onCAuto, None),]
+                      menus = menus + \
+                              [('All same scale', self.onSameXY, None),
+                               ('All same X scale', self.onSameX, None, bitmaps['samex']),
+                               ('All same X (Y auto)', self.onSameX_autoY, None),
+                               ('All same Y scale' , self.onSameY, None, bitmaps['samey']),]
+                      if len(fig_axes._caxis) > 0:
+                         menus = menus + \
+                                 [('All same C scale' , self.onSameC, None),]
+                   menus.extend(parent.GetTopLevelParent().extra_canvas_range_menu())
                try:
                   if parent.axes_selection().figobj.get_3d():
                        menus.extend([
@@ -899,12 +910,12 @@ class ifigure_popup(wx.Menu):
                              menus.append(('Clip off',self.on3DClipOff, None))
                        else:
                              menus.append(('Clip on',self.on3DClipOn, None))
-                             
+
                        if parent.axes_selection()._show_3d_axes:
                              menus.append(('Hide Axes Icon',self.on3DAxesIconOff, None))
                        else:
                              menus.append(('Show Axes Icon',self.on3DAxesIconOn, None))
-                             
+
                        menus.append(('Equal Aspect',self.on3DEqualAspect, None))
                        menus.extend([                           
                                      ('!',  None, None),])
@@ -1283,6 +1294,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._cursor_owner = []
       self._cursor_target = None
       self._txt_box = None
+      self._popup_style  = popup_style_default
       self._mailpic_format = 'pdf'
       self._mpl_artist_click = None ### mpl artist not directly managed by ifigure
       from numpy import inf
@@ -1290,6 +1302,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._a_mode_scale_mode = False
       self._3d_rot_mode = 0
       self._frameart_mode = False
+      self._alt_shift_hit = False
 
       self.selection=[]
       self.axes_selection=cbook.WeakNone()
@@ -1391,11 +1404,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
    def onCanvasFocus(self, e):
 #       print 'get focus', self._figure.figobj
        self.mpl_connect(mode = self._mpl_mode)
-
+       e.Skip()
+       
    def onCanvasKillFocus(self, e):
 #       print 'kill focus'
        self.mpl_connect(mode = self._mpl_mode)
-
+       e.Skip()
+       
    def enter_layout_mode(self):
        self._layout_mode = True
 
@@ -1482,6 +1497,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                          self.buttonrelease),
                  self.canvas.mpl_connect('scroll_event', 
                                          self.mousescroll),
+                 self.canvas.mpl_connect('key_press_event', 
+                                         self.onKey),
                  self.canvas.mpl_connect('key_release_event', 
                                          self.onKey2),
 #                 self.canvas.mpl_connect('resize_event', 
@@ -1491,6 +1508,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if self.canvas.HasFocus():
             self._mplc.append(self.canvas.mpl_connect('motion_notify_event',
                                          self.motion_event))
+      elif mode == '3dpanrotzoom':
+         self._mplc=[self.canvas.mpl_connect('button_press_event', 
+                                            self.buttonpress),
+                     self.canvas.mpl_connect('button_release_event', 
+                                         self.buttonrelease),
+                     ]
 
       elif mode == 'axesselection':
          self._mplc=[#self.canvas.mpl_connect('button_press_event', 
@@ -1593,32 +1616,37 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return
 
    def turn_on_key_press(self):
-       self._onkey_id = self.canvas.mpl_connect('key_press_event', 
-                                                 self.onKey)
+       self._full_screen_mode = True
+
    def turn_off_key_press(self):
-       if self._onkey_id is not None:
-           self.canvas.mpl_disconnect(self._onkey_id)
-           self._onkey_id = None
+       self._full_screen_mode = False       
 
    def full_screen(self, value):
        if value:
             self.toolbar.Hide()
        else:
             self.toolbar.Show()
+            
    def onKey(self, evt):
-       '''
-       this event is not binded. it was used before and
-       I found I was recieveing two key press events per
-       one acutal key press...'
-       '''
+       if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
+           self._alt_shift_hit = True
+       if evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
+           self._alt_shift_hit = True
        if evt.guiEvent.GetKeyCode() == wx.WXK_ESCAPE:
-            self.GetTopLevelParent().onFullScreen(value = False)
+           if self._full_screen_mode:
+               self.GetTopLevelParent().onFullScreen(evt = evt, value = False)
+           
 
-#       print 'onKey (press)'
-#       self._press_key = evt.key
-#       print self._press_key, evt.guiEvent.GetKeyCode()
    def onKey2(self, evt):
 #       print 'onKey2 in ifigure canvas'
+
+       if self.axes_selection() is not None:
+           ax = self.axes_selection()
+           is3Dax = ax.figobj.get_3d()
+       else: 
+           ax = None
+           is3Dax = False
+          
        if self._txt_box is not None and self._txt_box.IsShown():
            self.onKey3(evt)
            return
@@ -1630,7 +1658,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           return
 
        if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
-           if self.toolbar.mode == 'zoom':
+           if is3Dax and self._alt_shift_hit:
+               if self.toolbar.mode == 'pan':
+                   self.toolbar.ClickP1Button('3dzoom')
+               elif self.toolbar.mode == '3dzoom':
+                   self.toolbar.ClickP1Button('select')                   
+               else:
+                   self.toolbar.ClickP1Button('pan')               
+           elif self.toolbar.mode == 'zoom':
                self.toolbar.ToggleZoomUpDown()
            elif self.toolbar.mode == 'pan':
                self.toolbar.TogglePanAll()
@@ -1642,7 +1677,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                    self.toolbar.Set3DZoomCursor()
                    self._3d_rot_mode = 0
        elif evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
-           if self.toolbar.mode == 'zoom':
+           if is3Dax and self._alt_shift_hit:           
+               if self.toolbar.mode == 'zoom':
+                   self.toolbar.ClickP1Button('3dzoom')
+               elif self.toolbar.mode == '3dzoom':
+                   self.toolbar.ClickP1Button('select')                   
+               else:
+                   self.toolbar.ClickP1Button('zoom')               
+           elif self.toolbar.mode == 'zoom':
                self.toolbar.ToggleZoomMenu()
            elif self.toolbar.mode == '3dzoom':
                if self._3d_rot_mode == 0:
@@ -1911,6 +1953,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        return
 
    def buttonpress(self, event):
+      self._alt_shift_hit = False       
       if self.toolbar.mode  == '':
           hit = 0
           if (abs(self._a_mode_scale_anchor[0] - event.x) < 10 and
@@ -1946,7 +1989,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       hit = False
 
 #      hit, extra = cpicker.figure_picker(self._figure, event)
-      if not (self.toolbar.mode in ('zoom', 'pan')) and event.button == 1:
+
+      if (not (self.toolbar.mode in ('zoom', 'pan', '3dzoom'))
+          and event.button == 1):
          self.run_picker(event)
       elif event.button == 2:
          self.toolbar.ExitInsertMode()
@@ -2109,7 +2154,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.draghandler.d_mode = 'a'
 
    def buttonrelease(self, event):
-      ### check double click 
+      ### check double click
+      self._alt_shift_hit = False
       double_click = False
       if event.guiEvent.LeftUp():
           if ((time.time()-self._previous_lclick) < 0.3 and
@@ -2157,7 +2203,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                    figobj=item().figobj
 #                  if figobj is not None: figobj.highlight_artist(False)
                    if (self._pevent.artist == item() and
-                       figobj._picker_a_mode==0):
+                       figobj._picker_a_mode==0 and not figobj.isCompound()):
                         already_selected=True
             if already_selected and not double_click:
                  dprint2('already_select')
@@ -2167,13 +2213,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                  else:
                     self.unselect_all()
             else:
-                 if event.guiEvent.ShiftDown():
-#                 if event.key == 'shift':
-                    dprint1('adding')
-                    self.add_selection(self._pevent.artist)
+                 if not event.guiEvent.ShiftDown():
+                     self.unselect_all()
+                 figobj = self._pevent.artist.figobj
+                 if figobj.isSelected():
+                     self.add_selection(self._pevent.artist)
                  else:
-                    self.unselect_all()
-                    self.add_selection(self._pevent.artist)
+                     self.unselect(self._pevent.artist)
+                        
             td = self._pevent.artist.figobj
             if td is not None:
                ifigure.events.SendSelectionEvent(td, self, self.selection)
@@ -2394,15 +2441,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
 #           pass
            dprint2('skipping draw since screen is already updated')
+           
    def onDraw(self, evt):
-#       print 'draw_event'
+       #print 'draw_event'
        if self._show_cursor:
            self.draw_cursor()
        elif self._layout_mode:
            self.layout_editor.draw_all()
        else:
           self.refresh_hl()
-
 
    def draw_later(self, all = False, delay = 0.0):
        from ifigure.events import SendCanvasDrawRequest
@@ -2798,7 +2845,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
              if a().figobj is not None: 
                   a().figobj.highlight_artist(False, artist=[ain])
                   a().figobj.canvas_unselected()
-             if hasattr(a(), 'is_gl'): a()._gl_hl = False                              
+             if hasattr(a(), 'is_gl'):
+                 a().unselect_gl_artist()
+             
       self.selection = [x for x in self.selection if x() != ain]
 
    def unselect_all(self):
@@ -2809,7 +2858,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if figobj is not None: 
             figobj.canvas_unselected()
             figobj.highlight_artist(False)
-         if hasattr(a(), 'is_gl'): a()._gl_hl = False            
+         if hasattr(a(), 'is_gl'):
+             a().unselect_gl_artist()
       self.selection=[]
 
 #   def set_axesselection(self, fig_axes):
@@ -3927,5 +3977,23 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                              callback = callback,
                              pos = pos, close_callback = close_callback)
        f.Show()
+
+
+   def install_toolbar_palette(self, name, tasks,  mode = '2D', refresh=None):
+        self.toolbar.install_palette(name, tasks,  mode, refresh)
+
+   def use_toolbar_palette(self, name, mode = '2D'):
+        self.toolbar.use_palette(name, mode)
+
+   def use_toolbar_std_palette(self):
+        self.toolbar.use_std_palette()
+ 
+   @property       
+   def hl_color(self):
+       return self.canvas.hl_color
+   @hl_color.setter
+   def hl_color(self, value):
+       self.canvas.hl_color = value
+   
 
 

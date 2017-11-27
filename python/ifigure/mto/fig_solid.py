@@ -19,7 +19,8 @@ dprint1, dprint2, dprint3 = debug.init_dprints('FigSolid')
 
 #from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
+from .gl_compound import GLCompound
+class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
     def __new__(cls, *args, **kywds):
         def set_hidden_vars(obj):
             obj._objs=[]  ## for debug....     
@@ -33,7 +34,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
 
         p = ArgsParser()
         p.add_var('v', ['iter|nonstr', 'dynamic']) 
-
+        p.add_opt('idxset', None, ['numbers|nonstr', 'dynamic']) 
 
         #p.add_key('cmap', None)
 
@@ -58,7 +59,9 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('normals', None)
         p.add_key('cz', False, 'bool')
         p.add_key('cdata', None)
-        p.add_key('shade', 'flat')
+        p.add_key('shade', 'linear')
+        p.add_key('array_idx', None)
+        p.add_key('draw_last', False)
 
         v, kywds,d, flag = p.process(*args, **kywds)
         if not flag: 
@@ -76,6 +79,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         YUser.__init__(self)
         ZUser.__init__(self)
         CUser.__init__(self)
+        GLCompound.__init__(self)
 
         args = []
         if not kywds.has_key('src'):
@@ -141,6 +145,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         container=self.get_container()
 
         v = self._eval_v()
+        idxset = self.getvar('idxset')        
         ### use_var should be false if evaluation is
         ### okey.
         if self.getp('use_var'): return
@@ -168,7 +173,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         kywds = self._var["kywds"].copy()
         kywds['normals'] = norms
         kywds['alpha'] = self.getp('alpha')# if self.getp('alpha') is not None else 1
-        
+        kywds['array_idx'] = self.getvar('array_idx')
         fc = self.getp('facecolor')
         if isinstance(fc, str): fc = cc.to_rgba(fc)
         if fc is None: fc = [0,0,0,0]        
@@ -186,17 +191,29 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
             if self.getvar('cdata') is not None:
                 cdata = self.getvar('cdata')
             else:
-                cdata = v[:,:, -1]
-            if self.getvar('shade') != 'linear':
-                kywds['facecolordata'] = np.mean(cdata, -1).real
+                cdata = v[..., -1]
+            if idxset is None:
+                if self.getvar('shade') != 'linear':
+                    kywds['facecolordata'] = np.mean(cdata, -1).real
+                else:
+                    kywds['facecolordata'] = cdata.real
             else:
-                kywds['facecolordata'] = cdata.real
+                kywds['facecolordata'] = cdata.real     
         else:
             kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
-        self._artists = [container.plot_solid(v[:,:,:3], **kywds)]
 
+        args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
+        self._artists = [container.plot_solid(*args, **kywds)]
+
+        if self.getvar('draw_last'):
+             self._artists[0]._gl_isLast = True            
+        self.set_pickmask(self._pickmask)
+        if len(self.hidden_component) > 0:
+            self.hide_component(self.hidden_component)
+        self.set_gl_hl_use_array_idx(self.get_gl_hl_use_array_idx())
+        
         for artist in self._artists:
             artist.do_stencil_test = False
             artist.figobj=self
@@ -434,7 +451,7 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
     def _eval_xyz(self):
         v = self._eval_v()
         if v is None: return None, None, None
-        return v[:,:,0], v[:,:,1], v[:,:,2]
+        return v[...,0], v[...,1], v[...,2]
 
     def _eval_v(self):
         if self.getp('use_var'): 
@@ -448,6 +465,11 @@ class FigSolid(FigObj, XUser, YUser, ZUser, CUser):
         if self.getvar('cz'):
             val['cdata'] = self.getvar("cdata")
         return val
+
+    def canvas_menu(self):
+        m = FigObj.canvas_menu(self)
+        m2 = GLCompound.canvas_menu(self)
+        return m[:1]+m2+m[1:]
 
         
 

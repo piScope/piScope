@@ -73,10 +73,9 @@ class FigPlotC(FigPlot, FigControl):
                             markeredgecolor='k', 
                             markersize = 6,
                             scalex=False, scaley=False)
-           print a3
            self._mark_a = a3[0]
 
-        idx = np.where([not x for x in self.getp('enabled_point')])[0]
+        idx = np.where([not xx for xx in self.getp('enabled_point')])[0]
         if self._enable_a is not None:
            self._enable_a.remove()
            self._enable_a = None
@@ -175,6 +174,8 @@ class FigPlotC(FigPlot, FigControl):
         x = self.getp('x').copy()
         y = self.getp('y').copy()
         del v[self._figc_hit]
+        vm = self.getp('marked_point')[:]
+        del vm[self._figc_hit]            
         x = np.delete(x, self._figc_hit)
         y = np.delete(y, self._figc_hit)
         actions = [UndoRedoFigobjMethod(self._artists[0], 
@@ -190,6 +191,8 @@ class FigPlotC(FigPlot, FigControl):
                                                'errdata', (xerr, yerr)))
         actions.append(UndoRedoFigobjMethod(self._artists[0], 
                                             'enabled_point', v))
+        actions.append(UndoRedoFigobjMethod(self._artists[0], 
+                                            'marked_point', vm))
         window = evt.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(actions)
         return 1
@@ -221,6 +224,9 @@ class FigPlotC(FigPlot, FigControl):
         x = self.getp('x').copy()
         y = self.getp('y').copy()
         v.insert(k+1, True)
+        vm = self.getp('marked_point')[:]
+        vm.insert(k+1, True)
+        
         x = np.insert(x, k+1, self._figc_hit_pos[0])
         y = np.insert(y, k+1, self._figc_hit_pos[1])
         actions = [UndoRedoFigobjMethod(self._artists[0], 
@@ -236,6 +242,8 @@ class FigPlotC(FigPlot, FigControl):
                                                'errdata', (xerr, yerr)))
         actions.append(UndoRedoFigobjMethod(self._artists[0], 
                                             'enabled_point', v))
+        actions.append(UndoRedoFigobjMethod(self._artists[0], 
+                                            'marked_point', vm))
 
         window = evt.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(actions)
@@ -276,7 +284,7 @@ class FigPlotC(FigPlot, FigControl):
         vm = self.getp('marked_point')
         if vm is None:
             l = len(self.getp('enabled_point'))
-            self.setp('marked_point', np.array([False]*l))
+            self.setp('marked_point', [False]*l)
             vm = self.getp('marked_point') 
         vm[self._figc_hit] = True
         self.setp('marked_point', vm)
@@ -292,7 +300,7 @@ class FigPlotC(FigPlot, FigControl):
         vm = self.getp('marked_point')
         if vm is None:
             l = len(self.getp('enabled_point'))
-            self.setp('marked_point', np.array([False]*l))
+            self.setp('marked_point', [False]*l)
             vm = self.getp('marked_point') 
         vm[self._figc_hit] = False
         self.setp('marked_point', vm)
@@ -308,7 +316,7 @@ class FigPlotC(FigPlot, FigControl):
         vm = self.getp('marked_point')
         if vm is None:
             l = len(self.getp('enabled_point'))
-            self.setp('marked_point', np.array([False]*l))
+            self.setp('marked_point', [False]*l)
             vm = self.getp('marked_point') 
         for x in range(len(vm)):
            vm[x] = False
@@ -352,6 +360,15 @@ class FigPlotC(FigPlot, FigControl):
 
     def get_enabled_point(self, a):
         return self.getp('enabled_point')
+
+    def set_marked_point(self, value, a):
+        self.setp('marked_point', value)
+        self.set_update_artist_request()
+        self.get_figaxes().set_bmp_update(False)
+
+    def get_marked_point(self, a):
+        return self.getp('marked_point')
+    
 
     def picker_a(self, artist, evt): 
         hit = False
@@ -492,7 +509,7 @@ class FigPlotC(FigPlot, FigControl):
         vm = self.getp('marked_point')
         l = len(self.getp('enabled_point'))
         if vm is None or len(vm) != l:
-            self.setp('marked_point', np.array([False]*l))
+            self.setp('marked_point', [False]*l)
             vm = self.getp('marked_point') 
         return vm
 

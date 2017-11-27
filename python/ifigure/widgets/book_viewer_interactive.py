@@ -410,16 +410,18 @@ class BookViewerInteractive(object):
         axes.reset_color_cycle()
         
     @allow_interactive_call2
-    def cls(self):
-        self.clf()
+    def cls(self, obj = None):
+        self.clf(obj = obj)
     @allow_interactive_call2
-    def clf(self):
+    def clf(self, obj = None):
         fig_p = self.get_page(ipage=None)
         if fig_p is None: 
            raise NoPageError('no page exists')
         for axes in fig_p.walk_axes():
             axes.reset_color_cycle()
             children = [child for child in axes.walk_tree()]
+            if obj is not None:
+               children = [obj] if obj in children else []
             for child in children:
                 if (not hasattr(child, '_generic_axes') or
                     not child._generic_axes):
@@ -1316,13 +1318,35 @@ class BookViewerInteractive(object):
         from ifigure.mto.fig_solid import FigSolid
         if args[0].shape[-1] == 4:
            kargs['cz'] = True
-           kargs['cdata'] = args[0][:,:,-1]
-           args = (args[0][:,:,:-1],)
-        if args[0].shape[-1] == 2:
-           zvalue = kargs.pop('zvalue', 0.0)
-           v = np.dstack((args[0], np.zeros((args[0].shape[0], args[0].shape[1], 1))
+           kargs['cdata'] = args[0][...,-1]
+           args = (args[0][...,:-1],)
+        
+        if len(args) == 2:
+             verts = args[0]
+             idxset= args[1]             
+             if verts.shape[-1] == 4:
+                  kargs['cz'] = True
+                  kargs['cdata'] = verts[...,-1]
+                  verts = verts[...,:-1]
+             elif verts.shape[-1] == 2:
+                 zvalue = kargs.pop('zvalue', 0.0)
+                 verts = np.hstack((args[0], np.zeros((args[0].shape[0], 1))
+                               +zvalue))
+             args = (verts, idxset)
+        elif len(args) == 1:
+             verts = args[0]
+             if verts.shape[-1] == 4:
+                  kargs['cz'] = True
+                  kargs['cdata'] = verts[...,-1]
+                  verts = verts[...,:-1]
+             elif args[0].shape[-1] == 2:
+                 zvalue = kargs.pop('zvalue', 0.0)
+                 verts = np.dstack((args[0], np.zeros((args[0].shape[0], args[0].shape[1], 1))
                           +zvalue))
-           args = (v,)
+             args = (verts,)
+        else:
+            assert False, "wrong number of arguments, solid(v, idx) or solid(v)"
+            
         fig_axes = self.get_axes(ipage=None, iaxes=self.isec())
         if not fig_axes.get_3d():
             fig_axes.set_3d(True)

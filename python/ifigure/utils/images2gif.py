@@ -14,21 +14,23 @@ Almar Klein (June 2009)
 
 import glob
 
-try:
-    import PIL
-    from PIL import Image, ImageChops
-    from PIL.GifImagePlugin import getheader, getdata
-except ImportError:
-    PIL = None
-
+PIL = None
+if PIL is None:
+    try:
+        import PIL
+        from PIL import Image, ImageChops
+        from PIL.GifImagePlugin import getheader, getdata
+    except ImportError:
+        PIL = None
 ### 2014 09 S. Shiraiwa 
 ### import PIL is not right on some platform?
-try:
-    import Image, ImageChops
-    from GifImagePlugin import getheader, getdata
-    PIL = Image
-except ImportError:
-    PIL = None
+if PIL is None:
+    try:
+        import Image, ImageChops
+        from GifImagePlugin import getheader, getdata
+        PIL = Image
+    except ImportError:
+        PIL = None
 
 try:
     import numpy as np

@@ -58,6 +58,14 @@ def make_bitmap_with_bluebox(bitmap):
 
         return bitmap2
 
+'''
+button tasks
+    ('pmode',           # task name
+     'pmode.png',       # icon file
+      1,                # toggle group id
+     'plot mode',       # tips
+      callable = None)  # method to be called when button is hit.
+'''
     
 three_d_bar = False
 btasks0 = [#('previous', 'arrowleft.png', 0, 'previous page'),
@@ -69,24 +77,32 @@ btasks0 = [#('previous', 'arrowleft.png', 0, 'previous page'),
                    ('amode',   'amode.png', 1, 'annotation mode'),
                    ('---',    (10,10), 0, ''),]
 
-btasks1=[('select', 'select.png', 1, 'select', True),
+btasks1_std2d_base=[('select', 'select.png', 1, 'select',),
          ('zoom',   'zoom2.png', 1,
-          '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction']),
-          True),
-         ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']), True),
-         ('cursor',   'cursor.png', 1, 'cursor', True, True),
-         ('3dzoom',   'threed_rot.png', 1, '3D zoom', False, True),]
-         
-btasks1.extend([
-                ('---',    (10,10), 0, '', True),
-                ('xlog',  'xlog.png', 0, 'toggle xlog', True, False),
-                ('ylog',   'ylog.png', 0, 'toggle ylog', True, False),
-                ('xauto',  'xauto.png', 0, 'autoscale x', True),
-                ('yauto',  'yauto.png', 0, 'autoscale y', True),
-                ('grid',   'grid.png', 0, 'toggle grid', True, False),
-#                ('colorbar', 'colorbar.bmp', 0, 'color bar'),
-                ('nomargin', 'margin.png', 0, 'no margin mode', True, True),])
-#                ('3d',   'three_d.png', 0, '3D axis', False), ])
+          '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction'])),
+          ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']),),
+          ('cursor',   'cursor.png', 1, 'cursor',),
+          ('---',    (10,10), 0, ''),]
+btasks1_std2d = btasks1_std2d_base + [          
+          ('xlog',  'xlog.png', 0, 'toggle xlog',),
+          ('ylog',  'ylog.png', 0, 'toggle ylog',),
+          ('xauto',  'xauto.png', 0, 'autoscale x', ),
+          ('yauto',  'yauto.png', 0, 'autoscale y', ),
+          ('grid',   'grid.png', 0, 'toggle grid', ),
+          ('nomargin', 'margin.png', 0, 'no margin mode', ),]
+
+btasks1_std3d_base=[('select', 'select.png', 1, 'select',),
+         ('zoom',   'zoom2.png', 1,
+          '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction'])),
+         ('pan',   'arrowmove.png', 1, '\n'.join(['pan', ' shift: pan all']),),
+         ('cursor',   'cursor.png', 1, 'cursor',),
+          ('3dzoom',   'threed_rot.png', 1, '3D zoom\n shift: pan\n alt: zoom',),
+          ('---',    (10,10), 0, ''),]
+
+btasks1_std3d = btasks1_std3d_base + [
+          ('xauto',  'xauto.png', 0, 'autoscale x', ),
+          ('yauto',  'yauto.png', 0, 'autoscale y', ),
+          ('nomargin', 'margin.png', 0, 'no margin mode', ),]
 
 btasks2=[#('selecta', 'select.bmp', 1, 'select'),
                  ('text',   't.png', 1, 'insert text'),
@@ -118,8 +134,13 @@ class TaskBtnList(list):
     def get_btn(self, name):
         for m in self:
             if m.btask == name: return m
-        return 
+        return
 
+class FakeEvent(object):
+    def GetEventObject(self):
+        return self.obj
+    def Skip(s):
+        return
 class ButtonInfo(bp.ButtonInfo):
     def __init__(self, *args, **kwargs):
         bp.ButtonInfo.__init__(self, *args, **kwargs)
@@ -148,16 +169,22 @@ class navibar(ButtonPanel):
         self.rotmode = False
         self.three_d_bar = False
 
+        self.p1_btns = {'std2d': self.make_button_group(self, btasks1_std2d),
+                        'std3d': self.make_button_group(self, btasks1_std3d),}
+
+        self.p1_choice = ['std2d', 'std3d']
+        self.p1_std_tasks = [btasks1_std2d[:],
+                             btasks1_std3d[:],]
+        
+        self._extra_buttons = {}          # store callbacks
+        self._extra_buttons_refresh = {}  # store button refresh
+               
         self.p0  = self.make_button_group(self, btasks0)
-        self.p1  = self.make_button_group(self, btasks1)
         self.p2  = self.make_button_group(self, btasks2)
         self.p3  = self.make_button_group(self, btasks3)
-        self.btasks0 = btasks0[:]
-        self.btasks1 = btasks1[:]
-        self.btasks2 = btasks2[:]
-        self.btasks3 = btasks3[:]
+
         self.SetPMode(skip_sc=True)
-        self._extra_buttons = {}
+
         self.zoom_up_down = 'up'
         self.zoom_menu = 0    # 0 or 1
         self.pan_all = 0
@@ -183,18 +210,89 @@ class navibar(ButtonPanel):
         self.threed_crs = threed_crs
         self._curve_mode = 'pp'
 
-    def add_extra_group1_button(self, idx, data, 
+    @property
+    def p1(self):
+        if self.three_d_bar:
+            return self.p1_btns[self.p1_choice[1]]
+        else:
+            return self.p1_btns[self.p1_choice[0]]
+
+    def install_palette(self, name, tasks0,  mode = '2D', refresh = None):
+        '''
+        tasks shou
+
+        '''
+        # we use taskname + '_' + name to avoid name conflict
+        tasks = []
+        for t in tasks0:
+            if t[0] == '---':
+                tasks.append(t)
+            else:
+                tasks.append([t[0]+'_'+ name]+list(t[1:]))
+                
+        if mode == '2D':
+            btasks = btasks1_std2d_base + list(tasks)                             
+        else:
+            btasks = btasks1_std3d_base + list(tasks)
+        self.p1_btns[name] =  self.make_button_group(self,
+                                                     btasks)
+
+        for t in tasks:
+            self._extra_buttons[t[0]] = t[-1]
+        if refresh is not None:
+            self._extra_buttons_refresh[name] = refresh
+
+        evt = FakeEvent(); evt.obj = self
+        
+        tg = set([btnl.tg for btnl in self.p1_btns[name]
+                 if isinstance(btnl, bp.ButtonInfo)])
+        for t in tg:
+           if t == 0: continue
+           if t == 1: continue
+           btnls = [b for b in self.p1_btns[name] if (isinstance(b, bp.ButtonInfo)
+                                                        and b.tg == t)]
+           btnls[0].SetBitmap(btnls[0].bitmap2)
+           self._extra_buttons[btnls[0].btask](evt)
+           for b in btnls[1:]:
+               b.SetBitmap(b.bitmap1)
+               
+
+    def use_palette(self, name,  mode = '2D'):
+        if mode == '2D':
+            self.p1_choice[0] = name
+        else:
+            self.p1_choice[1] = name
+        self.SetPMode()
+        
+    def use_std_palette(self):
+        self.p1_choice = ['std2d', 'std3d']
+        self.SetPMode()
+
+    def refresh_palette(self):
+        for name in self.p1_choice:
+           if name in self._extra_buttons_refresh:
+               self._extra_buttons_refresh[name](self,
+                                                 self.p1_btns[name])
+        
+    def add_extra_group1_button(self, idx, data,
                                 use_in_2d_menu = True, 
                                 use_in_3d_menu = False):
         xx =list(data[:4])
-        xx.append(use_in_2d_menu)
-        xx.append(use_in_3d_menu)
-        self.btasks1.insert(idx, xx)
-        self.p1  = self.make_button_group(self, self.btasks1)
+        if use_in_2d_menu:
+            self.p1_std_tasks[0].insert(idx, xx)
+            self.p1_btns['std2d'] =  self.make_button_group(self,
+                                                           self.p1_std_tasks[0])
+        if use_in_3d_menu:
+            self.p1_std_tasks[1].insert(idx, xx)
+            self.p1_btns['std3d'] =  self.make_button_group(self,
+                                                            self.p1_std_tasks[1])
+
         self._extra_buttons[data[0]] = data[-1]
-        self.SetPMode()
+        self.SetPMode()               
 
     def make_button_group(self, parent, btasks):
+        from ifigure.ifigure_config import icondir
+                    
         bts = TaskBtnList()
         for items in btasks:
            btask, icon, tg, hint = items[:4]
@@ -202,8 +300,8 @@ class navibar(ButtonPanel):
               bts.append('---') 
 #              bts.AddSpacer(icon)
               continue
-           from ifigure.ifigure_config import icondir
-           path=os.path.join(icondir, '16x16', icon)
+           path = icon if os.path.isabs(icon) else os.path.join(icondir,
+                                                               '16x16', icon)
            if icon[-3:]=='png':
               im = wx.Image(path, wx.BITMAP_TYPE_PNG)
               image = im.ConvertToBitmap()
@@ -214,7 +312,7 @@ class navibar(ButtonPanel):
                   im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, hotspot[btask][0]) 
                   im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, hotspot[btask][1]) 
               crs =  wx.CursorFromImage(im)
-           if icon[-3:]=='bmp':
+           elif icon[-3:]=='bmp':
               im = wx.Image(path, wx.BITMAP_TYPE_BMP)
               image = im.ConvertToBitmap()
               if im.HasAlpha(): im.ConvertAlphaToMask()
@@ -226,14 +324,11 @@ class navibar(ButtonPanel):
            btnl.btask = btask
            btnl.bitmap1 = image
            btnl.bitmap2 = make_bitmap_with_bluebox(image)
+           btnl.tg = tg
            if hint != '':
               btnl.SetShortHelp(hint)
-           if tg == 1:
+           if tg > 0:
               btnl.SetKind('toggle')
-           if len(items) > 4:
-               btnl.use_in_2d_menu  = items[4] 
-           if len(items) > 5:
-               btnl.use_in_3d_menu  = items[5] 
            bts.append(btnl)
            #           def func(evt, btask=btask): return self.OnButton(evt, btask)
            #           parent.Bind(wx.EVT_BUTTON, func, btnl)
@@ -309,7 +404,7 @@ class navibar(ButtonPanel):
         elif btask == 'nomargin': self.ToggleNoMargin()
         elif btask == '3d': self.Toggle3D()
         elif btask in self._extra_buttons:
-           self._extra_buttons[btask]()
+           self.onHitExtra(evt, btnl)
         elif btask == 'line': 
            self.GetParent().exit_layout_mode() # just in case...
            if btnl.GetToggled():
@@ -433,7 +528,8 @@ class navibar(ButtonPanel):
     def _set_bitmap2(self, array, index):
         for p in array:
             if isinstance(p, str): continue
-            p.SetBitmap(p.bitmap1) 
+            if p.tg < 2:
+               p.SetBitmap(p.bitmap1) 
         if index > -1:
            array[index].SetBitmap(array[index].bitmap2)
 
@@ -557,11 +653,6 @@ class navibar(ButtonPanel):
         
     def AddButtonOrS(self, b):
         if isinstance(b, bp.ButtonInfo):
-           if not self.three_d_bar:
-              if not b.use_in_2d_menu: return
-           if self.three_d_bar:
-              if not b.use_in_3d_menu: return
-
            self.AddButton(b)
            self.allbinfo.append(b)
         else:
@@ -673,15 +764,8 @@ class navibar(ButtonPanel):
         Copy_to_Clipboard_mod copys the buffer data
         which does not have highlight drawn
         '''
-        canvas = self.GetParent().canvas
-        figure_image = canvas.figure_image[0]
-        h, w, d  = figure_image.shape
-        image = wx.EmptyImage(w, h)
-        image.SetData(figure_image[:,:,0:3].tostring())
-        image.SetAlphaData(figure_image[:,:,3].tostring())
-        bmp = wx.BitmapFromImage(image)
-        canvas.Copy_to_Clipboard_mod(pgbar=True,
-                                     bmp=bmp)
+        frame = self.GetTopLevelParent()
+        frame.onCopyToCB(None)
 
     def ToggleGridRight(self, evt):
         asel = self.GetParent().axes_selection
@@ -820,6 +904,54 @@ class navibar(ButtonPanel):
         self.pan_all = 1 if self.pan_all == 0 else 0
         self._set_pancxr()
 
+    def onHitExtra(self, evt, btnl):
+        btask = btnl.btask
+        if btnl.tg == 0: 
+            self._extra_buttons[btask](evt)
+            return
+        else:
+             btnls = [b for b in self.p1 if (isinstance(b, bp.ButtonInfo)
+                      and b.tg == btnl.tg)]
+             self._extra_buttons[btask](evt)                     
+             for b in btnls:
+                 if b == btnl:
+                     b.SetToggled(True)
+                     b.SetBitmap(b.bitmap2)
+                 else:
+                     b.SetToggled(False)                             
+                     b.SetBitmap(b.bitmap1)
+                     
+    def ClickP1Button(self, name):
+        '''
+        programatically click a button, whose
+        task is name
+        '''
+        p1 = self.p1
+        if self.three_d_bar:
+            choice = self.p1_choice[1]
+        else:
+            choice = self.p1_choice[0]
+
+        pt = None
+        for info in self.p1:
+            if isinstance(info, str): continue
+            if (info.btask == name or
+                info.btask == name + '_'+choice):
+                rect = info.GetRect()
+                pt = wx.Point(int(rect[0]+rect[1]/2.),
+                              int(rect[1]+rect[3]/2.))
+
+        if pt is None: return
+        evt1 = wx.MouseEvent(wx.wxEVT_LEFT_DOWN)
+        evt2 = wx.MouseEvent(wx.wxEVT_LEFT_UP)
+        evt1.SetEventObject(self)
+        evt2.SetEventObject(self)        
+        evt1.SetPosition(pt)
+        evt2.SetPosition(pt)
+        self.ProcessEvent(evt1)
+        self.ProcessEvent(evt2)                
+        self.Refresh()
+        
     def _set_zoomcxr(self):
         if self.zoom_up_down == 'up':
            self.GetParent().canvas.SetCursor(self.zoom_crs[0 + self.zoom_menu*2])

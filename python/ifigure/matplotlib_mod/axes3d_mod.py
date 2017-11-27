@@ -1,6 +1,7 @@
 import weakref
 import ifigure.events as events
 from scipy.signal import convolve2d, fftconvolve
+from scipy.sparse import coo_matrix
 
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -118,8 +119,8 @@ class Axes3DMod(Axes3D):
         self._nomargin_mode = False
         self._offset_trans_changed = False
         self._mouse_hit = False
-        self._lighting = {'light'      : 0.,
-                          'ambient'    : 1.0,
+        self._lighting = {'light'      : 0.5,
+                          'ambient'    : 0.5,
                           'specular'   : .0,
                           'light_direction'  : (1., 0, 1, 0),
                           'light_color'      : (1., 1., 1), 
@@ -138,33 +139,49 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
 
-    def gl_hit_test(self, x, y, id, radius = 3):
+    def gl_hit_test(self, x, y, artist, radius = 3):
         #
         #  logic is
         #     if artist_id is found within raidus from (x, y)
         #     and
         #     if it is the closet artist in the area of checking
         #     then return True
-        if self._gl_id_data is None: return False
+        if self._gl_id_data is None: return False, None
         
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         x, x0,  y, y0 = int(x), int(x0),  int(y), int(y0)        
-        d = np.rint((im[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten())
-        dd = (im2[y-y0-radius:y-y0+radius, x-x0-radius:x-x0+radius]).flatten()
-        if len(dd) == 0: return False
-        dist = np.min(dd)
-        for num, check in zip(d, dd):
-            if num in id_dict:
-                if id_dict[num] == id and check == dist:
-                   return True
+        d = np.rint((im[y-y0-radius:y-y0+radius,
+                        x-x0-radius:x-x0+radius]).flatten())
+        '''
+        print(im2[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius])
+        print(imd[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius])
+        '''
+        dd = (im2[y-y0-radius:y-y0+radius,
+                  x-x0-radius:x-x0+radius]).flatten()
+        dd_extra = (imd[y-y0-radius:y-y0+radius,
+                        x-x0-radius:x-x0+radius]).flatten()        
+        if len(dd) == 0: return False, None
 
-        return False
+        mask = np.array([id_dict[x]()._gl_pickable if x in id_dict else False
+                         for x in d])
+        if not any(mask): return False, None
+
+        dist = np.min(dd[mask])
+
+        for num, check, check2 in zip(d, dd, dd_extra):
+            if num in id_dict:
+                if id_dict[num]() == artist and check == dist:
+                   return True, check2
+
+        return False, None
 
     def make_gl_hl_artist(self):
         if self._gl_id_data is None: return []
         self.del_gl_hl_artist()
             
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         a = ArtGLHighlight(self.figure, offsetx = x0,
                             offsety = y0, origin='lower')
         data = np.ones(im.shape)
@@ -181,7 +198,8 @@ class Axes3DMod(Axes3D):
             self._gl_mask_artist.remove()
         self._gl_mask_artist = None
         
-    def set_gl_hl_mask(self, id, cmask = 0.0, amask = 0.65):
+    def set_gl_hl_mask(self, artist, hit_id = None,
+                       cmask = 0.0, amask = 0.65):
         #
         #  logic is
         #     if artist_id is found within raidus from (x, y)
@@ -196,28 +214,37 @@ class Axes3DMod(Axes3D):
         # do not do this when hitest_map is updating..this is when
         # mouse dragging is going on
         if not get_glcanvas()._hittest_map_update: return
-        x0, y0, id_dict, im, im2 = self._gl_id_data
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
               
         arr = self._gl_mask_artist.get_array()
         for k in id_dict.keys():
-            if (id_dict[k] == id):
-               m = im == k
-               arr[:,:,0][m] = cmask
-               #arr[:,:,1][m] = cmask
-               #arr[:,:,2][m] = cmask
+            if (id_dict[k]() == artist):
+               if hit_id is not None:
+                   if len(hit_id) > 0:
+                       mask = np.isin(imd, hit_id)
+                       m = np.logical_and(im == k, mask)
+                   else:
+                       m = (im == k)                       
+               else:
+                   m = (im == k)
+                   
+               c = self.figure.canvas.hl_color                           
+               arr[:,:,:3][m] = np.array(c, copy=False)
                arr[:,:,3][m] = amask               
                break
         # blur the mask,,,
 
-    def blur_gl_hl_mask(self, cmask = 0.0, amask = 0.65):
+    def blur_gl_hl_mask(self, amask = 0.65):
         if self._gl_mask_artist is None: return
         arr = self._gl_mask_artist.get_array()
         #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         b = fftconvolve(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         #b = np.sqrt(b)
         b[b > amask] = amask
-        a = arr[:,:,0]; a[b > 0.0] = cmask        
-        arr = np.dstack((a,a,a,b))
+        
+        c = self.figure.canvas.hl_color
+        arr[b>0.0,:3] = c
+        arr[...,-1] = b        
         self._gl_mask_artist.set_array(arr)
 
     def set_nomargin_mode(self, mode):
@@ -264,7 +291,8 @@ class Axes3DMod(Axes3D):
         get_glcanvas()._hittest_map_update = False
         events.SendPVDrawRequest(self.figobj, 
                                  w=None, wait_idle=False, 
-                                 refresh_hl=False)
+                                 refresh_hl=False,
+                                 caller = '_on_move')
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
@@ -311,7 +339,7 @@ class Axes3DMod(Axes3D):
 #            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
 #            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
         elif self.button_pressed in self._pan_btn:
             dx = 1-((w - dx)/w)
@@ -336,12 +364,11 @@ class Axes3DMod(Axes3D):
             self.set_zlim3d(minz + dz, maxz + dz)
 
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
             # pan view
             # project xv,yv,zv -> xw,yw,zw
             # pan
-#            pass
 
         # Zoom
         elif self.button_pressed in self._zoom_btn:
@@ -356,38 +383,30 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d(miny - dy, maxy + dy)
             self.set_zlim3d(minz - dz, maxz + dz)
             self.get_proj()
-            self.figure.canvas.draw_idle()
+            #self.figure.canvas.draw_idle()
 
     def _button_release(self, evt):
         if not self._mouse_hit:return
-        Axes3D._button_release(self, evt)
+
         fig_axes = self.figobj
-#        for obj in fig_axes.walk_tree():
-#            obj.switch_scale('fine')
         fig_axes.set_bmp_update(False)
-        events.SendPVDrawRequest(self.figobj, 
-                                 w=None, wait_idle=False, 
-                                 refresh_hl=False)
+        Axes3D._button_release(self, evt)        
+        #events.SendPVDrawRequest(self.figobj, 
+        #                         w=None, wait_idle=False, 
+        #                         refresh_hl=False,
+        #                         caller = '_on_release')
     @use_gl_switch
     def plot(self, *args, **kwargs):
         from art3d_gl import line_3d_to_gl
-        if len(args) == 4:
-            c = args[-1]
-            args = args[:3]
-        else: c = None
         fc = kwargs.pop('facecolor', None)
         gl_offset = kwargs.pop('gl_offset', (0,0,0))
+        array_idx = kwargs.pop('array_idx', None)
         lines = Axes3D.plot(self, *args, **kwargs)
         for l in lines:
             line_3d_to_gl(l)
             l._facecolor = fc
             l._gl_offset = gl_offset
-#            if c is not None:
-#                l._gl_solid_edgecolor = None
-#                l._c_data = c
-#            else:
-#                print l.get_color()
-#                l._gl_solid_edgecolor = l.get_color()                
+            l._gl_array_idx = array_idx
         return lines
 
     def fill(self, *args, **kwargs):
@@ -585,7 +604,6 @@ class Axes3DMod(Axes3D):
 #        v.plot(X, Z)
         #facecolor = kwargs.pop('facecolor', (0,0,1,1))
         X, Y, Z = np.broadcast_arrays(X, Y, Z)
-
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
         polyc._revolve_data = (X, Y, Z)
         return polyc
@@ -638,7 +656,8 @@ class Axes3DMod(Axes3D):
         :class:`~mpl_toolkits.mplot3d.art3d.Poly3DCollection`
         '''
         cz = kwargs.pop('cz', False)
-        cdata = kwargs.pop('cdata', None)        
+        cdata = kwargs.pop('cdata', None)
+        expanddata = kwargs.pop('expanddata', False)
 
         Z = np.atleast_2d(Z)
         # TODO: Support masked arrays
@@ -666,25 +685,37 @@ class Axes3DMod(Axes3D):
 
         idxset = np.array([x + offset for x in base], 'H')
 
-        #idxset = tri.get_masked_triangles()
-
-        verts = np.dstack((X3D[idxset], 
+        if expanddata:
+            verts = np.dstack((X3D[idxset], 
                            Y3D[idxset],
                            Z3D[idxset]))
-        if cz:
-            if cdata is not None:
-                cdata = cdata[r, :][:, c].flatten()[idxset]
-            else:
-                cdata = Z3D[idxset]
-            shade = kwargs.pop('shade', 'flat')
-            if shade != 'linear':
-                cdata = np.mean(cdata, -1)
-            kwargs['facecolordata'] = cdata.real
-            kwargs.pop('facecolor', None) # get rid of this keyword
-
-        kwargs['cz'] = cz
-
-        return self.plot_solid(verts, **kwargs)
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[r, :][:, c].flatten()[idxset]
+                else:
+                    cdata = Z3D[idxset]
+                shade = kwargs.pop('shade', 'flat')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, **kwargs)
+            o._idxset = (r, c, idxset)   # this is used for phasor            
+        else:
+            verts = np.vstack((X3D, Y3D, Z3D)).transpose()
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[r, :][:, c].flatten()
+                else:
+                    cdata = Z3D
+                shade = kwargs.pop('shade', 'flat')
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, idxset, **kwargs)
+            o._idxset = (r, c, None)   # this is used for phasor
+        return o
 
     def plot_trisurf(self, *args, **kwargs):
         '''
@@ -698,7 +729,9 @@ class Axes3DMod(Axes3D):
         from matplotlib.tri.triangulation import Triangulation
 
         cz = kwargs.pop('cz', False)
-        cdata = kwargs.pop('cdata', None)        
+        cdata = kwargs.pop('cdata', None)
+        expanddata = kwargs.pop('expanddata', False)
+        
         tri, args, kwargs = Triangulation.get_from_args_and_kwargs(*args, **kwargs)
         if 'Z' in kwargs:
             z = np.asarray(kwargs.pop('Z'))
@@ -713,57 +746,125 @@ class Axes3DMod(Axes3D):
         Z3D = z
         idxset = tri.get_masked_triangles()
 
-        verts = np.dstack((X3D[idxset], 
+        if expanddata:
+            verts = np.dstack((X3D[idxset], 
                            Y3D[idxset],
                            Z3D[idxset]))
-        if cz:
-            if cdata is not None:
-                cdata = cdata[idxset]
-            else:
-                cdata = Z3D[idxset]
-            shade = kwargs.pop('shade', 'flat')
-            if shade != 'linear':
-                cdata = np.mean(cdata, -1)
-            kwargs['facecolordata'] = cdata.real
-            kwargs.pop('facecolor', None) # get rid of this keyword
-
-        kwargs['cz'] = cz
-
-        return self.plot_solid(verts, **kwargs)
+            if cz:
+                if cdata is not None:
+                    cdata = cdata[idxset]
+                else:
+                    cdata = Z3D[idxset]
+                shade = kwargs.pop('shade', 'linear')
+                if shade != 'linear':
+                    cdata = np.mean(cdata, -1)
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, **kwargs)
+            o._idxset = (None, None, idxset)   # this is used for phasor
+        else:
+            verts = np.vstack((X3D, Y3D, Z3D)).transpose()
+            if cz:
+                if cdata is not None:
+                    cdata = cdata
+                else:
+                    cdata = Z3D
+                kwargs['facecolordata'] = cdata.real
+                kwargs.pop('facecolor', None) # get rid of this keyword
+            kwargs['cz'] = cz
+            o =  self.plot_solid(verts, idxset, **kwargs)
+            o._idxset = (None, None, None)   # this is used for phasor            
+        return o
     
-    def plot_solid(self, v, **kwargs):
+    def plot_solid(self, *args,  **kwargs):
         '''
+        plot_solid(v)  or plot_solid(v, idx)
+ 
         v [element_index, points_in_element, xyz]
+
+        or 
+
+        v [vertex_index, xyz]
+        idx = [element_idx, point_in_element]
 
         kwargs: normals : normal vectors
         '''
         #gl_3dpath = kwargs.get('gl_3dpath', None)
-        
-        norms = kwargs.pop('normals', None)        
+        if len(args) == 1:
+            v = args[0]
+            vv = v.reshape(-1, v.shape[-1])# vertex
+            nv = len(v[:, :, 2].flatten())            
+            idxset = np.arange(nv, dtype=int).reshape(v.shape[0], v.shape[1])
+            nverts = v.shape[0]*v.shape[1]
+            ncounts = v.shape[1]
+            nele = v.shape[0]
+        else:
+            v = args[0]   # vertex
+            vv = v
+            idxset = np.array(args[1], dtype=int, copy=False)
+            # element index (element_idx, point_in_element)
+            nverts = v.shape[0]
+            ncounts = idxset.shape[1]
+            nele = idxset.shape[0]
+            
+        norms = kwargs.pop('normals', None)
+                
+        w = np.zeros((nverts)) # weight
         if norms is None:
-            norms = []
-            for xyz in v:
-                if xyz.shape[0] > 2:
-                    p0, p1, p2 = [xyz[k,:3] for k in range(3)]
-                    n1 = np.cross(p0-p1, p1-p2)
-                    d = np.sqrt(np.sum(n1**2))
+            norms = np.zeros((nverts, 3), dtype=np.float32) # weight
+            if idxset.shape[1] > 2:
+                xyz = vv[idxset[:, :3]].astype(float, copy=False)
+                p0 = xyz[:, 0, :] - xyz[:, 1, :]
+                p1 = xyz[:, 0, :] - xyz[:, 2, :]
+                n1a = np.cross(p0, p1)
+                da = np.sqrt(np.sum(n1a**2, 1))
+                n1a[:,0] /= -da
+                n1a[:,1] /= -da
+                n1a[:,2] /= -da                
+            else:
+                da = np.zeros(idxset.shape[0])
+                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight                
+                n1a[:,2] = 1.0
+                
+            if len(args) == 1:
+                if da[0] == 0.:
+                    norms[:,2] = 1  # all [0. 0. 1]
                 else:
-                    d = 0
-                if d == 0:
-                    norms.append([0,0,1]*xyz.shape[0])
-                else:
-                    norms.extend([-n1/d]*xyz.shape[0])
-            norms = np.hstack(norms).astype(np.float32).reshape(-1,3)
-        nv = len(v[:, :, 2].flatten())
-        kwargs['gl_3dpath'] = [v[:, :, 0].flatten(),
-                               v[:, :, 1].flatten(),
-                               v[:, :, 2].flatten(),
-                               norms,
-                               np.arange(nv).reshape(v.shape[0], v.shape[1])]
+                    for k in range(idxset.shape[1]):
+                        norms[idxset[:,k], :] = n1a
+            elif idxset.shape[-1] < 3:
+                norms = n1a
+            else:
+                data = np.ones(idxset.flatten().shape[0])
+                jj = np.array([np.arange(idxset.shape[0])]*idxset.shape[-1]).flatten()
+                ii = idxset.transpose().flatten()
+                table = coo_matrix((data, (ii, jj)),
+                                    shape = (nverts, idxset.shape[0]))
+                csr = table.tocsr()
+                indptr = csr.indptr; indices = csr.indices
+                for i in range(csr.shape[0]):
+                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
+                    sign = np.sign(np.sum(nn*nn[0], 1))
+                    nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                    norms[i, :] = np.mean(nn, 0)
+
+            norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
+        kwargs['gl_3dpath'] = [v[..., 0].flatten(),
+                               v[..., 1].flatten(),
+                               v[..., 2].flatten(),
+                               norms,  idxset]
+
         
         from art3d_gl import Poly3DCollectionGL
-        a = Poly3DCollectionGL(v, **kwargs)
-        Axes3D.add_collection3d(self, a)
+        if len(args) == 1:
+            a = Poly3DCollectionGL(v, **kwargs)                        
+        else:
+            a = Poly3DCollectionGL(v[idxset[:2,...]], **kwargs)
+
+        #For GL aritsts, it is not necesasry to put in collections??
+        #Axes3D.add_collection3d(self, a)
+        Axes3D.add_artist(self, a)
         a.do_stencil_test = False
 
         return a
@@ -915,10 +1016,11 @@ class Axes3DMod(Axes3D):
             self._3d_axes_icon[5]().set_x(pt[0])
             self._3d_axes_icon[5]().set_y(pt[1])
 
+    def get_gl_uniforms(self):
+        glcanvas = get_glcanvas()
+        return glcanvas.get_uniforms()
     @allow_rasterization
     def draw(self, renderer):
-        self.patch.set_facecolor(self.figure.patch.get_facecolor())
-
 #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
         if isSupportedRenderer(renderer):    
@@ -931,13 +1033,14 @@ class Axes3DMod(Axes3D):
             artists.extend(self.lines)
             artists.extend(self.texts)
             artists.extend(self.artists)
+            
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
 
             gl_len = len(gl_obj)
             if gl_obj > 0:
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
-                    glcanvas.init): 
+                    glcanvas.init):
                     glcanvas.set_lighting(**self._lighting)
                 else: 
                     return

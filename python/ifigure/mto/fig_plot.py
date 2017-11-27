@@ -63,6 +63,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('yerr', None)
         p.add_key('ecolor', None)
         p.add_key('elinewidth', None)
+        p.add_key('array_idx', None)        
         if 'cz' in kywds and kywds['cz']:
             p.add_key('cmap', 'jet')
         p.add_key('c',  None)                           
@@ -241,9 +242,12 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                                   if axes.get_3d():
                                        if z is None: z = np.array([0]*len(x))
                                        args.append(z)
+                                       kywds['array_idx'] = self.getvar('array_idx')
                                   args.append(s)
                                   self.set_artist(container.plot(*args,
                                                                  **kywds))
+                                  if axes.get_3d():                                  
+                                      self = convert_to_FigPlotGL(self)
 #                             self._artists[0].set_lod(True)
                          else:
                              cax = self.get_caxisparam()
@@ -792,6 +796,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         else:
             return x3, y3
 
+    def set_alpha(self, v, a):
+        a.set_alpha(v)
 
 class StepPlot(FigPlot):
     '''
@@ -1021,3 +1027,13 @@ class TimeTrace(FigPlot):
         return FigPlot.save_data2(self, data)
     def load_data2(self, data):
         return FigPlot.load_data2(self, data)
+
+from .gl_compound import GLCompound
+
+class FigPlotGL(GLCompound, FigPlot):
+    pass
+
+def convert_to_FigPlotGL(obj):
+    obj.__class__ = FigPlotGL
+    obj.set_pickmask(obj._pickmask)
+    return obj

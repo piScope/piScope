@@ -469,15 +469,15 @@ try:
            tv = app.proj_tree_viewer
            tv.update_widget()
 
-       def onHGturnoff(self, evt):
+       def onHGturnoff(self, evt=None, confirm = True):
            if not self.has_owndir(): return
-           dlg=wx.MessageDialog(wx.GetApp().TopWindow, 
+           if confirm:
+              dlg=wx.MessageDialog(wx.GetApp().TopWindow, 
                                 "Are you really sure to delete the repository information?\nThis is undoable", 
                                 "Deleting HG repository information", wx.YES_NO)
-           ret=dlg.ShowModal()
-           dlg.Destroy()
-           print(ret)
-           if ret != wx.ID_YES: return
+              ret=dlg.ShowModal()
+              dlg.Destroy()
+              if ret != wx.ID_YES: return
 
            odir = self.owndir()
            files = ['.tree_data_hg', '.hg', '.hgsubs']
@@ -493,7 +493,7 @@ try:
               if self.hasvar(name): self.delvar(name)
            self._image_update = False
            self._hg_rev_str = None
-           evt.Skip()
+           if evt is not None: evt.Skip()
 
        def onHGcommit(self, evt):
            app = self.get_root_parent().app

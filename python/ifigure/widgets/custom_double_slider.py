@@ -6,9 +6,6 @@ EVT_CDS_CHANGED = wx.PyEventBinder(CDS_CHANGED, 1)
 CDS_CHANGING = wx.NewEventType()
 EVT_CDS_CHANGING = wx.PyEventBinder(CDS_CHANGING, 1)
 
-from ifigure.ifigure_config import icondir
-path = os.path.join(icondir, 'image', 'slider.png')
-
 def window_to_bitmap(window):
     w, h = window.GetClientSize()
     bitmap = wx.EmptyBitmapRGBA(w, h)
@@ -47,6 +44,10 @@ class CustomSingleSlider(CustomPanel):
                             wx.FONTSTYLE_NORMAL,
                             wx.FONTWEIGHT_NORMAL, 
                             False, 'Courier 10 Pitch')
+
+        from ifigure.ifigure_config import icondir
+        path = os.path.join(icondir, 'image', 'slider.png')
+        
         self._bbmp  = wx.BitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
         self._value = [0.5]
         self._range = [0, 1]
@@ -193,6 +194,10 @@ class CustomDoubleSlider(CustomPanel):
                             wx.FONTSTYLE_NORMAL,
                             wx.FONTWEIGHT_NORMAL, 
                             False, 'Courier 10 Pitch')
+        
+        from ifigure.ifigure_config import icondir
+        path = os.path.join(icondir, 'image', 'slider.png')
+        
         self._bbmp  = wx.BitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
         self._value = [0.1, 0.9]
         self._range = [0, 1]
