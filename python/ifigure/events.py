@@ -73,14 +73,7 @@ TD_EVT_CLOSEBOOKREQUEST = wx.PyEventBinder(CloseBookRequest, 1)
 #WorkerStartRequest= wx.NewEventType()
 #EVT_WORKER_START_REQUEST = wx.PyEventBinder(WorkerStartRequest, 1)
 
-from ifigure.utils.wx3to4 import isWX3
-
-def deref_proxy(w):
-    if isWX3: return w
-    if isinstance(w, ProxyType):
-        w = w.__repr__.__self__
-    else:
-        return w
+from ifigure.utils.wx3to4 import deref_proxy
     
 class TreeDictEvent(wx.PyCommandEvent):
     """

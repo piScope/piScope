@@ -36,6 +36,7 @@ if isWX3:
     from wx import NamedColour as wxNamedColour
     from wx import EmptyBitmapRGBA as wxEmptyBitmapRGBA
     from wx.grid import PyGridTableBase as GridTableBase
+
 else:
     from wx.adv import TaskBarIcon as wxTaskBarIcon
     from wx.adv import TBI_DOCK, TBI_CUSTOM_STATUSITEM, TBI_DEFAULT_TYPE
@@ -51,7 +52,14 @@ else:
     from wx import Colour as wxNamedColour
     wxEmptyBitmapRGBA = wx.Bitmap.FromRGBA
     from wx.grid import GridTableBase
-
+    
+def deref_proxy(w):
+    if isWX3: return w
+    if isinstance(w, ProxyType):
+        w = w.__repr__.__self__
+    else:
+        return w
+    
 def wrap_method(m_wx3, m_wx4):
     def real_decorator(func):
         def wrap(obj, *args, **kwargs):
@@ -158,7 +166,8 @@ def TextEntryDialog(*args, **kwargs):
         kwargs['defaultValue'] = value
     else:
         kwargs['value'] = value
-        if isinstance(parent, ProxyType):
-            parent = parent.__repr__.__self__
+        parent = deref(parent)
    
     return wx.TextEntryDialog(parent, message, **kwargs)
+
+    

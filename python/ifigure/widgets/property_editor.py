@@ -65,7 +65,7 @@ class property_editor(wx.Panel):
     def set_sizehint(self):
         if (property_editor.screen_width == None
            or property_editor.screen_width == 0):
-#        print 'size scan start'
+            #print 'size scan start'
 #        if True:
             s = self.IsShown()
 
@@ -87,7 +87,7 @@ class property_editor(wx.Panel):
             self.CP1.Show()
             self.CP2.Hide()
             self.CP3.Hide()
-#            print 'cp1'
+            #print 'cp1'
             self.GetSizer().Replace(self.sizer_olditem, self.CP1)
             self.sizer_olditem = self.CP1
             for p in self.CP1.panels.keys():
@@ -96,14 +96,7 @@ class property_editor(wx.Panel):
                self.CP1.GetSizer().Layout()
                self.OnPaneChanged()
                self.CP1.Layout()
-#               print p, self.CP1.panels[p].GetSize()
-#               print self.CP1.panels[p].elp
-#               for elp in self.CP1.panels[p].elp:
-#                   ss = elp.GetSize()
-#                   elp.SetSizeHints(-1, ss[1], maxH = ss[1])
-#                   print ss
-#                   elp.SetScrollRate(0,5)
-#                   elp.EnableScrolling(False, True)               
+               #print p, self.CP1.panels[p].GetSize()           
                m = max([m, self.CP1.panels[p].GetSize()[0]])
 
             self.CP1.switch_panel('text')
@@ -111,7 +104,7 @@ class property_editor(wx.Panel):
             self.CP1.GetSizer().Layout()
             self.OnPaneChanged()
             property_editor.screen_width = m
-#            print 'panel size ', m
+            #print 'panel size ', m
             self.Show(s)
         else:
             m = property_editor.screen_width

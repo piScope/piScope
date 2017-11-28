@@ -48,7 +48,7 @@ ID_HIDEAPP = wx.NewId()
 ID_WINDOWS = wx.NewId()
 ID_HDF_EXPORT = wx.NewId()
 
-from ifigure.utils.wx3to4 import wxEmptyImage, menu_Append
+from ifigure.utils.wx3to4 import wxEmptyImage, menu_Append, image_SetAlpha, wxBitmapFromImage
 
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -265,6 +265,8 @@ class FramePlus(FrameWithWindowList):
     '''
     ID_COPY = wx.NewId()
     ID_PASTE = wx.NewId()
+    ID_COPYS = wx.NewId()
+    ID_PASTES = wx.NewId()    
     def __init__(self, *args,  **kargs):
         kargs["size"] = (10,10)
         super(FramePlus, self).__init__(*args, **kargs)
@@ -289,6 +291,19 @@ class FramePlus(FrameWithWindowList):
         self._bind_idle = False
         self._attaching = False
         self.Bind(wx.EVT_SIZE, self.onResize)
+        
+    def onUpdateUI(self, evt):
+        s = (FramePlus.ID_COPY, FramePlus.ID_PASTE, 
+             FramePlus.ID_COPYS, FramePlus.ID_PASTES)
+        if evt.GetId() in s:
+            evt.Enable(True)
+            self.copy_mi.Enable(True)
+            self.paste_mi.Enable(True)
+            v = False if self.canvas._figure is None else True
+            self.copy_mis.Enable(v)
+            self.paste_mis.Enable(v)
+        else:        
+            super(FramePlus, self).onUpdateUI(evt)
         
     def write_canvas_size_to_status_bar(self):
         size = self.canvas.GetSize()
@@ -341,14 +356,14 @@ class FramePlus(FrameWithWindowList):
         id1 = FramePlus.ID_COPY
         self.copy_mi = self.add_menu(m, id1, "Copy", "",  
                      self.onCopy)
-        self.add_menu(m, wx.ID_ANY, "Copy Special...", "",  
+        self.copy_mis=self.add_menu(m, FramePlus.ID_COPYS, "Copy Special...", "",  
                       self.onCopyS)
 
         m.AppendSeparator()
         id2 = FramePlus.ID_PASTE
         self.paste_mi = self.add_menu(m, id2, "Paste", "", 
                      self.onPaste)
-        self.add_menu(m, wx.ID_ANY, "Paste Special...", "",  
+        self.paste_mis = self.add_menu(m, FramePlus.ID_PASTES, "Paste Special...", "",  
                       self.onPasteS)
 
         self.append_accelerator_table((wx.ACCEL_CTRL,  ord('C'), id1))        
@@ -505,7 +520,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 else:
                     evt.Enable(True);evt.Show(True)
             else:
-                FrameWithWindowList.onUpdateUI(self, evt)
+                FramePlus.onUpdateUI(self, evt)
  
 #    def Close(self):
 #        FramePlus.Close(self)
@@ -830,13 +845,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         Copy_to_Clipboard_mod copys the buffer data
         which does not have highlight drawn
         '''
+
         canvas = self.canvas.canvas
         figure_image = canvas.figure_image[0]
         h, w, d  = figure_image.shape
         image = wxEmptyImage(w, h)
         image.SetData(figure_image[:,:,0:3].tostring())
-        image.SetAlphaData(figure_image[:,:,3].tostring())
-        bmp = wx.BitmapFromImage(image)
+        image_SetAlpha(image, figure_image[:,:,3])
+        bmp = wxBitmapFromImage(image)
         canvas.Copy_to_Clipboard_mod(pgbar=True,
                                      bmp=bmp)
         if e is not None: e.Skip()
@@ -970,7 +986,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                                    defaultDir = os.getcwd(), 
                                    defaultFile = 'book_file',
                                    wildcard = "BookFile (*.bfz)|*.bfz",
-                                   style=wx.SAVE | wx.OVERWRITE_PROMPT)
+                                   style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
            path = save_dlg.GetPath()
            if path[-4:] != '.bfz':
@@ -1007,7 +1023,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         '''
         if file == '':
             open_dlg = wx.FileDialog ( None, message="Select book (.bfz) project to open", 
-                                   wildcard='*.bfz',style=wx.OPEN)
+                                   wildcard='*.bfz',style=wx.FD_OPEN)
             if open_dlg.ShowModal() == wx.ID_OK:
                 file = open_dlg.GetPath()
                 open_dlg.Destroy()

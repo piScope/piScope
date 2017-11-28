@@ -11,12 +11,12 @@
 #   dlg_textentry  : text entry dialog
 #
 import wx, os
-
+from ifigure.utils.wx3to4 import TextEntryDialog
 
 def read(parent=None, message='Select file to read', wildcard='*', defaultfile=''):
 
     open_dlg = wx.FileDialog (parent, message=message,
-                              wildcard=wildcard,style=wx.OPEN)
+                              wildcard=wildcard,style=wx.FD_OPEN)
     if defaultfile != '': 
         open_dlg.SetFilename(os.path.basename(defaultfile))
         if os.path.dirname(defaultfile) != '':
@@ -45,13 +45,21 @@ def readdir(parent=None, message='Select directory to read', wildcard='*', defau
 
 def write(parent=None, defaultfile='',
           message='Select file to write', wildcard='*',
-          return_filterindex=False):
+          return_filterindex=False,
+          warn_overwrite = False):
+    '''
+    wrap FileDialog, Note that defaultfile can be absolute path
+    '''
+    style = wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT if wave_overwrite else wx.FD_SAVE
+    
     open_dlg = wx.FileDialog (parent, message=message,
-                                  wildcard=wildcard,style=wx.SAVE)
+                              wildcard=wildcard,
+                              style=style)
     if defaultfile != '': 
         open_dlg.SetFilename(os.path.basename(defaultfile))
         if os.path.dirname(defaultfile) != '':
              open_dlg.SetDirectory(os.path.dirname(defaultfile))
+             
     path = ''
     wc = ''
     if open_dlg.ShowModal() == wx.ID_OK:
@@ -89,7 +97,6 @@ def readdir(parent=None,  message='Directory to read'):
         return None
 
 def textentry(parent=None, message='', title='', def_string='', center=False):
-    from ifigure.utils.wx3to4 import TextEntryDialog
     dlg = TextEntryDialog(parent, 
           message, caption=title, value=def_string)
     if center: dlg.Centre()

@@ -1170,7 +1170,7 @@ class ScriptEditor(wx.Panel):
 
         if file is None:
            open_dlg = wx.FileDialog ( None, message="Select file to open", 
-                                   style=wx.OPEN|wx.FILE_MUST_EXIST)
+                                   style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
            if open_dlg.ShowModal() != wx.ID_OK:
               open_dlg.Destroy()
               return
@@ -1252,7 +1252,7 @@ class ScriptEditor(wx.Panel):
         if saveas:
            open_dlg = wx.FileDialog (None,
                              message="Select file to save", 
-                             style=wx.SAVE)
+                             style=wx.FD_SAVE)
            if open_dlg.ShowModal() == wx.ID_OK:
               file = open_dlg.GetPath()
               save_file = True
@@ -1267,7 +1267,7 @@ class ScriptEditor(wx.Panel):
                #### untitled case....
                open_dlg = wx.FileDialog (None,
                                message="Select file to save", 
-                               style=wx.SAVE)
+                               style=wx.FD_SAVE)
                if open_dlg.ShowModal() == wx.ID_OK:
                   file = open_dlg.GetPath()
                   save_file = True
@@ -1577,6 +1577,7 @@ class ScriptEditor(wx.Panel):
 
 from ifigure.widgets.statusbar import StatusBarSimple
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
+
 
 class ScriptEditorFrame(FrameWithWindowList):
     def __init__(self, *args, **kargs):

@@ -910,7 +910,7 @@ class TickLabelSizeSelector(Panel):
         self.cb2 = ComboBox_Float(self, wx.ID_ANY, 
                             style=wx.TE_PROCESS_ENTER,
                             choices=setting["choices"])
-        gsizer =  wx.GridSizer(11)        
+        gsizer =  GridSizer(2)        
         self.SetSizer(gsizer)        
         gsizer.Add(self.cb1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         gsizer.Add(self.cb2, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
@@ -938,7 +938,7 @@ class TickLabelSizeSelector(Panel):
 class TickLabelColorSelector(Panel):
     def __init__(self, parent, id):
         Panel.__init__(self, parent, id)
-        gsizer =  FlexGridSizer()        
+        gsizer =  FlexGridSizer(6)        
         self.SetSizer(gsizer)        
         self.bt1 = ColorSelector(self, wx.ID_ANY)
         self.bt2 = ColorSelector(self, wx.ID_ANY)
@@ -4151,9 +4151,10 @@ class EditListPanel(EditListCore, wx.Panel):
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
-                 tip=None, pos = None, size=(-1,-1), nobutton=False,
+                 tip=None, pos=(-1, -1), size=(-1,-1), nobutton=False,
                  add_palette = False):
-        wx.Dialog.__init__(self, parent, id, title, pos, size, style = style)
+        wx.Dialog.__init__(self, parent, id=id, title=title, pos=pos,
+                           size=size, style = style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -4197,7 +4198,7 @@ class EditListDialogTab(wx.Dialog):
                  style=wx.DEFAULT_DIALOG_STYLE,
                  tip=None, pos=None, size = (-1, -1), nobutton=False,
                  add_palette = False):       
-        wx.Dialog.__init__(self, parent, id, title,  style=style)
+        wx.Dialog.__init__(self, parent, id=id, title=title,  style=style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.list = list
@@ -4246,7 +4247,7 @@ class EditListDialogTab(wx.Dialog):
         
         
 def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
-                   tip = None, parent = None, pos = None, size=(-1,-1),
+                   tip = None, parent = None, pos=(-1,-1), size=(-1,-1),
                    title='',
                    ok_cb = None, close_cb = None,
                    ok_noclose = False, _class = EditListDialog, **kwargs):

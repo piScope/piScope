@@ -2698,6 +2698,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            elif header["mode"] == 'axes':
               dprint1('axes mode ', f_axes)
               if f_axes is not None:
+                 if obj.num_child() == 0:
+                     ret = dialog.message(parent=self, 
+                                          message='Axes does not have any plot',
+                                          title= "Can not paste",
+                                          style=0)
+                     obj.destroy()
+                     if return_history: 
+                          return None, []
+                     else:
+                         return
                  ret = dialog.message(parent=self, 
                        message='Do you want to replace section ?', 
                        title= "Paste Section",
@@ -3367,7 +3377,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
        nx, ny =  self.px2norm(evt.x, evt.y)           
        open_dlg = wx.FileDialog ( None, message="Select art file (.eps) to place", 
-                                   wildcard='EPS(*.eps)|*.eps',style=wx.OPEN)
+                                   wildcard='EPS(*.eps)|*.eps',style=wx.FD_OPEN)
        if open_dlg.ShowModal() != wx.ID_OK:
            open_dlg.Destroy()
            return

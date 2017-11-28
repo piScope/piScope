@@ -30,7 +30,7 @@ def onWriteFile(td, filename = '', dir='', txt = '',
        open_dlg = wx.FileDialog ( None, 
                      message=message, 
                      defaultDir=dir,
-                     style=wx.SAVE, 
+                     style=wx.FD_SAVE, 
                      wildcard=wildcard )
        if open_dlg.ShowModal() != wx.ID_OK:
           open_dlg.Destroy()    
@@ -89,7 +89,7 @@ def onLoadFile(td, message="Select File",
        open_dlg = wx.FileDialog ( None, 
                      message=message, 
                      defaultDir=dir, 
-                     style=wx.OPEN, wildcard=wildcard)
+                     style=wx.FD_OPEN, wildcard=wildcard)
        if open_dlg.ShowModal() != wx.ID_OK:
           open_dlg.Destroy()    
           return False

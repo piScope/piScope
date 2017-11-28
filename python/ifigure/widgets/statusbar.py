@@ -209,14 +209,17 @@ class StatusBar(StatusBarWithXY):
     # Handles events from the timer we started in __init__().
     # We're using it to drive a 'clock' in field 2 (the third field).
     def notify(self):
-        mem=memory_usage()
-        if sys.platform == 'darwin':
-             self.mem = mem/1024 #maxos
+        if self:
+            mem=memory_usage()
+            if sys.platform == 'darwin':
+                self.mem = mem/1024 #maxos
+            else:
+                self.mem = mem/1024 #linux
+            self.nproc = threading.activeCount()
+            self.SetStatusText(self.make_txt(), len(self.icon)+1)
         else:
-             self.mem = mem/1024 #linux
-        self.nproc = threading.activeCount()
-        self.SetStatusText(self.make_txt(), len(self.icon)+1)
-
+            self.timer.Stop()
+            
     def make_txt(self):
         return (str(self.nproc)+ ' proc / '+ 
                 str(self.mem) + ' MB ')

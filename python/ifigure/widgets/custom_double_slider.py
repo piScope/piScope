@@ -150,7 +150,6 @@ class CustomSingleSlider(CustomPanel):
         if dc is None:
             dc = wx.ClientDC(self)
 
-        dc.BeginDrawing() 
         w, h = self.GetSize()
 
         dc.SetFont(self.font)
@@ -176,7 +175,6 @@ class CustomSingleSlider(CustomPanel):
         draw_box(self, w1, dc)
 #        draw_box(self, w2, dc)
 
-        dc.EndDrawing()
         self._isDrawn = True
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
@@ -305,7 +303,6 @@ class CustomDoubleSlider(CustomPanel):
         if dc is None:
             dc = wx.ClientDC(self)
 
-        dc.BeginDrawing() 
         w, h = self.GetSize()
         dc.SetFont(self.font)
 
@@ -330,7 +327,6 @@ class CustomDoubleSlider(CustomPanel):
         draw_box(self, w1, dc)
         draw_box(self, w2, dc)
 
-        dc.EndDrawing()
         self._isDrawn = True
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 

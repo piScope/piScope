@@ -830,6 +830,7 @@ class ifigure_app(BookViewerFrame):
                evt.Enable(False)
         else:
             return super(ifigure_app, self).onUpdateUI(evt)
+        
     def BindPVCVEvents(self):
         self.Bind(ifigure.events.PV_EVT_DrawRequest,
                  self.onPV_DrawRequest)
@@ -892,26 +893,10 @@ class ifigure_app(BookViewerFrame):
             return
         lc.release()
         if path is None:
-            open_dlg = wx.FileDialog ( None, message="Select project (.pfz) to open", 
-                                   wildcard='*.pfz',style=wx.OPEN)
-            if open_dlg.ShowModal() == wx.ID_OK:
-                path = open_dlg.GetPath()
-                open_dlg.Destroy()
-            else:
-                open_dlg.Destroy()
-
-        if path is not None:
-           call_close = False
-           if self.proj is not None:
-#              ret=dialog.message(None,
-#                        'Do you want to close it?',
-#                        'Project is open',
-#                        2)
-#              if ret  == 'ok':
-               call_close = True
-#               self.onCloseProject(e) 
-#              else:
-#                  return
+            path = dialog.read(parent = self,  message="Select project (.pfz) to open",
+                               wildcard='*.pfz')
+        if path != '':
+           call_close = (self.proj is not None)
            if not self.open_file(path, call_close=call_close): return
            self.deffered_force_layout()
            self.set_proj_saved(True)
@@ -950,13 +935,10 @@ class ifigure_app(BookViewerFrame):
                 wx.CallAfter(self.goto_no_mainwindow)
                 
     def onOpenInNewpiScope(self, e):
-        open_dlg = wx.FileDialog ( None,
-                 message="Select project (.pfz) to open in new piScope application",
-                 wildcard='*.pfz',style=wx.OPEN)
-        if open_dlg.ShowModal() == wx.ID_OK:
-            path = open_dlg.GetPath()
-            open_dlg.Destroy()
-
+        path = dialog.read(parent = self,
+                           message="Select project (.pfz) to open in new piScope application",
+                           wildcard='*.pfz')
+        if path != '':
             import piscope, subprocess, shlex
             import ifigure.widgets.canvas.ifigure_canvas
             options = ' '
@@ -971,8 +953,6 @@ class ifigure_app(BookViewerFrame):
 #                           shell = True)
 #                           stdout=subprocess.PIPE)
             self.redirector.turn_on()
-        else:
-           open_dlg.Destroy()
            
     def open_file(self, file, call_close=False): 
         tmp_top = TopTreeDict(); tmp_top.set_app(self)
@@ -1093,11 +1073,9 @@ class ifigure_app(BookViewerFrame):
              self.gui_tree.set_splitters()
 
     def onOpenFile(self, e=None):
-        open_dlg = wx.FileDialog (self, message="Select file to open", 
-                                  style=wx.OPEN,
-                                  wildcard = 'Any|*|py(*.py)|*.py')
-        if open_dlg.ShowModal() == wx.ID_OK:
-           path = open_dlg.GetPath()            
+        path = dialog.read(parent = self, message="Select file to open", 
+                           wildcard = 'Any|*|py(*.py)|*.py')
+        if path != '':
            command = self.get_file_helper_command(path)
            if command != '':
                wx.CallAfter(self.shell.Execute, command)
@@ -1107,14 +1085,11 @@ class ifigure_app(BookViewerFrame):
                self.open_editor_panel()
 #           self.gui_tree.set_splitters()
                self.Layout()
-        open_dlg.Destroy()
 
     def onOpenScript(self, e=None):
-        open_dlg = wx.FileDialog (self, message="Select script to open", 
-                                  style=wx.OPEN,
-                                  wildcard = 'py(*.py)|*.py')
-        if open_dlg.ShowModal() == wx.ID_OK:
-           path = open_dlg.GetPath()            
+        path = dialog.read(parent = self, message="Select script to open", 
+                           wildcard = 'py(*.py)|*.py')
+        if path != '':
            dlg=wx.MessageDialog(None, 
                     'Do you want to create Script in Tree?',
                     'Import script',
@@ -1132,7 +1107,6 @@ class ifigure_app(BookViewerFrame):
                self.open_editor_panel()
 #           self.gui_tree.set_splitters()
                self.Layout()
-        open_dlg.Destroy()
 
     def onNew(self, e=None):
         if self.proj is not None:
@@ -1366,12 +1340,10 @@ class ifigure_app(BookViewerFrame):
             def_path = os.path.dirname(opath)
         except:
             def_path = os.getcwd()
-        save_dlg = wx.FileDialog ( None, message="Enter Project File Name", 
-                                   defaultDir = def_path,
-                                   defaultFile = '.pfz',
-                                   style=wx.SAVE | wx.OVERWRITE_PROMPT)
-        if save_dlg.ShowModal() == wx.ID_OK:
-           path = save_dlg.GetPath()
+        path = dialog.write(parent = self, message="Enter Project File Name", 
+                            defaultfile = os.path.join(def_path, '.pfz'))
+        
+        if path != '':
            if path[-4:] != '.pfz':
               path=path+'.pfz'
            print(("saving to " + path))
@@ -1389,7 +1361,6 @@ class ifigure_app(BookViewerFrame):
                RECENT_FILE.append(path)           
                self.write_recent_files()
 
-        save_dlg.Destroy()
 
     def onSaveFile(self, e=None, saveas=False):
         self.script_editor.SaveFile(saveas)

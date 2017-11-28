@@ -1446,7 +1446,7 @@ def importv(dest=None, path = ''):
        
     if path == '':
         open_dlg = wx.FileDialog (None, message="Select Data File", 
-                                  style=wx.OPEN)
+                                  style=wx.FD_OPEN)
         if open_dlg.ShowModal() != wx.ID_OK:
            open_dlg.Destroy()
            return
@@ -1475,7 +1475,7 @@ def exportv(variables, names, path = ''):
     import cPickle as pickle
     save_dlg = wx.FileDialog ( None, message="Enter Data File Name", 
                               defaultDir = os.getcwd(), 
-                              style=wx.SAVE | wx.OVERWRITE_PROMPT)
+                              style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
     if save_dlg.ShowModal() != wx.ID_OK: 
         save_dlg.Destroy()
         return

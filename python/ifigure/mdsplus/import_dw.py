@@ -26,7 +26,7 @@ def interpret_plots(com1, com2, var, plots, use_int = False):
 def import_dw(file=''):
     if file == '':
         open_dlg = wx.FileDialog ( None, message="Select DWscope to open", 
-                                   wildcard='*.dat',style=wx.OPEN)
+                                   wildcard='*.dat',style=wx.FD_OPEN)
         if open_dlg.ShowModal() == wx.ID_OK:
            file = open_dlg.GetPath()
            open_dlg.Destroy()

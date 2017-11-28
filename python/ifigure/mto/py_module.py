@@ -240,7 +240,7 @@ class PyModule(py_code.PyCode, FileHolder):
 
     def onSelectModuleFile(self, e=None):
         open_dlg = wx.FileDialog ( None, message="Select module", 
-                             wildcard='*.py',style=wx.OPEN)
+                             wildcard='*.py',style=wx.FD_OPEN)
         if open_dlg.ShowModal() != wx.ID_OK:
             open_dlg.Destroy()    
             raise ValueError
