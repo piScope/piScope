@@ -166,7 +166,7 @@ def TextEntryDialog(*args, **kwargs):
         kwargs['defaultValue'] = value
     else:
         kwargs['value'] = value
-        parent = deref(parent)
+        parent = deref_proxy(parent)
    
     return wx.TextEntryDialog(parent, message, **kwargs)
 

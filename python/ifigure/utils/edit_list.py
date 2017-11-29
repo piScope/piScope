@@ -41,7 +41,7 @@ EDITLIST_CHANGING = wx.PyEventBinder(EditorChanging, 1)
 EditorSetFocus = wx.NewEventType()
 EDITLIST_SETFOCUS = wx.PyEventBinder(EditorSetFocus, 1)
 
-from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 
 class EditListEvent(wx.PyCommandEvent):
     """
@@ -2206,7 +2206,7 @@ class SelectableELP(Panel):
         mmsizer.Add(st, 0,wx.ALIGN_CENTER_VERTICAL|wx.ALL, 3)
         mmsizer.Add(self.cb, 1, wx.ALL, 1)
         if "space" in setting[0]:
-             msizer.AddSpacer((setting[0]["space"], 5))
+             msizer.AddSpacer(setting[0]["space"])
         msizer.Add(csizer, 1, wx.EXPAND)
         csizer.Add(mmsizer, 0, wx.ALL, 1)
 #        csizer.Add(self.elp, 1, wx.EXPAND|wx.ALL, 5)
@@ -2290,7 +2290,7 @@ class CheckBoxModifiedELP(Panel):
         csizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(msizer)
         if "space" in setting[0]:
-             msizer.AddSpacer((setting[0]["space"], 5))
+             msizer.AddSpacer(setting[0]["space"])
         msizer.Add(csizer, 1, wx.EXPAND)
         csizer.Add(self.btn, 0, wx.ALL, 1)
 #        csizer.Add(self.elp, 1, wx.EXPAND|wx.ALL, 5)
@@ -3517,7 +3517,7 @@ class EditListCore(object):
                          wx.ALL|wx.ALIGN_CENTER_VERTICAL, edge)
                if tip is not None and len(tip) > k:
                   if tip[k] is not None:
-                      txt.SetToolTipString(tip[k])
+                      panel_SetToolTip(txt, tip[k])
            else:
                txt=None
                col = 0

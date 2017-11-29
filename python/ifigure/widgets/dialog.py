@@ -50,7 +50,7 @@ def write(parent=None, defaultfile='',
     '''
     wrap FileDialog, Note that defaultfile can be absolute path
     '''
-    style = wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT if wave_overwrite else wx.FD_SAVE
+    style = wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT if warn_overwrite else wx.FD_SAVE
     
     open_dlg = wx.FileDialog (parent, message=message,
                               wildcard=wildcard,

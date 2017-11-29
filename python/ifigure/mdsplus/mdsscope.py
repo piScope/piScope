@@ -79,7 +79,7 @@ from ifigure.mdsplus.event_listener import MDSSCOPE_EVT_MDSEVENT
 from ifigure.widgets.at_wxthread import at_wxthread
 
 from .utils import parse_server_string
-from ifigure.utils.wx3to4 import menu_Append
+from ifigure.utils.wx3to4 import menu_Append, menu_AppendItem
 
 #
 #  debug setting
@@ -1500,7 +1500,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                  self.onCommonVarEditMenu(evt, label)
              mmi = wx.MenuItem(self.commonvar_menu, 
                                wx.ID_ANY, l)
-             self.commonvar_menu.AppendItem(mmi)
+             menu_AppendItem(self.commonvar_menu, mmi)
              if not self.book.dwglobal.getvar('use_shot_global'):
                  mmi.Enable(False)
              self.Bind(wx.EVT_MENU, f, mmi)

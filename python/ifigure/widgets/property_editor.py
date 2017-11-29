@@ -160,19 +160,20 @@ class property_editor(wx.Panel):
         if isPressed:
           self.b1.SetValue(False)
           self.b3.SetValue(False)
-          self.CP2.Show()
           self.CP1.Hide()
           self.CP3.Hide()
           if self.sizer_olditem is not self.CP2:
              sizer.Replace(self.sizer_olditem, self.CP2)
              self.sizer_olditem = self.CP2
+          self.CP2.Layout()
+          self.CP2.Show()
         else:
           self.b2.SetValue(True)
         self.CP2.GetSizer().Layout()
         self.CP2.update_panel()
         self.OnPaneChanged()
         self.CP2.Layout()
-        
+
     def ToggleSection(self, e):
         obj = e.GetEventObject()
         isPressed = obj.GetValue()

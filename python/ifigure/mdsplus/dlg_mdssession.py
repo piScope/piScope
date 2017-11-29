@@ -13,8 +13,7 @@ from ifigure.widgets.book_viewer import FrameWithWindowList
 from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 
-from ifigure.utils.wx3to4 import TextEntryDialog
-
+from ifigure.utils.wx3to4 import TextEntryDialog, GridSizer
 bitmaps = None
 
 #class NoteBook(aui.AuiNotebook):
@@ -108,7 +107,7 @@ class DlgMdsSession(DialogWithWindowList):
         bt_apply     = wx.Button(self, wx.ID_ANY, 'Apply')
         bt_save  = wx.Button(self, wx.ID_ANY, 'Save')
 
-        bsizer =wx.GridSizer(1,5)
+        bsizer = GridSizer(1,5)
         bsizer.AddStretchSpacer()
         self.GetSizer().Add(bsizer, 0, wx.EXPAND|wx.ALL, 1)
         bsizer.Add(bt_save, 1, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 3)
