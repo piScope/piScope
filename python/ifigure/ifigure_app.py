@@ -1975,7 +1975,7 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.update_content_widget(evt.GetTreeDict())
 
     def onTD_Selection(self, evt):
-#        print 'selection event from', evt.GetEventObject()
+        #print 'selection event from', evt.GetEventObject()
         td = evt.GetTreeDict()
         w = evt.GetEventObject() 
         fc = self.FindFocus()
@@ -2007,10 +2007,6 @@ class ifigure_app(BookViewerFrame):
               fc.SetFocus()
            except PyDeadObjectError:
               pass
-#        these did not work
-#        if viewer is not None: 
-#             wx.CallLater(1000,viewer.canvas.SetFocus)
-#        wx.CallLater(1000, fc.SetFocus)
 
     def onTD_Replace(self, evt):
         super(ifigure_app, self).onTD_Replace(evt)

@@ -40,6 +40,7 @@ class MarginWidget(wx.Panel):
         self.Bind(EVT_CDS_CHANGED, self.onEvent)
 #        self.Bind(wx.EVT_SCROLL_CHANGED, self.onEvent)
         self.Bind(wx.EVT_CHECKBOX, self.onEvent)
+        self.Fit()
     def Disable(self):
         self.use_def.Disable()
         self.st1.Disable()
@@ -149,6 +150,7 @@ class MarginpWidget(wx.Panel):
         self.SetSizer(big_sizer2, wx.EXPAND)
         
         self.Bind(EVT_CDS_CHANGED, self.onEvent)
+        self.Fit()
 #        self.Bind(wx.EVT_SCROLL_CHANGED, self.onEvent)
     def Disable(self):
         self.st1.Disable()

@@ -535,7 +535,7 @@ class ProjTreeViewer(wx.Panel):
 
         self._first_click = False
         self.timer = wx.Timer(self, wx.ID_ANY)
- 
+
     def onKeyPressed(self, evetn):
         print('process at viewer')
 #    def init_sash_pos(self):
@@ -1065,7 +1065,6 @@ class ProjTreeViewer(wx.Panel):
         self.panel.SetSizeHints(minH=-1, minW=size.GetWidth())
         self.panel.Show()
         self.panel.Layout()
-        self.panel.Fit()
         self.panel.CenterOnScreen()
 
 #        sizer = self.GetSizer()

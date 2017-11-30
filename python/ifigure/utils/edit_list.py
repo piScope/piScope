@@ -162,6 +162,7 @@ class LabelPanel(Panel):
         
         self.val = ['', 'k', 'san-serif', 
                     'normal', 'normal',  12]
+
     def onSelect(self, evt):
         if self.val[0] is None: return
         s1={"style":wx.CB_READONLY,
@@ -226,7 +227,7 @@ class AxisPositionPanel(Panel):
         sizer2.Add(self.mirror2, 0, wx.EXPAND)
         self.Bind(wx.EVT_COMBOBOX, self.onHit, self.cb)      
         self.value0 = None 
-
+        
     def Enable(self, value=True):
         wx.Panel.Enable(self, value)
         self.cb.Enable(value)        
@@ -314,7 +315,7 @@ class LogLinScale(Panel):
         self.GetSizer().Add(hsizer, 0, wx.EXPAND)
         hsizer.Add(self.tc2, 1, wx.EXPAND)
         hsizer.Add(self.tc3, 1, wx.EXPAND)                
-        
+
     def Enable(self, value=True):
         wx.Panel.Enable(self, value)
         self.cb.Enable(value)        
@@ -915,7 +916,7 @@ class TickLabelSizeSelector(Panel):
         gsizer.Add(self.cb1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         gsizer.Add(self.cb2, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         self.SetValue([12, 12])
-
+        
     def GetValue(self):
         v = (self.cb1.GetValue(),
              self.cb2.GetValue())
@@ -1411,6 +1412,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
              if 'nlines' in kargs:
                  nlines = kargs['nlines']
                  del kargs['nlines']
+
         wx.TextCtrl.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
@@ -1429,8 +1431,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         if setfocus_event:
             self._send_setfocus_event = True
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)           
-#    def Paste(self):
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+        self.Enable(False)
+
+        #    def Paste(self):
 #        print 'paste called'
 #        wx.TextCtrl.Paste(self)
     def onKeyPressed(self, event):
@@ -1494,7 +1498,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self.GetParent().send_event(self, evt)
         
     def onSetFocus(self, evt):
-        #  print 'get focus', self, self.GetValue()
+        #print 'get focus', self, self.GetValue()
         self._value_at_getfocus = self.GetValue()
         if self._send_setfocus_event:
             self.GetParent().send_setfocus_event(self, evt)
@@ -1504,7 +1508,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         '''
         kill focus -> end of editting
         '''
-        # print 'kill focus', self, self.GetValue()
+        #print 'kill focus', self, self.GetValue()
         if self._value_at_getfocus != self.GetValue():
            if hasattr(self.GetParent(), 'send_event'):
                 self.GetParent().send_event(self, evt)
@@ -2674,6 +2678,7 @@ class ArrowStylePanel(wx.Panel):
        self._elp_values = {}
        self.cb.SetValue(self.mode)    
        self.elp = None#wx.Panel(self)
+
 #       self.GetSizer().Add(self.elp,  1, wx.EXPAND)
     def switch_panel(self, mode):
        #print 'switch panel', mode, self.mode
@@ -2765,7 +2770,7 @@ class ArrowStyleCombobox(wxBitmapComboBox):
            super(ArrowStyleCombobox, self).Append(name, bitmap, name)
         self.SetSelection(3)
 #        self.SetValue('-')
-
+        
     def SetValue(self, value):
         for name, style in self.choice_list:
             if value == style: 
@@ -4015,7 +4020,7 @@ class EditListCore(object):
               else:
                  w=wx.StaticText(self, wx.ID_ANY, 'Custom UI is not defined!')
 
-
+           w.Fit()
            self.widgets.append((w, txt) )
            alignright = setting.pop('alignright', alignright)
 
@@ -4109,8 +4114,8 @@ class EditListCore(object):
             w, txt = pair
             if len(value) == k: break
             if txt is not None: txt.Enable(value[k])
-            if w is   not None: w.Enable(value[k])                
-
+            if w is   not None: w.Enable(value[k])
+            
     def _textctrl_enter(self, evt):
         pass
 

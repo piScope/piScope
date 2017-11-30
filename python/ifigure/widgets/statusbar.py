@@ -101,6 +101,7 @@ class StatusBarWithXY(wx.StatusBar):
 #        self.Bind(wx.EVT_IDLE, self.OnIdle)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         self._owner_bk = None
+        self.Fit()
 
     def set_xy_string(self, x, y):
         f = ifigure._cursor_config["format"]

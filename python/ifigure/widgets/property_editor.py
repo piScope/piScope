@@ -11,8 +11,6 @@ class property_editor(wx.Panel):
     screen_width = None
 #    screen_width = 290
     def __init__(self, parent=None):
-        """Constructor"""
-
         super(property_editor, self).__init__(parent)
         self._last_update = 0
         self.ifigure_canvas=None
@@ -61,6 +59,13 @@ class property_editor(wx.Panel):
         self.CP1.Hide()
         self.CP3.Hide()
         self.OnPaneChanged()
+        
+        # this flags record if panels are ever shown on Screen.
+        # if not, GTK3 shows
+        #  "lost focus even though it didn't have it"
+        # Debug messages.
+        self._panel_shown_flag = [False, False, False]
+        
 
     def set_sizehint(self):
         if (property_editor.screen_width == None
@@ -152,7 +157,8 @@ class property_editor(wx.Panel):
         self.CP1.GetSizer().Layout()
         self.CP1.update_panel()
         self.OnPaneChanged()
-
+        self._panel_shown_flag[0] = True
+        
     def ToggleAxes(self, e):
         obj = e.GetEventObject()
         isPressed = obj.GetValue()
@@ -173,7 +179,8 @@ class property_editor(wx.Panel):
         self.CP2.update_panel()
         self.OnPaneChanged()
         self.CP2.Layout()
-
+        self._panel_shown_flag[1] = True
+        
     def ToggleSection(self, e):
         obj = e.GetEventObject()
         isPressed = obj.GetValue()
@@ -193,7 +200,8 @@ class property_editor(wx.Panel):
         self.CP3.GetSizer().Layout()
         self.CP3.update_panel()
         self.OnPaneChanged()
-
+        self._panel_shown_flag[2] = True
+        
     def hndl_event(self, event):
         if event.GetEventObject() is self.CP1:
             pass
@@ -235,9 +243,9 @@ class property_editor(wx.Panel):
 
     def onTD_Selection(self, evt):
         if self.IsShown():
-            self.CP1.onTD_Selection(evt)
-            self.CP2.onTD_Selection(evt)          
-            self.CP3.onTD_Selection(evt)
+            if self._panel_shown_flag[0]: self.CP1.onTD_Selection(evt)
+            if self._panel_shown_flag[1]: self.CP2.onTD_Selection(evt)          
+            if self._panel_shown_flag[2]: self.CP3.onTD_Selection(evt)
         self.Layout()
         # this will make sure that button size is right..!?
          

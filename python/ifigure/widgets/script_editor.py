@@ -285,7 +285,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self._ctrl_K = False
 
         self.ctrl_X = False
-
+        
     def set_syntax(self, syntax = 'python'):
         #print 'setting to ' + syntax
         self.reset_style()
@@ -1131,6 +1131,7 @@ class ScriptEditor(wx.Panel):
 
         self.ShowDebugPanel()
         self.HideDebugPanel()
+        self.Fit()
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChanged)
 
     def get_filelist(self):

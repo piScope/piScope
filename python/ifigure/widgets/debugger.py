@@ -123,6 +123,7 @@ class DebuggerPanel(wx.Panel):
        self.d = None
        self.Layout()
        self.Hide()
+       self.Fit()
        globals()['panel'] = self
 #       bdb.set_trace()
 

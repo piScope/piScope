@@ -55,6 +55,10 @@ class FrameWithWindowList(wx.Frame):
         self._atable = []
         if not 'style' in kargs:kargs['style'] = wx.DEFAULT_FRAME_STYLE
         kargs['style'] = kargs['style']|wx.WS_EX_PROCESS_UI_UPDATES
+        
+        ### initial size setting to avoid gtk_window_resize assersion
+        kargs['size'] = (50,50)
+        
         super(FrameWithWindowList, self).__init__(*args, **kargs)
         # Creating the menubar.
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
@@ -312,7 +316,7 @@ class FramePlus(FrameWithWindowList):
              self.GetTopLevelParent().SetStatusText('canvas size = '+str(size))               
         
     def onResize(self, evt):
-#        print 'onResize BookViewer'
+#        print 'onResize BookViewer', self.GetSize()
 #        if self.book._screen_ratio_lock is not None:
 #             self.set_canvas_ratio(self.book._screen_ratio_lock)
 
@@ -1825,7 +1829,7 @@ class BookViewer(BookViewerFrame):
         self.append_std_viewmenu2(self.viewmenu)
         # Adding the MenuBar to the Frame content.
 
-        self.property_editor.set_sizehint()
+        #self.property_editor.set_sizehint()
         self.gui_tree.toggle_panel(self.property_editor, show_prop)
 
         

@@ -1358,7 +1358,6 @@ class panel2(artist_widgets):
         self.enable(True)
         if focus is not None: focus.SetFocus()
 
-
     def onTD_Selection(self, evt):
         if not hasattr(evt.GetEventObject(), "axes_selection"): return
         axes = evt.GetEventObject().axes_selection

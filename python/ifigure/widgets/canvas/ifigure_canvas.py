@@ -1388,8 +1388,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.Bind(CANVAS_EVT_DRAWREQUEST, self.onDrawRequest)
       self.canvas.Bind(wx.EVT_SET_FOCUS, self.onCanvasFocus)
       self.canvas.Bind(wx.EVT_KILL_FOCUS, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_CHAR, self.test)
+      #self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.onCanvasFocus)            
+      #self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
+      
+      #self.canvas.Bind(wx.EVT_CHAR, self.test)
       self._cursor_icon = None
       
    def test(self, evt): 
@@ -1406,13 +1408,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self._hold_once = value
 
    def onCanvasFocus(self, e):
-#       print 'get focus', self._figure.figobj
+       #print 'get focus', self._figure.figobj
        self.mpl_connect(mode = self._mpl_mode)
        e.Skip()
        
    def onCanvasKillFocus(self, e):
-#       print 'kill focus'
-       self.mpl_connect(mode = self._mpl_mode)
+       #print 'kill focus'
+#       self.mpl_connect(mode = self._mpl_mode)
+       self.mpl_disconnect()
        e.Skip()
        
    def enter_layout_mode(self):
