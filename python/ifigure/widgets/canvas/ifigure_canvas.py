@@ -2481,7 +2481,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           except:
              dprint1('canvas draw failed')
              import traceback
-             print(traceback.format_exc())
+             traceback.print_exc()
 
           self._last_update = time.time()
           self._drawing = False
@@ -3133,6 +3133,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        try:
           po.send_file(fname, parent = self.GetTopLevelParent())
        except:
+          import traceback
+          traceback.print_exc()
           dprint1("send_file failed")
        os.remove(fname)
 

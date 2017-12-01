@@ -55,7 +55,7 @@ def onSettingList(solver):
     return list
 
 def setSetting(solver, value):
-    app = solver.get_root_parent().app
+    app = solver.get_app()
     try:
        root = solver.get_root_parent()
        exec root._name + ' = root'

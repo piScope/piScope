@@ -57,8 +57,7 @@ def deref_proxy(w):
     if isWX3: return w
     if isinstance(w, ProxyType):
         w = w.__repr__.__self__
-    else:
-        return w
+    return w
     
 def wrap_method(m_wx3, m_wx4):
     def real_decorator(func):

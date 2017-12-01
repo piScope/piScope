@@ -442,7 +442,8 @@ class PyScript(PyCode, FileHolder, AnsHolder):
             self._status = 'launching...'
             # useProcessEvent is True so that threadlist in logw is 
             # updated
-            ifigure.events.SendThreadStartEvent(self, w=self.get_root_parent().app, thread=t,
+            ifigure.events.SendThreadStartEvent(self, w=self.get_app(),
+                                                thread=t,
                                                 useProcessEvent = True )
         else:
             wx.CallLater(1000, self.do_run_t, e, *args, **kargs)
@@ -670,7 +671,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         sol_list = self._make_list1([], proj)
 
         if len(sol_list) == 0:
-             dlg = wx.MessageDialog(self.get_root_parent().app, 
+             dlg = wx.MessageDialog(self.get_app(),
                       "No solution based on this model is found",
                       "Error", wx.OK | wx.ICON_INFORMATION)
              ans = dlg.ShowModal()
@@ -731,7 +732,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         sol_list = self._make_list1([], proj)
 
         if len(sol_list) == 0:
-             dlg = wx.MessageDialog(self.get_root_parent().app, 
+             dlg = wx.MessageDialog(self.get_app(),
                       "No solution based on this model is found",
                       "Error", wx.OK | wx.ICON_INFORMATION)
              ans = dlg.ShowModal()

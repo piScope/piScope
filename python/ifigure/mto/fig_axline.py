@@ -337,8 +337,7 @@ class FigAxline(FigObj, XUser, YUser):
     def onExport(self, event):
         from matplotlib.artist import getp
 
-        app=self.get_root_parent().app
-        shell=app.shell
+        shell = self.get_root_parent().app.shell        
         canvas = event.GetEventObject()
         sel = [a() for a in canvas.selection]
         for a in self._artists:

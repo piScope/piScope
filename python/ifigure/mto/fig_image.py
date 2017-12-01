@@ -547,7 +547,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         from  ifigure.interactive import figure, plot, nsec, isec, update, title, xlabel, ylabel
         if event.mpl_xydata[0] is None: return
 
-        app = self.get_root_parent().app
         for a in self._artists:
             axes = a.axes
             if axes is None: return     
@@ -556,9 +555,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             if data1 is None: continue
             if data2 is None: continue
             figure()
-#            from ifigure.widgets.book_viewer import BookViewer
-#            book, viewer = app.open_newbook_in_newviewer(BookViewer)
-#            book.get_page(0).set_section(2)
             nsec(2)
             ou = update()
             isec(0)

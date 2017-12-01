@@ -125,7 +125,7 @@ def onSetting(self, e=None):
     value = DialogEditList(list6, modal = True, 
                      style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                      tip = None, 
-                     parent=self.td.get_root_parent().app)
+                     parent=self.td.get_app())
 
     if value[0]: 
         v = value[1]

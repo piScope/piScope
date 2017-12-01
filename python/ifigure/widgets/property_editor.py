@@ -64,7 +64,7 @@ class property_editor(wx.Panel):
         # if not, GTK3 shows
         #  "lost focus even though it didn't have it"
         # Debug messages.
-        self._panel_shown_flag = [False, False, False]
+        self._panel_shown_flag = [True, False, False]
         
 
     def set_sizehint(self):

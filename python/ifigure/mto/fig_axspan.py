@@ -505,8 +505,7 @@ class FigAxspan(FigObj, XUser, YUser):
         from matplotlib.artist import getp
         canvas = event.GetEventObject()
         sel = [a() for a in canvas.selection]
-        app=self.get_root_parent().app
-        shell=app.shell
+        shell = self.get_root_parent().app.shell
         for a in self._artists:
             if a in sel:
                print("Exporting Data to Shell") 

@@ -841,12 +841,6 @@ class FigObj(TreeDict, MetadataHolder):
             ret=dialog.message(app, text, 'Export', 0)
             app.shell.SendShellEnterEvent()
 
-#        shell=app.shell
-#        shell.redirectStdout(True)
-#        shell.writeOut(text)
-#        shell.redirectStdout(False)
-        #print "exporting data to file"
-        
     def onExport(self, event):
         canvas = event.GetEventObject()
         sel = [a() for a in canvas.selection]
