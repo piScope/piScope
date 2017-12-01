@@ -1090,12 +1090,12 @@ class ProjTreeViewer(wx.Panel):
             print('panel clean')
 
     def ClosePanel(self):
-        self.GetSizer().Remove(self.panel)
+#        self.GetSizer().Remove(self.panel)
 #        self.panel.Destroy()
  
         p = self.panel.GetTopLevelParent()
         if p is not None:
-            p.GetSizer().Remove(p)
+            #p.GetSizer().Remove(p)
             p.Destroy()
             self.GetTopLevelParent()._force_layout()
         self.panel = None

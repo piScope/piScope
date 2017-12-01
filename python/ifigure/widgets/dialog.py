@@ -11,7 +11,7 @@
 #   dlg_textentry  : text entry dialog
 #
 import wx, os
-from ifigure.utils.wx3to4 import TextEntryDialog
+from ifigure.utils.wx3to4 import TextEntryDialog, deref_proxy
 
 def read(parent=None, message='Select file to read', wildcard='*', defaultfile=''):
 
@@ -51,7 +51,7 @@ def write(parent=None, defaultfile='',
     wrap FileDialog, Note that defaultfile can be absolute path
     '''
     style = wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT if warn_overwrite else wx.FD_SAVE
-    
+
     open_dlg = wx.FileDialog (parent, message=message,
                               wildcard=wildcard,
                               style=style)
@@ -73,6 +73,7 @@ def write(parent=None, defaultfile='',
        return path
 
 def writedir(parent=None,  message='Directory to write'):
+
     dlg = wx.DirDialog (parent, message=message)
     path = ''
     wc = ''
@@ -85,6 +86,7 @@ def writedir(parent=None,  message='Directory to write'):
         return None
 
 def readdir(parent=None,  message='Directory to read'):
+
     dlg = wx.DirDialog (parent, message=message)
     path = ''
     wc = ''
@@ -97,6 +99,7 @@ def readdir(parent=None,  message='Directory to read'):
         return None
 
 def textentry(parent=None, message='', title='', def_string='', center=False):
+
     dlg = TextEntryDialog(parent, 
           message, caption=title, value=def_string)
     if center: dlg.Centre()
@@ -148,7 +151,7 @@ def message(parent=None, message='', title='', style=0,
 #    from wx.lib.agw.genericmessagedialog import GMD_USE_AQUABUTTONS as g
 #    from wx import MessageDialog as dia
     style0 = style0|icon
-#    print icon
+    
     dlg = dia(parent,
                          message, 
                          title, 
@@ -179,7 +182,6 @@ def showtraceback(parent = None, txt='', title='', traceback='None\n'):
     dlg.Destroy()
 
 def progressbar(parent, message, title, count):   
-
     dlg = wx.ProgressDialog(title, message, count, parent)
     def close_dlg(evt, dlg=dlg):
         dlg.Destroy()

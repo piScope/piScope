@@ -154,8 +154,9 @@ class simple_shell_droptarget(wx.TextDropTarget):
         self.obj.GotoPos(pos+len(txt))
         if isWX3:
             wx.CallAfter(self.obj.SetSTCFocus, True) 
-            wx.CallLater(100, self.obj.SetFocus) 
-        return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
+            wx.CallLater(100, self.obj.SetFocus)
+        return True
+        #return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):
         self.obj.DoDragOver(x, y, default)

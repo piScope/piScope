@@ -1432,7 +1432,6 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             self._send_setfocus_event = True
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
-        self.Enable(False)
 
         #    def Paste(self):
 #        print 'paste called'
@@ -4202,7 +4201,7 @@ class EditListDialogTab(wx.Dialog):
     def __init__(self, parent, id, title='', tab=None, list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
                  tip=None, pos=None, size = (-1, -1), nobutton=False,
-                 add_palette = False):       
+                 add_palette = False):
         wx.Dialog.__init__(self, parent, id=id, title=title,  style=style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)

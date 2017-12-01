@@ -30,7 +30,7 @@ from  ifigure.utils.minifier import minify
 import ifigure.widgets.dialog as dialog
 import  sys, os, logging, time
 
-from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append
+from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append, isWX3
 #----------------------------------------------------------------------
 
 demoText = ""
@@ -938,7 +938,7 @@ class PythonSTC(stc.StyledTextCtrl):
         tds.DoDragDrop(True)
     def OnStartDrag(self, evt):
         sel = self.GetSelectedText()
-        evt.SetDragAllowMove(False)
+        if isWX3: evt.SetDragAllowMove(False)
         evt.SetDragText(sel)
         p = self
         while p.GetParent() is not None:
@@ -1052,8 +1052,8 @@ class TextDropTarget(wx.TextDropTarget):
         #self.obj.DoDropText(x, y, txt)
         pos = self.obj.PositionFromPoint(wx.Point(x,y))
         self.obj.InsertText(pos, txt)
-        wx.CallAfter(self.obj.SetSTCFocus, True) 
-        wx.FutureCall(100, self.obj.SetFocus)
+        #wx.CallAfter(self.obj.SetSTCFocus, True) 
+        #wx.FutureCall(100, self.obj.SetFocus)
         return super(TextDropTarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):

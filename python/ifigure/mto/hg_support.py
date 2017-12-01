@@ -22,11 +22,8 @@ from   ifigure.mto.treedict    import TreeDict
 from   ifigure.utils.edit_list import DialogEditList
 
 from   ifigure.utils.cbook import isBinary
-try:
-    from wx._core import PyDeadObjectError
-except:
-    # wx4
-    PyDeadObjectError = RuntimeError
+
+from ifigure.utils.wx3to4 import PyDeadObjectError, deref_proxy
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('HGSupport')
@@ -187,7 +184,7 @@ try:
 
    def load_subtree_hg(parent, root = '', path='', name = '', overwrite=False,
                        run_setup=False, launch_gui=False):
-       app = parent.get_root_parent().app
+       app = wx.GetApp().TopWindow       
        if root == '':
            list6 = [
                ["root repository", None, 304, dlg_s()],
@@ -500,7 +497,7 @@ try:
            if evt is not None: evt.Skip()
 
        def onHGcommit(self, evt):
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow                  
            list6 = [
                ["messsage", 'commit-#xxx', 0, None],
 #               ["user", os.getenv("USER"), 0, None]]
@@ -518,7 +515,7 @@ try:
            evt.Skip()
 
        def onHGclone(self, evt):
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow                             
            name  = self.getvar('mercurial_path')
            if name is None: name = self._name
            l2 =    [["commit message", '',  0, None ],]
@@ -560,6 +557,7 @@ try:
            os.chdir(ocwd)
 
        def onHGpush(self, evt):
+           app = wx.GetApp().TopWindow
            url, root, path = self.get_mercurial_url()
            if url is not None:
                root = root
@@ -567,7 +565,7 @@ try:
            else:
                root = None
                name = self._name
-           app = self.get_root_parent().app
+
            list6 = [
                ["root repository", root, 304, dlg_s()],
                ["name", name, 0, None],
@@ -609,7 +607,7 @@ try:
            else:
                root = None
                name = self._name
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow               
            list6 = [
                ["root repository", root, 304, dlg_s()],
                ["name", name, 0, None],]
@@ -647,7 +645,7 @@ try:
            else:
                root = None
                name = self._name
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow                              
            list6 = [
                ["root repository", root, 304, dlg_s()],
                ["name", name, 0, None],]
@@ -696,7 +694,7 @@ try:
            else:
                root = None
                name = self._name
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow
            list6 = [
                ["root repository", root, 304, dlg_s()],
                ["name", name, 0, None],]
@@ -737,7 +735,7 @@ try:
            evt.Skip()
 
        def onHGDiff(self, evt=None):
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow           
            repo = self.get_repo()
            latest = repo.revisions(slice(-1,-1))[0].rev         
            current = repo.hg_rev()
@@ -854,6 +852,17 @@ try:
            repo = hgapi.Repo(self.owndir())
            self.write2shell(repo, m)
 
+       def onHGreload(self, evt):
+           path = self.eval("mercurial_path")
+           root = self.eval("mercurial_root")
+           name = self.name
+           parent = self.get_parent()
+           i2 = self.get_ichild()
+           child = load_subtree_hg(parent, root=root, path=path, name=name,
+                           overwrite=True)
+           i1 = child.get_ichild()
+           parent.move_child(i1, i2)
+           evt.Skip()
        def onHGrevertall(self, evt):
            dlg=wx.MessageDialog(None, 
                                 'Do you discard all changes since the last commit?',
@@ -1051,7 +1060,7 @@ try:
        def do_commit(self, m, user='', no_treedata = False):
            if not no_treedata:
                if not self._save_tree_data(): return
-           app = self.get_root_parent().app
+           app = wx.GetApp().TopWindow               
            repo = hgapi.Repo(self.owndir())
            try:
                addfile, rmfile, skipfile, txt = hg_add_no_binary(repo, self.owndir(), 
@@ -1085,7 +1094,8 @@ try:
                                   ('Check Outgoing', self.onHGOutgoing, None),
                                   ('Diff...', self.onHGDiff, None),
                                   ('Make repo object in Shell...', self.onHGMakeRepo, None),
-                                  ('Setting...', self.onHGSetting, None), 
+                                  ('Setting...', self.onHGSetting, None),
+                                  ('Reload Repo', self.onHGreload, None),
                                   ('Delete Repo', self.onHGturnoff, None),
                                   ('!', None, None),
                                   ('!', None, None),
