@@ -166,17 +166,12 @@ class StatusBarWithXY(wx.StatusBar):
 
 
 class StatusBar(StatusBarWithXY):
-    def _get_params(self):
-        num_icon = 2  
-        icons =  ('log.png', 'help.png') #form.png
-        handler = (self.OnToggleLog, self.OnToggleTip) #self.OnToggleProp
-        return num_icon, icons, handler
-    def __init__(self, parent): 
+    def __init__(self, parent):
         num_icon, icons, handler = self._get_params()
         self.mem = 0
-#        self.disk = 0
-
+        self.icon = []
         self.nproc = 0
+        
         super(StatusBar, self).__init__(parent, -1)
 
         # This status bar has three fields
@@ -206,6 +201,12 @@ class StatusBar(StatusBarWithXY):
         self.timer = wx.PyTimer(self.notify)
         self.timer.Start(2000)
         self.notify()
+        
+    def _get_params(self):
+        num_icon = 2  
+        icons =  ('log.png', 'help.png') #form.png
+        handler = (self.OnToggleLog, self.OnToggleTip) #self.OnToggleProp
+        return num_icon, icons, handler
 
     # Handles events from the timer we started in __init__().
     # We're using it to drive a 'clock' in field 2 (the third field).

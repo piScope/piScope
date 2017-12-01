@@ -938,7 +938,8 @@ class PythonSTC(stc.StyledTextCtrl):
         tds.DoDragDrop(True)
     def OnStartDrag(self, evt):
         sel = self.GetSelectedText()
-        if isWX3: evt.SetDragAllowMove(False)
+        if isWX3:
+           evt.SetDragAllowMove(False)
         evt.SetDragText(sel)
         p = self
         while p.GetParent() is not None:
@@ -1052,9 +1053,12 @@ class TextDropTarget(wx.TextDropTarget):
         #self.obj.DoDropText(x, y, txt)
         pos = self.obj.PositionFromPoint(wx.Point(x,y))
         self.obj.InsertText(pos, txt)
-        #wx.CallAfter(self.obj.SetSTCFocus, True) 
-        #wx.FutureCall(100, self.obj.SetFocus)
-        return super(TextDropTarget, self).OnDropText(x, y, indata)
+
+        if isWX3:
+            wx.CallAfter(self.obj.SetSTCFocus, True) 
+            wx.FutureCall(100, self.obj.SetFocus)
+        return True
+        #return super(TextDropTarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):
         self.obj.DoDragOver(x, y, default)
