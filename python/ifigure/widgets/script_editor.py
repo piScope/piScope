@@ -264,7 +264,7 @@ class PythonSTC(stc.StyledTextCtrl):
 
         ### added for  dnd
         self.Bind(stc.EVT_STC_START_DRAG, self.OnStartDrag)
-#        self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
+        self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 #        self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
         self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
         self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
@@ -285,7 +285,26 @@ class PythonSTC(stc.StyledTextCtrl):
         self._ctrl_K = False
 
         self.ctrl_X = False
+        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+    def _exit_search_mode(self):
+        self._mark = -1
+        self._search = 0
+        self.set_search_text('')
+        self._search_st = -1
+       
+    def onSetFocus(self, evt):
+        evt.Skip()
+
+    def onKillFocus(self, evt):
+        self._exit_search_mode()
+        evt.Skip()
         
+    def onLeftDown(self, e):
+        self._exit_search_mode()       
+        e.Skip()
+
     def set_syntax(self, syntax = 'python'):
         #print 'setting to ' + syntax
         self.reset_style()
@@ -906,15 +925,6 @@ class PythonSTC(stc.StyledTextCtrl):
                 line = line + 1
 
         return line
-
-    def onLeftDown(self, e):
-        self.Bind(wx.EVT_MOTION, self.onDragInit)
-        e.Skip()
-
-    def onLeftUp(self, e):
-        self.Unbind(wx.EVT_MOTION)
-        self.SetFocus()
-        e.Skip()
 
     def onDragInit(self, e):
         self.Unbind(wx.EVT_MOTION)
