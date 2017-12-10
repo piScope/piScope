@@ -138,6 +138,7 @@ class Axes3DMod(Axes3D):
         self._3d_axes_icon = None
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
+        self._ignore_screen_aspect_ratio = True
 
     def gl_hit_test(self, x, y, artist, radius = 3):
         #
@@ -916,6 +917,19 @@ class Axes3DMod(Axes3D):
                              [0,0,a,b],
                              [0,0,-1/10000.,self.dist]
                               ])
+
+        if self._ignore_screen_aspect_ratio:
+            M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+        else:
+            bb = self.get_window_extent()
+            r = abs((bb.x1-bb.x0)/(bb.y1-bb.y0))
+            if r >= 1:
+                M = np.array([[1./r,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+            else:
+                M = np.array([[1,0,0,0],[0,r,0,0],[0,0,1,0],[0,0,0,1]])
+        self._matrix_cache_extra = M
+           
+        perspM = np.dot(M, perspM)
         return  worldM, viewM, perspM, E, R, V, self.dist
     
     def get_proj(self):

@@ -520,6 +520,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glOrtho(-a, a, -a, a, minZ, maxZ)
            self.set_uniform(glUniform1i,  'isFrust',  0)           
         projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
+        projM = np.dot(self.M_extra, projM)
         return projM, minZ, maxZ
 
     def use_depthmap_mode(self, frame, buf, texs, w, h):
@@ -849,6 +850,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_depth_mask(True)
         
         self.M = tag._matrix_cache
+        self.M_extra = tag._matrix_cache_extra
         glPushMatrix()
         
         self.set_uniform(glUniform1i,  'uisSolid', 1)
