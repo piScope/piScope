@@ -2223,10 +2223,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                  if not event.guiEvent.ShiftDown():
                      self.unselect_all()
                  figobj = self._pevent.artist.figobj
-                 if figobj.isSelected():
-                     self.add_selection(self._pevent.artist)
-                 else:
-                     self.unselect(self._pevent.artist)
+                 if figobj is not None:
+                     if figobj.isSelected():
+                         self.add_selection(self._pevent.artist)
+                     else:
+                         self.unselect(self._pevent.artist)
                         
             td = self._pevent.artist.figobj
             if td is not None:
