@@ -395,11 +395,6 @@ def SendCloseBookRequest(w):
     evt=TreeDictEvent(CloseBookRequest, wx.ID_ANY)
     handler = wx.GetApp().TopWindow
     SendSimpleTDEvent(evt, w=w, handler=handler)
-#def SendWorkerStartRequest(td, w=None, workers=None):
-#    evt=TreeDictEvent(WorkerStartRequest, wx.ID_ANY)
-#    evt.workers = workers
-#    SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=False)
-
     
     
 

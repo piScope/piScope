@@ -1,4 +1,5 @@
 
+
 #  load image file
 #   this could be widget toolkit dependent
 import wx, os, string, weakref, matplotlib, threading, traceback, ifigure
@@ -801,6 +802,9 @@ def isiterable(obj):
     except TypeError:
         return False
     return True
+
+def isstringlike(x):
+    return  (isinstance(x, str) or isinstance(x, unicode))
 
 def nd_iter(x):
     if x.size: return x

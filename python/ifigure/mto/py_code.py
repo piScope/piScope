@@ -414,7 +414,7 @@ class AbsScriptContainer(object):
         if name is '':
             iname = '_'.join([x for x in os.path.basename(temp)[:-3].split('_') if len(x) !=0])
             if parent is None:
-                parent = self.get_app(),
+                parent = self.get_app()
             ret, name = dialog.textentry(parent, 
                             "Enter a script name", "New Script...", iname)
             if not ret: return
