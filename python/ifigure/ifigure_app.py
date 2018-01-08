@@ -383,8 +383,12 @@ class WindowList(list):
        ret = [item() for item in self]
        return ret
    def _validate_ref(self):
+       # check for wx4
        ret =  [item for item in self if item() is not None]
-       self[:] = [item for item in ret if isinstance(item(), wx.Window)]
+       self[:] = [item for item in ret if item()]
+       # check for wx3       
+       ret =  [item for item in self if item() is not None]       
+       self[:] = [item for item in ret if isinstance(item(), wx.Window)]       
 
 class  CanvasPanel(wx.Panel):
    pass
