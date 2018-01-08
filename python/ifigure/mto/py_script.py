@@ -65,7 +65,7 @@ class AnsHolder(object):
     def RunA(self, *args, **kargs):
         self.Run(*args, **kargs)
         if 'ans' in kargs:
-           obj = kargs['ans'].func_defaults[0]
+           obj = kargs['ans'].func_defaults[1]
         else:
            obj = self
         val =  obj._ans
