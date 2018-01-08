@@ -17,6 +17,7 @@ import  wx.stc  as  stc
 import numpy as np
 from ifigure.numerical_function import *
 import ifigure.utils.cbook as cbook
+from ifigure.utils.cbook import isstringlike, isnumber
 from ifigure.widgets.custom_double_slider import CustomSingleSlider, CustomDoubleSlider
 from ifigure.widgets.custom_double_slider import EVT_CDS_CHANGED, EVT_CDS_CHANGING
 import weakref
@@ -658,12 +659,16 @@ class BitmapButtons(wx.Panel):
         for btn in self._btn:
             btn.SetBitmapLabel(self.Controls[i]["bitmap"])
             i = i+1
-        if hasattr(val, '__iter__'):
-           print val, self._btn_name
-        if val in self._btn_name:
+
+        #if isnumber(val) and not isnumber(self._btn_name[0]):
+        #    val = str(val)
+        if isstringlike(val) and val in self._btn_name:
             j = self._btn_name.index(val)
             #print 'found', j
             self._btn[j].SetBitmapLabel(self.Controls[j]["bitmap2"])
+        #else:
+        #    # check error
+        #    print val, self._btn_name
         self._val = val
     def GetValue(self, val):
         return self._val
@@ -757,7 +762,8 @@ class ColorFace(Color):
         self.val = self.Controls[0]["value"]
 
     def SetValue(self, val):
-        if val == 'disabled':
+        if isstringlike(val) and val == 'disabled':
+            ### if it is not list/numpy array/tuple and is 'disabled'
             self.Enable(False)
         else:
             self.Enable(True)
@@ -4063,8 +4069,8 @@ class EditListCore(object):
                elif err is None: 
                   pass
                   #print 'no check in setvalue'
-            i=i+1        
-
+            i=i+1
+            
     def send_event(self, evtobj, evt0):
         if self.call_sendevent is not None:
             self.call_sendevent.send_event(self, evt0)

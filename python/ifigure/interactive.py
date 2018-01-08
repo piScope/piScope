@@ -938,15 +938,22 @@ def revolve(*args, **kargs):
 @redirect_to_aviewer_3D
 def solid(v, **kargs):
     '''
-    solid: plot soild volume complsed by triangle
-    solid(v, **kargs):
+    solid: plot soild volume complsed by triangle/quad
 
-    solid draw multiple elements at once.    
+    solid(v, cz=False, cdata=None, **kargs):
+    solid(v, idxset, cz=False, cdata=None, **kargs):
+
     v : 3D array of verteics
         v[ielement, ivertex,  xyz]
     cz : define color data separately
         when cz =true, 3rd dim of v should be four
         v[ielement, ivertex,  xyzc]
+
+    Using idxset, vertices and index set to define the element shape
+    is given separately. v[:, xyz] and idxset[ielement, ivertex] 
+    will be expanded as if v is v[idexset,...]. This allows to reduce
+    the number of vertices passed to GPU
+
     if third dim is 2:
         v[ielement, ivertex,  xy]
         and
@@ -956,6 +963,15 @@ def solid(v, **kargs):
 
     draw_last : draw this artists last on GL canvas, useful for getting
                 cleanin line smoothing
+    facecolor: use solid facecolor
+    edgecolor: use solid edgecolor
+
+    example:
+
+       (indexed array)
+       ptx = np.array([[0, 0], [0,1], [1,1], [1,0]])
+       box = np.array([[0,1,2,3]])
+       figure();solid(ptx, box)
     '''
     pass
 @redirect_to_aviewer_3D

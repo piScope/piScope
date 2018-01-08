@@ -2442,7 +2442,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                if evt.all:
                    self.draw_all()    
                else:
-                   self.draw()    
+                   self.draw(refresh_hl = evt.refresh_hl)    
 #           else:
 #               print 'resending request'
 #               wx.CallLater(300, self.draw_later)
@@ -2459,9 +2459,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           self.refresh_hl()
 
-   def draw_later(self, all = False, delay = 0.0):
+   def draw_later(self, all = False, delay = 0.0, refresh_hl = False):
        from ifigure.events import SendCanvasDrawRequest
-       SendCanvasDrawRequest(self, all=all, delay = delay)
+       SendCanvasDrawRequest(self, all=all, delay = delay,
+                             refresh_hl = refresh_hl)
 #       self._nodraw = True
 #       self._draw_request = True
 
@@ -2470,25 +2471,26 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def draw(self, refresh_hl=False):
 #       if not self._nodraw:
-          if self._figure is None: return
-          t = time.time()
-          self._last_draw_time = t
+       if self._figure is None: return
+
+       t = time.time()
+       self._last_draw_time = t
           
-          self._figure.figobj.update_artist()
-          self._drawing = True
+       self._figure.figobj.update_artist()
+       self._drawing = True
 #          self.canvas.draw(nogui_reprint = True)
-          try:
-             self.canvas.draw(nogui_reprint = False)
-          except:
-             dprint1('canvas draw failed')
-             import traceback
-             traceback.print_exc()
+       try:
+           self.canvas.draw(nogui_reprint = False)
+       except:
+           dprint1('canvas draw failed')
+           import traceback
+           traceback.print_exc()
 
-          self._last_update = time.time()
-          self._drawing = False
+       self._last_update = time.time()
+       self._drawing = False
 
-          dprint2('drawing time ' + str(time.time()-t))
-
+       dprint2('drawing time ' + str(time.time()-t))
+       if refresh_hl: self.refresh_hl()
 #       else:
 #          self._draw_request = True
 
@@ -2961,7 +2963,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       if not self._figure.figobj.is_descendant(figobj):
          if len(self.selection) == 0:
              return
-
+      
       if len(evt.selections) != 0:
          if evt.selections[0]() in figobj._artists:
             evt.selections[0] = weakref.ref(figobj._artists[0])
@@ -2997,8 +2999,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          self.axes_selection=weakref.ref(figobj._artists[0])
       if mode == 3:
          self.axes_selection=weakref.ref(figobj._artists[0])
-      self.draw_later()
-      self.refresh_hl()
+      
+      self.draw_later(refresh_hl = True)
 
    def px2norm(self, x, y):
       ### conversion from screen pixel to normal

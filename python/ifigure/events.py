@@ -384,21 +384,17 @@ def SendFileSystemChangedEvent(td, w=None, name='', reload=True):
     evt.reload = reload
     SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=False)
 
-def SendCanvasDrawRequest(w, all = False, delay = 0.0):
+def SendCanvasDrawRequest(w, all = False, delay = 0.0, refresh_hl = False):
     evt=TreeDictEvent(CANVAS_DrawRequest, wx.ID_ANY)
     evt.all = all
     evt.delay = delay
+    evt.refresh_hl = refresh_hl
     SendSimpleTDEvent(evt, w=w, handler=w)
 
 def SendCloseBookRequest(w):
     evt=TreeDictEvent(CloseBookRequest, wx.ID_ANY)
     handler = wx.GetApp().TopWindow
     SendSimpleTDEvent(evt, w=w, handler=handler)
-#def SendWorkerStartRequest(td, w=None, workers=None):
-#    evt=TreeDictEvent(WorkerStartRequest, wx.ID_ANY)
-#    evt.workers = workers
-#    SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=False)
-
     
     
 

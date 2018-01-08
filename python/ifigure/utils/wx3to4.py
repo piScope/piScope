@@ -166,7 +166,6 @@ def TextEntryDialog(*args, **kwargs):
     else:
         kwargs['value'] = value
         parent = deref_proxy(parent)
-   
     return wx.TextEntryDialog(parent, message, **kwargs)
 
     

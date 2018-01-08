@@ -366,37 +366,35 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindFramebuffer(GL_FRAMEBUFFER, frame)
 
         tex = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, tex)
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA,
+                                w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
 
         tex2 = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, tex2)
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex2)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-#        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 
-#                     w, h, 0, GL_RED, GL_UNSIGNED_BYTE, None)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-                     w, h, 0, GL_RGBA, GL_FLOAT, None)
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA, 
+                                w, h, 0, GL_RGBA, GL_FLOAT, None)
         
         dtex =  glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, dtex)
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, dtex)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                         GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                         GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA,
                      w, h, 0,GL_RGBA, GL_UNSIGNED_BYTE, None)
 
 
         def gen_otex():
             otexx = glGenTextures(1)           
-            glBindTexture(GL_TEXTURE_2D, otexx)
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, otexx)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA12, 
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA12,            
                         w, h, 0, GL_RGBA, GL_FLOAT, None)
 #                        w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, None) 
             return otexx
@@ -410,7 +408,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
          
         buf = glGenRenderbuffers(1)
         glBindRenderbuffer(GL_RENDERBUFFER, buf)
-        glRenderbufferStorage(GL_RENDERBUFFER,
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4,
                               GL_DEPTH24_STENCIL8,
                               w, h)
         #glFramebufferRenderbuffer(GL_FRAMEBUFFER, 

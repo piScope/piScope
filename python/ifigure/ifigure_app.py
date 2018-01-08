@@ -1975,7 +1975,6 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.update_content_widget(evt.GetTreeDict())
 
     def onTD_Selection(self, evt):
-        #print 'selection event from', evt.GetEventObject()
         td = evt.GetTreeDict()
         w = evt.GetEventObject() 
         fc = self.FindFocus()
