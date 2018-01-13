@@ -245,13 +245,16 @@ class LineGL(ArtGL, Line3D):
         m_facecolor = self.get_markerfacecolor()
         m_edgecolor = self.get_markeredgecolor()
         m_edgewidth = self.get_markeredgewidth()
+        m_marker = self.get_marker()
         m_size =  renderer.points_to_pixels(self._markersize)
+        marker_param = (m_size, m_edgecolor,
+                        m_facecolor, m_edgewidth, m_marker)
+        
         if self._marker in self._gl_marker_tex:
             data = self._gl_marker_tex[self._marker]
-            if data['param'] == (m_size, m_edgecolor,
-                                 m_facecolor, m_edgewidth):
+            if data['param'] == marker_param:
                 return data['path']
-            
+
         marker_path = marker_image(self._marker.get_path(),
                                    m_size,
                                    self._marker.get_transform(),
@@ -259,8 +262,7 @@ class LineGL(ArtGL, Line3D):
                                    facecolor = m_facecolor,
                                    edgewidth = m_edgewidth)
         data = {'path': marker_path,
-                'param': (m_size, m_edgecolor,
-                          m_facecolor, m_edgewidth) }
+                'param': marker_param}
         self._gl_marker_tex[self._marker] = data
         return marker_path
     

@@ -6,6 +6,8 @@ uniform vec3  uClipLimit1;
 uniform vec3  uClipLimit2;
 uniform int  uUseClip;
 uniform int  uHasHL;
+uniform int  uUseSolidColor;
+uniform vec4  uColor;
 
 out vec4 FragData0;
 out vec4 FragData1;

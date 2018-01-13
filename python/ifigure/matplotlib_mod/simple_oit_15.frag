@@ -37,6 +37,7 @@ uniform int  uisMarker;
 uniform int  uUseClip;
 uniform int  uHasHL;
 uniform int  uAlphaTest;
+uniform float  uAlphaLimit;
 uniform vec4  uHLColor;
 uniform sampler2D uMarkerTex;
 uniform float nearZ;
@@ -143,7 +144,7 @@ void main() {
 	 //gl_FragData[0] = vec4(accum.rgb,  1);
 	 /*
          if (uAlphaTest == 0){
-    	    if (FragData0[3] < 0.3){
+    	    if (FragData0[3] < uAlphaLimit){
 	       discard;
 	    }
          }
@@ -245,7 +246,10 @@ void main() {
      
      if (uisMarker == 1){
         vec4 color = texture(uMarkerTex, gl_PointCoord);
-        FragData0 = color;
+	if (color.a == 0){
+	    discard;
+	}
+
      }
 
      

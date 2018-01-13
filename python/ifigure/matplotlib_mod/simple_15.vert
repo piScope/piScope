@@ -53,6 +53,10 @@ uniform int uLineStyle;
 uniform int uUseArrayID;
 uniform vec3 uAtlasParam;
 
+uniform int  uUseSolidColor;
+uniform vec4  uColor;
+
+
 void main() {
 
     if (uisImage == 1){
@@ -76,7 +80,11 @@ void main() {
        gl_Position = vec4(-1 + (vertex_id+0.5)/(uAtlasParam[0])*2, 0, 0, 1);
 
     } else {
-       vColor0 = inColor;
+       if (uUseSolidColor == 1) {
+          vColor0 = uColor;
+       } else {
+          vColor0 = inColor;
+       }
        normal = uNormalM * inNormal;
     
        camera_dir = - (uViewM * uWorldM * Vertex).xyz;
