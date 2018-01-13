@@ -345,14 +345,25 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE)
         #glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         #glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        glDisable(GL_CULL_FACE);        
+        glDisable(GL_CULL_FACE)
+        c= (GLfloat * 2)()        
+        glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, c)
+        self._line_width_range = list(np.transpose(c))
+
+    def setLineWidth(self, l):
+        l = min(l, self._line_width_range[1])
+        l = max(l, self._line_width_range[0])
+        glLineWidth(l)
            
     def EnableVertexAttrib(self, name):
-        glEnableVertexAttribArray(self._p_attrib_loc[name])
+        if name in self._p_attrib_loc: 
+            glEnableVertexAttribArray(self._p_attrib_loc[name])
     def DisableVertexAttrib(self, name):
-        glDisableVertexAttribArray(self._p_attrib_loc[name])
+        if name in self._p_attrib_loc:        
+            glDisableVertexAttribArray(self._p_attrib_loc[name])
     def VertexAttribPointer(self, name, *args):
-        glVertexAttribPointer(self._p_attrib_loc[name], *args)
+        if name in self._p_attrib_loc:               
+            glVertexAttribPointer(self._p_attrib_loc[name], *args)
 
     def set_lighting(self, ambient = 0.5, light_direction = (1, 0, 1., 0),
                            light = 1.0, 
@@ -541,10 +552,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def get_frame_4_artist(self, a):
         c = self.get_container(a)
         try:
-            w, h, frame, buf, stc, dtex = self.frame_list[c]
-            return  w, h, frame, buf, stc, dtex
+            w, h, m, frame, buf, stc, dtex = self.frame_list[c]
+            return  w, h, m, frame, buf, stc, dtex
         except:
-            return [None]*4
+            return [None]*6
          
     def force_fill_screen(self):
         # draw a big rectangle covering the entire 3D scene
@@ -916,7 +927,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._use_clip = tag._use_clip        
         self.gc_artist_data()
         if MyGLCanvas.offscreen:
-            w, h, frames, buf, stc, texs = self.get_frame_4_artist(tag)
+            w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(tag)
             frame = frames[0]
             glBindFramebuffer(GL_FRAMEBUFFER, frame)
         else:
@@ -1060,7 +1071,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return id_dict
 
     def read_hit_map_data(self, a):
-        w, h, frames, buf, stc, texs = self.get_frame_4_artist(a)
+        w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(a)
         frame = frames[0]
         
         if multisample > 1:
@@ -1144,7 +1155,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                               depth)
 
     def read_data(self, a):
-        w, h, frames, buf, stc, texs = self.get_frame_4_artist(a)
+        w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(a)
         frame  = frames[0]
         ###
         if multisample > 1:
@@ -1360,7 +1371,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['n'].unbind()
         
         lw = gc.get_linewidth()
-        if lw > 0: glLineWidth(lw*multisample)
+        if lw > 0: self.setLineWidth(lw*multisample)
         if rgbFace is None:
             glColor(gc._rgb)
             if self._wireframe == 2: glDisable(GL_DEPTH_TEST)            
@@ -1652,19 +1663,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            vbos['fc'].unbind()
            
         if linewidth[0] > 0.0 and not self._shadow:           
-            glLineWidth(linewidth[0]*multisample)
-            ''' 
-            if linewidth[0] < 1.5:
-               glLineWidth(max(linewidth[0]-0.5, 0.5))
-               glEnable(GL_LINE_SMOOTH)                        
-               glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-               glDepthMask(GL_FALSE)
-               glEnable(GL_BLEND)
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            else:
-               glDisable(GL_LINE_SMOOTH)                        
-            '''
-            #
+            self.setLineWidth(linewidth[0]*multisample)
             vbos['ec'].bind()
             glColorPointer(4, GL_FLOAT, 0, None)
             glDepthFunc(GL_LEQUAL)
@@ -1856,8 +1855,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if vbos['ie'] is not None:
                vbos['i'].unbind()               
                vbos['ie'].bind()
-               
-            glLineWidth(linewidth[0]*multisample)
+
+            self.setLineWidth(linewidth[0]*multisample)
             vbos['ec'].bind()
             self.EnableVertexAttrib('inColor')                    
             self.VertexAttribPointer('inColor', 4, GL_FLOAT, GL_FALSE,
@@ -2131,8 +2130,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
 
         if target in self.frame_list:
-             w2, h2, frames, bufs, stc, texs = self.frame_list[target]
-             if w2 != w or h2 != h:
+             w2, h2, m2,frames, bufs, stc, texs = self.frame_list[target]
+             if w2 != w or h2 != h or m2 != multisample:
                  glDeleteTextures(texs)
                  glBindFramebuffer(GL_FRAMEBUFFER, 0)
                  glBindRenderbuffer(GL_RENDERBUFFER, 0)
@@ -2148,7 +2147,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #            print 'makeing new frame', w, h
             frame, buf, stc, dtex = self.get_newframe(w, h)
             if frame is not None:
-                self.frame_list[target] = (w, h, frame, buf, stc, dtex)
+                self.frame_list[target] = (w, h, multisample, frame, buf, stc, dtex)
 
     def OnDraw(self):
          if self._do_draw_mpl_artists:
