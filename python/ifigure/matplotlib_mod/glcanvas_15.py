@@ -22,9 +22,16 @@ dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
 
 from canvas_common import *
 
-attribList=[glcanvas.WX_GL_SAMPLES,
-            glcanvas.WX_GL_SAMPLE_BUFFERS,
-            glcanvas.WX_GL_CORE_PROFILE,]
+def add_attribute(l, name, value):
+    n = getattr(glcanvas, name)
+    print n
+    if glcanvas.GLCanvas.IsDisplaySupported([n]):
+        l.append(n)
+        if value is not None:
+           l.append(value)
+    else:
+        print("not supported", name)       
+
 vert_suffix= '_15.vert'
 frag_suffix= '_15.frag'    
 geom_suffix= '_15.geom'
@@ -33,6 +40,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
     context = None
     def __init__(self, parent):
+        attribs = [('WX_GL_CORE_PROFILE',None),
+                   ('WX_GL_MAJOR_VERSION', 3),
+                   ('WX_GL_MINOR_VERSION', 2) ]
+        attribList = []
+        for nv in attribs: add_attribute(attribList, *nv)
+
         glcanvas.GLCanvas.__init__(self, parent, -1,
                                    attribList=attribList)
 
@@ -282,9 +295,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def setLineWidth(self, l):
         self.set_uniform(glUniform1f,  'uLineWidth', l)
         print('uLineWidth', l)
-        l = min(l, self._line_width_range[1])
-        l = max(l, self._line_width_range[0])
-        glLineWidth(l)
+        #l = min(l, self._line_width_range[1])
+        #l = max(l, self._line_width_range[0])
+        #glLineWidth(l)
         
     def setSolidColor(self, c):
         if c == -1:
@@ -705,11 +718,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         need_oit = False
         current_id = 1.0
         if do_clear is not None:
-          #glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
-          #glDepthMask(GL_TRUE)
-          #glDisable(GL_BLEND)
           glClearColor(*do_clear)
-          glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT|GL_ACCUM_BUFFER_BIT)
+          #glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT|GL_ACCUM_BUFFER_BIT)
+          glClear(GL_COLOR_BUFFER_BIT|GL_STENCIL_BUFFER_BIT)
         if do_clear_depth:
           glClear(GL_DEPTH_BUFFER_BIT)
 
