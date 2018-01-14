@@ -117,6 +117,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if not name in self._p_uniform_loc: return
         loc = self._p_uniform_loc[name]
         self._current_uniform[name] = (func, args, kwargs)
+        #print('set_uniform', name, args)
         func(loc, *args, **kwargs)
 
     def select_shader(self, shader):
@@ -1164,6 +1165,27 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableVertexAttrib('inNormal')                
         self.VertexAttribPointer('inNormal', 3, GL_FLOAT, GL_FALSE,
                                     0, None)
+    def EnableFaceColor(self,vbos):        
+        vbos['fc'].bind()
+        self.EnableVertexAttrib('inColor')                   
+        self.VertexAttribPointer('inColor', 4, GL_FLOAT, GL_FALSE,
+                                 0, None)
+    def EnableEdgeColor(self,vbos):        
+        vbos['ec'].bind()
+        self.EnableVertexAttrib('inColor')                   
+        self.VertexAttribPointer('inColor', 4, GL_FLOAT, GL_FALSE,
+                                 0, None)
+
+    def EnableVertexID(self, vbos):
+        if vbos['vertex_id'] is not None:
+           vertex_id = vbos['vertex_id']
+           vertex_id.bind()
+           self.EnableVertexAttrib('vertex_id')           
+           self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
+                                    0, None)
+           self.set_uniform(glUniform1i,  'uUseArrayID', 1)
+        else:
+           self.set_uniform(glUniform1i,  'uUseArrayID', 0)
         
     def _draw_polygon(self, f, c, facecolor = None, edgecolor = None):
         glDisable(GL_DEPTH_TEST)
@@ -1725,86 +1747,83 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ## for now this case is redirected
             ## assert False, "use_multdrawarrays not supported"
             ##
+        if facecolor is not None:            
+            glBindVertexArray(vbos['vao'])
+            vbos['i'].bind()
+            self.EnableVertex(vbos)
+            self.EnableNormal(vbos)
+            self.EnableVertexID(vbos)
+
+            offset = list(offset)+[0]
+            self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
+            self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
+
+            #if not lighting and self._p_shader is self.shader:
+            #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
+
+            self.EnableFaceColor(vbos)
+            if self._wireframe != 2:
+                if self._wireframe == 1:
+                    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
+                check_gl_error()
+                glDrawElements(vbos['primitive'], nindex,
+                                     GL_UNSIGNED_INT, None)
+                if self._wireframe == 1:
+                   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)           
+            vbos['fc'].unbind()
+            self.DisableVertexAttrib('inColor')
+            self.DisableVertexAttrib('inVertex')
+            vbos['v'].unbind()        
+            if vbos['n'] is not None:
+               self.DisableVertexAttrib('inNormal')
+               vbos['n'].unbind()
+            if vbos['vertex_id'] is not None:
+               self.DisableVertexAttrib('vertex_id')
+               vbos['vertex_id'].unbind()
+            glBindVertexArray(0)        
+            self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
+            vbos['i'].unbind()                       
+        if not(linewidth[0] > 0.0 and not self._shadow): return
+
+        self.select_shader(self.lshader)
         glBindVertexArray(vbos['vao'])
-
-        vbos['i'].bind()
-        vbos['v'].bind()
-        self.EnableVertexAttrib('inVertex')                
-        self.VertexAttribPointer('inVertex', 3, GL_FLOAT, GL_FALSE,
-                                    0, None)
-
-        if vbos['n'] is not None:
-           vbos['n'].bind()
-           self.EnableVertexAttrib('inNormal')                   
-           self.VertexAttribPointer('inNormal', 3, GL_FLOAT, GL_FALSE,
-                                    0, None)
-
-        if vbos['vertex_id'] is not None:
-           vertex_id = vbos['vertex_id']
-           vertex_id.bind()
-           self.EnableVertexAttrib('vertex_id')           
-           self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
-                                    0, None)
-           self.set_uniform(glUniform1i,  'uUseArrayID', 1)
+        if vbos['ie'] is not None:        
+           vbos['ie'].bind()
         else:
-           self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+           vbos['i'].bind()
+           
+        self.EnableVertex(vbos)
+        self.EnableNormal(vbos)
+        self.EnableVertexID(vbos)
         
         offset = list(offset)+[0]
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
         
-        #if not lighting and self._p_shader is self.shader:
-        #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
-        if facecolor is not None:
-           vbos['fc'].bind()
-           self.EnableVertexAttrib('inColor')                   
-           self.VertexAttribPointer('inColor', 4, GL_FLOAT, GL_FALSE,
-                                    0, None)
-           if self._wireframe != 2:
-               if self._wireframe == 1:
-                   glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
-               check_gl_error()
-               glDrawElements(vbos['primitive'], nindex,
-                                 GL_UNSIGNED_INT, None)
-               if self._wireframe == 1:
-                  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)           
-           vbos['fc'].unbind()
-           self.DisableVertexAttrib('inColor')
+        self.setLineWidth(linewidth[0]*multisample)
+        self.EnableEdgeColor(vbos)
+        glDepthFunc(GL_LEQUAL)
 
-        if linewidth[0] > 0.0 and not self._shadow:
-            if vbos['ie'] is not None:
-               vbos['i'].unbind()               
-               vbos['ie'].bind()
+        if not self._shadow:
+            self.set_view_offset(offset_base = view_offset)
+        if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
+        #glDepthMask(GL_FALSE)
 
-            self.setLineWidth(linewidth[0]*multisample)
-            vbos['ec'].bind()
-            self.EnableVertexAttrib('inColor')                    
-            self.VertexAttribPointer('inColor', 4, GL_FLOAT, GL_FALSE,
-                                    0, None)
-            glDepthFunc(GL_LEQUAL)
-
-            if not self._shadow:
-                self.set_view_offset(offset_base = view_offset)
-            if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            #glDepthMask(GL_FALSE)
-
-            glDrawElements(vbos['eprimitive'], nindexe,
-                                 GL_UNSIGNED_INT, None)
-            self.select_shader(self.shader)            
-            #self.set_depth_mask()
-            if self._wireframe == 2: self.set_depth_test()                        
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
-            if self._wireframe == 2: self.set_depth_test()
-            self.set_uniform(glUniform4fv, 'uViewOffset', 1,
-                             (0, 0, 0., 0.))
-            vbos['ec'].unbind()
-            self.DisableVertexAttrib('inColor')
-            glDepthFunc(GL_LESS)
-            if vbos['ie'] is not None:
-               vbos['ie'].unbind()
-            else:
-                vbos['i'].unbind()               
+        glDrawElements(vbos['eprimitive'], nindexe,
+                             GL_UNSIGNED_INT, None)
+        self.select_shader(self.shader)            
+        #self.set_depth_mask()
+        if self._wireframe == 2: self.set_depth_test()                        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
+        if self._wireframe == 2: self.set_depth_test()
+        self.set_uniform(glUniform4fv, 'uViewOffset', 1,
+                         (0, 0, 0., 0.))
+        vbos['ec'].unbind()
+        self.DisableVertexAttrib('inColor')
+        
+        glDepthFunc(GL_LESS)
+        if vbos['ie'] is not None:
+           vbos['ie'].unbind()
         else:
             vbos['i'].unbind()               
 
@@ -1816,10 +1835,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['vertex_id'] is not None:
            self.DisableVertexAttrib('vertex_id')
            vbos['vertex_id'].unbind()
-
         glBindVertexArray(0)        
         
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
+        self.select_shader(self.shader)        
     
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor, 
                                       edgecolor, *args,  **kwargs):
