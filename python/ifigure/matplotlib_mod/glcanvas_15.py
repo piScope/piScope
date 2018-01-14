@@ -678,7 +678,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self._shadow = False
             
         self.select_shader(self.lshader); setup_shader()
-        self.select_shader(self.shader);  setup_shader()
+        self.select_shader(self.shader); setup_shader()
         
     def set_oit_mode_tex(self, texs, firstpath = True):
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
@@ -1287,13 +1287,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def draw_path(self, vbos, gc, path, rgbFace = None,
                   stencil_test = True, linestyle = 'None'):
-
+        
+        self.select_shader(self.lshader)            
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
         self.EnableNormal(vbos)                
-
         lw = gc.get_linewidth()
-        self.select_shader(self.lshader)            
+
         if lw > 0: self.setLineWidth(lw*multisample)
         if rgbFace is None:
             self.setSolidColor(gc._rgb)
@@ -1310,11 +1310,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.setSolidColor(rgbFace)
             self._draw_polygon(0, vbos['count'], facecolor = rgbFace,
                                edgecolor = gc._rgb)
-        self.select_shader(self.shader)                        
-        self.setSolidColor(-1)                        
+        self.setSolidColor(-1)
         self.DisableVertexAttrib('inNormal')
         self.DisableVertexAttrib('inVertex')
-        glBindVertexArray(0)        
+        glBindVertexArray(0)
+        self.select_shader(self.shader)                                
         
     def makevbo_path(self, vbos, gc, path, *args, **kwargs):
         if vbos is None:
