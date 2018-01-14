@@ -24,7 +24,6 @@ from canvas_common import *
 
 def add_attribute(l, name, value):
     n = getattr(glcanvas, name)
-    print n
     if glcanvas.GLCanvas.IsDisplaySupported([n]):
         l.append(n)
         if value is not None:
@@ -73,6 +72,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._attrib_loc = {}
         self._hittest_map_update = True
         self._alpha_blend = True
+        self._current_uniform = {}
         #self._no_smooth = False
         self._hl_color = (0., 0., 0., 0.65)
         self.PIXBUFS = (None, None, None)  
@@ -114,7 +114,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
            
     #@wait_gl_finish           
     def set_uniform(self, func, name, *args, **kwargs):
+        if not name in self._p_uniform_loc: return
         loc = self._p_uniform_loc[name]
+        self._current_uniform[name] = (func, args, kwargs)
         func(loc, *args, **kwargs)
 
     def select_shader(self, shader):
@@ -126,6 +128,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._p_uniform_loc = shader.uniform_loc
         self._p_attrib_loc  = shader.attrib_loc        
         self._p_shader = shader
+        for name in self._current_uniform:
+            func, args, kwargs = self._current_uniform[name]
+            self.set_uniform(func, name, *args, **kwargs)
 
     def __del__(self):
         if len(self.frames) > 0: glDeleteFramebuffers(len(frames), self.frames)
