@@ -277,7 +277,7 @@ void main() {
      FragData0 = vec4(cT, 0, 0, 1);	     
      */
 
-     if (uLineStyle == 0){     
+     if (uLineStyle == 0){
          if (dashed[int(mod(atlas, 32))] == 0){
 	     discard;
          }
@@ -292,6 +292,7 @@ void main() {
 	     discard;
          }
      }
+     
      if (uisSolid == 1){
         FragData1 = uArtistID;
         if (uUseArrayID == 1){

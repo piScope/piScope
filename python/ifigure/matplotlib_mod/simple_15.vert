@@ -32,7 +32,6 @@ out vec3 LightDist;
 out vec2 atlas_data;
 out float atlas;
 out float array_id;
-
 out vec2 texCoord;
 
 uniform mat4 uWorldM;

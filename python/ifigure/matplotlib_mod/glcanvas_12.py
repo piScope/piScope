@@ -1146,7 +1146,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisable(GL_DEPTH_TEST)
         tmp = get_vbo(vbos['v'].data[3:],
                             usage='GL_STATIC_DRAW')
-        
         tmp.bind()
         self.VertexAttribPointer('Vertex2', 3, GL_FLOAT,
                                  GL_FALSE, 0, None)

@@ -372,7 +372,9 @@ def load_file(file=None):
                sall[i]=sall[i][1:] 
 
                continue
-            if sall[i].endswith('='):continue #'name='
+            if sall[i].endswith('='):
+               i = i+1
+               continue #'name='
             k=sall[i].split('=')
             sall[i]=k[0]+'='
             sall.insert(i+1, k[1])
