@@ -1,4 +1,14 @@
-        * 11/27
+2018
+        * 1/10
+        ** Migration to OpenGL 3.2 core is on-going
+	Most of the functionality seems working now.
+        Programs for Shader language 1.5 is named like xxxx_15.frag
+	Similary MyGLCanvas has now _12 and _15 versions to support old machines.
+	A gometry shader to draw thick line is added.
+	Future developement will be done only on GL3.2
+
+2017	
+	* 11/27
         ** ifigure.utils.wx3to4 is added. This modules is used to absorb the API differences
 	between Classic and Phoenix. Note that it is not meant for general purpose module.
 	It covers only the APIs used in piScope.
