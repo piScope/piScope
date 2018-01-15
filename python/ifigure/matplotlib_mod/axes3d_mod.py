@@ -820,12 +820,13 @@ class Axes3DMod(Axes3D):
                 p1 = xyz[:, 0, :] - xyz[:, 2, :]
                 n1a = np.cross(p0, p1)
                 da = np.sqrt(np.sum(n1a**2, 1))
+                da[da == 0.0] = 1.
                 n1a[:,0] /= -da
                 n1a[:,1] /= -da
-                n1a[:,2] /= -da                
+                n1a[:,2] /= -da
             else:
                 da = np.zeros(idxset.shape[0])
-                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight                
+                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight
                 n1a[:,2] = 1.0
                 
             if len(args) == 1:
@@ -846,10 +847,12 @@ class Axes3DMod(Axes3D):
                 indptr = csr.indptr; indices = csr.indices
                 for i in range(csr.shape[0]):
                     nn = n1a[indices[indptr[i]:indptr[i+1]]]
-                    sign = np.sign(np.sum(nn*nn[0], 1))
-                    nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
-                    norms[i, :] = np.mean(nn, 0)
-
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                       norms[i, :] = np.mean(nn, 0)
+                    else:
+                       norms[i, :] = [1,0,0]
             norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),

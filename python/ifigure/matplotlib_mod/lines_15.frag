@@ -15,9 +15,7 @@ in vec4 gColor;
 in float gDist;
 in float gArrayID;
 in vec3 gClipDistance;
-in vec2 gAtlasData;
 in float gAtlas;
-
 
 out vec4 FragData0;
 out vec4 FragData1;
@@ -61,8 +59,6 @@ uniform ivec2 uSCSize;
 
 uniform float uLineWidth;
 uniform int uUseArrayID;
-uniform int uLineStyle;
-
 uniform int uLineStyle;
 int dashed[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
                                0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);

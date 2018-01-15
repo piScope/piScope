@@ -153,9 +153,7 @@ void main() {
      if (uisAtlas == 1){
          float data = length(vec2(atlas_data[0]*uAtlasParam[1], 
        	                          atlas_data[1]*uAtlasParam[2]));
-         FragData0 = vec4(data, 0, 0, 1); 
-/*         gl_FragData[0] = vec4(atlas_data[1], 0, 0, 1);  */
-/*         gl_FragData[0] = vec4(gl_FragCoord.x, 0, 0, 1);	 */
+         FragData0 = vec4(data/1000., 0, 0, 1);
          return;
      }
      float bias = 0.001;

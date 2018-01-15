@@ -1240,6 +1240,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.shader)
         return atlas
 
+    '''
     def _styled_line(self, vbos, linestyle = '--'):
         w = vbos['count']
         void1, void2, w0, h0 = glGetIntegerv(GL_VIEWPORT)
@@ -1318,8 +1319,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self.set_uniform(glUniform1i,  'uLineStyle', -1)                
         self.DisableVertexAttrib('vertex_id')
-
-    def draw_path_atlas(self, vbos, gc, path):
+    '''
+    def draw_path_atlas(self, vbos, gc, path, *args):
 
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
@@ -1333,7 +1334,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindTexture(GL_TEXTURE_2D, atlas_tex)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R16, 
                      w, 1, 0, GL_RED, GL_FLOAT, None)
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, 
@@ -1359,15 +1360,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                             usage='GL_STATIC_DRAW')
         vertex_id.bind()
         self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
-        vertex_id.unbind()
         self.EnableVertexAttrib('vertex_id')
         self.EnableVertexAttrib('Vertex2')                        
         glViewport(0, 0, w, 1)
         self.set_uniform(glUniform1i,  'uisAtlas', 1)
         self.set_uniform(glUniform3fv, 'uAtlasParam', 1, [w, w0, h0])
         glDrawArrays(GL_LINE_STRIP, 0, w)
-        self.DisableVertexAttrib('vertex_id')
-        self.DisableVertexAttrib('Vertex2')
         glReadBuffer(GL_COLOR_ATTACHMENT2)
         data = glReadPixels(0, 0, w, 1, GL_RED, GL_FLOAT)
         glReadBuffer(GL_NONE)        
@@ -1377,14 +1375,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                GL_TEXTURE_2D, 0, 0)
 
         atlas =  np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
+        atlas *= 1000.
+        if globals()['multisample'] == 2:
+           atlas /= 2.
         self.set_depth_test()
         glViewport(0, 0, w0, h0)
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
-        
+        vertex_id.unbind()        
         self.setSolidColor(-1)
         self.DisableVertexAttrib('inNormal')
         self.DisableVertexAttrib('inVertex')
+        self.DisableVertexAttrib('Vertex2')
+        self.DisableVertexAttrib('vertex_id')                
         glBindVertexArray(0)
         self.select_shader(self.shader)
         return atlas
@@ -1426,30 +1429,35 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.setSolidColor(-1)
         self.DisableVertexAttrib('inNormal')
         self.DisableVertexAttrib('inVertex')
+        if atlas is not None:
+            self.DisableVertexAttrib('vertex_id')            
         glBindVertexArray(0)
         self.select_shader(self.shader)
         
     def draw_path(self, vbos, gc, *args, **kwargs):
-        rgbFace = kargs.get('rgbFace', None)
-        linestyle = kargs.get('linestyle', None)
+        rgbFace = kwargs.get('rgbFace', None)
+        linestyle = kwargs.get('linestyle', None)
         lw = gc.get_linewidth()        
         if rgbFace is None:
             if lw > 0:
-                if (linestyle == '-' or self._p_shader == self.shader):
-                    self.draw_path_drawarray(self, vbos, gc,  *args, **kwargs)
+                if (linestyle == '-' or self._p_shader != self.shader):
+                    self.draw_path_drawarray(vbos, gc,  *args, **kwargs)
                 elif linestyle == 'None':
                    return
                 else:
-                    atlas = draw_path_atlas(self, vbos, gc, path)
+                    atlas = self.draw_path_atlas(vbos, gc, *args)
                     kwargs['atlas'] = atlas
-                    self.draw_path_drawarray(self, vbos, gc,  *args, **kwargs)
+                    self.draw_path_drawarray(vbos, gc,  *args, **kwargs)
         else:
             self.draw_polygon(0, vbos['count'], facecolor = rgbFace,
                                edgecolor = gc._rgb)
             
             mode = 3  # polygon
         return
-        self.select_shader(self.lshader)            
+    '''    
+    def draw_path(self, vbos, gc, path, rgbFace = None,
+                  stencil_test = True, linestyle = 'None',
+                  atlas = None):
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
         self.EnableNormal(vbos)                
@@ -1476,8 +1484,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.DisableVertexAttrib('inVertex')
         glBindVertexArray(0)
         self.select_shader(self.shader)                                
-        
-        
+    '''    
     def makevbo_path(self, vbos, gc, path, *args, **kwargs):
         if vbos is None:
             vbos  = {'v': None, 'count':None, 'n':None}
@@ -2194,20 +2201,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return None
 
     def frame_request(self, a, trans):
-        if not multisample_init_done:
-           globals()['multisample_init_done'] = True
-           s = wx.GetApp().TopWindow.appearanceconfig.setting
-           if s['gl_multisample']:
-               globals()['multisample'] = 2
-           else:
-               globals()['multisample'] = 1
+        globals()['multisample_init_done'] = True
+        s = wx.GetApp().TopWindow.appearanceconfig.setting
+        if s['gl_multisample']:
+            globals()['multisample'] = 2
+        else:
+            globals()['multisample'] = 1
         from art3d_gl import frame_range
         target = self.get_container(a)
         box = trans.transform([frame_range[0:2], frame_range[2:4]])
         d = box[1] - box[0]
         w, h = long(d[0])*multisample, long(d[1])*multisample
         make_new = False
-
 
         if target in self.frame_list:
              w2, h2, m2,frames, bufs, stc, texs = self.frame_list[target]
@@ -2225,7 +2230,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             make_new = True
         if make_new:
-#            print 'makeing new frame', w, h
+            #print 'makeing new frame', w, h
             frame, buf, stc, dtex = self.get_newframe(w, h)
             if frame is not None:
                 self.frame_list[target] = (w, h, multisample, frame, buf, stc, dtex)

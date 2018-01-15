@@ -1,16 +1,26 @@
-// Geometry Shader
+/*
+   Geometry Shader for anti-aliased lines.
+
+   Input : a line segment.
+   Output: two triangles (strip).
+           distance from the center of line.
+	   pass through the length along the line (atlas)
+*/
+
 #version 150
 layout(lines) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-in  vec4 vColor[];
+in  vec4  vColor[];
 in  float vArrayID[];
-in vec3 vClipDistance[];
+in  vec3  vClipDistance[];
+in  float vAtlas[];
 
-out vec4 gColor;
+out vec4  gColor;
 out float gDist;
 out float gArrayID;
-out vec3 gClipDistance;
+out vec3  gClipDistance;
+out float gAtlas;
 
 uniform float uLineWidth;
 uniform ivec2 uSCSize;
@@ -30,6 +40,7 @@ void main()
     
     gColor = vColor[0];
     gArrayID = vArrayID[0];
+    gAtlas = vAtlas[0];
     gClipDistance = vClipDistance[0];
     int extra_w = 3;
     
@@ -43,7 +54,8 @@ void main()
 
     gColor = vColor[1];
     gArrayID = vArrayID[1];
-    gClipDistance = vClipDistance[1];    
+    gClipDistance = vClipDistance[1];
+    gAtlas = vAtlas[1];    
     
     gl_Position = gl_in[1].gl_Position + n1;
     gDist  = -uLineWidth-extra_w;        
