@@ -1603,12 +1603,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def draw_markers(self, vbos, gc, marker_path, marker_trans, path,
                      trans, rgbFace=None, array_idx = None):
 
-
+        print 'Draw Marker'
         marker_size = marker_trans[0]
         h, w,  void = marker_path.shape
-        
+        print self._p_shader
         glBindVertexArray(vbos['vao'])
-        
+
         marker_tex = glGenTextures(1)
         glActiveTexture(GL_TEXTURE0 + 0)
         glBindTexture(GL_TEXTURE_2D, marker_tex)
@@ -1619,19 +1619,23 @@ class MyGLCanvas(glcanvas.GLCanvas):
                      marker_path)
         dprint2('marker texture unit : '+ str(marker_tex))
         self.set_uniform(glUniform1i, 'uMarkerTex', 0)
-
+        print np.sum(marker_path)
         self.EnableVertex(vbos)
         if rgbFace is None:
+           print('here', gc._rgb)
            self.setSolidColor(gc._rgb)
         else:
+           print('there')            
            self.setSolidColor(rgbFace)           
 
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
+        self.setLineWidth(1)        
+        print marker_size
         glPointSize(marker_size*2*multisample+1)
-        #glEnable(GL_POINT_SPRITE)
+
         self.set_uniform(glUniform1i,  'uAlphaTest',  1)
-        self.set_uniform(glUniform1f,  'uAlphaLimit', 0.5)                                
+        self.set_uniform(glUniform1f,  'uAlphaLimit', 0.5)        
         self.set_view_offset()
 
         vertex_id = vbos['vertex_id']
@@ -1641,7 +1645,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         vertex_id.unbind()
         self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
         self.EnableVertexAttrib('vertex_id')
-        
+
+        print('draw array(gl_point)')
+        glDepthFunc(GL_LESS)        
         glDrawArrays(GL_POINTS, 0, vbos['count'])
         
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
@@ -1894,7 +1900,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ## for now this case is redirected
             ## assert False, "use_multdrawarrays not supported"
             ##
-        if facecolor is not None:
+        print 'linewidth', linewidth
+        if facecolor is not None and vbos['primitive'] is not None:
             glBindVertexArray(vbos['vao'])
             vbos['i'].bind()
             self.EnableVertex(vbos)
@@ -1913,6 +1920,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if self._wireframe == 1:
                     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
                 check_gl_error()
+                print('draw element(face)')
                 glDrawElements(vbos['primitive'], nindex,
                                      GL_UNSIGNED_INT, None)
                 if self._wireframe == 1:
@@ -1929,9 +1937,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
                vbos['vertex_id'].unbind()
             glBindVertexArray(0)        
             self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
-            vbos['i'].unbind()                       
+            vbos['i'].unbind()
+            
         if not(linewidth[0] > 0.0 and not self._shadow): return
-
+        if linewidth[0] == 0.0: return
+        
         self.select_shader(self.lshader)
         glBindVertexArray(vbos['vao'])
         if vbos['ie'] is not None:        
@@ -1955,10 +1965,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.set_view_offset(offset_base = view_offset)
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         #glDepthMask(GL_FALSE)
-        #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)            
+        #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glDrawElements(vbos['eprimitive'], nindexe,
                              GL_UNSIGNED_INT, None)
-        self.select_shader(self.shader)            
         #self.set_depth_mask()
         if self._wireframe == 2: self.set_depth_test()                        
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
@@ -2038,7 +2047,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             counts = 2
             nindex = len(paths[4])*len(paths[4][0])
             nindexe = nindex
-            primitive  = GL_LINES
+            primitive  = None
             eprimitive = GL_LINES
         else:
             assert False, "Unsupported element shape"

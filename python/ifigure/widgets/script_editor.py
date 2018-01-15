@@ -400,6 +400,9 @@ class PythonSTC(stc.StyledTextCtrl):
 
     def set_search_status_text(self, fail=False):
         frame=self.GetTopLevelParent()
+        if not hasattr(frame, 'SetStatusText'):
+           # without this wx4 may crush when exiting 
+           return
 
         if self._search == 2:
             header = 'Back searching  '
