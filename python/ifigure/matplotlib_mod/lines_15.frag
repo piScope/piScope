@@ -14,6 +14,10 @@
 in vec4 gColor; 
 in float gDist;
 in float gArrayID;
+in vec3 gClipDistance;
+in vec2 gAtlasData;
+in float gAtlas;
+
 
 out vec4 FragData0;
 out vec4 FragData1;
@@ -59,8 +63,55 @@ uniform float uLineWidth;
 uniform int uUseArrayID;
 uniform int uLineStyle;
 
+uniform int uLineStyle;
+int dashed[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                               0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+int dash_dot[32] = int[32](1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1,
+                                 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1);
+int dotted[32] = int[32](0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+                               0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+
+
 void main() {
      /* just to make sure to write this variable */
+     float bias = 0.001;     
+     if (uUseClip == 1){     
+     if (gClipDistance[0] < uClipLimit1[0]-bias){
+        discard;
+     }
+     if (gClipDistance[1] < uClipLimit1[1]-bias){
+        discard;
+     }
+     if (gClipDistance[2] < uClipLimit1[2]-bias){
+        discard;
+     }
+     if (gClipDistance[0] > uClipLimit2[0]+bias){
+        discard;
+     }
+     if (gClipDistance[1] > uClipLimit2[1]+bias){
+        discard;
+     }
+     if (gClipDistance[2] > uClipLimit2[2]+bias){
+        discard;
+     }
+     }
+
+     if (uLineStyle == 0){
+         if (dashed[int(mod(gAtlas, 32))] == 0){
+	     discard;
+         }
+     }
+     if (uLineStyle == 1){     
+         if (dash_dot[int(mod(gAtlas, 32))] == 0){
+	     discard;
+         }
+     }
+     if (uLineStyle == 2){     
+         if (dotted[int(mod(gAtlas, 32))] == 0){
+	     discard;
+         }
+     }
+
      gl_FragDepth = gl_FragCoord.z + uViewOffset.z*gl_FragCoord.w;
      
      FragData0 = gColor;

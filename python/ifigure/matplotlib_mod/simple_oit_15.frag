@@ -44,7 +44,6 @@ uniform float nearZ;
 uniform float farZ;
 uniform int isFrust;
 
-
 uniform int  uUseShadowMap;
 uniform sampler2D uShadowTex;
 uniform sampler2D uShadowTex2;

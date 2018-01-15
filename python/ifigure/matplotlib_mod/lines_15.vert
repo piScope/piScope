@@ -21,6 +21,9 @@ in float vertex_id;
 
 out vec4 vColor;
 out float vArrayID;
+out vec3 vClipDistance;
+out vec2 vAtlasData;
+out float vAtlas;
 
 uniform mat4 uWorldM;
 uniform vec4 uWorldOffset;
@@ -52,9 +55,12 @@ void main() {
    }
    vec4 Vertex = vec4(inVertex, 1);
    gl_Position = uProjM * (uViewM *(uWorldM*Vertex) + uViewOffset);
-   
+   vClipDistance = vec3(uWorldM * Vertex);   
    if (uUseArrayID == 1){
        vArrayID = vertex_id;
+   }
+   if (uLineStyle != -1){
+       vAtlas = vertex_id;
    }
 
 }

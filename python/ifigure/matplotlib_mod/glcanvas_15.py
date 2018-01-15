@@ -300,7 +300,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def setLineWidth(self, l):
         self.set_uniform(glUniform1f,  'uLineWidth', l)
-        print('uLineWidth', l)
+        #print('uLineWidth', l)
         #l = min(l, self._line_width_range[1])
         #l = max(l, self._line_width_range[0])
         #glLineWidth(l)
@@ -648,7 +648,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              self.M[1])
             self.set_uniform(glUniformMatrix4fv, 'uProjM', 1, GL_TRUE, self.projM)
 
-            tmp = np.dot(self.projM, np.dot(self.M[1], self.M[0]))[:3,:3]
+            tmp = np.dot(self.M[1], self.M[0])[:3,:3]
             normM = np.linalg.inv(tmp).transpose()
             self.set_uniform(glUniformMatrix3fv, 'uNormalM', 1, GL_TRUE, normM)        
 
@@ -1187,7 +1187,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
            self.set_uniform(glUniform1i,  'uUseArrayID', 0)
         
-    def _draw_polygon(self, f, c, facecolor = None, edgecolor = None):
+    def draw_polygon(self, f, c, facecolor = None, edgecolor = None):
+        glBindVertexArray(vbos['vao'])
+        self.EnableVertex(vbos)
+        self.EnableNormal(vbos)                
+        lw = gc.get_linewidth()
+        
         glDisable(GL_DEPTH_TEST)
         glEnable(GL_STENCIL_TEST)
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1227,6 +1232,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          (0, 0, 0.00, 0.))                
         
         glDepthFunc(GL_LESS)
+        
+        self.setSolidColor(-1)
+        self.DisableVertexAttrib('inNormal')
+        self.DisableVertexAttrib('inVertex')
+        glBindVertexArray(0)
+        self.select_shader(self.shader)
+        return atlas
 
     def _styled_line(self, vbos, linestyle = '--'):
         w = vbos['count']
@@ -1307,9 +1319,136 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uLineStyle', -1)                
         self.DisableVertexAttrib('vertex_id')
 
-    def draw_path(self, vbos, gc, path, rgbFace = None,
-                  stencil_test = True, linestyle = 'None'):
+    def draw_path_atlas(self, vbos, gc, path):
+
+        glBindVertexArray(vbos['vao'])
+        self.EnableVertex(vbos)
+        self.EnableNormal(vbos)                
+        lw = gc.get_linewidth()
         
+        w = vbos['count']
+        void1, void2, w0, h0 = glGetIntegerv(GL_VIEWPORT)
+
+        atlas_tex = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, atlas_tex)
+        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 
+                     w, 1, 0, GL_RED, GL_FLOAT, None)
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT2, 
+                               GL_TEXTURE_2D, 0, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT2, 
+                               GL_TEXTURE_2D, atlas_tex, 0)
+        
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT2)
+        
+        glDisable(GL_DEPTH_TEST)
+        tmp = get_vbo(vbos['v'].data[3:],
+                            usage='GL_STATIC_DRAW')
+        
+        tmp.bind()
+        self.VertexAttribPointer('Vertex2', 3, GL_FLOAT,
+                                 GL_FALSE, 0, None)
+        tmp.unbind()
+
+        vertex_id = get_vbo(np.arange(w, dtype=np.float32),
+                            usage='GL_STATIC_DRAW')
+        vertex_id.bind()
+        self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
+        vertex_id.unbind()
+        self.EnableVertexAttrib('vertex_id')
+        self.EnableVertexAttrib('Vertex2')                        
+        glViewport(0, 0, w, 1)
+        self.set_uniform(glUniform1i,  'uisAtlas', 1)
+        self.set_uniform(glUniform3fv, 'uAtlasParam', 1, [w, w0, h0])
+        glDrawArrays(GL_LINE_STRIP, 0, w)
+        self.DisableVertexAttrib('vertex_id')
+        self.DisableVertexAttrib('Vertex2')
+        glReadBuffer(GL_COLOR_ATTACHMENT2)
+        data = glReadPixels(0, 0, w, 1, GL_RED, GL_FLOAT)
+        glReadBuffer(GL_NONE)        
+        
+        glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                               GL_COLOR_ATTACHMENT2, 
+                               GL_TEXTURE_2D, 0, 0)
+
+        atlas =  np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
+        self.set_depth_test()
+        glViewport(0, 0, w0, h0)
+        glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
+                          GL_COLOR_ATTACHMENT1])
+        
+        self.setSolidColor(-1)
+        self.DisableVertexAttrib('inNormal')
+        self.DisableVertexAttrib('inVertex')
+        glBindVertexArray(0)
+        self.select_shader(self.shader)
+        return atlas
+
+    def draw_path_drawarray(self, vbos, gc, path, rgbFace = None,
+                            stencil_test = True, linestyle = 'None',
+                            atlas = None):
+        
+        self.select_shader(self.lshader)            
+        glBindVertexArray(vbos['vao'])
+        self.EnableVertex(vbos)
+        self.EnableNormal(vbos)                
+        lw = gc.get_linewidth()
+
+        self.setLineWidth(lw*multisample)
+        self.setSolidColor(gc._rgb)
+        if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
+
+        if atlas is not None:
+            vertex_id = get_vbo(atlas.astype(np.float32),
+                            usage='GL_STATIC_DRAW')
+            vertex_id.bind()
+            self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
+            self.EnableVertexAttrib('vertex_id')
+
+        self.set_uniform(glUniform1i,  'uisAtlas', 0)
+        if linestyle == '--':
+           self.set_uniform(glUniform1i,  'uLineStyle', 0)
+        elif linestyle == '-.':
+           self.set_uniform(glUniform1i,  'uLineStyle', 1)
+        elif linestyle == ":":
+           self.set_uniform(glUniform1i,  'uLineStyle', 2)  
+        else:
+           self.set_uniform(glUniform1i,  'uLineStyle', -1)
+        
+        glDrawArrays(GL_LINE_STRIP, 0, vbos['count'])
+
+        self.set_uniform(glUniform1i,  'uLineStyle', -1)        
+        self.setSolidColor(-1)
+        self.DisableVertexAttrib('inNormal')
+        self.DisableVertexAttrib('inVertex')
+        glBindVertexArray(0)
+        self.select_shader(self.shader)
+        
+    def draw_path(self, vbos, gc, *args, **kwargs):
+        rgbFace = kargs.get('rgbFace', None)
+        linestyle = kargs.get('linestyle', None)
+        lw = gc.get_linewidth()        
+        if rgbFace is None:
+            if lw > 0:
+                if (linestyle == '-' or self._p_shader == self.shader):
+                    self.draw_path_drawarray(self, vbos, gc,  *args, **kwargs)
+                elif linestyle == 'None':
+                   return
+                else:
+                    atlas = draw_path_atlas(self, vbos, gc, path)
+                    kwargs['atlas'] = atlas
+                    self.draw_path_drawarray(self, vbos, gc,  *args, **kwargs)
+        else:
+            self.draw_polygon(0, vbos['count'], facecolor = rgbFace,
+                               edgecolor = gc._rgb)
+            
+            mode = 3  # polygon
+        return
         self.select_shader(self.lshader)            
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
@@ -1337,6 +1476,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.DisableVertexAttrib('inVertex')
         glBindVertexArray(0)
         self.select_shader(self.shader)                                
+        
         
     def makevbo_path(self, vbos, gc, path, *args, **kwargs):
         if vbos is None:
@@ -1937,7 +2077,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
         if vbos['i'].need_update:
             vbos['i'].set_array(idxset)
-            vbos['counts'] = [len(idx) for idx in paths[4]]
+            vbos['counts'] = len(paths[4][0])
             vbos['i'].need_update = False
             if idxsete is not None:
                 vbos['ie'].set_array(idxsete)
@@ -1955,11 +2095,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
             elif  facecolor.ndim == 2 and len(paths[0]) == len(facecolor):
                 # index array/linear
                 col = [facecolor]
-            elif len(facecolor) == len(counts):
+            elif len(facecolor) == nindex:
                 # non index array/flat               
-                col = [list(f)*counts  for f in facecolor]
+                col = [list(f)*nindex  for f in facecolor]
             else:
-                col = [facecolor]*np.sum(counts) # single color
+                col = [facecolor]*nindex*counts # single color
             
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
@@ -1969,7 +2109,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
             vbos['fc'].need_update = False
         if vbos['ec'] is None or vbos['ec'].need_update:
-
             counts = vbos['counts']
             if len(edgecolor) == 0:
                 edgecolor = np.array([[1,1,1, 0]])
@@ -1977,7 +2116,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 #                col = [list(f)*c  for f, c in  zip(edgecolor, counts)]
                 col = edgecolor#[idxset, :]               
             else:
-                col = [edgecolor]*np.sum(counts)
+                col = [edgecolor]*nindex*counts
             col = np.hstack(col).astype(np.float32)
 
             if vbos['ec'] is None:
