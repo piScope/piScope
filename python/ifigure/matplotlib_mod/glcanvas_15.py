@@ -152,8 +152,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         # compile shader and set uniform variables
         # set viewing projection
-
-
         fs = compile_file('depthmap'+frag_suffix    , GL_FRAGMENT_SHADER)
         vs = compile_file('depthmap'+vert_suffix, GL_VERTEX_SHADER)
         # default vertex array object was deprecated, so I need this
@@ -623,8 +621,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_draw_mode_tex(texs)
 
         if not check_framebuffer('going to normal mode'): return
-
-
          
         def setup_shader():
             self.set_uniform(glUniform1i, 'uisFinal', 0)
@@ -1603,10 +1599,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def draw_markers(self, vbos, gc, marker_path, marker_trans, path,
                      trans, rgbFace=None, array_idx = None):
 
-        print 'Draw Marker'
         marker_size = marker_trans[0]
         h, w,  void = marker_path.shape
-        print self._p_shader
+
+        # this should not be necessary, but some linux box need this.
+        self.select_shader(self.lshader)                
+        self.select_shader(self.shader)
+        #
         glBindVertexArray(vbos['vao'])
 
         marker_tex = glGenTextures(1)
@@ -1619,19 +1618,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
                      marker_path)
         dprint2('marker texture unit : '+ str(marker_tex))
         self.set_uniform(glUniform1i, 'uMarkerTex', 0)
-        print np.sum(marker_path)
+
         self.EnableVertex(vbos)
         if rgbFace is None:
-           print('here', gc._rgb)
            self.setSolidColor(gc._rgb)
         else:
-           print('there')            
            self.setSolidColor(rgbFace)           
 
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         self.setLineWidth(1)        
-        print marker_size
         glPointSize(marker_size*2*multisample+1)
 
         self.set_uniform(glUniform1i,  'uAlphaTest',  1)
@@ -1646,10 +1642,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
         self.EnableVertexAttrib('vertex_id')
 
-        print('draw array(gl_point)')
-        glDepthFunc(GL_LESS)        
+        glDepthFunc(GL_LEQUAL)
+
         glDrawArrays(GL_POINTS, 0, vbos['count'])
-        
+        glDrawArrays(GL_LINES,  0, vbos['count'])                
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
         self.set_uniform(glUniform1i,  'uAlphaTest', 0)
@@ -1900,7 +1896,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ## for now this case is redirected
             ## assert False, "use_multdrawarrays not supported"
             ##
-        print 'linewidth', linewidth
         if facecolor is not None and vbos['primitive'] is not None:
             glBindVertexArray(vbos['vao'])
             vbos['i'].bind()
@@ -1920,7 +1915,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if self._wireframe == 1:
                     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
                 check_gl_error()
-                print('draw element(face)')
                 glDrawElements(vbos['primitive'], nindex,
                                      GL_UNSIGNED_INT, None)
                 if self._wireframe == 1:
