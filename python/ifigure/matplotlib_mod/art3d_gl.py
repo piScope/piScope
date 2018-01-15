@@ -48,6 +48,9 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         renderer.draw_image(gc, round(x), round(y), im)
         gc.restore()
     else:
+        #
+        # need to draw twice due to buffering of pixel reading
+        #
         glcanvas._no_hl = True
         glcanvas._hittest_map_update = True        
         id_dict = glcanvas.draw_mpl_artists(tag)
@@ -59,12 +62,6 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
         glcanvas._hittest_map_update = True                
 
-        #id_dict = glcanvas.draw_mpl_artists(tag)
-        # im : image, im2, im2d: id, im3: depth
-        #im, im2, im2d, im3 = glcanvas.read_data(tag)
-        #print 'image sum2', np.sum(im)
-        #import wx
-        #wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
