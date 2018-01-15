@@ -3,6 +3,9 @@ import time
 import wx
 import weakref
 
+import ifigure.utils.debug as debug
+dprint1, dprint2, dprint3 = debug.init_dprints('canvas_common')
+
 #
 #  OpenGL extention
 #

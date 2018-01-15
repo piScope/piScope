@@ -428,21 +428,27 @@ class AxesImageGL(ArtGL, AxesImage):
                trans = self.axes.transAxes
            elif self.figure is not None:
                tag = self.figure
-               trans = self.figure.transFpigure
+               trans = self.figure.transFigure
            glcanvas.frame_request(self, trans)
 #           if not glcanvas.has_vbo_data(self):
            glcanvas.start_draw_request(self)
            if self._gl_3dpath is not None:
-              im = self.make_image(renderer.get_image_magnification())
+              try:
+                  im = self.to_rgba(self._A)
+                  im = (im*255).astype(int)
+              except:
+                  # this is for an old version of matplotlib
+                  im = self.make_image(renderer.get_image_magnification())
+              self._im_cache = im
               gc = renderer.new_gc()              
               gc.set_alpha(self.get_alpha())
               if self._gl_rgbacache_id != id(self._rgbacache):
                  if glcanvas.has_vbo_data(self):                                   
                      d = glcanvas.get_vbo_data(self)
                      for x in d:
-                         x['im_update'] = True              
+                         x['im_update'] = True
               renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
-                                     np.transpose(self._rgbacache, (1,0,2)),
+                                     np.transpose(self._im_cache, (1,0,2)),
                                      interp = self._gl_interp)
               self._gl_rgbacache_id = id(self._rgbacache)
               gc.restore()
