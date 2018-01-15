@@ -856,7 +856,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.M = tag._matrix_cache
         self.M_extra = tag._matrix_cache_extra
         #glPushMatrix()
-        
         self.set_uniform(glUniform1i,  'uisSolid', 1)
         if self._use_shadow_map:
            shadow_params = self.use_depthmap_mode(frame, buf, texs, w, h)
@@ -1014,7 +1013,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
 
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-        stream_read = True
+        stream_read = False
         
         if stream_read:
             pixel_buffers = glGenBuffers(2)
@@ -1065,6 +1064,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(a)
         frame  = frames[0]
         ###
+        print('reading data')
         if multisample > 1:
             frame2 = frames[1]
             wim = w/multisample
@@ -1085,7 +1085,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             wim = w
             him = h
             glBindFramebuffer(GL_FRAMEBUFFER, frame)
-            self.set_oit_mode_tex(texs)            
+            self.set_oit_mode_tex(texs)
+        print w, h, wim, him
         ###
         glReadBuffer(GL_COLOR_ATTACHMENT0)
         size = wim*him
@@ -1145,11 +1146,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
            
         glReadBuffer(GL_NONE)
         if self._hittest_map_update:
+           print 'here'
            return (image,
                    self._hit_map_data[0],
                    self._hit_map_data[1],
                    self._hit_map_data[2])                   
         else:
+           print 'there here'
            return image
     #
     #  drawing routines
@@ -1894,7 +1897,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ## for now this case is redirected
             ## assert False, "use_multdrawarrays not supported"
             ##
-        if facecolor is not None:            
+        if facecolor is not None:
             glBindVertexArray(vbos['vao'])
             vbos['i'].bind()
             self.EnableVertex(vbos)
@@ -1955,7 +1958,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.set_view_offset(offset_base = view_offset)
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         #glDepthMask(GL_FALSE)
-
+        #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)            
         glDrawElements(vbos['eprimitive'], nindexe,
                              GL_UNSIGNED_INT, None)
         self.select_shader(self.shader)            
@@ -2012,25 +2015,37 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 idxset = np.hstack((idxset0[:, :3], idxset0[:, 2:], idxset0[:, :1])).flatten()
                 idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
                                      idxset0[:,2:], idxset0[:,3:], idxset0[:,:1])).flatten()
-            else:
+            elif len(paths[4][0]) == 3:
+                idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 3)
+                idxset  = idxset0.flatten()
+                idxsete = np.hstack((idxset0, idxset0[:,:1],)).flatten()
+            elif len(paths[4][0]) == 2:
                 idxset  = np.hstack(paths[4]).astype(np.uint32).flatten()
                 idxsete = None
+            else:
+                assert False, "Unsupported element shape"
+                
         if len(paths[4][0]) == 4:
             counts = 3
             nindex = len(paths[4])*6
             nindexe = len(paths[4])*8
             primitive = GL_TRIANGLES
             eprimitive = GL_LINES
-        else:
-            counts = len(paths[4][0])  
+        elif len(paths[4][0]) == 3:
+            counts = 3
+            nindex = len(paths[4])*len(paths[4][0])
+            nindexe = len(paths[4])*4
+            primitive  = GL_TRIANGLES            
+            eprimitive = GL_LINES
+        elif len(paths[4][0]) == 2:                        
+            counts = 2
             nindex = len(paths[4])*len(paths[4][0])
             nindexe = nindex
-            if counts == 2:
-                primitive  = GL_LINES
-                eprimitive = GL_LINES
-            else:
-                primitive  = GL_TRIANGLES
-                eprimitive = GL_TRIANGLES
+            primitive  = GL_LINES
+            eprimitive = GL_LINES
+        else:
+            assert False, "Unsupported element shape"
+
         nverts = len(paths[0])
         vbos['nindex'] = nindex
         vbos['nindexe'] = nindexe
@@ -2233,7 +2248,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             #print 'makeing new frame', w, h
             frame, buf, stc, dtex = self.get_newframe(w, h)
             if frame is not None:
-                self.frame_list[target] = (w, h, multisample, frame, buf, stc, dtex)
+                self.frame_list[target] = (w, h, multisample, frame,
+                                           buf, stc, dtex)
 
     def OnDraw(self):
          if self._do_draw_mpl_artists:
