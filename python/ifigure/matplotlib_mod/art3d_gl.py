@@ -37,6 +37,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     if (renderer._k_globj != renderer._num_globj): return
     #print ("finish gl draw", renderer._k_globj, renderer._num_globj)
     if not glcanvas._hittest_map_update:
+        glcanvas._no_hl = False
         id_dict = glcanvas.draw_mpl_artists(tag)
         im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
         gc = renderer.new_gc()
@@ -47,9 +48,21 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         renderer.draw_image(gc, round(x), round(y), im)
         gc.restore()
     else:
+        glcanvas._no_hl = True
+        glcanvas._hittest_map_update = True        
         id_dict = glcanvas.draw_mpl_artists(tag)
         # im : image, im2, im2d: id, im3: depth
-        im, im2, im2d, im3 = glcanvas.read_data(tag) 
+        im, im2, im2d, im3 = glcanvas.read_data(tag)
+        
+        glcanvas._hittest_map_update = False
+        id_dict = glcanvas.draw_mpl_artists(tag)
+        im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
+        glcanvas._hittest_map_update = True                
+
+        #id_dict = glcanvas.draw_mpl_artists(tag)
+        # im : image, im2, im2d: id, im3: depth
+        #im, im2, im2d, im3 = glcanvas.read_data(tag)
+        #print 'image sum2', np.sum(im)
         #import wx
         #wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
         gc = renderer.new_gc()

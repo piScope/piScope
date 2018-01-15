@@ -115,6 +115,15 @@ void main() {
      if (abs(gDist) >  uLineWidth) {
           FragData0.a = FragData0.a*(1. - (abs(gDist)-uLineWidth)/3);
      }
+     if (uHasHL == 1){
+        if (((uUseArrayID == 1) && (gArrayID < 0)) || (uUseArrayID != 1)){
+            /* alpha blend wiht uHLColor when it is highlighted. effective only
+   	      during rot/pan */
+            FragData0.a = uHLColor.a + (1-uHLColor.a)*FragData0.a;
+            FragData0.rgb = uHLColor.a*uHLColor.rbg + (1-uHLColor.a)*FragData0.rgb;
+	}
+     }
+     
      if (uisSolid == 1){
         FragData1 = uArtistID;
         if (uUseArrayID == 1){

@@ -759,7 +759,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
-                if (a._gl_hl and not self._hittest_map_update):
+                if ((a._gl_hl and not self._hittest_map_update)
+                    and not self._no_hl):
                     # second condition indicate it is during pan/rotate
                     self.set_uniform(glUniform1i, 'uHasHL', 1)
                 else:
@@ -1013,7 +1014,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
 
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-        stream_read = False
+        stream_read = True
         
         if stream_read:
             pixel_buffers = glGenBuffers(2)
@@ -1064,7 +1065,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(a)
         frame  = frames[0]
         ###
-        print('reading data')
         if multisample > 1:
             frame2 = frames[1]
             wim = w/multisample
@@ -1086,7 +1086,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
             him = h
             glBindFramebuffer(GL_FRAMEBUFFER, frame)
             self.set_oit_mode_tex(texs)
-        print w, h, wim, him
         ###
         glReadBuffer(GL_COLOR_ATTACHMENT0)
         size = wim*him
@@ -1146,13 +1145,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
            
         glReadBuffer(GL_NONE)
         if self._hittest_map_update:
-           print 'here'
            return (image,
                    self._hit_map_data[0],
                    self._hit_map_data[1],
                    self._hit_map_data[2])                   
         else:
-           print 'there here'
            return image
     #
     #  drawing routines
