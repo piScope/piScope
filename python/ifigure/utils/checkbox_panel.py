@@ -15,6 +15,7 @@
 '''
 import wx, math
 import ifigure.utils.cbook as cbook
+from ifigure.utils.wx3to4 import GridSizer
 
 class CheckBoxs(wx.Panel):
     def __init__(self, *args, **kargs):
@@ -25,7 +26,7 @@ class CheckBoxs(wx.Panel):
         labels = setting['labels']
         row = math.ceil(float(len(labels))/setting['col'])
         
-        sizer = wx.GridSizer(row, setting['col'])
+        sizer = GridSizer(row, setting['col'])
         self.SetSizer(sizer)
 
         self.child = []

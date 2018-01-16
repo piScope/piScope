@@ -5,6 +5,7 @@ from ifigure.widgets.book_viewer import FrameWithWindowList
 from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.script_editor import Notebook
+from ifigure.utils.wx3to4 import GridSizer
 
 pkeys = ['experiment', 'default_node','x', 'y', 'z',
                'xerr', 'yerr', 'title', '_flag']
@@ -14,7 +15,7 @@ def make_gs_arr(gs, s):
 #class DlgMdsSetting(FrameWithWindowList):
 class DlgMdsSetting(DialogWithWindowList):
    def __init__(self, parent, setting,  gwparam, mds_server, thread_main, cb=None):
-      style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER             
+      style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.CLOSE_BOX             
       super(DlgMdsSetting, self).__init__(parent, wx.ID_ANY, style=style)
 #      super(DlgMdsSetting, self).__init__(parent, wx.ID_ANY)
       self.cb = cb
@@ -107,7 +108,7 @@ class DlgMdsSetting(DialogWithWindowList):
       bt_apply = wx.Button(self, wx.ID_ANY, 'Apply')
       bt_save  = wx.Button(self, wx.ID_ANY, 'Save')
 
-      bsizer =wx.GridSizer(1,5)
+      bsizer = GridSizer(1,5)
       self.GetSizer().Add(bsizer, 0, wx.EXPAND|wx.ALL, 1)
       bsizer.AddStretchSpacer()
       bsizer.Add(bt_save, 1, wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 3)

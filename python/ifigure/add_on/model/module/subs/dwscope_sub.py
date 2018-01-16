@@ -58,7 +58,7 @@ def import_dwscope(file):
     
 def onLoadFile(self_obj):
     open_dlg = wx.FileDialog ( None, message="Select DWscope", 
-                                   wildcard='*.dat',style=wx.OPEN)
+                                   wildcard='*.dat',style=wx.FD_OPEN)
     if open_dlg.ShowModal() != wx.ID_OK:
          open_dlg.Destroy()    
          return False

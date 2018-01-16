@@ -113,7 +113,7 @@ def ask_mdssetting(this=None):
                                     ]}],
            ["Shot", shot, 0]]
 
-    flag, value=DialogEditList(list, parent=this.get_root_parent().app)
+    flag, value=DialogEditList(list, parent=this.get_app())
 
     if flag: 
         this.setvar('mdsplus_server', str(value[1]))

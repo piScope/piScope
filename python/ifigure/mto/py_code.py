@@ -111,7 +111,7 @@ class AbsFileContainer(object):
          obj = PyText()
          iname=self.get_next_name('untitled')
 
-         parent = self.get_root_parent().app
+         parent = self.get_app()
          ret, name = dialog.textentry(parent, 
                      "Enter a text name", "New text...", iname)
          self.add_child(name, obj)
@@ -324,7 +324,7 @@ class AbsModuleContainer(object):
 
         import ifigure.mto.py_module as py_module
         if module_type is None:
-             dlg = wx.MessageDialog(self.get_root_parent().app, 
+             dlg = wx.MessageDialog(self.get_app(),
                       "Does the new module have its own directory? \n"
                       "Or does it share the same directory as its parent? \n", 
                       "NewModule", wx.YES_NO | wx.ICON_INFORMATION)
@@ -414,7 +414,7 @@ class AbsScriptContainer(object):
         if name is '':
             iname = '_'.join([x for x in os.path.basename(temp)[:-3].split('_') if len(x) !=0])
             if parent is None:
-                parent = self.get_root_parent().app
+                parent = self.get_app()
             ret, name = dialog.textentry(parent, 
                             "Enter a script name", "New Script...", iname)
             if not ret: return

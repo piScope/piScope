@@ -4,7 +4,6 @@ from collections import OrderedDict
 import wx
 import wx.dataview as dv
 import wx.propgrid as pg
-from wx._core import PyDeadObjectError
 import six
 import numpy as np
 import time
@@ -16,6 +15,8 @@ try:
 except:
    pass
 import ifigure.events
+
+from ifigure.utils.wx3to4 import PyDeadObjectError, menu_Append
 '''
    helper window for HDF export
 

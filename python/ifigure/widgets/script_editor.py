@@ -29,6 +29,8 @@ import  ifigure.events
 from  ifigure.utils.minifier import minify
 import ifigure.widgets.dialog as dialog
 import  sys, os, logging, time
+
+from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append, isWX3
 #----------------------------------------------------------------------
 
 demoText = ""
@@ -262,7 +264,7 @@ class PythonSTC(stc.StyledTextCtrl):
 
         ### added for  dnd
         self.Bind(stc.EVT_STC_START_DRAG, self.OnStartDrag)
-#        self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
+        self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 #        self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
         self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
         self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
@@ -283,6 +285,25 @@ class PythonSTC(stc.StyledTextCtrl):
         self._ctrl_K = False
 
         self.ctrl_X = False
+        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+    def _exit_search_mode(self):
+        self._mark = -1
+        self._search = 0
+        self.set_search_text('')
+        self._search_st = -1
+       
+    def onSetFocus(self, evt):
+        evt.Skip()
+
+    def onKillFocus(self, evt):
+        self._exit_search_mode()
+        evt.Skip()
+        
+    def onLeftDown(self, e):
+        self._exit_search_mode()       
+        e.Skip()
 
     def set_syntax(self, syntax = 'python'):
         #print 'setting to ' + syntax
@@ -379,6 +400,9 @@ class PythonSTC(stc.StyledTextCtrl):
 
     def set_search_status_text(self, fail=False):
         frame=self.GetTopLevelParent()
+        if not hasattr(frame, 'SetStatusText'):
+           # without this wx4 may crush when exiting 
+           return
 
         if self._search == 2:
             header = 'Back searching  '
@@ -905,15 +929,6 @@ class PythonSTC(stc.StyledTextCtrl):
 
         return line
 
-    def onLeftDown(self, e):
-        self.Bind(wx.EVT_MOTION, self.onDragInit)
-        e.Skip()
-
-    def onLeftUp(self, e):
-        self.Unbind(wx.EVT_MOTION)
-        self.SetFocus()
-        e.Skip()
-
     def onDragInit(self, e):
         self.Unbind(wx.EVT_MOTION)
         sel = self.GetSelectedText()
@@ -936,7 +951,8 @@ class PythonSTC(stc.StyledTextCtrl):
         tds.DoDragDrop(True)
     def OnStartDrag(self, evt):
         sel = self.GetSelectedText()
-        evt.SetDragAllowMove(False)
+        if isWX3:
+           evt.SetDragAllowMove(False)
         evt.SetDragText(sel)
         p = self
         while p.GetParent() is not None:
@@ -1050,9 +1066,12 @@ class TextDropTarget(wx.TextDropTarget):
         #self.obj.DoDropText(x, y, txt)
         pos = self.obj.PositionFromPoint(wx.Point(x,y))
         self.obj.InsertText(pos, txt)
-        wx.CallAfter(self.obj.SetSTCFocus, True) 
-        wx.FutureCall(100, self.obj.SetFocus)
-        return super(TextDropTarget, self).OnDropText(x, y, indata)
+
+        if isWX3:
+            wx.CallAfter(self.obj.SetSTCFocus, True) 
+            wx.FutureCall(100, self.obj.SetFocus)
+        return True
+        #return super(TextDropTarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):
         self.obj.DoDragOver(x, y, default)
@@ -1123,9 +1142,13 @@ class ScriptEditor(wx.Panel):
 
         self.ic = 0
         self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.onClose)
-        self.Bind(aui.EVT__AUINOTEBOOK_TAB_RIGHT_UP, self.onTabRightUp)
+
+
+        self.Bind(EVT_AUINOTEBOOK_TAB_RIGHT_UP, self.onTabRightUp)
+
         self.ShowDebugPanel()
         self.HideDebugPanel()
+        self.Fit()
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChanged)
 
     def get_filelist(self):
@@ -1165,7 +1188,7 @@ class ScriptEditor(wx.Panel):
 
         if file is None:
            open_dlg = wx.FileDialog ( None, message="Select file to open", 
-                                   style=wx.OPEN|wx.FILE_MUST_EXIST)
+                                   style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
            if open_dlg.ShowModal() != wx.ID_OK:
               open_dlg.Destroy()
               return
@@ -1247,7 +1270,7 @@ class ScriptEditor(wx.Panel):
         if saveas:
            open_dlg = wx.FileDialog (None,
                              message="Select file to save", 
-                             style=wx.SAVE)
+                             style=wx.FD_SAVE)
            if open_dlg.ShowModal() == wx.ID_OK:
               file = open_dlg.GetPath()
               save_file = True
@@ -1262,7 +1285,7 @@ class ScriptEditor(wx.Panel):
                #### untitled case....
                open_dlg = wx.FileDialog (None,
                                message="Select file to save", 
-                               style=wx.SAVE)
+                               style=wx.FD_SAVE)
                if open_dlg.ShowModal() == wx.ID_OK:
                   file = open_dlg.GetPath()
                   save_file = True
@@ -1572,6 +1595,8 @@ class ScriptEditor(wx.Panel):
 
 from ifigure.widgets.statusbar import StatusBarSimple
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
+
+
 class ScriptEditorFrame(FrameWithWindowList):
     def __init__(self, *args, **kargs):
         kargs["style"] = (wx.CAPTION|
@@ -1591,7 +1616,7 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.menuBar.Append(self.viewmenu,"&View")
 
         newmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
         self.add_menu(newmenu, wx.ID_ANY, 
                     "Script", "Create new script in Project", 
                      self.onNewScript)

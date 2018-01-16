@@ -50,7 +50,11 @@ __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
 import wx, time
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    # wx4
+    PyDeadObjectError = RuntimeError
 import matplotlib
 import numpy as np
 #from numpy import arange, sin, pi
@@ -1384,8 +1388,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.Bind(CANVAS_EVT_DRAWREQUEST, self.onDrawRequest)
       self.canvas.Bind(wx.EVT_SET_FOCUS, self.onCanvasFocus)
       self.canvas.Bind(wx.EVT_KILL_FOCUS, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_CHAR, self.test)
+      #self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.onCanvasFocus)            
+      #self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
+      
+      #self.canvas.Bind(wx.EVT_CHAR, self.test)
       self._cursor_icon = None
       
    def test(self, evt): 
@@ -1402,13 +1408,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self._hold_once = value
 
    def onCanvasFocus(self, e):
-#       print 'get focus', self._figure.figobj
+       #print 'get focus', self._figure.figobj
        self.mpl_connect(mode = self._mpl_mode)
        e.Skip()
        
    def onCanvasKillFocus(self, e):
-#       print 'kill focus'
-       self.mpl_connect(mode = self._mpl_mode)
+       #print 'kill focus'
+#       self.mpl_connect(mode = self._mpl_mode)
+       self.mpl_disconnect()
        e.Skip()
        
    def enter_layout_mode(self):
@@ -2216,10 +2223,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                  if not event.guiEvent.ShiftDown():
                      self.unselect_all()
                  figobj = self._pevent.artist.figobj
-                 if figobj.isSelected():
-                     self.add_selection(self._pevent.artist)
-                 else:
-                     self.unselect(self._pevent.artist)
+                 if figobj is not None:
+                     if figobj.isSelected():
+                         self.add_selection(self._pevent.artist)
+                     else:
+                         self.unselect(self._pevent.artist)
                         
             td = self._pevent.artist.figobj
             if td is not None:
@@ -2434,7 +2442,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                if evt.all:
                    self.draw_all()    
                else:
-                   self.draw()    
+                   self.draw(refresh_hl = evt.refresh_hl)    
 #           else:
 #               print 'resending request'
 #               wx.CallLater(300, self.draw_later)
@@ -2451,9 +2459,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           self.refresh_hl()
 
-   def draw_later(self, all = False, delay = 0.0):
+   def draw_later(self, all = False, delay = 0.0, refresh_hl = False):
        from ifigure.events import SendCanvasDrawRequest
-       SendCanvasDrawRequest(self, all=all, delay = delay)
+       SendCanvasDrawRequest(self, all=all, delay = delay,
+                             refresh_hl = refresh_hl)
 #       self._nodraw = True
 #       self._draw_request = True
 
@@ -2462,25 +2471,26 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def draw(self, refresh_hl=False):
 #       if not self._nodraw:
-          if self._figure is None: return
-          t = time.time()
-          self._last_draw_time = t
+       if self._figure is None: return
+
+       t = time.time()
+       self._last_draw_time = t
           
-          self._figure.figobj.update_artist()
-          self._drawing = True
+       self._figure.figobj.update_artist()
+       self._drawing = True
 #          self.canvas.draw(nogui_reprint = True)
-          try:
-             self.canvas.draw(nogui_reprint = False)
-          except:
-             dprint1('canvas draw failed')
-             import traceback
-             print(traceback.format_exc())
+       try:
+           self.canvas.draw(nogui_reprint = False)
+       except:
+           dprint1('canvas draw failed')
+           import traceback
+           traceback.print_exc()
 
-          self._last_update = time.time()
-          self._drawing = False
+       self._last_update = time.time()
+       self._drawing = False
 
-          dprint2('drawing time ' + str(time.time()-t))
-
+       dprint2('drawing time ' + str(time.time()-t))
+       if refresh_hl: self.refresh_hl()
 #       else:
 #          self._draw_request = True
 
@@ -2694,6 +2704,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            elif header["mode"] == 'axes':
               dprint1('axes mode ', f_axes)
               if f_axes is not None:
+                 if obj.num_child() == 0:
+                     ret = dialog.message(parent=self, 
+                                          message='Axes does not have any plot',
+                                          title= "Can not paste",
+                                          style=0)
+                     obj.destroy()
+                     if return_history: 
+                          return None, []
+                     else:
+                         return
                  ret = dialog.message(parent=self, 
                        message='Do you want to replace section ?', 
                        title= "Paste Section",
@@ -2797,7 +2817,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           if 'cmap_hint' in header:
              cax = objs[0].get_caxisparam() 
              if cax.num_member() == 1:
-                  action = UndoRedoFigobjMethod(objs[0]._artists[0].get_axes(),
+                  action = UndoRedoFigobjMethod(objs[0]._artists[0].axes,
                                                'cmap3', 
                                                 header['cmap_hint'])
                   action.set_extrainfo(cax.name)
@@ -2943,7 +2963,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       if not self._figure.figobj.is_descendant(figobj):
          if len(self.selection) == 0:
              return
-
+      
       if len(evt.selections) != 0:
          if evt.selections[0]() in figobj._artists:
             evt.selections[0] = weakref.ref(figobj._artists[0])
@@ -2979,8 +2999,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          self.axes_selection=weakref.ref(figobj._artists[0])
       if mode == 3:
          self.axes_selection=weakref.ref(figobj._artists[0])
-      self.draw_later()
-      self.refresh_hl()
+      
+      self.draw_later(refresh_hl = True)
 
    def px2norm(self, x, y):
       ### conversion from screen pixel to normal
@@ -3116,6 +3136,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        try:
           po.send_file(fname, parent = self.GetTopLevelParent())
        except:
+          import traceback
+          traceback.print_exc()
           dprint1("send_file failed")
        os.remove(fname)
 
@@ -3257,7 +3279,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           for a in self.selection:
                h.append(UndoRedoFigobjMethod(a(), 'caxis_idx', value))
-       ax = a().get_axes()
+       ax = a().axes
        h.append(UndoRedoFigobjMethod(ax, 'adjustrange', None))
                
        window = self.GetTopLevelParent()
@@ -3363,7 +3385,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
        nx, ny =  self.px2norm(evt.x, evt.y)           
        open_dlg = wx.FileDialog ( None, message="Select art file (.eps) to place", 
-                                   wildcard='EPS(*.eps)|*.eps',style=wx.OPEN)
+                                   wildcard='EPS(*.eps)|*.eps',style=wx.FD_OPEN)
        if open_dlg.ShowModal() != wx.ID_OK:
            open_dlg.Destroy()
            return

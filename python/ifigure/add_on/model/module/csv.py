@@ -169,7 +169,7 @@ def ask_field(self, dest):
                      style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
                      tip = None, 
                      title = "Convert to "+dest,
-                     parent=self.td.get_root_parent().app)
+                     parent=self.td.get_app())
     checked = [x for x, b in  value[1][1] if b]
     return value[0], checked
 

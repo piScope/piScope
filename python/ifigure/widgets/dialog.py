@@ -11,12 +11,12 @@
 #   dlg_textentry  : text entry dialog
 #
 import wx, os
-
+from ifigure.utils.wx3to4 import TextEntryDialog, deref_proxy
 
 def read(parent=None, message='Select file to read', wildcard='*', defaultfile=''):
 
     open_dlg = wx.FileDialog (parent, message=message,
-                              wildcard=wildcard,style=wx.OPEN)
+                              wildcard=wildcard,style=wx.FD_OPEN)
     if defaultfile != '': 
         open_dlg.SetFilename(os.path.basename(defaultfile))
         if os.path.dirname(defaultfile) != '':
@@ -45,13 +45,21 @@ def readdir(parent=None, message='Select directory to read', wildcard='*', defau
 
 def write(parent=None, defaultfile='',
           message='Select file to write', wildcard='*',
-          return_filterindex=False):
+          return_filterindex=False,
+          warn_overwrite = False):
+    '''
+    wrap FileDialog, Note that defaultfile can be absolute path
+    '''
+    style = wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT if warn_overwrite else wx.FD_SAVE
+
     open_dlg = wx.FileDialog (parent, message=message,
-                                  wildcard=wildcard,style=wx.SAVE)
+                              wildcard=wildcard,
+                              style=style)
     if defaultfile != '': 
         open_dlg.SetFilename(os.path.basename(defaultfile))
         if os.path.dirname(defaultfile) != '':
              open_dlg.SetDirectory(os.path.dirname(defaultfile))
+             
     path = ''
     wc = ''
     if open_dlg.ShowModal() == wx.ID_OK:
@@ -65,6 +73,7 @@ def write(parent=None, defaultfile='',
        return path
 
 def writedir(parent=None,  message='Directory to write'):
+
     dlg = wx.DirDialog (parent, message=message)
     path = ''
     wc = ''
@@ -77,6 +86,7 @@ def writedir(parent=None,  message='Directory to write'):
         return None
 
 def readdir(parent=None,  message='Directory to read'):
+
     dlg = wx.DirDialog (parent, message=message)
     path = ''
     wc = ''
@@ -90,8 +100,8 @@ def readdir(parent=None,  message='Directory to read'):
 
 def textentry(parent=None, message='', title='', def_string='', center=False):
 
-    dlg = wx.TextEntryDialog(parent, 
-          message, title, def_string)
+    dlg = TextEntryDialog(parent, 
+          message, caption=title, value=def_string)
     if center: dlg.Centre()
     if dlg.ShowModal() == wx.ID_OK:
         new_name = str(dlg.GetValue())
@@ -141,7 +151,7 @@ def message(parent=None, message='', title='', style=0,
 #    from wx.lib.agw.genericmessagedialog import GMD_USE_AQUABUTTONS as g
 #    from wx import MessageDialog as dia
     style0 = style0|icon
-#    print icon
+    
     dlg = dia(parent,
                          message, 
                          title, 
@@ -172,7 +182,6 @@ def showtraceback(parent = None, txt='', title='', traceback='None\n'):
     dlg.Destroy()
 
 def progressbar(parent, message, title, count):   
-
     dlg = wx.ProgressDialog(title, message, count, parent)
     def close_dlg(evt, dlg=dlg):
         dlg.Destroy()

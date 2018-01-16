@@ -7,6 +7,8 @@ from distutils.version import LooseVersion
 from ifigure.utils.cbook import text_repr
 import ifigure.widgets.dialog as dialog
 
+from ifigure.utils.wx3to4 import isWX3, GridTableBase, TextEntryDialog
+
 isWX_before_2_9 = LooseVersion(wx.__version__) < LooseVersion("2.9")
 
 font_h = None
@@ -48,11 +50,17 @@ class _PropertyGrid(wx.grid.Grid ):
 
 
      def SetTable( self, object, *attributes ):
-         self.tableRef = weakref.ref( object )
-#         print object
+         if isWX3:
+             self.tableRef = weakref.ref( object )
+         else:
+             self.tableRef = object
          return wx.grid.Grid.SetTable(self, object, *attributes )
+     
      def GetTable( self ):
-         return self.tableRef()
+         if isWX3:         
+             return self.tableRef()
+         else:
+             return self.tableRef
 
 class VarViewerGValue(object):
     '''
@@ -115,7 +123,8 @@ class VarViewerGValue(object):
        implemented at derived class
        '''     
        pass
-
+class TextDT(wx.TextDropTarget):
+      pass
 class VarViewerGDropTarget(wx.TextDropTarget):
     # obj is proj_viewer
     def __init__(self, obj):
@@ -225,7 +234,7 @@ class VarViewerGPopUp(wx.Menu):
         obj=gt.GetTreeDict()
         name=(get_varlist(obj))[row] 
         name = gt.get_row_name(row)
-        dlg = wx.TextEntryDialog(self.parent.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.parent.GetTopLevelParent(), 
                "Enter the name of variable", "Duplicate variable", name+"_duplicated")
         if dlg.ShowModal() == wx.ID_OK:
             new_name = str(dlg.GetValue())
@@ -238,7 +247,7 @@ class VarViewerGPopUp(wx.Menu):
 
     def onAdd(self, e):
         row=self.parent._startrow2
-        dlg = wx.TextEntryDialog(self.parent.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.parent.GetTopLevelParent(), 
                "Enter the name of variable", "Add variable", "")
         if dlg.ShowModal() == wx.ID_OK:
             new_name = str(dlg.GetValue())
@@ -297,7 +306,7 @@ class VarViewerGPopUp(wx.Menu):
         name=(get_varlist(obj))[row] 
         name = gt.get_row_name(row)
 
-        dlg = wx.TextEntryDialog(self.parent.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.parent.GetTopLevelParent(), 
                "Enter the name of variable", "Add variable", name+"_rename")
         if dlg.ShowModal() == wx.ID_OK:
             new_name = str(dlg.GetValue())
@@ -312,9 +321,9 @@ class VarViewerGPopUp(wx.Menu):
                    obj._local_vars.append(new_name)
         dlg.Destroy()
         
-class VarViewerGridTable(wx.grid.PyGridTableBase):
+class VarViewerGridTable(GridTableBase):
     def __init__(self, obj, grid):
-        wx.grid.PyGridTableBase.__init__(self)
+        GridTableBase.__init__(self)
         class Tmp(object):
            pass
         t = Tmp()
@@ -545,7 +554,7 @@ class VarViewerG(wx.Panel):
         self.grid.SetDefaultRowSize(font_h, True)
         self.grid.EnableDragColSize(True)
         self.grid.SetTable(VarViewerGridTable(None, self.grid))
-        self.ct1.SetDropTarget(wx.TextDropTarget())
+        self.ct1.SetDropTarget(TextDT())
 
         bottom = wx.BoxSizer(wx.HORIZONTAL)
         modes=['copy', 'paste', 'trash']

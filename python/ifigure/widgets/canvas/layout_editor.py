@@ -45,6 +45,8 @@ from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
 from ifigure.widgets.undo_redo_history import UndoRedoGroupUngroupFigobj
 from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists
 
+from ifigure.utils.wx3to4 import menu_AppendItem
+
 def _fix_event_data(w, h, event):
     event.xdata = float(event.x)/w
     event.ydata = float(event.y)/h
@@ -136,7 +138,7 @@ class layout_editor_popup(wx.Menu):
              self.AppendSeparator()
              continue
            mmi = wx.MenuItem(self, wx.ID_ANY, key)
-           self.AppendItem(mmi)
+           menu_AppendItem(self, mmi)
            self.Bind(wx.EVT_MENU, h[k], mmi)
            self.mmi.append(mmi)
       

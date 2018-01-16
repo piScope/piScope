@@ -1,5 +1,6 @@
 import os
 import wx
+from ifigure.utils.wx3to4 import GridSizer
 
 class FindPanel(wx.Panel):
     def __init__(self, parent, id, *args, **kargs):
@@ -21,7 +22,7 @@ class FindPanel(wx.Panel):
                                style=wx.TE_PROCESS_ENTER)
         self.btn_bw = wx.Button(self, wx.ID_ANY, 'Backward')
         self.btn_fw = wx.Button(self, wx.ID_ANY, 'Forward')
-        gsizer = wx.GridSizer()
+        gsizer = GridSizer(1,2)
         gsizer.Add(self.btn_bw, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
         gsizer.Add(self.btn_fw, wx.ALL|wx.ALIGN_CENTER_VERTICAL)        
         self.btn_cl = wx.Button(self, wx.ID_ANY, 'x', size = (25, -1))
@@ -51,6 +52,7 @@ class FindPanel(wx.Panel):
         sizer2.Add(self.btn_replaceall, 0, wx.ALL|wx.EXPAND)
         
         self.Layout()
+        self.Fit()
     def get_find_text(self):
         return str(self.txt.GetValue())
     def get_replace_text(self):

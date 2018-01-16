@@ -141,7 +141,7 @@ class section_editor(wx.Panel):
        self.events=wx.EVT_BUTTON
        self.Hide()
        self.parent=parent
-
+       self.Fit()
        self. _load_canvas_value()
            
    def _load_canvas_value(self):

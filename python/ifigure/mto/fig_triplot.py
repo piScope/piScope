@@ -252,7 +252,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
 #   def hit_test
 #
     def picker_a(self, artist, evt):
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {} 
         hit, extra = artist.contains(evt)
 
@@ -272,8 +272,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
     def onExport(self, event):
         from matplotlib.artist import getp
         
-        app=self.get_root_parent().app
-        shell=app.shell
+        shell = self.get_root_parent().app.shell
         canvas = event.GetEventObject()
         sel = [a() for a in canvas.selection]
         for a in self._artists:

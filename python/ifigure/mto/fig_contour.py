@@ -516,7 +516,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         from matplotlib.collections import LineCollection
         from ifigure.matplotlib_mod.art3d_gl import Poly3DCollectionGL
         from ifigure.widgets.canvas.custom_picker import CheckLineHit
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {} 
         trans = axes.transData
         self._hit_path = None
@@ -624,8 +624,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
     def onExport(self, event):
         from matplotlib.artist import getp
 
-        app=self.get_root_parent().app
-        shell=app.shell
+        shell = self.get_root_parent().app.shell
         canvas = event.GetEventObject()
         sel = [a() for a in canvas.selection]
         for a in self._artists:

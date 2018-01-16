@@ -1,6 +1,8 @@
 import wx, os
 import numpy as np
 import ifigure
+from ifigure.utils.wx3to4 import wxBitmapFromImage, wxEmptyBitmapRGBA
+
 CDS_CHANGED = wx.NewEventType()
 EVT_CDS_CHANGED = wx.PyEventBinder(CDS_CHANGED, 1)
 CDS_CHANGING = wx.NewEventType()
@@ -8,7 +10,7 @@ EVT_CDS_CHANGING = wx.PyEventBinder(CDS_CHANGING, 1)
 
 def window_to_bitmap(window):
     w, h = window.GetClientSize()
-    bitmap = wx.EmptyBitmapRGBA(w, h)
+    bitmap = wxEmptyBitmapRGBA(w, h)
     wdc = wx.ClientDC(window)
     mdc = wx.MemoryDC(bitmap)
     mdc.Blit(0, 0, w, h, wdc, 0, 0)    
@@ -48,7 +50,7 @@ class CustomSingleSlider(CustomPanel):
         from ifigure.ifigure_config import icondir
         path = os.path.join(icondir, 'image', 'slider.png')
         
-        self._bbmp  = wx.BitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
+        self._bbmp  = wxBitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
         self._value = [0.5]
         self._range = [0, 1]
         self._sheight = 6
@@ -148,7 +150,6 @@ class CustomSingleSlider(CustomPanel):
         if dc is None:
             dc = wx.ClientDC(self)
 
-        dc.BeginDrawing() 
         w, h = self.GetSize()
 
         dc.SetFont(self.font)
@@ -174,7 +175,6 @@ class CustomSingleSlider(CustomPanel):
         draw_box(self, w1, dc)
 #        draw_box(self, w2, dc)
 
-        dc.EndDrawing()
         self._isDrawn = True
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
@@ -198,7 +198,7 @@ class CustomDoubleSlider(CustomPanel):
         from ifigure.ifigure_config import icondir
         path = os.path.join(icondir, 'image', 'slider.png')
         
-        self._bbmp  = wx.BitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
+        self._bbmp  = wxBitmapFromImage(wx.Image(path,wx.BITMAP_TYPE_PNG))
         self._value = [0.1, 0.9]
         self._range = [0, 1]
         self._sheight = 6
@@ -303,7 +303,6 @@ class CustomDoubleSlider(CustomPanel):
         if dc is None:
             dc = wx.ClientDC(self)
 
-        dc.BeginDrawing() 
         w, h = self.GetSize()
         dc.SetFont(self.font)
 
@@ -328,7 +327,6 @@ class CustomDoubleSlider(CustomPanel):
         draw_box(self, w1, dc)
         draw_box(self, w2, dc)
 
-        dc.EndDrawing()
         self._isDrawn = True
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 

@@ -50,6 +50,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('FigureCanvasWxAggMod')
 from distutils.version import LooseVersion
 isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
+from ifigure.utils.wx3to4 import image_SetAlpha, wxEmptyImage
 
 class FigureCanvasWxAggMod(CanvasAgg):
     '''
@@ -78,9 +79,9 @@ class FigureCanvasWxAggMod(CanvasAgg):
         def scale_bitmap(figure_image, bitmap):
            h, w, d  = figure_image.shape
            bitmapw, bitmaph = bitmap.GetSize()
-           image = wx.EmptyImage(w, h)
+           image = wxEmptyImage(w, h)
            image.SetData(figure_image[:,:,0:3].tostring())
-           image.SetAlphaData(figure_image[:,:,3].tostring())
+           image_SetAlpha(image, figure_image[:,:,3])
            return image.Scale(csize[0], csize[1]).ConvertToBitmap()
 
         csize = self.GetClientSize()

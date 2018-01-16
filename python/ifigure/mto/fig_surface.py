@@ -282,7 +282,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
           container=self.get_container()
           for a in artistlist:
              # GL canvas check this if artist is still alive.
-             a.set_axes(None)
+             a.axes = None
              try:           
                  a.set_figure(None)
              except:
@@ -417,7 +417,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser,CUser):
 #   def hit_test
 #
     def picker_a(self, artist, evt):
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {} 
         hit, extra = artist.contains(evt)
 

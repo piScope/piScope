@@ -12,11 +12,12 @@
 #             2:  text label (static text)
 #             3:  check box 
 #               setting = {"text":'check box label'}
-import wx, wx.combo, os, ifigure
+import wx, os, ifigure
 import  wx.stc  as  stc
 import numpy as np
 from ifigure.numerical_function import *
 import ifigure.utils.cbook as cbook
+from ifigure.utils.cbook import isstringlike, isnumber
 from ifigure.widgets.custom_double_slider import CustomSingleSlider, CustomDoubleSlider
 from ifigure.widgets.custom_double_slider import EVT_CDS_CHANGED, EVT_CDS_CHANGING
 import weakref
@@ -41,6 +42,7 @@ EDITLIST_CHANGING = wx.PyEventBinder(EditorChanging, 1)
 EditorSetFocus = wx.NewEventType()
 EDITLIST_SETFOCUS = wx.PyEventBinder(EditorSetFocus, 1)
 
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 
 class EditListEvent(wx.PyCommandEvent):
     """
@@ -161,6 +163,7 @@ class LabelPanel(Panel):
         
         self.val = ['', 'k', 'san-serif', 
                     'normal', 'normal',  12]
+
     def onSelect(self, evt):
         if self.val[0] is None: return
         s1={"style":wx.CB_READONLY,
@@ -225,7 +228,7 @@ class AxisPositionPanel(Panel):
         sizer2.Add(self.mirror2, 0, wx.EXPAND)
         self.Bind(wx.EVT_COMBOBOX, self.onHit, self.cb)      
         self.value0 = None 
-
+        
     def Enable(self, value=True):
         wx.Panel.Enable(self, value)
         self.cb.Enable(value)        
@@ -309,11 +312,11 @@ class LogLinScale(Panel):
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.GetSizer().Add(self.cb, 0, wx.EXPAND)
         self.GetSizer().Add(self.tc, 0, wx.EXPAND)
-        hsizer = wx.GridSizer(1,2)
+        hsizer = GridSizer(1,2)
         self.GetSizer().Add(hsizer, 0, wx.EXPAND)
         hsizer.Add(self.tc2, 1, wx.EXPAND)
         hsizer.Add(self.tc3, 1, wx.EXPAND)                
-        
+
     def Enable(self, value=True):
         wx.Panel.Enable(self, value)
         self.cb.Enable(value)        
@@ -405,8 +408,8 @@ class AxisRange(wx.Panel):
 
         self.panel2 = Panel(self)
         self.panel2.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
-        s1 = wx.GridSizer(3,1)
-        s2 = wx.GridSizer(3,1)
+        s1 = GridSizer(3,1)
+        s2 = GridSizer(3,1)
         self.panel2.GetSizer().Add(s1, 0, wx.EXPAND)
         self.panel2.GetSizer().Add(s2, 0, wx.EXPAND)
         self.cb_auto = CheckBox(self.panel2, wx.ID_ANY,'auto')
@@ -548,7 +551,7 @@ class BitmapButtons(wx.Panel):
         self.Controls=[]
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
-        self.gsizer = wx.GridSizer(10, 5)
+        self.gsizer = GridSizer(10, 5)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
         self._btn = None
         self._val = None
@@ -598,9 +601,9 @@ class BitmapButtons(wx.Panel):
                    print('Cannot find bitmap for ' + ftitle + '=' + fname)
                bitmap=wx.Bitmap(imageFile)
                h, w = bitmap.GetSize()
+
                image = bitmap.ConvertToImage()
-               array = np.fromstring(image.GetData(), 
-                       dtype=np.uint8)
+               array = np.fromstring(bytes(image.GetData()), dtype=np.uint8)
                array = array.reshape(w, h, array.shape[0]/w/h)
             else:
                array = imagearray[name]
@@ -617,7 +620,7 @@ class BitmapButtons(wx.Panel):
             array[:,:2,2]=0
             array[:,-2:,2]=0
 
-            image = wx.EmptyImage(h, w)
+            image = wxEmptyImage(h, w)
             image.SetData(array.tostring())
             bitmap2 = image.ConvertToBitmap()
             btn = wx.BitmapButton(self, bitmap=bitmap)
@@ -656,12 +659,16 @@ class BitmapButtons(wx.Panel):
         for btn in self._btn:
             btn.SetBitmapLabel(self.Controls[i]["bitmap"])
             i = i+1
-        if hasattr(val, '__iter__'):
-           print val, self._btn_name
-        if val in self._btn_name:
+
+        #if isnumber(val) and not isnumber(self._btn_name[0]):
+        #    val = str(val)
+        if isstringlike(val) and val in self._btn_name:
             j = self._btn_name.index(val)
             #print 'found', j
             self._btn[j].SetBitmapLabel(self.Controls[j]["bitmap2"])
+        #else:
+        #    # check error
+        #    print val, self._btn_name
         self._val = val
     def GetValue(self, val):
         return self._val
@@ -755,7 +762,8 @@ class ColorFace(Color):
         self.val = self.Controls[0]["value"]
 
     def SetValue(self, val):
-        if val == 'disabled':
+        if isstringlike(val) and val == 'disabled':
+            ### if it is not list/numpy array/tuple and is 'disabled'
             self.Enable(False)
         else:
             self.Enable(True)
@@ -825,7 +833,7 @@ def colorbutton_bitmap(data):
     v = [int(data[0]*255), int(data[1]*255), int(data[2]*255)]
     w, h = bitmap_size
     array = np.array([v,]*w*h, dtype=np.uint8).reshape((w, h, -1))
-    image = wx.EmptyImage(w, h)
+    image = wxEmptyImage(w, h)
     image.SetData(array.tostring())
     bitmap = image.ConvertToBitmap()
     return bitmap
@@ -909,12 +917,12 @@ class TickLabelSizeSelector(Panel):
         self.cb2 = ComboBox_Float(self, wx.ID_ANY, 
                             style=wx.TE_PROCESS_ENTER,
                             choices=setting["choices"])
-        gsizer =  wx.GridSizer()        
+        gsizer =  GridSizer(2)        
         self.SetSizer(gsizer)        
         gsizer.Add(self.cb1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         gsizer.Add(self.cb2, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 1)
         self.SetValue([12, 12])
-
+        
     def GetValue(self):
         v = (self.cb1.GetValue(),
              self.cb2.GetValue())
@@ -937,7 +945,7 @@ class TickLabelSizeSelector(Panel):
 class TickLabelColorSelector(Panel):
     def __init__(self, parent, id):
         Panel.__init__(self, parent, id)
-        gsizer =  wx.FlexGridSizer()        
+        gsizer =  FlexGridSizer(6)        
         self.SetSizer(gsizer)        
         self.bt1 = ColorSelector(self, wx.ID_ANY)
         self.bt2 = ColorSelector(self, wx.ID_ANY)
@@ -1094,7 +1102,7 @@ class ColorOrder(Panel):
     def make_buttons(self, color_list):
         self.Hide()
         l = len(color_list)
-        self.SetSizer(wx.GridSizer(min((l%7, 1))+l/7, 7))
+        self.SetSizer(GridSizer(min((l%7, 1))+l/7, 7))
         self.btn = [None]*l
         for i in range(l):
             name = color_list[i]
@@ -1147,7 +1155,7 @@ class ColorMapButton(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = colormap_list()
-        self.gsizer = wx.FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
 
@@ -1173,7 +1181,7 @@ class ColorMapButtonExtra(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps =['idl'+str(x) for x in range(40)]
-        self.gsizer = wx.FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
 
@@ -1410,6 +1418,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
              if 'nlines' in kargs:
                  nlines = kargs['nlines']
                  del kargs['nlines']
+
         wx.TextCtrl.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
@@ -1428,8 +1437,9 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         if setfocus_event:
             self._send_setfocus_event = True
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)           
-#    def Paste(self):
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+        #    def Paste(self):
 #        print 'paste called'
 #        wx.TextCtrl.Paste(self)
     def onKeyPressed(self, event):
@@ -1493,7 +1503,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self.GetParent().send_event(self, evt)
         
     def onSetFocus(self, evt):
-        #  print 'get focus', self, self.GetValue()
+        #print 'get focus', self, self.GetValue()
         self._value_at_getfocus = self.GetValue()
         if self._send_setfocus_event:
             self.GetParent().send_setfocus_event(self, evt)
@@ -1503,7 +1513,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         '''
         kill focus -> end of editting
         '''
-        # print 'kill focus', self, self.GetValue()
+        #print 'kill focus', self, self.GetValue()
         if self._value_at_getfocus != self.GetValue():
            if hasattr(self.GetParent(), 'send_event'):
                 self.GetParent().send_event(self, evt)
@@ -1662,7 +1672,7 @@ class ArrayTextCtrl(Panel):
         col = setting.pop('col', 1)
         textsetting = setting.pop('text_setting', [])
         super(ArrayTextCtrl, self).__init__(parent, id, **setting)
-        sizer=wx.GridSizer(rows=row, cols=col)
+        sizer=GridSizer(row, col)
         self.SetSizer(sizer)
         self._text_ctrl = [None]*len(textsetting)
         for i, s in enumerate(textsetting):
@@ -2060,7 +2070,7 @@ class AlphaPanel(CSliderWithCB):
 
 class RotationPanel(CSliderWithCB):
     def __init__(self, parent, id):
-        setting = {"style":wx.wx.TE_PROCESS_ENTER,
+        setting = {"style":wx.TE_PROCESS_ENTER,
                    "choices": ["0", "45", "90", "135", "180",
                                "225",  "270", "315"]}
         s = {"minV": 0.,"maxV": 359., "val" : 90, "res" : 1, 
@@ -2205,7 +2215,7 @@ class SelectableELP(Panel):
         mmsizer.Add(st, 0,wx.ALIGN_CENTER_VERTICAL|wx.ALL, 3)
         mmsizer.Add(self.cb, 1, wx.ALL, 1)
         if "space" in setting[0]:
-             msizer.AddSpacer((setting[0]["space"], 5))
+             msizer.AddSpacer(setting[0]["space"])
         msizer.Add(csizer, 1, wx.EXPAND)
         csizer.Add(mmsizer, 0, wx.ALL, 1)
 #        csizer.Add(self.elp, 1, wx.EXPAND|wx.ALL, 5)
@@ -2289,7 +2299,7 @@ class CheckBoxModifiedELP(Panel):
         csizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(msizer)
         if "space" in setting[0]:
-             msizer.AddSpacer((setting[0]["space"], 5))
+             msizer.AddSpacer(setting[0]["space"])
         msizer.Add(csizer, 1, wx.EXPAND)
         csizer.Add(self.btn, 0, wx.ALL, 1)
 #        csizer.Add(self.elp, 1, wx.EXPAND|wx.ALL, 5)
@@ -2541,7 +2551,7 @@ class GenericCoordsTransform(wx.Panel):
        self.widgets=[]
        p2 = wx.Panel(self, wx.ID_ANY)
        sizer0=wx.BoxSizer(wx.HORIZONTAL)
-       sizer=wx.FlexGridSizer(rows=2, cols=2)
+       sizer = FlexGridSizer(rows=2, cols=2)
        st1=wx.StaticText(p2, wx.ID_ANY, 'x: ')
        self.cb1 = ComboBoxCompact(p2, wx.ID_ANY, 
                       size=(-1, -1),
@@ -2673,6 +2683,7 @@ class ArrowStylePanel(wx.Panel):
        self._elp_values = {}
        self.cb.SetValue(self.mode)    
        self.elp = None#wx.Panel(self)
+
 #       self.GetSizer().Add(self.elp,  1, wx.EXPAND)
     def switch_panel(self, mode):
        #print 'switch panel', mode, self.mode
@@ -2744,7 +2755,7 @@ class ArrowStylePanel(wx.Panel):
         evt.SetEventObject(self)
         self.GetParent().send_event(self, evt)
 
-class ArrowStyleCombobox(wx.combo.BitmapComboBox):
+class ArrowStyleCombobox(wxBitmapComboBox):
     def __init__(self, *args, **kargs):
         from ifigure.ifigure_config import arrowstyle_list
         from ifigure.ifigure_config import icondir
@@ -2764,7 +2775,7 @@ class ArrowStyleCombobox(wx.combo.BitmapComboBox):
            super(ArrowStyleCombobox, self).Append(name, bitmap, name)
         self.SetSelection(3)
 #        self.SetValue('-')
-
+        
     def SetValue(self, value):
         for name, style in self.choice_list:
             if value == style: 
@@ -2851,7 +2862,7 @@ class MDSServerDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, id, title)
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer =  wx.FlexGridSizer(3,2)
+        sizer =  FlexGridSizer(3,2)
         sizer.AddGrowableCol(1,1)
         st1 = wx.StaticText(self, label="Server")
         self.field  = wx.TextCtrl(self, value="alcdata.psfc.mit.edu", size = (300,-1))
@@ -3256,7 +3267,7 @@ class MDSSource0(wx.Panel):
         evt.Skip()
         
     def onAddVar(self, evt):
-        dlg = wx.TextEntryDialog(self.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.GetTopLevelParent(), 
                "Enter the name of variable", "Add variable", "")
         if dlg.ShowModal() == wx.ID_OK:
 #            self.Freeze()
@@ -3381,7 +3392,7 @@ class MDSSource(wx.Panel):
 class MDSGlobalSelection(wx.Panel):
     def __init__(self, parent, id, *args, **kargs):
        wx.Panel.__init__(self, parent, id)
-       sizer = wx.GridSizer(4, 4)
+       sizer = GridSizer(4, 4)
        self.SetSizer(sizer)
        
        self.cb = [None]*16
@@ -3516,7 +3527,7 @@ class EditListCore(object):
                          wx.ALL|wx.ALIGN_CENTER_VERTICAL, edge)
                if tip is not None and len(tip) > k:
                   if tip[k] is not None:
-                      txt.SetToolTipString(tip[k])
+                      panel_SetToolTip(txt, tip[k])
            else:
                txt=None
                col = 0
@@ -4014,7 +4025,7 @@ class EditListCore(object):
               else:
                  w=wx.StaticText(self, wx.ID_ANY, 'Custom UI is not defined!')
 
-
+           w.Fit()
            self.widgets.append((w, txt) )
            alignright = setting.pop('alignright', alignright)
 
@@ -4058,8 +4069,8 @@ class EditListCore(object):
                elif err is None: 
                   pass
                   #print 'no check in setvalue'
-            i=i+1        
-
+            i=i+1
+            
     def send_event(self, evtobj, evt0):
         if self.call_sendevent is not None:
             self.call_sendevent.send_event(self, evt0)
@@ -4108,8 +4119,8 @@ class EditListCore(object):
             w, txt = pair
             if len(value) == k: break
             if txt is not None: txt.Enable(value[k])
-            if w is   not None: w.Enable(value[k])                
-
+            if w is   not None: w.Enable(value[k])
+            
     def _textctrl_enter(self, evt):
         pass
 
@@ -4150,9 +4161,10 @@ class EditListPanel(EditListCore, wx.Panel):
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
-                 tip=None, pos = None, size=(-1,-1), nobutton=False,
+                 tip=None, pos=(-1, -1), size=(-1,-1), nobutton=False,
                  add_palette = False):
-        wx.Dialog.__init__(self, parent, id, title, pos, size, style = style)
+        wx.Dialog.__init__(self, parent, id=id, title=title, pos=pos,
+                           size=size, style = style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -4195,8 +4207,8 @@ class EditListDialogTab(wx.Dialog):
     def __init__(self, parent, id, title='', tab=None, list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
                  tip=None, pos=None, size = (-1, -1), nobutton=False,
-                 add_palette = False):       
-        wx.Dialog.__init__(self, parent, id, title,  style=style)
+                 add_palette = False):
+        wx.Dialog.__init__(self, parent, id=id, title=title,  style=style)
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.list = list
@@ -4245,7 +4257,7 @@ class EditListDialogTab(wx.Dialog):
         
         
 def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
-                   tip = None, parent = None, pos = None, size=(-1,-1),
+                   tip = None, parent = None, pos=(-1,-1), size=(-1,-1),
                    title='',
                    ok_cb = None, close_cb = None,
                    ok_noclose = False, _class = EditListDialog, **kwargs):

@@ -1,3 +1,4 @@
+
 from matplotlib.collections import LineCollection
 from matplotlib.cm import ScalarMappable
 from matplotlib.lines import Line2D
@@ -390,7 +391,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
 #   def hit_test
 #
     def picker_a(self, artist, evt):
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {} 
         hit, extra = artist.contains(evt)
         if hit:

@@ -17,8 +17,10 @@ except:
 
 dprint1, dprint2, dprint3 = debug.init_dprints('SimpleShell')
 
-import wx.py.shell, wx.lib.shell
+import wx.py.shell #(wx4 removed this) wx.lib.shell
 from os.path import expanduser, abspath
+
+from ifigure.utils.wx3to4 import isWX3
 
 sx_print_to_consol = False
 def sx(strin = ''):
@@ -150,10 +152,11 @@ class simple_shell_droptarget(wx.TextDropTarget):
         self.obj.GotoPos(pos)
         self.obj.write(txt)
         self.obj.GotoPos(pos+len(txt))
-        wx.CallAfter(self.obj.SetSTCFocus, True) 
-        wx.FutureCall(100, self.obj.SetFocus) 
-        return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
-#        self.obj.DoDropText(x, y, txt)
+        if isWX3:
+            wx.CallAfter(self.obj.SetSTCFocus, True) 
+            wx.CallLater(100, self.obj.SetFocus)
+        return True
+        #return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):
         self.obj.DoDragOver(x, y, default)

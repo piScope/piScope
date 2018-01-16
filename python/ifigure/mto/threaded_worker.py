@@ -52,7 +52,7 @@ class ThreadedWorker(object):
         if event is not None: 
              w = event.GetEventObject()
         else:
-             w = self.get_root_parent().app
+             w = self.get_app()
         for t in t_list:
             ifigure.events.SendThreadStartEvent(self, w=w, thread=t)
         #print 'thread list', t_list

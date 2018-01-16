@@ -28,7 +28,7 @@ class MDSScopeCanvas(ifigure_canvas):
         else:
             for a in self.selection:
                  h.append(UndoRedoFigobjMethod(a(), 'caxis_idx', value))
-        ax = a().get_axes()
+        ax = a().axes
         h.append(UndoRedoFigobjMethod(ax, 'adjustrange', None))
 
         window = self.GetTopLevelParent()

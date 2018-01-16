@@ -173,7 +173,7 @@ def solid_demo(**kwargs):
     isec(0)
     threed('on')
     solid(v, idxset, edgecolor = 'k', facecolor = 'b')
-    lighting(light = 0.5, ambient = 0.5)            
+    lighting(light = 0.5, ambient = 0.5)
     isec(1)
     threed('on')
     solid(v, idxset, cz = True)

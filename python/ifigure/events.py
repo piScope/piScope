@@ -15,6 +15,7 @@ changed_in_queue = 0
 
 import wx, threading, os, time
 import traceback
+from weakref import ProxyType
 
 EditFile = wx.NewEventType()
 TD_EVT_EDITFILE = wx.PyEventBinder(EditFile, 1)
@@ -72,6 +73,8 @@ TD_EVT_CLOSEBOOKREQUEST = wx.PyEventBinder(CloseBookRequest, 1)
 #WorkerStartRequest= wx.NewEventType()
 #EVT_WORKER_START_REQUEST = wx.PyEventBinder(WorkerStartRequest, 1)
 
+from ifigure.utils.wx3to4 import deref_proxy
+    
 class TreeDictEvent(wx.PyCommandEvent):
     """
     event for treedict to request edit a file
@@ -112,7 +115,7 @@ def SendSimpleTDEvent(evt, td=None, w=None, useProcessEvent=False, code='', hand
     if evt is None:
        evt = TreeDictEvent(EvtTDDict, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     evt.code = code
     if handler is None:
        handler = wx.GetApp().TopWindow.GetEventHandler()
@@ -123,7 +126,7 @@ def SendSimpleTDEvent2(evt, td=None, w=None, useProcessEvent=False):
 
     evt = TreeDictEvent(EditFile, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     handler = wx.GetApp().TopWindow.GetEventHandler()
 #    handler=td.get_root_parent().app.GetEventHandler()
     post_process_event(evt, handler, useProcessEvent)
@@ -139,7 +142,7 @@ def SendEditFileEvent(td, w=None, file=file, readonly=False):
     handler=td.get_root_parent().app.GetEventHandler()
     evt = TreeDictEvent(EditFile, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     evt.file = file
     evt.readonly = readonly
     post_process_event(evt, handler, True)
@@ -151,7 +154,7 @@ def SendCloseFileEvent(td, w=None, file=file):
     handler=td.get_root_parent().app.GetEventHandler()
     evt = TreeDictEvent(CloseFile, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     evt.file = file
     post_process_event(evt, handler, True)
 #    handler.ProcessEvent(evt) 
@@ -165,7 +168,7 @@ def SendSelectionEvent(td, w=None, selections=[], mode='replace', useProcessEven
                       wx.ID_ANY)
     evt.selections = selections
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))    
     evt.event_name = 'selection'
     evt.mode=mode
     handler=td.get_root_parent().app.GetEventHandler()
@@ -194,7 +197,7 @@ def SendReplaceEvent(td, w=None, a1=None, a2=None,
     evt.a2all = a2all
     evt.SetTreeDict(td)
     if w is not None:
-        evt.SetEventObject(w)
+        evt.SetEventObject(deref_proxy(w))    
     else:
         evt.SetEventObject(viewer)
     handler=viewer.GetEventHandler()
@@ -224,7 +227,7 @@ def SendChangedEvent(td, w=None, useProcessEvent=False):
 #    traceback.print_stack()
     evt=TreeDictEvent(Changed, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
 
     handler=td.get_root_parent().app.GetEventHandler()
     post_process_event(evt, handler, useProcessEvent)
@@ -237,7 +240,7 @@ def SendVar0ChangedEvent(td, w=None):
 
     evt=TreeDictEvent(Var0Changed, wx.ID_ANY)
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))    
 
     handler=td.get_root_parent().app.GetEventHandler()
 #    handler.ProcessEvent(evt)
@@ -252,7 +255,7 @@ def SendThreadStartEvent(td, w=None, thread=None, useProcessEvent=False):
     evt = TreeDictEvent(ThreadStart, wx.ID_ANY)
     evt.thread = thread
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     post_process_event(evt, handler, useProcessEvent)
 
 def SendFileChangedEvent(td, w=None, operation=None, param=None):
@@ -269,7 +272,7 @@ def SendFileChangedEvent(td, w=None, operation=None, param=None):
     evt.op = operation
     evt.param = param
     evt.SetTreeDict(td)
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))
     post_process_event(evt, handler, False)
 #    wx.PostEvent(handler, evt)        
 
@@ -286,7 +289,7 @@ def SendShowPageEvent(td, w=None, inc='0'):
     if w is None:
         book = td.get_figbook()
         w = app.find_bookviewer(book).canvas
-    evt.SetEventObject(w)
+    evt.SetEventObject(deref_proxy(w))    
     evt.inc = inc
  
     if w is None:
@@ -381,21 +384,17 @@ def SendFileSystemChangedEvent(td, w=None, name='', reload=True):
     evt.reload = reload
     SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=False)
 
-def SendCanvasDrawRequest(w, all = False, delay = 0.0):
+def SendCanvasDrawRequest(w, all = False, delay = 0.0, refresh_hl = False):
     evt=TreeDictEvent(CANVAS_DrawRequest, wx.ID_ANY)
     evt.all = all
     evt.delay = delay
+    evt.refresh_hl = refresh_hl
     SendSimpleTDEvent(evt, w=w, handler=w)
 
 def SendCloseBookRequest(w):
     evt=TreeDictEvent(CloseBookRequest, wx.ID_ANY)
     handler = wx.GetApp().TopWindow
     SendSimpleTDEvent(evt, w=w, handler=handler)
-#def SendWorkerStartRequest(td, w=None, workers=None):
-#    evt=TreeDictEvent(WorkerStartRequest, wx.ID_ANY)
-#    evt.workers = workers
-#    SendSimpleTDEvent(evt, td=td, w=w, useProcessEvent=False)
-
     
     
 

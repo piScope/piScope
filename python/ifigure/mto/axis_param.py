@@ -240,7 +240,8 @@ class AxisVisualParam(object):
                 if self.ticks is not None:
                     value = self.ticks
                 else:
-                    figpage = a.get_axes().figobj.get_figpage()
+                    #figpage = a.get_axes().figobj.get_figpage()
+                    figpage = a.axes.figobj.get_figpage()
                     if self.name[0] == 'x':
                         value = figpage.getp('nticks')[0]
                     elif self.name[0] == 'y':
@@ -251,7 +252,8 @@ class AxisVisualParam(object):
                         pass
                 try:
                     ## this works onlyfor MaxNLocator
-                    a.get_axes().locator_params(self.name[0], nbins = value)
+                    #a.get_axes().locator_params(self.name[0], nbins = value)
+                    a.axes.locator_params(self.name[0], nbins = value)
                 except:
                     ## for Symlog and LogLocator 
                     a.get_major_locator().numticks = value

@@ -109,7 +109,7 @@ class FigGrp(FigObj):
            a.set_figure(figure)
            if self.get_figaxes() is not None:
                if len(self.get_figaxes()._artists) != 0:
-                   a.set_axes(self.get_figaxes()._artists[0])
+                   a.axes = self.get_figaxes()._artists[0]
         
     def del_artist(self, artist=None, delall=False):
         artistlist=self._artists
@@ -158,7 +158,7 @@ class FigGrp(FigObj):
 #               import mpl_toolkits.mplot3d.art3d as art3d
 #               art3d.patch_2d_to_3d(hl)
 #               if len(ax._artists) != 0:
-#                   a.set_axes(self.get_figaxes()._artists[0])
+#                   a.axes = self.get_figaxes()._artists[0]
            self._artists[0].figobj_hl.extend([hl, hlp])
         else:
            if len(self._artists[0].figobj_hl) == 2:

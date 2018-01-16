@@ -132,12 +132,13 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip =    kargs.pop('use_clip', True)        
         super(Axes3DMod, self).__init__(*args, **kargs)
-        self.axesPatch.set_alpha(0)
+        self.patch.set_alpha(0)
         self._gl_id_data = None
         self._gl_mask_artist = None
         self._3d_axes_icon = None
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
+        self._ignore_screen_aspect_ratio = True
 
     def gl_hit_test(self, x, y, artist, radius = 3):
         #
@@ -819,12 +820,13 @@ class Axes3DMod(Axes3D):
                 p1 = xyz[:, 0, :] - xyz[:, 2, :]
                 n1a = np.cross(p0, p1)
                 da = np.sqrt(np.sum(n1a**2, 1))
+                da[da == 0.0] = 1.
                 n1a[:,0] /= -da
                 n1a[:,1] /= -da
-                n1a[:,2] /= -da                
+                n1a[:,2] /= -da
             else:
                 da = np.zeros(idxset.shape[0])
-                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight                
+                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight
                 n1a[:,2] = 1.0
                 
             if len(args) == 1:
@@ -845,11 +847,15 @@ class Axes3DMod(Axes3D):
                 indptr = csr.indptr; indices = csr.indices
                 for i in range(csr.shape[0]):
                     nn = n1a[indices[indptr[i]:indptr[i+1]]]
-                    sign = np.sign(np.sum(nn*nn[0], 1))
-                    nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
-                    norms[i, :] = np.mean(nn, 0)
-
-            norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                       norms[i, :] = np.mean(nn, 0)
+                    else:
+                       norms[i, :] = [1,0,0]
+            nn = np.sqrt(np.sum(norms**2, 1))
+            nn[nn == 0.0] = 1.            
+            norms = norms/nn.reshape(-1,1)
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
                                v[..., 2].flatten(),
@@ -916,6 +922,19 @@ class Axes3DMod(Axes3D):
                              [0,0,a,b],
                              [0,0,-1/10000.,self.dist]
                               ])
+
+        if self._ignore_screen_aspect_ratio:
+            M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+        else:
+            bb = self.get_window_extent()
+            r = abs((bb.x1-bb.x0)/(bb.y1-bb.y0))
+            if r >= 1:
+                M = np.array([[1./r,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+            else:
+                M = np.array([[1,0,0,0],[0,r,0,0],[0,0,1,0],[0,0,0,1]])
+        self._matrix_cache_extra = M
+           
+        perspM = np.dot(M, perspM)
         return  worldM, viewM, perspM, E, R, V, self.dist
     
     def get_proj(self):

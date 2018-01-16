@@ -15,6 +15,7 @@ class PyConnection(TreeDict):
         self.setvar('user', usr) 
         self.setvar('use_ssh', True)
         self.setvar('verbose', True)
+        self.setvar('queue_type', 'sbatch')        
     @classmethod
     def isPyConnection(self):
         return True
@@ -38,24 +39,32 @@ class PyConnection(TreeDict):
         self.setvar('server', str(value[1][1][0]))
         self.setvar('port', long(value[1][1][1]))
         self.setvar('user', str(value[1][1][2]))
+        self.setvar('queue_type', str(value[2]))        
 
     def onSetting(self, evt = None):
-        server, port, user, use_ssh = self.getvar('server', 'port', 'user', 'use_ssh')
+        server, port, user, use_ssh, queue_type = self.getvar('server', 'port',
+                                                              'user',
+                                                              'use_ssh',
+                                                              'queue_type')
         if use_ssh is None: use_ssh = True
         if server is None: server = 'cmodws60.psfc.mit.edu'
         if port is None: port = 22
         if user is None: user = usr #os.getnev('USER')
+        if queue_type is None: queue_type = 'sbatch' #os.getnev('USER')
 
+        s_queue ={"style":wx.CB_DROPDOWN,
+                 "choices": ["sbatch", "qsub"]}       
         l2 = [["server", str(server), 0], 
               ["port", str(port), 0],
               ["user", str(user), 0],]
 
         l1 = [["", "SSH connection", 2], 
               [None, (use_ssh, [server, str(port), user]) , 27,
-              ({'text': 'use SSH'}, {'elp':l2})]]
-
+               ({'text': 'use SSH'}, {'elp':l2})],
+              ["queue type", str(queue_type), 4, s_queue],]
         proj_tree_viewer = wx.GetApp().TopWindow.proj_tree_viewer
-        proj_tree_viewer.OpenPanel(l1, self, 'setSetting', title='Connection setting')
+        proj_tree_viewer.OpenPanel(l1, self, 'setSetting',
+                                   title='Connection setting')
 
     def PutFile(self, src, dest, nowait = False):
         '''

@@ -23,15 +23,17 @@ class GLCompound(object):
         '''
         idx = list
         '''
+        if not self.isCompound(): return
+        
         if inverse:
             array_idx = list(np.unique(self.getvar('array_idx')))
             for x in idx:
                if x in array_idx: array_idx.remove(x)
             idx = array_idx
-        if not self.isCompound(): return
+
         self._hidden_component = idx  
         if len(self._artists) == 0: return
-
+        
         a = self._artists[0]
         array_idx = self.getvar('array_idx')
         

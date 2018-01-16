@@ -28,6 +28,7 @@ import ifigure.ifigure_config as ifigure_config
 import ifigure.events
 import ifigure.widgets.dialog as dialog
 import numpy as np
+from ifigure.utils.wx3to4 import deref_proxy
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('TreeDict')
@@ -634,8 +635,9 @@ class TreeDict(object):
 
     def get_app(self):
         root = self.get_root_parent()
-        if hasattr(root, 'app'): return root.app
-        return None
+        app = root.app if hasattr(root, 'app') else None
+        app = deref_proxy(app)
+        return app
     
     def get_root_parent(self):
         if self.get_parent() is None:
@@ -1098,7 +1100,7 @@ class TreeDict(object):
         event.Skip()
 
     def dlg_ask_newname(self):
-        app = self.get_root_parent().app
+        app = self.get_app()
         ret, new_name = dialog.textentry(app,
                "Enter a new name", "Rename...", self.name)
         if ret:
@@ -1169,7 +1171,7 @@ class TreeDict(object):
 
     def onAddFolder(self, event=None, name = ''):
         from ifigure.mto.py_code import PyFolder
-        app = self.get_root_parent().app
+        app = self.get_app()
         if name == '':
             ret, new_name = dialog.textentry(app,
                  "Enter Foler Name", "Add Folder...", 'folder')

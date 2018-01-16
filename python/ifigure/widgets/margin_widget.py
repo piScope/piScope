@@ -1,4 +1,3 @@
-
 #
 #    Margin widget
 #
@@ -10,6 +9,8 @@ from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
 from ifigure.widgets.undo_redo_history import UndoRedoGroupUngroupFigobj
 from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists
 from ifigure.widgets.undo_redo_history import UndoRedoFigobjProperty
+
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer
 
 class MarginWidget(wx.Panel):
 
@@ -25,7 +26,7 @@ class MarginWidget(wx.Panel):
 
         big_sizer=wx.BoxSizer(wx.VERTICAL)
         big_sizer2=wx.BoxSizer(wx.HORIZONTAL)
-        sizer = wx.FlexGridSizer(2, 2) 
+        sizer = FlexGridSizer(2, 2) 
         sizer.AddGrowableCol(1)
         sizer.Add(self.st1, 0, wx.ALIGN_CENTER_VERTICAL, 3)
         sizer.Add(self.h_slider, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
@@ -39,6 +40,7 @@ class MarginWidget(wx.Panel):
         self.Bind(EVT_CDS_CHANGED, self.onEvent)
 #        self.Bind(wx.EVT_SCROLL_CHANGED, self.onEvent)
         self.Bind(wx.EVT_CHECKBOX, self.onEvent)
+        self.Fit()
     def Disable(self):
         self.use_def.Disable()
         self.st1.Disable()
@@ -137,7 +139,7 @@ class MarginpWidget(wx.Panel):
 
         big_sizer=wx.BoxSizer(wx.VERTICAL)
         big_sizer2=wx.BoxSizer(wx.HORIZONTAL)
-        sizer = wx.FlexGridSizer(2, 2) 
+        sizer = FlexGridSizer(2, 2) 
         sizer.AddGrowableCol(1)
         sizer.Add(self.st1, 0, wx.ALIGN_CENTER_VERTICAL, 3)
         sizer.Add(self.h_slider, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
@@ -148,6 +150,7 @@ class MarginpWidget(wx.Panel):
         self.SetSizer(big_sizer2, wx.EXPAND)
         
         self.Bind(EVT_CDS_CHANGED, self.onEvent)
+        self.Fit()
 #        self.Bind(wx.EVT_SCROLL_CHANGED, self.onEvent)
     def Disable(self):
         self.st1.Disable()
