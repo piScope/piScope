@@ -371,8 +371,12 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
            de = self.get_data_extent()
            from ifigure.matplotlib_mod.art3d_gl import AxesImageGL
            if isinstance(alist[0], AxesImageGL):
-               hl = alist[0].make_hl_artist(container)
-               rect_alpha = 0.0                   
+               hl = alist[0].add_hl_mask()
+               for item in hl:
+                   alist[0].figobj_hl.append(item)
+                
+#               hl = alist[0].make_hl_artist(container)
+#               rect_alpha = 0.0                   
            else:
                x=[de[0],de[1],de[1],de[0],de[0]]
                y=[de[2],de[2],de[3],de[3],de[2]]               
@@ -384,26 +388,25 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                rect_alpha = 0.3
            
                
-           hlp = Rectangle((de[0],de[2]),
-                            de[1]-de[0],
-                            de[3]-de[2],
-                            alpha=rect_alpha, facecolor='k',
-                            figure = figure, 
-                            transform= container.transData)
-           if ax is not None:
-              x0, y0 = ax._artists[0].transAxes.transform((0,0))
-              x1, y1 = ax._artists[0].transAxes.transform((1,1))
-              bbox = Bbox([[x0,y0],[x1,y1]])
-              hlp.set_clip_box(bbox)
-              hlp.set_clip_on(True)
+               hlp = Rectangle((de[0],de[2]),
+                                de[1]-de[0],
+                                de[3]-de[2],
+                                alpha=rect_alpha, facecolor='k',
+                                figure = figure, 
+                                transform= container.transData)
+               if ax is not None:
+                  x0, y0 = ax._artists[0].transAxes.transform((0,0))
+                  x1, y1 = ax._artists[0].transAxes.transform((1,1))
+                  bbox = Bbox([[x0,y0],[x1,y1]])
+                  hlp.set_clip_box(bbox)
+                  hlp.set_clip_on(True)
 
-           figure.patches.append(hlp)
-           for item in (hl[0], hlp):
-               alist[0].figobj_hl.append(item)
+               figure.patches.append(hlp)
+               for item in (hl[0], hlp):
+                   alist[0].figobj_hl.append(item)
         else:
            for a in alist:
               if len(a.figobj_hl) != 0:
-
                  a.figobj_hl[0].remove()
                  figure.patches.remove(a.figobj_hl[1])
               a.figobj_hl=[]

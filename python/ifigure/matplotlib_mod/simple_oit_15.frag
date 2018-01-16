@@ -240,19 +240,16 @@ void main() {
      }
 
      FragData0.a = vColor[3];
-     
+     vec4 color;     
      if (uisMarker == 1){
-        vec4 color = texture(uMarkerTex, gl_PointCoord);
+        color = texture(uMarkerTex, gl_PointCoord);
 	if (color.a == 0){
 	    discard;
 	}
+	FragData0 = color;
 
      }
 
-     
-
-     vec4 color;
-     
 
 /*     gl_FragDepth = gl_FragDepth +  uViewOffset.z/10*     
                     (1 + 3 * sqrt(1-dot(n,c)*dot(n,c)));*/
