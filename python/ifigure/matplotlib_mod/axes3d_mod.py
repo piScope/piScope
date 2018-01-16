@@ -853,7 +853,9 @@ class Axes3DMod(Axes3D):
                        norms[i, :] = np.mean(nn, 0)
                     else:
                        norms[i, :] = [1,0,0]
-            norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
+            nn = np.sqrt(np.sum(norms**2, 1))
+            nn[nn == 0.0] = 1.            
+            norms = norms/nn.reshape(-1,1)
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
                                v[..., 2].flatten(),

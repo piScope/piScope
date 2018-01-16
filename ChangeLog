@@ -28,8 +28,8 @@
 	** Copy To Clipboard is added to CopySpecial menu
 	** following interactive commands calles threed('on') automatically
 	solid, revolve, surf, trisurf, surface. Note that plot command still
-	does not change axes to 3D mode automatically. A user must call threed('on')
-	if axes is in 2D mode.
+	does not change axes to 3D mode automatically. A user must call
+	threed('on') if axes is in 2D mode.
 	** fig_revolve::get_export_val is added	
         ** resolution downscaling on GPU side is added
 	
