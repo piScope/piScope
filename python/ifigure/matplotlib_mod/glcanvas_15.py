@@ -891,6 +891,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDepthMask(GL_TRUE)
         glDisable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO)
         #self._no_smooth = True
+        #glEnable(GL_BLEND)  # glBlendFunc(GL_ONE, GL_ZERO)        
+        #glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         id_dict, need_oit = self.do_draw_artists(tag, update_id = True,
                                        do_clear = (0,0,0,0),
                                        do_clear_depth = True,

@@ -1533,9 +1533,10 @@ class BookViewerInteractive(object):
            return ll
 #        if len(args) == 0: return
 
-        from matplotlib.cbook import is_string_like
+#        from matplotlib.cbook import is_string_like
+        from ifigure.utils.cbook import isstringlike
         name = args[0]
-        if not is_string_like(name):
+        if not isstringlike(name):
            tag, name = name
         else:
            tag = ''

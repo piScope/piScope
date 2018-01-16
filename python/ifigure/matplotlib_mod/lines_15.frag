@@ -113,7 +113,8 @@ void main() {
      FragData0 = gColor;
 
      if (abs(gDist) >  uLineWidth) {
-         FragData0.a = FragData0.a*(1. - (abs(gDist)-uLineWidth)/3);
+         //FragData0.a = FragData0.a*(1. - (abs(gDist)-uLineWidth)/3);
+         //FragData0 = FragData0*(1. - (abs(gDist)-uLineWidth)/3);	 
      }
      if (uHasHL == 1){
         if (((uUseArrayID == 1) && (gArrayID < 0)) || (uUseArrayID != 1)){
