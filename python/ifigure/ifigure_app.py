@@ -407,6 +407,12 @@ class ifigure_app(BookViewerFrame):
                  launcher_file = None   ):
 
        self.windowlist = WindowList()
+       self.appearanceconfig = AppearanceConfig()
+       import ifigure.widgets.canvas.ifigure_canvas
+       if not ifigure.widgets.canvas.ifigure_canvas.turn_on_gl_init: 
+           ifigure.widgets.canvas.ifigure_canvas.turn_on_gl_init = True
+           ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = self.appearanceconfig.setting['gl_use']
+
        super(ifigure_app, self).__init__(parent, 
                    title=title, size=(10,10), 
                    style = wx.MINIMIZE_BOX | wx.MAXIMIZE_BOX | 
@@ -455,7 +461,6 @@ class ifigure_app(BookViewerFrame):
        self.config = iFigureConfig()
        self.helper = HelperApp()
        self.aconfig = AdvancedConfig()
-       self.appearanceconfig = AppearanceConfig()
        self.aconfig.add_user_path()
 
        dx, dy = wx.GetDisplaySize()

@@ -7,6 +7,16 @@ if __name__ == '__main__':
    import sys, os, wx, weakref
    import matplotlib
    matplotlib.use('WXAGG')
+
+   try:
+      import OpenGL
+      OpenGL.ERROR_LOGGING = False   
+      OpenGL.ERROR_CHECKING = False
+      OpenGL.ERROR_ON_COPY = False
+   except:
+      pass
+
+
    import ifigure
    from ifigure.ifigure_app import ifigure_app, MyApp
    from ifigure.utils.mp_tarzip import MPTarzip
@@ -66,7 +76,7 @@ if __name__ == '__main__':
           print('-p               : call profiler')
           print('-r <command>     : run command')
           print('-h               : show this help')
-          print('-g               : turn on gl')
+          print('-g               : turn off gl')
           print('-l <path>        : file to commnicate with launcher ')
           sys.exit()
         elif p == '-s':
@@ -99,12 +109,13 @@ if __name__ == '__main__':
         elif p == '-l':
           lflag = True
         elif p == '-g':
-          print('turn on OpenGL')
-          import OpenGL
-          OpenGL.ERROR_LOGGING = False   
-          OpenGL.ERROR_ON_COPY = True          
+          print('turn off OpenGL')
+          #import OpenGL
+          #OpenGL.ERROR_LOGGING = False   
+          #OpenGL.ERROR_ON_COPY = True          
           import ifigure.widgets.canvas.ifigure_canvas
-          ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = True
+          ifigure.widgets.canvas.ifigure_canvas.turn_on_gl_init = True
+          ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = False
         else:
           if rflag:
              if len(p) > 0:  
@@ -130,7 +141,6 @@ if __name__ == '__main__':
                 show_file_open_error = True
                 filename = p
                 file = None
-
    ifigure.ifigure_app.redirect_std = redirect_std
 
 #   from ifigure.utils.rollback_importer import RollbackImporter as RI

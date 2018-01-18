@@ -97,6 +97,7 @@ from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists
 #from ifigure.matplotlib_mod.backend_wx_mod import FigureCanvasWxMod as Canvas
 #matplotlib.use('WXAGG') ## this is moved to piscope.py
 from ifigure.matplotlib_mod.backend_wxagg_mod import FigureCanvasWxAggMod as Canvas
+turn_on_gl_init = False
 turn_on_gl = False
 
 # comment out the following to use wx rather than wxagg
@@ -2328,7 +2329,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self.send_range_action(requests, '3D zoom')
 
        else:
-           df = -0.05 if event['direction'] else 0.05
+           df = 0.05 if event['direction'] else -0.05
            minx, maxx, miny, maxy, minz, maxz = axes.get_w_lims()
            dx = (maxx-minx)*df
            dy = (maxy-miny)*df

@@ -19,7 +19,7 @@ _usage() {
     echo '   -p : (optional) : launch profiler at startup'
     echo '   -r : (optional) : execute python command in shell'
     echo '   -n : (optional) : no main window'
-    echo '   -g : (optional) : use open GL'
+    echo '   -g : (optional) : open off GL'
     echo '   -k : (optional) : use open GL (LIBGL_ALWAYS_SOFTWARE=1)'    
     echo '   file: (optional) : .bfz or .pfz file to open'
     exit 1
@@ -48,8 +48,7 @@ do
          ;;
       g) EXTRA5='-g'
          ;;
-      k) EXTRA5='-g'      
-         export LIBGL_ALWAYS_SOFTWARE=1
+      k) export LIBGL_ALWAYS_SOFTWARE=1
          ;;
       h) _usage;;
       :|\?) _usage;;

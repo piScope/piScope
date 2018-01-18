@@ -1,5 +1,7 @@
-version = 1.1
+version = 1.2
 show_suppress_menu = False
 gl_multisample = True
+gl_use    = False
+gl_use_12 = True
 
 

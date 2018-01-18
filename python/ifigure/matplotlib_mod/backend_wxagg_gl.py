@@ -2,6 +2,7 @@
 import numpy as np
 import time
 import wx
+
 import weakref
 import array
 from scipy.misc import imresize
@@ -23,12 +24,15 @@ from distutils.version import LooseVersion
 from ifigure.matplotlib_mod.backend_wxagg_mod import FigureCanvasWxAggMod
 isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
-
-if wx.__version__[0] == '4':
-    from glcanvas_15 import MyGLCanvas   
-else:
-    from glcanvas_12 import MyGLCanvas      
-
+def load_glcanvas():
+    use_gl_12 = wx.GetApp().TopWindow.appearanceconfig.setting['gl_use_12']
+    if wx.__version__[0] == '4' and not use_gl_12:
+       from glcanvas_15 import MyGLCanvas      
+       print('loading glcanvas15')
+    else:
+       from glcanvas_12 import MyGLCanvas      
+    return MyGLCanvas
+ 
 #from renderer_gl import RendererGL
 from matplotlib.backends.backend_agg import RendererAgg
 class RendererGLMixin(object):
@@ -108,7 +112,7 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         FigureCanvasWxAggMod.__init__(self, *args, **kwargs)
         if FigureCanvasWxAggModGL.glcanvas is None:
             win = wx.GetApp().TopWindow 
-            glcanvas = MyGLCanvas(win)
+            glcanvas = load_glcanvas()(win)
             FigureCanvasWxAggModGL.glcanvas = glcanvas
             glcanvas.SetMinSize((2,2))
             glcanvas.SetMaxSize((2,2))
