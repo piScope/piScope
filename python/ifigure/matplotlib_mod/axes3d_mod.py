@@ -14,6 +14,7 @@ from matplotlib.colors import ColorConverter
 cc = ColorConverter()
 
 from matplotlib.artist import allow_rasterization
+
 import numpy as np
 from matplotlib.collections import Collection, LineCollection, \
         PolyCollection, PatchCollection, PathCollection
@@ -297,6 +298,51 @@ class Axes3DMod(Axes3D):
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
+    def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata):
+        from ifigure.utils.geom import transform_point
+
+        x0, y0 = transform_point(
+                           self.transAxes, 0.5, 0.5)
+        x0, y0 = transform_point(
+                           self.transData.inverted(), x0, y0)
+        
+        dx = x0 - (xdata + sxdata)/2.0
+        dy = y0 - (ydata + sydata)/2.0
+        
+        w = self._pseudo_w
+        h = self._pseudo_h
+
+        dx = dx/w; dy = dy/h
+        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
+        
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+        midx = (minx+maxx)/2.; midy = (miny+maxy)/2. ;midz = (minz+maxz)/2.
+        M = self.get_proj()
+        dp = -np.array([dx, dy])
+
+        xx = (np.dot(M, (1,midy,midz,1)) - 
+              np.dot(M, (0,midy,midz,1)))[:2]
+        dx1 = np.sum(xx * dp)/np.sum(xx * xx)
+        yy = (np.dot(M, (midx,1,midz,0)) - 
+              np.dot(M, (midx,0,midz,0)))[:2]
+        dy1 = np.sum(yy * dp)/np.sum(yy * yy)
+        zz = (np.dot(M, (midx,midy,1,0)) -
+              np.dot(M, (midx,midy,0,0)))[:2]
+        dz1 = np.sum(zz * dp)/np.sum(zz * zz)
+
+        minx, maxx = minx + dx1, maxx + dx1
+        miny, maxy = miny + dy1, maxy + dy1
+        minz, maxz = minz + dz1, maxz + dz1
+        
+        dx = (maxx-minx)*df/2.
+        dy = (maxy-miny)*df/2.
+        dz = (maxz-minz)*df/2.
+        x0 = (maxx+minx)/2.0
+        y0 = (maxy+miny)/2.0
+        z0 = (maxz+minz)/2.0
+
+        return ((x0 - dx, x0 + dx),(y0 - dy, y0 + dy),(z0 - dz, z0 + dz))
+
     def _on_move_mod(self, event):
         """
         added pan mode 
@@ -339,7 +385,7 @@ class Axes3DMod(Axes3D):
             self.azim = np.arctan2(newp1[1], newp1[0])*180/np.pi
 #            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
 #            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
         elif self.button_pressed in self._pan_btn:
@@ -364,7 +410,7 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d(miny + dy, maxy + dy)
             self.set_zlim3d(minz + dz, maxz + dz)
 
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
             # pan view
@@ -383,7 +429,7 @@ class Axes3DMod(Axes3D):
             self.set_xlim3d(minx - dx, maxx + dx)
             self.set_ylim3d(miny - dy, maxy + dy)
             self.set_zlim3d(minz - dz, maxz + dz)
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
     def _button_release(self, evt):

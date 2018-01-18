@@ -723,6 +723,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
 
         canvas =  self.panel
         range_data = {}
+
         for a in figaxes._artists:
             range_data[a] = {}
             xdata, ydata = transform_point(
@@ -731,54 +732,59 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
             sxdata, sydata = transform_point(
                            a.transData.inverted(),
                            st_event.x, st_event.y)
-            
-            ### work to expand/shring range
-            if evt.x > st_event.x:
-                 xrange = [sxdata, xdata]
+            if figaxes.get_3d():
+                val = a.calc_range_change_by_pan(xdata, ydata, sxdata, sydata)
+                range_data[a]['x'] = val[0]
+                range_data[a]['y'] = val[1]
+                range_data[a]['z'] = val[2]                
             else:
-                 xrange = [xdata,  sxdata]
-                 
-            if evt.y > st_event.y:
-                 yrange = [sydata, ydata]
-            else:
-                 yrange = [ydata, sydata]
-            if canvas.toolbar.zoom_menu:
-                m = zoom_popup(self)
-                self.panel.canvas.PopupMenu(m, 
-                     [evt.guiEvent.GetX(), evt.guiEvent.GetY()])
-                m.Destroy()
+            ### work to expand/shrink range
+                if evt.x > st_event.x:
+                     xrange = [sxdata, xdata]
+                else:
+                     xrange = [xdata,  sxdata]
 
-            if canvas.toolbar.zoom_up_down == 'down':
-                #  if self.st_event.key == 'd':
-                atrans  = a.transAxes.transform
-                iatrans = a.transAxes.inverted().transform
-                dtrans  = a.transData.transform
-                idtrans = a.transData.inverted().transform
-                dtrans  = a.transData.transform
-                p0, p1=dtrans(np.array([[xrange[0],yrange[0]],
-                                      [xrange[1],yrange[1]]]))
-                #print p0, p1
-                a0, a1=iatrans(np.array([p0, p1]))
-                #print a0, a1
-                ia0 = [-a0[0], -a0[1]]
-                ia1 = [1+(1-a1[0]), 1+(1.-a1[1])]
-                #print ia0, ia1
-                ip0, ip1 = atrans(np.array([ia0, ia1]))
-                #print ip0, ip1
-                d0, d1   = idtrans(np.array([ip0, ip1]))
-                xrange = [d0[0], d1[0]]
-                yrange = [d0[1], d1[1]]
+                if evt.y > st_event.y:
+                     yrange = [sydata, ydata]
+                else:
+                     yrange = [ydata, sydata]
+                if canvas.toolbar.zoom_menu:
+                    m = zoom_popup(self)
+                    self.panel.canvas.PopupMenu(m, 
+                         [evt.guiEvent.GetX(), evt.guiEvent.GetY()])
+                    m.Destroy()
 
-            if self.expand_dir in ['x', 'both']:
-               ### this is to change values in artists
-               ### as it happens in pan mode
-               range_data[a]['x'] = xrange
-            if self.expand_dir in ['y', 'both']:
-               range_data[a]['y'] = yrange
-               ### this is to change values in artists
-               ### as it happens in pan mode
-#               a.set_ylim(yrange)
-#               requests =  canvas.make_range_request_zoom(figaxes, 'y', yrange, False, a, requests=requests)
+                if canvas.toolbar.zoom_up_down == 'down':
+                    #  if self.st_event.key == 'd':
+                    atrans  = a.transAxes.transform
+                    iatrans = a.transAxes.inverted().transform
+                    dtrans  = a.transData.transform
+                    idtrans = a.transData.inverted().transform
+                    dtrans  = a.transData.transform
+                    p0, p1=dtrans(np.array([[xrange[0],yrange[0]],
+                                          [xrange[1],yrange[1]]]))
+                    #print p0, p1
+                    a0, a1=iatrans(np.array([p0, p1]))
+                    #print a0, a1
+                    ia0 = [-a0[0], -a0[1]]
+                    ia1 = [1+(1-a1[0]), 1+(1.-a1[1])]
+                    #print ia0, ia1
+                    ip0, ip1 = atrans(np.array([ia0, ia1]))
+                    #print ip0, ip1
+                    d0, d1   = idtrans(np.array([ip0, ip1]))
+                    xrange = [d0[0], d1[0]]
+                    yrange = [d0[1], d1[1]]
+
+                if self.expand_dir in ['x', 'both']:
+                   ### this is to change values in artists
+                   ### as it happens in pan mode
+                   range_data[a]['x'] = xrange
+                if self.expand_dir in ['y', 'both']:
+                   range_data[a]['y'] = yrange
+                   ### this is to change values in artists
+                   ### as it happens in pan mode
+    #               a.set_ylim(yrange)
+    #               requests =  canvas.make_range_request_zoom(figaxes, 'y', yrange, False, a, requests=requests)
 
         requests  = None       
         for a in range_data:
@@ -1350,7 +1356,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                            ifigure_canvas_draghandler_3d(self), 
                            ]
       self.draghandler= self.draghandlers[0]
-
+      self.canvas.set_wheel_cb(self.on_mouse_wheel)
 #      self.toolbar = Toolbar(self.canvas)
 #      self.toolbar.Realize()
 #      self.fig_objs=[]
@@ -1590,7 +1596,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.axes_selection=cbook.WeakNone()
       self.canvas.figure=figure
       self._figure=figure
-
+      try:
+          self.set_axes_selection(figure.figobj.get_axes(0)._artists[0])
+      except:
+          pass
+      
    def get_figure(self):
       return self._figure
 
@@ -2080,7 +2090,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       # On Linux (depends on button, True with shift key, True with Opt key
       #print event.button,  event.guiEvent.ShiftDown(), event.guiEvent.AltDown()
       
-
       self._cursor_icon = None
       do_3d_rot = False
       if (self.toolbar.mode == '3dzoom' and
@@ -2121,10 +2130,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if (ax is not None and
              ax.figobj.get_3d()):
              # 10 => no button to rotate ;D
-             self.set_3dzoom_mode(True, zoom_btn = 1, rotate_btn = 10)
-             ax._button_press(event)
-             self.draghandler = self.draghandlers[10]
-             self.draghandler.bind_mpl(event)
+             #if event.guiEvent.ShiftDown():
+                 self.draghandler = self.draghandlers[2]
+                 self.draghandler.bind_mpl(event)
+             #else:        
+             #    self.set_3dzoom_mode(True, zoom_btn = 1, rotate_btn = 10)
+             #    ax._button_press(event)
+             #    self.draghandler = self.draghandlers[10]
+             #    self.draghandler.bind_mpl(event)
          else:
              self.set_3dzoom_mode(False)
              self.draghandler = self.draghandlers[2]
@@ -2301,7 +2314,31 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
       if set_pmode:
          wx.CallLater(2, self.set_pmode)
- 
+         
+   def on_mouse_wheel(self, event):
+       axes=self.axes_selection()
+       if axes is None: return
+       if not axes.figobj.get_3d(): return
+       if event['start']:
+           self._wheel_start_range = axes.get_w_lims()           
+       elif event['end']:
+           self._wheel_end_range = axes.get_w_lims()
+           requests = self.make_range_request_pan(axes.figobj, auto=False)                 
+           #requests = self.expand_requests(requests)
+           self.send_range_action(requests, '3D zoom')
+
+       else:
+           df = -0.05 if event['direction'] else 0.05
+           minx, maxx, miny, maxy, minz, maxz = axes.get_w_lims()
+           dx = (maxx-minx)*df
+           dy = (maxy-miny)*df
+           dz = (maxz-minz)*df
+           axes.set_xlim3d(minx - dx, maxx + dx)
+           axes.set_ylim3d(miny - dy, maxy + dy)
+           axes.set_zlim3d(minz - dz, maxz + dz)
+           axes.figobj.set_bmp_update(False)
+           self.draw_later()
+           
    def set_pmode(self):
        self.toolbar.ExitInsertMode()
        self.toolbar.SetPMode()
