@@ -39,7 +39,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
     context = None
     def __init__(self, parent):
-        import wx.glcanvas as glc
         attribs = [('WX_GL_CORE_PROFILE',None),
                    ('WX_GL_MAJOR_VERSION', 3),
                    ('WX_GL_MINOR_VERSION', 2) ]

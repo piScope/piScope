@@ -8,6 +8,7 @@ if __name__ == '__main__':
    import matplotlib
    matplotlib.use('WXAGG')
 
+   '''
    try:
       import OpenGL
       OpenGL.ERROR_LOGGING = False   
@@ -15,8 +16,7 @@ if __name__ == '__main__':
       OpenGL.ERROR_ON_COPY = False
    except:
       pass
-
-
+   '''
    import ifigure
    from ifigure.ifigure_app import ifigure_app, MyApp
    from ifigure.utils.mp_tarzip import MPTarzip
@@ -64,6 +64,7 @@ if __name__ == '__main__':
    if len(sys.argv[1:]) >= 1:
       rflag = False
       lflag = False
+      use_gl = True
       for p in sys.argv[1:]:
         if p == '-h':
           print('[Usage: ifigure -s -r command -h file]')
@@ -109,13 +110,7 @@ if __name__ == '__main__':
         elif p == '-l':
           lflag = True
         elif p == '-g':
-          print('turn off OpenGL')
-          #import OpenGL
-          #OpenGL.ERROR_LOGGING = False   
-          #OpenGL.ERROR_ON_COPY = True          
-          import ifigure.widgets.canvas.ifigure_canvas
-          ifigure.widgets.canvas.ifigure_canvas.turn_on_gl_init = True
-          ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = False
+          use_gl = False
         else:
           if rflag:
              if len(p) > 0:  
@@ -141,18 +136,33 @@ if __name__ == '__main__':
                 show_file_open_error = True
                 filename = p
                 file = None
+   from ifigure.widgets.appearance_config import AppearanceConfig                
+   appearanceconfig = AppearanceConfig()
+   
+   import ifigure.widgets.canvas.ifigure_canvas
+   import ifigure.matplotlib_mod.backend_wxagg_gl as wxagg_gl
+   if use_gl: use_gl = appearanceconfig.setting['gl_use']
+   if use_gl:
+      ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = use_gl
+      wxagg_gl.use_gl_12 = appearanceconfig.setting['gl_use_12']
+      wxagg_gl.load_glcanvas(debug=True)
+   else:
+      print('No 3D plot (OpenGL turned off)')      
+   
    ifigure.ifigure_app.redirect_std = redirect_std
-
 #   from ifigure.utils.rollback_importer import RollbackImporter as RI
    from ifigure.mto.treedict import fill_td_name_space
+
    sc = os.path.join(os.path.dirname(ifigure.__file__), 'mto', 'treedict_ns.py')
    if os.path.exists(sc): fill_td_name_space(sc)
    from ifigure.ifigure_config import rcdir
    sc = os.path.join(rcdir, 'treedict_ns.py')
    if os.path.exists(sc): fill_td_name_space(sc)
  
+
    app = MyApp(False, clearSigInt=False)
    ifig_app = app.get_ifig_app()
+
 
    if show_file_open_error:
       ifig_app.shell.write('### File not found : ' + filename)
