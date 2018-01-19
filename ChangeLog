@@ -1,4 +1,10 @@
 2018
+	* 1/19
+	** OpenGL 3.2 based shaders are stable enough
+	** fixed a few wx4 migration issues
+	** turn on OpenGL by default. -g option is changed to SUPPRESS OpenGL
+	** Appearance panel is modified to choose OpenGL on/off, shader version.
+	
         * 1/10
         ** Migration to OpenGL 3.2 core is on-going
 	Most of the functionality seems working now.

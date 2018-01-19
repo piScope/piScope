@@ -22,15 +22,6 @@ dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
 
 from canvas_common import *
 
-def add_attribute(l, name, value):
-    n = getattr(glcanvas, name)
-    if glcanvas.GLCanvas.IsDisplaySupported([n]):
-        l.append(n)
-        if value is not None:
-           l.append(value)
-    else:
-        print("not supported", name)       
-
 vert_suffix= '_15.vert'
 frag_suffix= '_15.frag'    
 geom_suffix= '_15.geom'
@@ -39,15 +30,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
     context = None
     def __init__(self, parent):
-        attribs = [('WX_GL_CORE_PROFILE',None),
-                   ('WX_GL_MAJOR_VERSION', 3),
-                   ('WX_GL_MINOR_VERSION', 2) ]
-        attribList = []
-        for nv in attribs: add_attribute(attribList, *nv)
-
+        attribs = [glcanvas.WX_GL_CORE_PROFILE,
+                   glcanvas.WX_GL_MAJOR_VERSION, 3,
+                   glcanvas.WX_GL_MINOR_VERSION, 2, -1]
+        
         glcanvas.GLCanvas.__init__(self, parent, -1,
-                                   attribList=attribList)
-
+                                   attribList=attribs)
         self.init = False
         if MyGLCanvas.context is None:
            MyGLCanvas.context = glcanvas.GLContext(self)
