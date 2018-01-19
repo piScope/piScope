@@ -9,6 +9,8 @@ import ifigure.widgets.dialog as dialog
 from .navibar2 import make_bitmap_with_bluebox, TaskBtnList, ButtonInfo
 from ifigure.utils.wx3to4 import wxCursorFromImage
 
+from ifigure.utils.wx3to4 import evt_GetPosition
+
 btasks0 = [('goto_first', 'arrow_firstpage.png', 0, 'first page'),
            ('play_rev',   'arrow_revplay.png', 1, 'reverse play'),
            ('step_rev',   'arrow_revstep.png', 1, 'step reverse'),
@@ -86,7 +88,7 @@ class VideoplayerBar(bp.ButtonPanel):
         return bts
 
     def OnLeftUp(self, evt):
-        ret = self.HitTest(evt.GetPositionTuple())
+        ret = self.HitTest(evt_GetPosition(evt))
         if ret[0]==wx.NOT_FOUND:
             return  bp.ButtonPanel.OnLeftUp(self, evt)                    
         
