@@ -316,19 +316,20 @@ class Axes3DMod(Axes3D):
         df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
         
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
         midx = (minx+maxx)/2.; midy = (miny+maxy)/2. ;midz = (minz+maxz)/2.
         M = self.get_proj()
         dp = -np.array([dx, dy])
 
         xx = (np.dot(M, (1,midy,midz,1)) - 
               np.dot(M, (0,midy,midz,1)))[:2]
-        dx1 = np.sum(xx * dp)/np.sum(xx * xx)
-        yy = (np.dot(M, (midx,1,midz,0)) - 
-              np.dot(M, (midx,0,midz,0)))[:2]
-        dy1 = np.sum(yy * dp)/np.sum(yy * yy)
-        zz = (np.dot(M, (midx,midy,1,0)) -
-              np.dot(M, (midx,midy,0,0)))[:2]
-        dz1 = np.sum(zz * dp)/np.sum(zz * zz)
+        dx1 = np.sum(xx * dp)/np.sum(xx * xx) if np.sum(xx * xx) > 0.01 else 0.0
+        yy = (np.dot(M, (midx,1,midz,1)) - 
+              np.dot(M, (midx,0,midz,1)))[:2]
+        dy1 = np.sum(yy * dp)/np.sum(yy * yy) if np.sum(yy * yy) > 0.01 else 0.0
+        zz = (np.dot(M, (midx,midy,1,1)) -
+              np.dot(M, (midx,midy,0,1)))[:2]
+        dz1 = np.sum(zz * dp)/np.sum(zz * zz) if np.sum(zz * zz) > 0.01 else 0.0
 
         minx, maxx = minx + dx1, maxx + dx1
         miny, maxy = miny + dy1, maxy + dy1
