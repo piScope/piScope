@@ -1591,7 +1591,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           view_offset = (0, 0, 0, 0),
                                           array_idx = None):
 
-
+        if vbos is None: return
         first = vbos['first']
         counts = vbos['counts']
         if vbos['fc'] is not None:
@@ -1751,6 +1751,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           lighting = True,
                                           view_offset = (0, 0, 0, 0),
                                           array_idx = None):
+        if vbos is None: return
         if len(paths[4][0]) > 4:
             self.draw_path_collection(vbos, gc,  paths, 
                                      facecolor, edgecolor,
@@ -1859,6 +1860,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor, 
                                       edgecolor, *args,  **kwargs):
         ### paths is [X, Y, Z, norms, idxset]
+        if len(paths[4]) == 0: return None
         if len(paths[4][0]) > 4:
             vbos = self.makevbo_path_collection(vbos, gc, paths, facecolor, 
                                            edgecolor, *args,  **kwargs)
