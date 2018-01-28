@@ -757,7 +757,7 @@ class Axes3DMod(Axes3D):
                     cdata = cdata[r, :][:, c].flatten()
                 else:
                     cdata = Z3D
-                shade = kwargs.pop('shade', 'flat')
+                shade = kwargs.get('shade', 'flat')
                 kwargs['facecolordata'] = cdata.real
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
@@ -825,6 +825,21 @@ class Axes3DMod(Axes3D):
             o._idxset = (None, None, None)   # this is used for phasor            
         return o
     
+    def prep_flat_shading_data(self, args, kwargs):
+        if len(args) < 2: return args, kwargs
+
+        vert = args[0]; idx = args[1]
+        args = (vert[idx],)
+        if 'array_idx' in kwargs:
+            if kwargs['array_idx'] is not None:
+                 kwargs['array_idx'] = kwargs['array_idx'][idx].flatten()
+        if 'facecolordata' in kwargs:
+            cdata = kwargs['facecolordata'][idx]
+            cdata = np.mean(cdata, 1)
+            kwargs['facecolordata'] = cdata
+        return args, kwargs            
+        
+        
     def plot_solid(self, *args,  **kwargs):
         '''
         plot_solid(v)  or plot_solid(v, idx)
@@ -838,7 +853,10 @@ class Axes3DMod(Axes3D):
 
         kwargs: normals : normal vectors
         '''
-        #gl_3dpath = kwargs.get('gl_3dpath', None)
+        shade = kwargs.pop('shade', 'linear')
+        if shade == 'flat':
+            args, kwargs = self.prep_flat_shading_data(args, kwargs)
+        
         if len(args) == 1:
             v = args[0]
             vv = v.reshape(-1, v.shape[-1])# vertex

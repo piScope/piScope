@@ -1827,6 +1827,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe == 2: glDisable(GL_DEPTH_TEST)
         #glDepthMask(GL_FALSE)
         #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        #self.set_uniform(glUniform4fv, 'uViewOffset', 1,
+        #                 (0, 0, -0.01, 0.))
         glDrawElements(vbos['eprimitive'], nindexe,
                              GL_UNSIGNED_INT, None)
         #self.set_depth_mask()
@@ -1891,7 +1893,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             elif len(paths[4][0]) == 3:
                 idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 3)
                 idxset  = idxset0.flatten()
-                idxsete = np.hstack((idxset0, idxset0[:,:1],)).flatten()
+                idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
+                                     idxset0[:,2:], idxset0[:,:1],)).flatten()
             elif len(paths[4][0]) == 2:
                 idxset  = np.hstack(paths[4]).astype(np.uint32).flatten()
                 idxsete = None
@@ -1907,7 +1910,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         elif len(paths[4][0]) == 3:
             counts = 3
             nindex = len(paths[4])*len(paths[4][0])
-            nindexe = len(paths[4])*4
+            nindexe = len(paths[4])*6
             primitive  = GL_TRIANGLES            
             eprimitive = GL_LINES
         elif len(paths[4][0]) == 2:                        

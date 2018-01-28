@@ -203,6 +203,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
             kywds['facecolor'] = (fc,)
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
+        kywds['shade'] = self.getvar('shade')
 
         args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
         self._artists = [container.plot_solid(*args, **kywds)]

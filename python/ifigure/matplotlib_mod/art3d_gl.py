@@ -776,10 +776,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
     def set_cz(self, cz):
         if cz is not None:
-#            if hasattr(self, '_segis'):
-#                self._gl_cz = np.hstack([cz[si:ei] for si, ei in self._segis])
-#            else:
-                self._gl_cz = cz
+            self._gl_cz = cz
         else:
             self._gl_cz = False
 
@@ -791,8 +788,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             if self._gl_cz:
                 if self._gl_facecolordata is not None:
                    self._gl_facecolor = self.to_rgba(self._gl_facecolordata)
-            elif self._gl_shade == False:
-                if self._gl_cz is None:
+            elif self._gl_shade =='flat':
+                if self._gl_cz:
                     z = [np.mean(self._gl_3dpath[2][idx])
                          for idx in self._gl_3dpath[4]]
                 else:
