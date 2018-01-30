@@ -65,7 +65,10 @@ void main() {
     vec4 pos1 = uProjM * (uViewM *(uWorldM*Vertex + uWorldOffset*10.)+
                           uViewOffset);
     vec4 pos2 = uProjM * (uViewM *(uWorldM*Vertex) + uViewOffset);
-    gl_Position = vec4(pos2[0], pos2[1], pos1[2], pos2[3]);    
+    gl_Position = vec4(pos2[0], pos2[1], pos1[2], pos2[3]);
+    
+    camera_dir = - (uViewM * uWorldM * Vertex).xyz;
+    light_dir  = (uViewM * uWorldM * uLightDir).xyz;
 
     if (uisAtlas == 1){
        vec4 vertex2 = vec4(Vertex2);
@@ -86,8 +89,6 @@ void main() {
        }
        normal = uNormalM * inNormal;
     
-       camera_dir = - (uViewM * uWorldM * Vertex).xyz;
-       light_dir  = (uViewM * uWorldM * uLightDir).xyz;
     
        ClipDistance0 = vec3(uWorldM * Vertex);
        LightDist = (uShadowM * Vertex).xyz/(uShadowM * Vertex).w;

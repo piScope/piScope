@@ -342,8 +342,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         
     def set_lighting_off(self):
+        print('set_lighting_off')        
         if self._p_shader != self.shader: return        
-        #print('set_lighting_off')
+
         a = (GLfloat * 4)()
         b = (GLfloat * 1)()
         c= (GLfloat * 1)()

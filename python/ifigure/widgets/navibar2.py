@@ -561,6 +561,7 @@ class navibar(ButtonPanel):
         if asel is None: return
         a = asel()
         if a is None: return
+        if a.figobj is None: return        
         if a.figobj.get_3d():
              self.GetParent().set_3dzoom_mode(True, pan_btn = 11, 
                                         zoom_btn = 1, rotate_btn = 10)
@@ -587,6 +588,7 @@ class navibar(ButtonPanel):
         if asel is None: return
         a = asel()
         if a is None: return
+        if a.figobj is None: return                
         if a.figobj.get_3d():
              self.GetParent().set_3dzoom_mode(True, pan_btn = 1, 
                                         zoom_btn = 11, rotate_btn = 10)

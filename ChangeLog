@@ -1,4 +1,10 @@
 2018
+	* 1/30
+	** Running !-command in shell is changed to use threading, which
+	allows a long-running process while keeping GUI active.
+	** Maybe I should provide a interface to kill subprocesses lauched
+	by various ways from piScope?
+	
 	* 1/19
 	** OpenGL 3.2 based shaders are stable enough
 	** fixed a few wx4 migration issues

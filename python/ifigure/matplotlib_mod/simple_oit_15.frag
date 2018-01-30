@@ -181,6 +181,12 @@ void main() {
      vec3 l = normalize(light_dir);
      vec3 c = normalize(camera_dir);
      vec4 light_color = vec4(uLightColor.xyz, 1);
+
+     /* for debug do something crazy when uLightPow == 4*/
+     if (uLightPow == 2.){
+        n = vec3(0,0,1);
+        //l = vec3(0,0,1);
+     }
      
      float sh  = 1.0;
      if (uUseShadowMap == 1){
@@ -220,12 +226,10 @@ void main() {
      cA = cA * sh;
 
      vec4 cAmbient = vColor * uAmbient;
-
-     //vec4 cDiff = vColor * light_color * vec4(uLightPow*cT,
-     //                  uLightPow*cT, uLightPow*cT, 1);
-     vec4 cDiff = vColor * vec4(uLightPow*cT,
-                                uLightPow*cT,
-				uLightPow*cT, 1);
+     float LightPow = uLightPow;
+     vec4 cDiff = vColor * vec4(LightPow*cT,
+                                LightPow*cT,
+				LightPow*cT, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
      FragData0 = cAmbient + cDiff + cSpec;

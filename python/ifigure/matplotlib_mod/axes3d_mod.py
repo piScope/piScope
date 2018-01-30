@@ -904,23 +904,21 @@ class Axes3DMod(Axes3D):
                 norms = n1a
             else:
                 data = np.ones(idxset.flatten().shape[0])
-                jj = np.array([np.arange(idxset.shape[0])]*idxset.shape[-1]).flatten()
+                jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
                 ii = idxset.transpose().flatten()
                 table = coo_matrix((data, (ii, jj)),
-                                    shape = (nverts, idxset.shape[0]))
-                csr = table.tocsr()
-                indptr = csr.indptr; indices = csr.indices
-                for i in range(csr.shape[0]):
-                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
-                    if len(nn) != 0.0:
-                       sign = np.sign(np.sum(nn*nn[0], 1))
-                       nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
-                       norms[i, :] = np.mean(nn, 0)
-                    else:
-                       norms[i, :] = [1,0,0]
+                                    shape = (nverts, idxset.shape[0])).tocsr()
+                
+                nz = n1a[:,2]
+                nz[nz==0] = 1.0
+                f = nz/np.abs(nz)
+                n1a = (n1a.transpose()*f).transpose()
+                norms = table.dot(n1a)
+
             nn = np.sqrt(np.sum(norms**2, 1))
             nn[nn == 0.0] = 1.            
             norms = norms/nn.reshape(-1,1)
+            
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
                                v[..., 2].flatten(),
@@ -929,7 +927,7 @@ class Axes3DMod(Axes3D):
         
         from art3d_gl import Poly3DCollectionGL
         if len(args) == 1:
-            a = Poly3DCollectionGL(v, **kwargs)                        
+            a = Poly3DCollectionGL(v[:2,...], **kwargs)                        
         else:
             a = Poly3DCollectionGL(v[idxset[:2,...]], **kwargs)
 
