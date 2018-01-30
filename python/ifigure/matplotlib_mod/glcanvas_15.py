@@ -23,9 +23,11 @@ dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
 from canvas_common import *
 
 vert_suffix= '_15.vert'
-frag_suffix= '_15.frag'    
+frag_suffix= '_15.frag'
 geom_suffix= '_15.geom'
 
+class dummy(object):
+    pass
 class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
     context = None
@@ -63,7 +65,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._current_uniform = {}
         #self._no_smooth = False
         self._hl_color = (0., 0., 0., 0.65)
-        self.PIXBUFS = (None, None, None)  
+        self.PIXBUFS = (None, None, None)
+        self._read_data_pixbuf_target1 = (weakref.ref(dummy()), 0)        
+        self._read_data_pixbuf_target2 = (weakref.ref(dummy()), 0)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
 
         if MyGLCanvas.offscreen: 
@@ -999,8 +1003,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
 
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-        stream_read = True
-        
+
+        # probably we don't want stream reading of this data....
+        stream_read = False
+
         if stream_read:
             pixel_buffers = glGenBuffers(2)
             size = wim*him
@@ -1086,8 +1092,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return data
         stream_read = True
         nump = 2  # number of buffering (> 3 does not work well, show noise on screen)
+
+        new_target = True  #flag to force rest pixel buffering.
+        if self._read_data_pixbuf_target1[0]() is not None:
+            # can use pixel buff data if size is the same and previous data
+            # targets the same axes artist.
+            if (self._read_data_pixbuf_target1[0]() == a and
+                self._read_data_pixbuf_target1[1] ==  size): new_target = False
+        
         if stream_read:
-            if self._hittest_map_update:
+            if self._hittest_map_update or new_target:
                 pixel_buffer = glGenBuffers(1)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)                
                 read_pixbuf(pixel_buffer)
@@ -1118,7 +1132,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 data = map_pixbuf(map_buffer)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
                 self.PIXBUFS[-1] += 1
-                glFlush()                
+                glFlush()
+            self._read_data_pixbuf_target1 = (weakref.ref(a), size)
         else:
             data = glReadPixels(0,0, wim, him, GL_RGBA,GL_UNSIGNED_BYTE)        
         image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
@@ -1885,18 +1900,29 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ((vbos['fc'] is None or vbos['fc'].need_update) and
              facecolor is not None) or 
             (vbos['ec'] is None or vbos['ec'].need_update)):
+            idxset0 = np.array(paths[4], copy=False).astype(np.uint32, copy=False).flatten()
+            #    idxset0 = np.hstack(paths[4]).astype(np.uint32, copy=False)
+            #else:
+            #    idxset0 = paths[4].astype(np.uint32, copy=False)            
             if len(paths[4][0]) == 4:
-                idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 4)
-                idxset = np.hstack((idxset0[:, :3], idxset0[:, 2:], idxset0[:, :1])).flatten()
-                idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
-                                     idxset0[:,2:], idxset0[:,3:], idxset0[:,:1])).flatten()
+                #idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 4)
+                idxset0 = idxset0.reshape(-1, 4)
+                #idxset = np.hstack((idxset0[:, :3], idxset0[:, 2:], idxset0[:, :1])).flatten()
+                #idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
+                #                     idxset0[:,2:], idxset0[:,3:], idxset0[:,:1])).flatten()
+                idxset=  idxset0[:,[0, 1, 2, 2, 3, 0]].flatten()                
+                idxsete = idxset0[:,[0, 1, 1, 2, 2, 3, 3, 0]].flatten()                
             elif len(paths[4][0]) == 3:
-                idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 3)
-                idxset  = idxset0.flatten()
-                idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
-                                     idxset0[:,2:], idxset0[:,:1],)).flatten()
+                idxset  = idxset0                
+                idxset0 = idxset0.reshape(-1, 3)                
+                #idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 3)
+                #idxset  = idxset0.flatten()
+                #idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
+                #                     idxset0[:,2:], idxset0[:,:1],)).flatten()
+                #idxset  = idxset0
+                idxsete = idxset0[:,[0, 1, 1, 2, 2, 0]].flatten()
             elif len(paths[4][0]) == 2:
-                idxset  = np.hstack(paths[4]).astype(np.uint32).flatten()
+                idxset  = idxset0
                 idxsete = None
             else:
                 assert False, "Unsupported element shape"
@@ -1938,13 +1964,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 norms = None
             elif len(paths[3]) == len(paths[0]):
                 ## norm is already specified for each vetex
-                norms = paths[3].astype(np.float32).flatten()
+                norms = paths[3].astype(np.float32, copy=False).flatten()
             elif len(paths[3]) == 1:
                 ## norm is common (flat surface)
                 norms = [paths[3]]*nverts
-                norms = np.hstack(norms).astype(np.float32).flatten()
+                norms = np.hstack(norms).astype(np.float32,copy=False).flatten()
             else:
-                norms = paths[3].astype(np.float32).flatten()
+                norms = paths[3].astype(np.float32,copy=False).flatten()
 
             if vbos['v'] is None:
                 vbos['v'] = get_vbo(xyzs, usage='GL_STATIC_DRAW')
@@ -1991,18 +2017,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if  facecolor.ndim == 3:
                 # non index array/linear
                 col = [facecolor]
+                col = np.hstack(col).astype(np.float32)                                
             elif  facecolor.ndim == 2 and len(paths[0]) == len(facecolor):
                 # index array/linear
                 col = [facecolor]
+                col = np.hstack(col).astype(np.float32)                                
             elif len(facecolor) == len(paths[4]):
                 # non index array/flat
                 c = len(paths[0])/len(paths[4])
-                col = [list(f)*c  for f in facecolor]
+                col = np.array(facecolor, copy = False).astype(np.float32, copy=False)
+                col = np.hstack([col]*c)
             else:
-                col = [facecolor]*nindex*counts # single color
-            
-            col = np.hstack(col).astype(np.float32)
-
+                col = np.repeat(np.array(facecolor).astype(np.float32),
+                                nindex*counts)
             if vbos['fc'] is None:
                 vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
@@ -2013,14 +2040,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['ec'] is None or vbos['ec'].need_update:
             counts = vbos['counts']
             if len(edgecolor) == 0:
-                edgecolor = np.array([[1,1,1, 0]])
+                edgecolor = np.array([[1,1,1, 0]]).astype(np.float32)
             if len(edgecolor) == len(paths[0]):
-#                col = [list(f)*c  for f, c in  zip(edgecolor, counts)]
-                col = edgecolor#[idxset, :]               
+                col = np.array(edgecolor, copy=False).astype(np.float32, copy=False)
             else:
-                col = [edgecolor]*nindex*counts
-            col = np.hstack(col).astype(np.float32)
-
+                col = np.repeat(np.array(edgecolor).astype(np.float32),
+                                nindex*counts)
+            #col = np.hstack(col).astype(np.float32, copy = False)
             if vbos['ec'] is None:
                 vbos['ec'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
