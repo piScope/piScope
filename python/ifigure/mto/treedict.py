@@ -1315,11 +1315,30 @@ class TreeDict(object):
             traceback.print_exc()
 
     def clean_owndir(self):
-#        if self._can_have_child:
+        def rmgeneric(path, __func__):
+            try:
+                __func__(path)
+            except OSError:
+                print('Remove error', path)
+        def removeall(path):
+            if not os.path.isdir(path):
+               return
+            files=os.listdir(path)
+            for x in files:
+               fullpath=os.path.join(path, x)
+               if os.path.isfile(fullpath):
+                  f=os.remove
+                  rmgeneric(fullpath, f)
+               elif os.path.isdir(fullpath):
+                  removeall(fullpath)
+                  f=os.rmdir
+                  rmgeneric(fullpath, f)
+        
+#       if self._can_have_child:
         ifigure.events.SendFileSystemChangedEvent(self)
+
         if self._has_private_owndir:
-           self.rm_owndir()
-           self.mk_owndir()
+           removeall(self.owndir())
         else:
            for item in self.ownitem():
               path = os.path.join(self.owndir(), item)
