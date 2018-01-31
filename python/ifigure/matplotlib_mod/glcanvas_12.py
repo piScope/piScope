@@ -25,8 +25,10 @@ from canvas_common import *
 attribList=[glcanvas.WX_GL_SAMPLES,
             glcanvas.WX_GL_SAMPLE_BUFFERS,]
 vert_suffix= '_12.vert'
-frag_suffix= '_12.frag'    
-    
+frag_suffix= '_12.frag'
+
+class dummy(object):
+    pass
 class MyGLCanvas(glcanvas.GLCanvas):
     offscreen = True
     context = None
@@ -58,7 +60,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._alpha_blend = True
         self._no_smooth = False
         self._hl_color = (0., 0., 0., 0.65)
-        self.PIXBUFS = (None, None, None)  
+        self.PIXBUFS = (None, None, None)
+        self._read_data_pixbuf_target1 = (weakref.ref(dummy()), 0)        
+        self._read_data_pixbuf_target2 = (weakref.ref(dummy()), 0)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
         
         if MyGLCanvas.offscreen: 
@@ -944,7 +948,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
 
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-        stream_read = True
+        # probably we don't want stream reading of this data....
+        stream_read = False
         
         if stream_read:
             pixel_buffers = glGenBuffers(2)
@@ -1031,8 +1036,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return data
         stream_read = True
         nump = 2  # number of buffering (> 3 does not work well, show noise on screen)
+
+        new_target = True  #flag to force rest pixel buffering.
+        if self._read_data_pixbuf_target1[0]() is not None:
+            # can use pixel buff data if size is the same and previous data
+            # targets the same axes artist.
+            if (self._read_data_pixbuf_target1[0]() == a and
+                self._read_data_pixbuf_target1[1] ==  size): new_target = False
+            
         if stream_read:
-            if self._hittest_map_update:
+            if self._hittest_map_update or new_target:            
                 pixel_buffer = glGenBuffers(1)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffer)                
                 read_pixbuf(pixel_buffer)

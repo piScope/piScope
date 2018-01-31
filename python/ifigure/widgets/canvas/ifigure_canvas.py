@@ -2488,7 +2488,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            dprint2('skipping draw since screen is already updated')
            
    def onDraw(self, evt):
-       #print 'draw_event'
+       dprint2('draw_event')
        if self._show_cursor:
            self.draw_cursor()
        elif self._layout_mode:
@@ -2527,7 +2527,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        self._drawing = False
 
        dprint2('drawing time ' + str(time.time()-t))
-       if refresh_hl: self.refresh_hl()
+       if refresh_hl:
+           self.refresh_hl()
+       if self._layout_mode:
+           self.layout_editor.draw_all()
 #       else:
 #          self._draw_request = True
 
