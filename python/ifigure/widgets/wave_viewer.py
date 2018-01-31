@@ -248,7 +248,7 @@ class WaveViewer(VideoBookPlayer):
         if not value[0]: return
         self._playinterval = int(float(value[1][0])*1000.)
         self._playloop = bool(value[1][2])
-        self.sing = bool(value[1][3])        
+        self.sign = bool(value[1][3])        
         self.nframe = int(value[1][1])
 
 

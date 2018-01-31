@@ -137,8 +137,18 @@ def image_to_pil(image):
     """ Method will convert wx.Image to PIL Image """
     #pil = Image.new('RGB', (image.GetWidth(), image.GetHeight()))
     #pil.fromstring(image.GetData())
+
+
+    data = image.GetData()
+
+    import sys
+    if isinstance(image.GetData(), bytearray):
+        if sys.version_info > (3, 0):
+            data = bytes(data)
+        else:
+            data = str(data)
     pil = Image.frombytes('RGB', (image.GetWidth(), image.GetHeight()),
-                          image.GetData())
+                          data)
     print pil
     return pil
 
