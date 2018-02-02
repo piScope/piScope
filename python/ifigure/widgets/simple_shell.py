@@ -70,7 +70,7 @@ def run_in_thread(p):
             break
         else: # got line
             lines.append(line)
-        if line == 'process terminated':
+        if line.startswith('process terminated'):
             if len(lines) > 1:
                wx.CallAfter(write_cmd, ''.join(lines[:-1]))                                  
             break

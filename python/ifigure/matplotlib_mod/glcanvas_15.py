@@ -1004,9 +1004,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
 
         glReadBuffer(GL_COLOR_ATTACHMENT1) # (to check id buffer)
-
-        # probably we don't want stream reading of this data....
-        stream_read = False
+        stream_read = True
 
         if stream_read:
             pixel_buffers = glGenBuffers(2)

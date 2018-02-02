@@ -907,14 +907,38 @@ class Axes3DMod(Axes3D):
                 jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
                 ii = idxset.transpose().flatten()
                 table = coo_matrix((data, (ii, jj)),
-                                    shape = (nverts, idxset.shape[0])).tocsr()
-                
+                                    shape = (nverts, idxset.shape[0]))
+                csr = table.tocsr()
+                indptr = csr.indptr; indices = csr.indices
+
+                data = csr.data
+                for i in range(csr.shape[0]):
+                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       data[indices[indptr[i]:indptr[i+1]]] = sign
+                    else:
+                       pass
+                       #norms[i, :] = [1,0,0]
+                norms = table.dot(n1a)                
+                '''
+                for i in range(csr.shape[0]):
+                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                       norms[i, :] = np.mean(nn, 0)
+                    else:
+                       norms[i, :] = [1,0,0]
+                '''
+                '''       
+                table = table.tocsr()
                 nz = n1a[:,2]
                 nz[nz==0] = 1.0
                 f = nz/np.abs(nz)
                 n1a = (n1a.transpose()*f).transpose()
                 norms = table.dot(n1a)
-
+                '''
             nn = np.sqrt(np.sum(norms**2, 1))
             nn[nn == 0.0] = 1.            
             norms = norms/nn.reshape(-1,1)

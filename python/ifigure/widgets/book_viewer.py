@@ -276,7 +276,7 @@ class FramePlus(FrameWithWindowList):
         super(FramePlus, self).__init__(*args, **kargs)
 
 
-        self._sb_timer = wx.Timer(self)
+
         # Setting up the menu.
         self.filemenu= wx.Menu()
         self.editmenu= wx.Menu()
@@ -434,6 +434,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
            del kargs["book"]
            self.book.set_open(True)
         else: self.book = None
+        
 
         self.gui_tree = None
         self.canvas = None
@@ -448,6 +449,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self._del_book_from_proj = 0
         super(BookViewerFrame, self).__init__(*args, **kargs)
         BookViewerInteractive.__init__(self)
+        
+        self._sb_timer = wx.Timer(self)
         
     def __del__(self):
         '''
@@ -1652,9 +1655,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         wx.GetApp().TopWindow.Close()
 
     def onWindowClose(self, evt=None):
-#        from ifigure.ifigure_config import iFigureConfig
+        # print("onWindowClose", self)
+        # stop timer for statusbar
+        self._sb_timer.Stop()
+        self.Unbind(wx.EVT_TIMER)        
+
         bk = self.book
         self.close_book()
+        
         ifigure.events.SendCloseBookEvent(bk, w=self)
         if ((bk is not None and not bk._keep_data_in_tree) or
             (self._del_book_from_proj == 1 and bk is not None)):
