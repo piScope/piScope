@@ -1350,17 +1350,18 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
            self.open_book()
            if self.nsec() > 0: self.isec(0)
            return
-
+       
         f_page=self.book.get_page(self.ipage)
         if f_page is not None:
           if f_page.isempty():
-              f_page.realize()
+               f_page.generate_artist()
           figure=f_page.get_artist(idx=0)
         else:
           figure = None
         self.canvas = ifigure_canvas(parent=self.panel1, 
                                      figure=figure)
-
+        f_page.realize_children()
+        
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(self.canvas, 1, wx.EXPAND)
 #        hbox.Add(self.property_editor, 0)

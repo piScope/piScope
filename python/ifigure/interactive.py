@@ -1181,8 +1181,9 @@ def newbook(name = '', basename=None):
     book = ifig_app.proj.onAddBook(basename = basename)
     i_page=book.add_page()
     page = book.get_page(i_page)
+    page.realize()    
     page.add_axes()
-    page.realize()
+    page.realize_children()
     page.set_area([[0,0, 1,1]])
     return book 
 #    ifigure.events.SendShowPageEvent(page)

@@ -61,10 +61,10 @@ if __name__ == '__main__':
    ### the program
    xxx  = []
    launcher_file  = None
+   use_gl = True   
    if len(sys.argv[1:]) >= 1:
       rflag = False
       lflag = False
-      use_gl = True
       for p in sys.argv[1:]:
         if p == '-h':
           print('[Usage: ifigure -s -r command -h file]')

@@ -57,6 +57,9 @@ import matplotlib
 #from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
 from ifigure.widgets.axes_range_subs import AdjustableRangeHolderCbar
+
+unique_label = 0
+
 class FigAxes(FigObj,  AdjustableRangeHolder):
     def __init__(self, area=[0.,0.,1.,1.], 
                  margin=[0.15, 0.15, 0.15, 0.15],
@@ -294,18 +297,16 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
            if self._3D:
                kywds['use_gl'] = self._use_gl
                ax = Axes3DMod(container, rect, *(self._attr["args"]), **kywds)
-               a=container.add_axes(ax)               
+               if not ax in container.axes:
+                   a=container.add_axes(ax)
                ax.disable_mouse_rotation()
            else:
                ax = AxesMod(container, rect, *(self._attr["args"]),
                                          **kywds)
                a=container.add_axes(ax)                              
-
 #           self.backup_margin_param()
 
-
-
-           if container.axes.count(a) == 0:
+           if container.axes.count(ax) == 0:
                print('error in generating axes...')
 
            self._artists.append(ax)
