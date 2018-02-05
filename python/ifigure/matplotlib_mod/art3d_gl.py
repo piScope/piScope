@@ -852,7 +852,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                elif self._gl_cz is not None: cz = self._gl_cz
                else: cz = self._gl_3dpath[2]
 
-               if len(d) > 0:
+               if len(d) > 0 and d[0] is not None:
                    if self._update_v:
                        d[0]['v'].need_update = True
                        self._gl_facecolor = self.to_rgba(cz)
@@ -867,7 +867,12 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                    if self._update_a:
                        if 'vertex_id' in d[0] and d[0]['vertex_id'] is not None:
                            d[0]['vertex_id'].need_update = True
-                   
+               else:
+                   self._update_a = False
+                   self._update_v = False
+                   self._update_fc = False
+                   self._update_ec = False
+                   self._update_i = False                                      
                # this happens when all surfaces are hidden.
                # if (len(d)) == 0: print('vbo zero length', self.figobj)   
            if self._update_ec or self._update_fc:

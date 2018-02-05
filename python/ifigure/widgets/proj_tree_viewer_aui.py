@@ -179,11 +179,12 @@ class ProjViewerDropTarget(wx.TextDropTarget):
 
         except Exception:
             print("error in processing dnd in wx.tree")
-            pass
+            return False
         if self._prev_item is not None:
            self.obj.tree.SetItemDropHighlight(self._prev_item, False)
         self._prev_item=None
-        data=str(data)    
+        data=str(data)
+        return True
 
     def ScrollUp(self):
         if "wxMSW" in wx.PlatformInfo:

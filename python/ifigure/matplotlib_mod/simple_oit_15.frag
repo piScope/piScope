@@ -185,7 +185,8 @@ void main() {
      /* for debug do something crazy when uLightPow == 4*/
      if (uLightPow == 2.){
         n = vec3(0,0,1);
-        //l = vec3(0,0,1);
+        l = vec3(0,0,1);
+        c = vec3(0,0.1,0.9);	
      }
      
      float sh  = 1.0;

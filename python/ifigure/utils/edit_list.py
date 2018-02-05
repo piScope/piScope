@@ -1929,7 +1929,10 @@ class CSliderWithText(wx.Panel):
            val=self.GetValue()
            self.t1.SetValue(str(val))
         elif evt.GetEventObject()==self.t1:
-           val=float(self.t1.GetValue())
+           try:
+               val = float(self.t1.GetValue())
+           except:
+               val = 0.0
            val = min([val, self.maxV])
            val = max([val, self.minV])
            self.t1.SetValue(str(val))
