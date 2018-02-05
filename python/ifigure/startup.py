@@ -71,7 +71,7 @@ from ifigure.interactive import glinfo
 
 from ifigure.interactive import has_petra
 if has_petra:
-    from ifigure.interactive import petra
+    from ifigure.interactive import petram
 
 import numpy as np
 

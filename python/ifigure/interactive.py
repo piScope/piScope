@@ -1342,7 +1342,7 @@ def tscope(file = '',  book = None):
     v.book.setvar('mdsplus_server', 'mdsplus.partenaires.cea.fr:8000:')
 
 try:
-    from petram.pi.shell_commands import petra
+    from petram.pi.shell_commands import petram
     has_petra = True
 except:
     has_petra = False    
