@@ -1,4 +1,8 @@
-import wx, sys, weakref, threading
+import wx
+import sys
+import weakref
+import threading
+import traceback
 import wx.aui as aui
 
 class RedirectOutput(object): 
@@ -21,6 +25,20 @@ class RedirectOutput(object):
         sys.stderr = self.sys_stderr
 
     def write(self, string): 
+        try:
+            self.do_write(string)
+        except:
+            self.turn_off()
+            traceback.print_exc()
+            self.turn_on()
+
+    def _safe_write(self, string):
+       if hasattr(self.stdout, 'write'):
+           self.stdout.write(string)
+       else:
+           self.sys_stdout.write(string)
+
+    def do_write(self, string): 
         t = threading.current_thread()
         for x in self.redirect_list:
             if x[0] == t:
@@ -28,22 +46,22 @@ class RedirectOutput(object):
                 wx.CallAfter(x[1], string) 
                 if t.name == 'MainThread':
                     try:
-                        self.stdout.write(string)
+                        self._safe_write(string)
                     except IOError: ### may fail to write to stdout on macapplet
-                        pass
+                        raise
                 return
                    #if string != "\n": 
                         #wx.MessageBox(string, "Error!") 
         if t.name == 'MainThread':
             try:
-               self.stdout.write(string)
+                self._safe_write(string)
             except IOError: ### may fail to write to stdout on macapplet
-               pass
+                raise
         else:
             if string == '\n':
-                wx.CallAfter(self.stdout.write, string)
+                wx.CallAfter(self._safe_write, string)
             else:
-                wx.CallAfter(self.stdout.write, 'Thread ('+t.name+ '):'+string)
+                wx.CallAfter(self._safe_write, 'Thread ('+t.name+ '):'+string)
 
     def add(self, t, method):
         self.redirect_list.append((t, method))
