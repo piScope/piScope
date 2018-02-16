@@ -1439,6 +1439,8 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
 
+        self._wxval = None
+
         #    def Paste(self):
 #        print 'paste called'
 #        wx.TextCtrl.Paste(self)
@@ -1545,16 +1547,29 @@ class TextCtrlCopyPaste(wx.TextCtrl):
           ord(u'\u2019'): unicode("'"),
         }
         try:
-            val = str(wx.TextCtrl.GetValue(self))
+            wxval = wx.TextCtrl.GetValue(self)
+            val = str(wxval)
         except UnicodeEncodeError:
-            val = str(wx.TextCtrl.GetValue(self).translate(punctuation))
+            try:
+                val = str(wxval.translate(punctuation))
+            except UnicodeEncodeError:
+                import traceback
+                msgs = [x for x in traceback.format_exc().split('\n') if len(x)>0]
+                dprint1(msgs[-1])
+                self._wxval = wxval
+                return wxval
+        self._wxval = None
+                
         if self._use_escape:
             return val.decode('string_escape')
         else:
             return val
 
     def SetValue(self, value):
-        value = str(value)
+        try:
+            value = str(value)
+        except UnicodeEncodeError:
+            pass
         if self._use_escape:
             wx.TextCtrl.SetValue(self, value.encode('string_escape'))
         else:
@@ -2701,14 +2716,9 @@ class ArrowStylePanel(wx.Panel):
            return True
        if self.mode != '':
           if self.elp is not None:
-              self.GetSizer().Remove(self.elp)
+              self.GetSizer().Detach(self.elp)
               self.elp.Destroy()
-              self.elp = wx.Panel(self)
-              self.elp.Show()
-              self.GetSizer().Add(self.elp,  1, wx.EXPAND)
               self.GetParent().Layout()
-              self.GetSizer().Remove(self.elp)
-              self.elp.Destroy()
        self.mode = mode
 
        keys=self.panels[self.mode]
@@ -4142,13 +4152,6 @@ class ScrolledEditListPanel(EditListCore, SP):
             SP.Enable(self, value)
         EditListCore.Enable(self, value=value)
         
-#    def onResize(self, evt):
-#        print 'Resize Scrolled window', self.GetSize()
-        #self.SetScrollRate(0,5)        
-        #wx.ScrolledWindow.onResize(self, evt)
-        #self.SetupScrolling()
-#        evt.Skip()
-     
 class EditListPanel(EditListCore, wx.Panel):
     def __init__(self, parent, list=None, 
                        call_sendevent=None, edge=5, tip=None,):
@@ -4160,7 +4163,7 @@ class EditListPanel(EditListCore, wx.Panel):
         if isinstance(value, bool): 
             wx.Panel.Enable(self, value)
         EditListCore.Enable(self, value=value)
-        
+
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,

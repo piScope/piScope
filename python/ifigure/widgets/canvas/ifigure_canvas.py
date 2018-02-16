@@ -3907,7 +3907,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self._txt_box.Unbind(wx.EVT_KILL_FOCUS)
            txt = ''
            if obj._txt_box is not None:
-               txt =str(obj._txt_box.GetValue())
+               try:
+                   txt0 = obj._txt_box.GetValue()
+                   txt = str(txt0)
+               except UnicodeEncodeError:
+                   txt = txt0
                obj._txt_box.Hide()
            callback(x, y, txt)
        def exit_text_input(evt, obj=self):
