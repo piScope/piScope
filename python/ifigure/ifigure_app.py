@@ -947,8 +947,10 @@ class ifigure_app(BookViewerFrame):
             import piscope, subprocess, shlex
             import ifigure.widgets.canvas.ifigure_canvas
             options = ' '
-            if ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
+            if not ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
                options = options + '-g '
+            if redirect_std:
+               options = options + '-d '                
             command = sys.executable + ' ' + piscope.__file__ + options  + path
             if os.altsep is not None:
                command = command.replace(os.sep, os.altsep)
