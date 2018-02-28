@@ -4089,18 +4089,6 @@ class EditListCore(object):
             self.call_sendevent.send_event(self, evt0)
             return
         self.send_some_event(evtobj, evt0, EditorChanged)         
-#        i=0
-#        for w, txt in self.widgets:
-#            if w == evtobj: break
-#            i=i+1
-#        evt=EditListEvent(EditorChanged, wx.ID_ANY)
-#        evt.SetEventObject(evtobj)
-#        evt.elp = self
-#        evt.widget_idx = i
-#        if hasattr(evt0, 'signal'):
-#           evt.signal = evt0.signal
-#        handler=self.GetParent()
-#        handler.ProcessEvent(evt)
 
     def send_changing_event(self, evtobj, evt0):
         self.send_some_event(evtobj, evt0, EditorChanging)
