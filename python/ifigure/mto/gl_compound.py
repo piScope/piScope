@@ -81,8 +81,9 @@ class GLCompound(object):
         return self._artists[0]._gl_hit_array_id
 
     def setSelectedIndex(self, ll):
-        array_idx = self.getvar('array_idx').copy()
+        array_idx = self.getvar('array_idx')
         if array_idx is None: return
+        array_idx = array_idx.copy()
         mask = np.isin(array_idx, np.array(ll, copy=False))
         array_idx[mask] *= -1
         for a in self._artists:                  
