@@ -3517,7 +3517,7 @@ class EditListCore(object):
         sizer =  wx.GridBagSizer()
 
         self.widgets=[]
-
+        self.widgets_enable=[]        
         # by default, widgets are added in (row, col)
         # row increass in this loop
         row = 0
@@ -3529,6 +3529,7 @@ class EditListCore(object):
            noexpand = False
            expand_space = 5
            alignright = False
+           enabled = True
            if len(val) > 4:
               if 'expand_space' in val[3]:
                   expand_space = val[3]['expand_space']
@@ -3545,7 +3546,10 @@ class EditListCore(object):
                txt=None
                col = 0
                span = (1, 2)
-
+           if val[2] < -1:
+              val = __builtins__['list'](val)
+              val[2] = val[2] + 10000
+              enabled = False
            if val[2] == -1:
                w=wx.StaticText(self, wx.ID_ANY, '')
 #               sizer.Add(w, (row,0), span, 
@@ -4039,13 +4043,15 @@ class EditListCore(object):
                  w=wx.StaticText(self, wx.ID_ANY, 'Custom UI is not defined!')
 
            w.Fit()
-           self.widgets.append((w, txt) )
+           self.widgets.append((w, txt))
+           self.widgets_enable.append(enabled)
            alignright = setting.pop('alignright', alignright)
 
            alignment = wx.ALL|wx.ALIGN_CENTER_VERTICAL
            if not noexpand: alignment  = wx.EXPAND|alignment
            if alignright: alignment  = wx.ALIGN_RIGHT|alignment
-           
+           if not enabled:
+              w.Enable(False)
            sizer.Add(p, (row, col), span, alignment, expand_space)
            row = row+1
            k = k + 1
@@ -4082,6 +4088,10 @@ class EditListCore(object):
                elif err is None: 
                   pass
                   #print 'no check in setvalue'
+            en = self.widgets_enable[i]
+            if not en:
+               w.Enable(False)
+               if txt is not None: txt.Enable(False)
             i=i+1
             
     def send_event(self, evtobj, evt0):
@@ -4118,9 +4128,14 @@ class EditListCore(object):
             value = [value]*len(self.widgets)
         for k, pair in enumerate(self.widgets):
             w, txt = pair
+            en = self.widgets_enable[k]
             if len(value) == k: break
-            if txt is not None: txt.Enable(value[k])
-            if w is   not None: w.Enable(value[k])
+            if en:
+                v = value[k]
+            else:
+                v = False
+            if txt is not None: txt.Enable(v)
+            if w is   not None: w.Enable(v)
             
     def _textctrl_enter(self, evt):
         pass
