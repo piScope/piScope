@@ -17,10 +17,23 @@ and for the above purposes, &pi;Scope is equipped with
      
 Requirements
 *  python 2.7
-*  wxPython 3.0.1
+*  wxPython 4.0.1
 *  matplotlib > 1.5
 *  PyOpenGL
 *  ... and others.
+
+Typical pip command list...
+
+ pip install wxPython-4.0.1
+ pip install matplotlib
+ pip install Pillow
+ pip install scipy
+ pip install hgapi
+ pip install PyOpenGL
+ pip install netCDF4
+ pip install PyPDF2
+ pip install pdfrw
+ pip install h5py
   
 Wiki page : http://piscope.psfc.mit.edu/
 
