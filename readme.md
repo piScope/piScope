@@ -24,6 +24,7 @@ Requirements
 
 Typical pip command list...
 
+```
  pip install wxPython-4.0.1
  pip install matplotlib
  pip install Pillow
@@ -34,7 +35,8 @@ Typical pip command list...
  pip install PyPDF2
  pip install pdfrw
  pip install h5py
-  
+```
+
 Wiki page : http://piscope.psfc.mit.edu/
 
 Directories:
