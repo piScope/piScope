@@ -266,7 +266,7 @@ class LinePythonSTC(PythonSTC):
     def OnStartDrag(self, evt):
         sel = self.GetSelectedText()
         sel = '\n'.join([x[1:] for x in sel.split('\n') if not x.startswith("'''")])
-        evt.SetDragAllowMove(False)
+        #evt.SetDragAllowMove(False)
         evt.SetDragText(sel)
         p = self
         while p.GetParent() is not None:

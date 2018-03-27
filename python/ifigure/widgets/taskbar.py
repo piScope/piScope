@@ -613,14 +613,16 @@ class JobMonitor(threading.Thread):
 
         for line in self.p.stdout.readlines():
              self.stdout.write(line)
-            
-class TaskBarIcon(wx.TaskBarIcon):
+
+from ifigure.utils.wx3to4 import wxTaskBarIcon, TBI_DOCK, EVT_TASKBAR_LEFT_DCLICK, IconFromBitmap
+
+class TaskBarIcon(wxTaskBarIcon):
     TBMENU_OPENNEW = wx.NewId()
     TBMENU_OPENED  = wx.NewId()
     TBMENU_CLOSE  = wx.NewId()
 
     def __init__(self, frame):
-        wx.TaskBarIcon.__init__(self, wx.TBI_DOCK)
+        wxTaskBarIcon.__init__(self, TBI_DOCK)
         self.frame = frame
 
         # Set the image
@@ -629,7 +631,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.imgidx = 1
 
         # bind some events
-        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarActivate)
+        self.Bind(EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarActivate)
         self.Bind(wx.EVT_MENU, self.OnTaskBarClose, id=self.TBMENU_CLOSE)
 
     def CreatePopupMenu(self):
@@ -685,7 +687,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         elif "wxMac" in wx.PlatformInfo:
             img = img.Scale(128, 128)
         # wxMac can be any size upto 128x128, so leave the source img alone....
-        icon = wx.IconFromBitmap(img.ConvertToBitmap() )
+        icon = IconFromBitmap(img.ConvertToBitmap() )
         return icon
 
     def OnTaskBarActivate(self, evt):

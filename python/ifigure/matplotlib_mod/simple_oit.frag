@@ -241,10 +241,6 @@ void main() {
 
      vec4 color;
      
-
-/*     gl_FragDepth = gl_FragDepth +  uViewOffset.z/10*     
-                    (1 + 3 * sqrt(1-dot(n,c)*dot(n,c)));*/
-
      /*gl_FragData[0] = vec4(cT, 0, 0, 1);*/
      /* debug for shadow map
      if (uUseShadowMap == 1){
@@ -262,7 +258,7 @@ void main() {
      gl_FragData[0] = vec4(cT, 0, 0, 1);	     
      */
 
-     if (uLineStyle == 0){     
+     if (uLineStyle == 0){
          if (dashed[int(mod(atlas, 32))] == 0){
 	     discard;
          }

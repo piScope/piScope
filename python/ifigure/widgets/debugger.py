@@ -1,7 +1,8 @@
 import wx, os
-import wx.py.shell, wx.lib.shell
+import wx.py.shell  #(wx4 removed this) wx.lib.shell
 from wx.py.interpreter import Interpreter as IP
 
+from ifigure.utils.wx3to4 import panel_SetToolTip
 _wait = False
 _test_shell = True
 
@@ -95,7 +96,7 @@ class DebuggerPanel(wx.Panel):
                           button in d_labels]
 
        for b, l, t in zip(d_buttons, d_labels, d_tips):
-           b.SetToolTipString(t)
+           panel_SetToolTip(b, t)
            msizer.Add(b, 0, wx.ALL, 1)
            def call_debug_button(evt, obj = self, label = l):
                obj.onDebugButton(evt, label)
@@ -122,6 +123,7 @@ class DebuggerPanel(wx.Panel):
        self.d = None
        self.Layout()
        self.Hide()
+       self.Fit()
        globals()['panel'] = self
 #       bdb.set_trace()
 

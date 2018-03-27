@@ -10,13 +10,15 @@ import ifigure.widgets.dialog as dialog
 from ifigure.widgets.undo_redo_history import GlobalHistory
 from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty,UndoRedoFigobjProperty,UndoRedoFigobjMethod
 
+from ifigure.utils.wx3to4 import image_GetAlpha, image_SetAlpha, image_SetOptionInt, evt_GetPosition, wxEmptyImage, wxStockCursor, wxCursorFromImage
+
 def make_bitmap_with_bluebox(bitmap):
         ### second bitmap has blue box around it
         h, w = bitmap.GetSize()
         image = bitmap.ConvertToImage()
-        alpha = np.fromstring(image.GetAlphaData(), 
+        alpha = np.fromstring(bytes(image_GetAlpha(image)), 
                               dtype=np.uint8).reshape(w, h, -1)
-        array = np.fromstring(image.GetData(), 
+        array = np.fromstring(bytes(image.GetData()), 
                    dtype=np.uint8)
         array = array.reshape(w, h, array.shape[0]/w/h)
         array[0,   1:-2,  :1]  = 0 
@@ -34,10 +36,6 @@ def make_bitmap_with_bluebox(bitmap):
         array[-2,1, 2] = 255
         array[-2,-2,2] = 255
 
-#        array[:2,:,1]=0
-#        array[-2:,:,1]=0
-#        array[:,:2,1]=0
-#       array[:,-2:,1]=0
         array[0,   1:-2, 2]=255
         array[-1,  1:-2, 2]=255
         array[1:-2,   0, 2]=255
@@ -51,9 +49,9 @@ def make_bitmap_with_bluebox(bitmap):
         alpha[1,-2] = 127
         alpha[-2,1] = 127
         alpha[-2,-2] = 127
-        image = wx.EmptyImage(h, w)
+        image = wxEmptyImage(h, w)
         image.SetData(array.tostring())
-        image.SetAlphaData(alpha.tostring())
+        image_SetAlpha(image, alpha)
         bitmap2 = image.ConvertToBitmap()
 
         return bitmap2
@@ -309,14 +307,14 @@ class navibar(ButtonPanel):
 #              im = im.ConvertToMono(0,0,0)
               if im.HasAlpha(): im.ConvertAlphaToMask()
               if btask in hotspot:       
-                  im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, hotspot[btask][0]) 
-                  im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, hotspot[btask][1]) 
-              crs =  wx.CursorFromImage(im)
+                  image_SetOptionInt(im, wx.IMAGE_OPTION_CUR_HOTSPOT_X, hotspot[btask][0]) 
+                  image_SetOptionInt(im, wx.IMAGE_OPTION_CUR_HOTSPOT_Y, hotspot[btask][1]) 
+              crs =  wxCursorFromImage(im)
            elif icon[-3:]=='bmp':
               im = wx.Image(path, wx.BITMAP_TYPE_BMP)
               image = im.ConvertToBitmap()
               if im.HasAlpha(): im.ConvertAlphaToMask()
-              crs =  wx.CursorFromImage(im)
+              crs =  wxCursorFromImage(im)
            #image.SetSize((8,8))
 #           btnl = ButtonInfo(self, wx.NewId(), image)
            btnl = ButtonInfo(self, wx.ID_ANY, image)
@@ -349,7 +347,7 @@ class navibar(ButtonPanel):
                 self.ToggleZoomMenu()
 
     def OnRightUp(self, evt):
-        ret = self.HitTest(evt.GetPositionTuple())
+        ret = self.HitTest(evt_GetPosition(evt))
         if ret[0]==wx.NOT_FOUND:
             return super(navibar, self).OnLeftUp(evt)            
         
@@ -363,7 +361,7 @@ class navibar(ButtonPanel):
         elif btask == 'grid':  self.ToggleGridRight(evt)
 
     def OnLeftUp(self, evt):
-        ret = self.HitTest(evt.GetPositionTuple())
+        ret = self.HitTest(evt_GetPosition(evt))
         if ret[0]==wx.NOT_FOUND:
             return super(navibar, self).OnLeftUp(evt)            
         
@@ -438,13 +436,13 @@ class navibar(ButtonPanel):
             if p != btnl: p.SetToggled(False)
 
         p = btnl
-        sc = wx.StockCursor(wx.CURSOR_WAIT)
+        sc = wxStockCursor(wx.CURSOR_WAIT)
         self.GetParent().canvas.SetCursor(p.custom_cursor)
 #        print 'changing cursor'
               #
     def ExitInsertMode(self):
 #        print 'exiting insert mode'
-        sc = wx.StockCursor(wx.CURSOR_DEFAULT)
+        sc = wxStockCursor(wx.CURSOR_DEFAULT)
         self.GetParent().canvas.SetCursor(sc)
         self.mode = ''
         self.SetAMode()
@@ -485,7 +483,7 @@ class navibar(ButtonPanel):
         self.DoLayout()
         self.ptype = 'amode'
         self.GetParent()._show_cursor = False
-        sc = wx.StockCursor(wx.CURSOR_DEFAULT)
+        sc = wxStockCursor(wx.CURSOR_DEFAULT)
         self.GetParent().canvas.SetCursor(sc)
 
     def SetPMode(self, skip_sc=False):
@@ -522,7 +520,7 @@ class navibar(ButtonPanel):
         self.mode = ''
         self.GetParent()._show_cursor = False
         if not skip_sc:
-            sc = wx.StockCursor(wx.CURSOR_DEFAULT)
+            sc = wxStockCursor(wx.CURSOR_DEFAULT)
             self.GetParent().canvas.SetCursor(sc)
 
     def _set_bitmap2(self, array, index):
@@ -563,6 +561,7 @@ class navibar(ButtonPanel):
         if asel is None: return
         a = asel()
         if a is None: return
+        if a.figobj is None: return        
         if a.figobj.get_3d():
              self.GetParent().set_3dzoom_mode(True, pan_btn = 11, 
                                         zoom_btn = 1, rotate_btn = 10)
@@ -589,6 +588,7 @@ class navibar(ButtonPanel):
         if asel is None: return
         a = asel()
         if a is None: return
+        if a.figobj is None: return                
         if a.figobj.get_3d():
              self.GetParent().set_3dzoom_mode(True, pan_btn = 1, 
                                         zoom_btn = 11, rotate_btn = 10)
@@ -607,7 +607,7 @@ class navibar(ButtonPanel):
         self.DoLayout()
         self.mode = 'cursor'
         self.GetParent()._show_cursor = True
-        sc = wx.StockCursor(wx.CURSOR_DEFAULT)
+        sc = wxStockCursor(wx.CURSOR_DEFAULT)
         self.GetParent().canvas.SetCursor(sc)
         self.GetParent().exit_layout_mode() # just in case...
 
@@ -737,7 +737,7 @@ class navibar(ButtonPanel):
         menus[idx][0] = '^'+ menus[idx][0]
         
         cbook.BuildPopUpMenu(m, menus)
-        x,y = evt.GetPositionTuple()
+        x,y = evt_GetPosition(evt)        
         self.PopupMenu(m, [x, y])
         m.Destroy()
 
@@ -755,7 +755,7 @@ class navibar(ButtonPanel):
 
         menus[idx][0] = '^'+ menus[idx][0]
         cbook.BuildPopUpMenu(m, menus)
-        x,y = evt.GetPositionTuple()
+        x,y = evt_GetPosition(evt)                
         self.PopupMenu(m, [x, y])
         m.Destroy()
 
@@ -794,7 +794,7 @@ class navibar(ButtonPanel):
                 ['X',  grid_x, None],
                 ['Y',  grid_y, None],]
         cbook.BuildPopUpMenu(m, menus)
-        x,y = evt.GetPositionTuple()
+        x,y = evt_GetPosition(evt)
         self.PopupMenu(m, [x, y])
         m.Destroy()
 

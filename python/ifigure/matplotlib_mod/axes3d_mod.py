@@ -14,6 +14,7 @@ from matplotlib.colors import ColorConverter
 cc = ColorConverter()
 
 from matplotlib.artist import allow_rasterization
+
 import numpy as np
 from matplotlib.collections import Collection, LineCollection, \
         PolyCollection, PatchCollection, PathCollection
@@ -132,12 +133,13 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip =    kargs.pop('use_clip', True)        
         super(Axes3DMod, self).__init__(*args, **kargs)
-        self.axesPatch.set_alpha(0)
+        self.patch.set_alpha(0)
         self._gl_id_data = None
         self._gl_mask_artist = None
         self._3d_axes_icon = None
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
+        self._ignore_screen_aspect_ratio = True
 
     def gl_hit_test(self, x, y, artist, radius = 3):
         #
@@ -296,6 +298,52 @@ class Axes3DMod(Axes3D):
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
+    def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata):
+        from ifigure.utils.geom import transform_point
+
+        x0, y0 = transform_point(
+                           self.transAxes, 0.5, 0.5)
+        x0, y0 = transform_point(
+                           self.transData.inverted(), x0, y0)
+        
+        dx = x0 - (xdata + sxdata)/2.0
+        dy = y0 - (ydata + sydata)/2.0
+        
+        w = self._pseudo_w
+        h = self._pseudo_h
+
+        dx = dx/w; dy = dy/h
+        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
+        
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
+        midx = (minx+maxx)/2.; midy = (miny+maxy)/2. ;midz = (minz+maxz)/2.
+        M = self.get_proj()
+        dp = -np.array([dx, dy])
+
+        xx = (np.dot(M, (1,midy,midz,1)) - 
+              np.dot(M, (0,midy,midz,1)))[:2]
+        dx1 = np.sum(xx * dp)/np.sum(xx * xx) if np.sum(xx * xx) > 0.01 else 0.0
+        yy = (np.dot(M, (midx,1,midz,1)) - 
+              np.dot(M, (midx,0,midz,1)))[:2]
+        dy1 = np.sum(yy * dp)/np.sum(yy * yy) if np.sum(yy * yy) > 0.01 else 0.0
+        zz = (np.dot(M, (midx,midy,1,1)) -
+              np.dot(M, (midx,midy,0,1)))[:2]
+        dz1 = np.sum(zz * dp)/np.sum(zz * zz) if np.sum(zz * zz) > 0.01 else 0.0
+
+        minx, maxx = minx + dx1, maxx + dx1
+        miny, maxy = miny + dy1, maxy + dy1
+        minz, maxz = minz + dz1, maxz + dz1
+        
+        dx = (maxx-minx)*df/2.
+        dy = (maxy-miny)*df/2.
+        dz = (maxz-minz)*df/2.
+        x0 = (maxx+minx)/2.0
+        y0 = (maxy+miny)/2.0
+        z0 = (maxz+minz)/2.0
+
+        return ((x0 - dx, x0 + dx),(y0 - dy, y0 + dy),(z0 - dz, z0 + dz))
+
     def _on_move_mod(self, event):
         """
         added pan mode 
@@ -338,7 +386,7 @@ class Axes3DMod(Axes3D):
             self.azim = np.arctan2(newp1[1], newp1[0])*180/np.pi
 #            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
 #            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
         elif self.button_pressed in self._pan_btn:
@@ -363,7 +411,7 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d(miny + dy, maxy + dy)
             self.set_zlim3d(minz + dz, maxz + dz)
 
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
             # pan view
@@ -382,7 +430,7 @@ class Axes3DMod(Axes3D):
             self.set_xlim3d(minx - dx, maxx + dx)
             self.set_ylim3d(miny - dy, maxy + dy)
             self.set_zlim3d(minz - dz, maxz + dz)
-            self.get_proj()
+            #self.get_proj()
             #self.figure.canvas.draw_idle()
 
     def _button_release(self, evt):
@@ -709,7 +757,7 @@ class Axes3DMod(Axes3D):
                     cdata = cdata[r, :][:, c].flatten()
                 else:
                     cdata = Z3D
-                shade = kwargs.pop('shade', 'flat')
+                shade = kwargs.get('shade', 'flat')
                 kwargs['facecolordata'] = cdata.real
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
@@ -777,6 +825,21 @@ class Axes3DMod(Axes3D):
             o._idxset = (None, None, None)   # this is used for phasor            
         return o
     
+    def prep_flat_shading_data(self, args, kwargs):
+        if len(args) < 2: return args, kwargs
+
+        vert = args[0]; idx = args[1]
+        args = (vert[idx],)
+        if 'array_idx' in kwargs:
+            if kwargs['array_idx'] is not None:
+                 kwargs['array_idx'] = kwargs['array_idx'][idx].flatten()
+        if 'facecolordata' in kwargs:
+            cdata = kwargs['facecolordata'][idx]
+            cdata = np.mean(cdata, 1)
+            kwargs['facecolordata'] = cdata
+        return args, kwargs            
+        
+        
     def plot_solid(self, *args,  **kwargs):
         '''
         plot_solid(v)  or plot_solid(v, idx)
@@ -790,7 +853,10 @@ class Axes3DMod(Axes3D):
 
         kwargs: normals : normal vectors
         '''
-        #gl_3dpath = kwargs.get('gl_3dpath', None)
+        shade = kwargs.pop('shade', 'linear')
+        if shade == 'flat':
+            args, kwargs = self.prep_flat_shading_data(args, kwargs)
+        
         if len(args) == 1:
             v = args[0]
             vv = v.reshape(-1, v.shape[-1])# vertex
@@ -819,12 +885,13 @@ class Axes3DMod(Axes3D):
                 p1 = xyz[:, 0, :] - xyz[:, 2, :]
                 n1a = np.cross(p0, p1)
                 da = np.sqrt(np.sum(n1a**2, 1))
+                da[da == 0.0] = 1.
                 n1a[:,0] /= -da
                 n1a[:,1] /= -da
-                n1a[:,2] /= -da                
+                n1a[:,2] /= -da
             else:
                 da = np.zeros(idxset.shape[0])
-                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight                
+                n1a = np.zeros((nverts, 3), dtype=np.float32) # weight
                 n1a[:,2] = 1.0
                 
             if len(args) == 1:
@@ -837,19 +904,45 @@ class Axes3DMod(Axes3D):
                 norms = n1a
             else:
                 data = np.ones(idxset.flatten().shape[0])
-                jj = np.array([np.arange(idxset.shape[0])]*idxset.shape[-1]).flatten()
+                jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
                 ii = idxset.transpose().flatten()
                 table = coo_matrix((data, (ii, jj)),
                                     shape = (nverts, idxset.shape[0]))
                 csr = table.tocsr()
                 indptr = csr.indptr; indices = csr.indices
+
+                data = csr.data
                 for i in range(csr.shape[0]):
                     nn = n1a[indices[indptr[i]:indptr[i+1]]]
-                    sign = np.sign(np.sum(nn*nn[0], 1))
-                    nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
-                    norms[i, :] = np.mean(nn, 0)
-
-            norms = norms/np.sqrt(np.sum(norms**2, 1)).reshape(-1,1)
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       data[indices[indptr[i]:indptr[i+1]]] = sign
+                    else:
+                       pass
+                       #norms[i, :] = [1,0,0]
+                norms = table.dot(n1a)                
+                '''
+                for i in range(csr.shape[0]):
+                    nn = n1a[indices[indptr[i]:indptr[i+1]]]
+                    if len(nn) != 0.0:
+                       sign = np.sign(np.sum(nn*nn[0], 1))
+                       nn *= np.tile(sign.reshape(sign.shape[0], 1), nn.shape[-1])
+                       norms[i, :] = np.mean(nn, 0)
+                    else:
+                       norms[i, :] = [1,0,0]
+                '''
+                '''       
+                table = table.tocsr()
+                nz = n1a[:,2]
+                nz[nz==0] = 1.0
+                f = nz/np.abs(nz)
+                n1a = (n1a.transpose()*f).transpose()
+                norms = table.dot(n1a)
+                '''
+            nn = np.sqrt(np.sum(norms**2, 1))
+            nn[nn == 0.0] = 1.            
+            norms = norms/nn.reshape(-1,1)
+            
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
                                v[..., 2].flatten(),
@@ -858,7 +951,7 @@ class Axes3DMod(Axes3D):
         
         from art3d_gl import Poly3DCollectionGL
         if len(args) == 1:
-            a = Poly3DCollectionGL(v, **kwargs)                        
+            a = Poly3DCollectionGL(v[:2,...], **kwargs)                        
         else:
             a = Poly3DCollectionGL(v[idxset[:2,...]], **kwargs)
 
@@ -916,6 +1009,19 @@ class Axes3DMod(Axes3D):
                              [0,0,a,b],
                              [0,0,-1/10000.,self.dist]
                               ])
+
+        if self._ignore_screen_aspect_ratio:
+            M = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+        else:
+            bb = self.get_window_extent()
+            r = abs((bb.x1-bb.x0)/(bb.y1-bb.y0))
+            if r >= 1:
+                M = np.array([[1./r,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+            else:
+                M = np.array([[1,0,0,0],[0,r,0,0],[0,0,1,0],[0,0,0,1]])
+        self._matrix_cache_extra = M
+           
+        perspM = np.dot(M, perspM)
         return  worldM, viewM, perspM, E, R, V, self.dist
     
     def get_proj(self):

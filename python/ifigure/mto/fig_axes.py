@@ -57,6 +57,9 @@ import matplotlib
 #from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
 from ifigure.widgets.axes_range_subs import AdjustableRangeHolderCbar
+
+unique_label = 0
+
 class FigAxes(FigObj,  AdjustableRangeHolder):
     def __init__(self, area=[0.,0.,1.,1.], 
                  margin=[0.15, 0.15, 0.15, 0.15],
@@ -294,18 +297,16 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
            if self._3D:
                kywds['use_gl'] = self._use_gl
                ax = Axes3DMod(container, rect, *(self._attr["args"]), **kywds)
-               a=container.add_axes(ax)               
+               if not ax in container.axes:
+                   a=container.add_axes(ax)
                ax.disable_mouse_rotation()
            else:
                ax = AxesMod(container, rect, *(self._attr["args"]),
                                          **kywds)
                a=container.add_axes(ax)                              
-
 #           self.backup_margin_param()
 
-
-
-           if container.axes.count(a) == 0:
+           if container.axes.count(ax) == 0:
                print('error in generating axes...')
 
            self._artists.append(ax)
@@ -692,7 +693,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
                     (1-pm[2]-pm[3])*rect[1]+pm[3],
                     rect[2]*(1-pm[0]-pm[1]),
                     rect[3]*(1-pm[2]-pm[3]),]
-           if self.getp('aspect') == 'equal': 
+           if self.getp('aspect') == 'equal' and not self._3D: 
                 params = self.get_axis_param_container_idx(0)
                 dx = abs(params['x'].range[1] - params['x'].range[0])
                 dy = abs(params['y'].range[1] - params['y'].range[0])
@@ -752,17 +753,27 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 #        if self._3D:
 #            a.grid(value[2], 'major', 'z')          
 
-
     def set_aspect(self, value, a=None):
 #        for a in self._artists: a.set_aspect(value)
         if len(self._artists) > 0:
             self._artists[0].set_aspect('auto')
-        self.setp('aspect', str(value))
-        rect, use_def, margin=self.calc_rect()
+        if self._3D:
+            self.setp('aspect', 'auto')            
+            rect, use_def, margin=self.calc_rect()
+            self.setp('aspect', str(value))
+            if len(self._artists) > 0:
+                ax = self._artists[0] 
+                if value == 'equal':
+                    ax._ignore_screen_aspect_ratio = False
+                else:
+                    ax._ignore_screen_aspect_ratio = True
+        else:
+            self.setp('aspect', str(value))            
+            rect, use_def, margin=self.calc_rect()
         for a in self._artists: a.set_position(rect)
         self.set_client_update_artist_request()
         self.set_bmp_update(False)
-        if str(value) == 'equal':
+        if str(value) == 'equal' and not self._3D:
             self.get_figpage().add_resize_cb(self)
         else:
             self.get_figpage().rm_resize_cb(self)

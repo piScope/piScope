@@ -112,7 +112,7 @@ class FigAxlineC(FigAxline, FigControl):
             if evt.inaxes is None: return 0
             if evt.xdata is None:return
 
-            axes = a.get_axes()
+            axes = a.axes
             x, y = self._eval_xy()
             if self._figc_hit < x.size:
 #                self.setp('x')[self._figc_hit] = evt.xdata
@@ -124,7 +124,7 @@ class FigAxlineC(FigAxline, FigControl):
             return FigAxline.drag(self, a, evt)
     def dragdone(self, a, evt):
         if self.getvar('dragmode') == 'independent':
-            axes = a.get_axes()
+            axes = a.axes
             x, y = self._eval_xy()
             if self._figc_hit < x.size:
                 x = self.getp('x').copy()

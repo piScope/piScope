@@ -50,7 +50,11 @@ __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
 import wx, time
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    # wx4
+    PyDeadObjectError = RuntimeError
 import matplotlib
 import numpy as np
 #from numpy import arange, sin, pi
@@ -719,6 +723,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
 
         canvas =  self.panel
         range_data = {}
+
         for a in figaxes._artists:
             range_data[a] = {}
             xdata, ydata = transform_point(
@@ -727,54 +732,59 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
             sxdata, sydata = transform_point(
                            a.transData.inverted(),
                            st_event.x, st_event.y)
-            
-            ### work to expand/shring range
-            if evt.x > st_event.x:
-                 xrange = [sxdata, xdata]
+            if figaxes.get_3d():
+                val = a.calc_range_change_by_pan(xdata, ydata, sxdata, sydata)
+                range_data[a]['x'] = val[0]
+                range_data[a]['y'] = val[1]
+                range_data[a]['z'] = val[2]                
             else:
-                 xrange = [xdata,  sxdata]
-                 
-            if evt.y > st_event.y:
-                 yrange = [sydata, ydata]
-            else:
-                 yrange = [ydata, sydata]
-            if canvas.toolbar.zoom_menu:
-                m = zoom_popup(self)
-                self.panel.canvas.PopupMenu(m, 
-                     [evt.guiEvent.GetX(), evt.guiEvent.GetY()])
-                m.Destroy()
+            ### work to expand/shrink range
+                if evt.x > st_event.x:
+                     xrange = [sxdata, xdata]
+                else:
+                     xrange = [xdata,  sxdata]
 
-            if canvas.toolbar.zoom_up_down == 'down':
-                #  if self.st_event.key == 'd':
-                atrans  = a.transAxes.transform
-                iatrans = a.transAxes.inverted().transform
-                dtrans  = a.transData.transform
-                idtrans = a.transData.inverted().transform
-                dtrans  = a.transData.transform
-                p0, p1=dtrans(np.array([[xrange[0],yrange[0]],
-                                      [xrange[1],yrange[1]]]))
-                #print p0, p1
-                a0, a1=iatrans(np.array([p0, p1]))
-                #print a0, a1
-                ia0 = [-a0[0], -a0[1]]
-                ia1 = [1+(1-a1[0]), 1+(1.-a1[1])]
-                #print ia0, ia1
-                ip0, ip1 = atrans(np.array([ia0, ia1]))
-                #print ip0, ip1
-                d0, d1   = idtrans(np.array([ip0, ip1]))
-                xrange = [d0[0], d1[0]]
-                yrange = [d0[1], d1[1]]
+                if evt.y > st_event.y:
+                     yrange = [sydata, ydata]
+                else:
+                     yrange = [ydata, sydata]
+                if canvas.toolbar.zoom_menu:
+                    m = zoom_popup(self)
+                    self.panel.canvas.PopupMenu(m, 
+                         [evt.guiEvent.GetX(), evt.guiEvent.GetY()])
+                    m.Destroy()
 
-            if self.expand_dir in ['x', 'both']:
-               ### this is to change values in artists
-               ### as it happens in pan mode
-               range_data[a]['x'] = xrange
-            if self.expand_dir in ['y', 'both']:
-               range_data[a]['y'] = yrange
-               ### this is to change values in artists
-               ### as it happens in pan mode
-#               a.set_ylim(yrange)
-#               requests =  canvas.make_range_request_zoom(figaxes, 'y', yrange, False, a, requests=requests)
+                if canvas.toolbar.zoom_up_down == 'down':
+                    #  if self.st_event.key == 'd':
+                    atrans  = a.transAxes.transform
+                    iatrans = a.transAxes.inverted().transform
+                    dtrans  = a.transData.transform
+                    idtrans = a.transData.inverted().transform
+                    dtrans  = a.transData.transform
+                    p0, p1=dtrans(np.array([[xrange[0],yrange[0]],
+                                          [xrange[1],yrange[1]]]))
+                    #print p0, p1
+                    a0, a1=iatrans(np.array([p0, p1]))
+                    #print a0, a1
+                    ia0 = [-a0[0], -a0[1]]
+                    ia1 = [1+(1-a1[0]), 1+(1.-a1[1])]
+                    #print ia0, ia1
+                    ip0, ip1 = atrans(np.array([ia0, ia1]))
+                    #print ip0, ip1
+                    d0, d1   = idtrans(np.array([ip0, ip1]))
+                    xrange = [d0[0], d1[0]]
+                    yrange = [d0[1], d1[1]]
+
+                if self.expand_dir in ['x', 'both']:
+                   ### this is to change values in artists
+                   ### as it happens in pan mode
+                   range_data[a]['x'] = xrange
+                if self.expand_dir in ['y', 'both']:
+                   range_data[a]['y'] = yrange
+                   ### this is to change values in artists
+                   ### as it happens in pan mode
+    #               a.set_ylim(yrange)
+    #               requests =  canvas.make_range_request_zoom(figaxes, 'y', yrange, False, a, requests=requests)
 
         requests  = None       
         for a in range_data:
@@ -1346,7 +1356,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                            ifigure_canvas_draghandler_3d(self), 
                            ]
       self.draghandler= self.draghandlers[0]
-
+      self.canvas.set_wheel_cb(self.on_mouse_wheel)
 #      self.toolbar = Toolbar(self.canvas)
 #      self.toolbar.Realize()
 #      self.fig_objs=[]
@@ -1384,8 +1394,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.Bind(CANVAS_EVT_DRAWREQUEST, self.onDrawRequest)
       self.canvas.Bind(wx.EVT_SET_FOCUS, self.onCanvasFocus)
       self.canvas.Bind(wx.EVT_KILL_FOCUS, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
-      self.canvas.Bind(wx.EVT_CHAR, self.test)
+      #self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.onCanvasFocus)            
+      #self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
+      
+      #self.canvas.Bind(wx.EVT_CHAR, self.test)
       self._cursor_icon = None
       
    def test(self, evt): 
@@ -1402,13 +1414,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self._hold_once = value
 
    def onCanvasFocus(self, e):
-#       print 'get focus', self._figure.figobj
+       #print 'get focus', self._figure.figobj
        self.mpl_connect(mode = self._mpl_mode)
        e.Skip()
        
    def onCanvasKillFocus(self, e):
-#       print 'kill focus'
-       self.mpl_connect(mode = self._mpl_mode)
+       #print 'kill focus'
+#       self.mpl_connect(mode = self._mpl_mode)
+       self.mpl_disconnect()
        e.Skip()
        
    def enter_layout_mode(self):
@@ -1583,7 +1596,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self.axes_selection=cbook.WeakNone()
       self.canvas.figure=figure
       self._figure=figure
-
+      try:
+          self.set_axes_selection(figure.figobj.get_axes(0)._artists[0])
+      except:
+          pass
+      
    def get_figure(self):
       return self._figure
 
@@ -2073,7 +2090,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       # On Linux (depends on button, True with shift key, True with Opt key
       #print event.button,  event.guiEvent.ShiftDown(), event.guiEvent.AltDown()
       
-
       self._cursor_icon = None
       do_3d_rot = False
       if (self.toolbar.mode == '3dzoom' and
@@ -2114,10 +2130,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          if (ax is not None and
              ax.figobj.get_3d()):
              # 10 => no button to rotate ;D
-             self.set_3dzoom_mode(True, zoom_btn = 1, rotate_btn = 10)
-             ax._button_press(event)
-             self.draghandler = self.draghandlers[10]
-             self.draghandler.bind_mpl(event)
+             #if event.guiEvent.ShiftDown():
+                 self.draghandler = self.draghandlers[2]
+                 self.draghandler.bind_mpl(event)
+             #else:        
+             #    self.set_3dzoom_mode(True, zoom_btn = 1, rotate_btn = 10)
+             #    ax._button_press(event)
+             #    self.draghandler = self.draghandlers[10]
+             #    self.draghandler.bind_mpl(event)
          else:
              self.set_3dzoom_mode(False)
              self.draghandler = self.draghandlers[2]
@@ -2216,10 +2236,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                  if not event.guiEvent.ShiftDown():
                      self.unselect_all()
                  figobj = self._pevent.artist.figobj
-                 if figobj.isSelected():
-                     self.add_selection(self._pevent.artist)
-                 else:
-                     self.unselect(self._pevent.artist)
+                 if figobj is not None:
+                     if figobj.isSelected():
+                         self.add_selection(self._pevent.artist)
+                     else:
+                         self.unselect(self._pevent.artist)
                         
             td = self._pevent.artist.figobj
             if td is not None:
@@ -2293,7 +2314,31 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
       if set_pmode:
          wx.CallLater(2, self.set_pmode)
- 
+         
+   def on_mouse_wheel(self, event):
+       axes=self.axes_selection()
+       if axes is None: return
+       if not axes.figobj.get_3d(): return
+       if event['start']:
+           self._wheel_start_range = axes.get_w_lims()           
+       elif event['end']:
+           self._wheel_end_range = axes.get_w_lims()
+           requests = self.make_range_request_pan(axes.figobj, auto=False)                 
+           #requests = self.expand_requests(requests)
+           self.send_range_action(requests, '3D zoom')
+
+       else:
+           df = 0.05 if event['direction'] else -0.05
+           minx, maxx, miny, maxy, minz, maxz = axes.get_w_lims()
+           dx = (maxx-minx)*df
+           dy = (maxy-miny)*df
+           dz = (maxz-minz)*df
+           axes.set_xlim3d(minx - dx, maxx + dx)
+           axes.set_ylim3d(miny - dy, maxy + dy)
+           axes.set_zlim3d(minz - dz, maxz + dz)
+           axes.figobj.set_bmp_update(False)
+           self.draw_later()
+           
    def set_pmode(self):
        self.toolbar.ExitInsertMode()
        self.toolbar.SetPMode()
@@ -2434,7 +2479,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                if evt.all:
                    self.draw_all()    
                else:
-                   self.draw()    
+                   self.draw(refresh_hl = evt.refresh_hl)    
 #           else:
 #               print 'resending request'
 #               wx.CallLater(300, self.draw_later)
@@ -2443,7 +2488,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            dprint2('skipping draw since screen is already updated')
            
    def onDraw(self, evt):
-       #print 'draw_event'
+       dprint2('draw_event')
        if self._show_cursor:
            self.draw_cursor()
        elif self._layout_mode:
@@ -2451,9 +2496,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           self.refresh_hl()
 
-   def draw_later(self, all = False, delay = 0.0):
+   def draw_later(self, all = False, delay = 0.0, refresh_hl = False):
        from ifigure.events import SendCanvasDrawRequest
-       SendCanvasDrawRequest(self, all=all, delay = delay)
+       SendCanvasDrawRequest(self, all=all, delay = delay,
+                             refresh_hl = refresh_hl)
 #       self._nodraw = True
 #       self._draw_request = True
 
@@ -2462,25 +2508,29 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
    def draw(self, refresh_hl=False):
 #       if not self._nodraw:
-          if self._figure is None: return
-          t = time.time()
-          self._last_draw_time = t
+       if self._figure is None: return
+
+       t = time.time()
+       self._last_draw_time = t
           
-          self._figure.figobj.update_artist()
-          self._drawing = True
+       self._figure.figobj.update_artist()
+       self._drawing = True
 #          self.canvas.draw(nogui_reprint = True)
-          try:
-             self.canvas.draw(nogui_reprint = False)
-          except:
-             dprint1('canvas draw failed')
-             import traceback
-             print(traceback.format_exc())
+       try:
+           self.canvas.draw(nogui_reprint = False)
+       except:
+           dprint1('canvas draw failed')
+           import traceback
+           traceback.print_exc()
 
-          self._last_update = time.time()
-          self._drawing = False
+       self._last_update = time.time()
+       self._drawing = False
 
-          dprint2('drawing time ' + str(time.time()-t))
-
+       dprint2('drawing time ' + str(time.time()-t))
+       if refresh_hl:
+           self.refresh_hl()
+       if self._layout_mode:
+           self.layout_editor.draw_all()
 #       else:
 #          self._draw_request = True
 
@@ -2694,6 +2744,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            elif header["mode"] == 'axes':
               dprint1('axes mode ', f_axes)
               if f_axes is not None:
+                 if obj.num_child() == 0:
+                     ret = dialog.message(parent=self, 
+                                          message='Axes does not have any plot',
+                                          title= "Can not paste",
+                                          style=0)
+                     obj.destroy()
+                     if return_history: 
+                          return None, []
+                     else:
+                         return
                  ret = dialog.message(parent=self, 
                        message='Do you want to replace section ?', 
                        title= "Paste Section",
@@ -2797,7 +2857,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
           if 'cmap_hint' in header:
              cax = objs[0].get_caxisparam() 
              if cax.num_member() == 1:
-                  action = UndoRedoFigobjMethod(objs[0]._artists[0].get_axes(),
+                  action = UndoRedoFigobjMethod(objs[0]._artists[0].axes,
                                                'cmap3', 
                                                 header['cmap_hint'])
                   action.set_extrainfo(cax.name)
@@ -2943,7 +3003,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       if not self._figure.figobj.is_descendant(figobj):
          if len(self.selection) == 0:
              return
-
+      
       if len(evt.selections) != 0:
          if evt.selections[0]() in figobj._artists:
             evt.selections[0] = weakref.ref(figobj._artists[0])
@@ -2979,8 +3039,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          self.axes_selection=weakref.ref(figobj._artists[0])
       if mode == 3:
          self.axes_selection=weakref.ref(figobj._artists[0])
-      self.draw_later()
-      self.refresh_hl()
+      
+      self.draw_later(refresh_hl = True)
 
    def px2norm(self, x, y):
       ### conversion from screen pixel to normal
@@ -3116,6 +3176,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        try:
           po.send_file(fname, parent = self.GetTopLevelParent())
        except:
+          import traceback
+          traceback.print_exc()
           dprint1("send_file failed")
        os.remove(fname)
 
@@ -3257,7 +3319,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        else:
           for a in self.selection:
                h.append(UndoRedoFigobjMethod(a(), 'caxis_idx', value))
-       ax = a().get_axes()
+       ax = a().axes
        h.append(UndoRedoFigobjMethod(ax, 'adjustrange', None))
                
        window = self.GetTopLevelParent()
@@ -3363,7 +3425,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
        nx, ny =  self.px2norm(evt.x, evt.y)           
        open_dlg = wx.FileDialog ( None, message="Select art file (.eps) to place", 
-                                   wildcard='EPS(*.eps)|*.eps',style=wx.OPEN)
+                                   wildcard='EPS(*.eps)|*.eps',style=wx.FD_OPEN)
        if open_dlg.ShowModal() != wx.ID_OK:
            open_dlg.Destroy()
            return
@@ -3845,7 +3907,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            self._txt_box.Unbind(wx.EVT_KILL_FOCUS)
            txt = ''
            if obj._txt_box is not None:
-               txt =str(obj._txt_box.GetValue())
+               try:
+                   txt0 = obj._txt_box.GetValue()
+                   txt = str(txt0)
+               except UnicodeEncodeError:
+                   txt = txt0
                obj._txt_box.Hide()
            callback(x, y, txt)
        def exit_text_input(evt, obj=self):

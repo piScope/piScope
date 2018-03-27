@@ -1358,7 +1358,6 @@ class panel2(artist_widgets):
         self.enable(True)
         if focus is not None: focus.SetFocus()
 
-
     def onTD_Selection(self, evt):
         if not hasattr(evt.GetEventObject(), "axes_selection"): return
         axes = evt.GetEventObject().axes_selection
@@ -1379,7 +1378,7 @@ class panel2(artist_widgets):
             self.enable(False)
             return
         
-        ax = evt.GetTreeDict()._artists[0].get_axes()
+        ax = evt.GetTreeDict()._artists[0].axes
         if ax is None:
             self.ax = None
             self.enable(False)

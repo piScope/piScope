@@ -5,12 +5,12 @@ import random
 from ifigure.widgets.section_editor import section_editor
 from ifigure.widgets.artist_widgets import panel1, panel2
 
+from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer
+
 class property_editor(wx.Panel):
     screen_width = None
 #    screen_width = 290
     def __init__(self, parent=None):
-        """Constructor"""
-
         super(property_editor, self).__init__(parent)
         self._last_update = 0
         self.ifigure_canvas=None
@@ -34,7 +34,7 @@ class property_editor(wx.Panel):
 #        self.Bind(self.CP3.events, self.hndl_event)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        button_sizer=wx.GridSizer(1, 3)
+        button_sizer=GridSizer(1, 3)
         button_sizer.Add(self.b1,0)
         button_sizer.Add(self.b2,0)
         button_sizer.Add(self.b3,0)
@@ -59,11 +59,18 @@ class property_editor(wx.Panel):
         self.CP1.Hide()
         self.CP3.Hide()
         self.OnPaneChanged()
+        
+        # this flags record if panels are ever shown on Screen.
+        # if not, GTK3 shows
+        #  "lost focus even though it didn't have it"
+        # Debug messages.
+        self._panel_shown_flag = [True, False, False]
+        
 
     def set_sizehint(self):
         if (property_editor.screen_width == None
            or property_editor.screen_width == 0):
-#        print 'size scan start'
+            #print 'size scan start'
 #        if True:
             s = self.IsShown()
 
@@ -85,7 +92,7 @@ class property_editor(wx.Panel):
             self.CP1.Show()
             self.CP2.Hide()
             self.CP3.Hide()
-#            print 'cp1'
+            #print 'cp1'
             self.GetSizer().Replace(self.sizer_olditem, self.CP1)
             self.sizer_olditem = self.CP1
             for p in self.CP1.panels.keys():
@@ -94,14 +101,7 @@ class property_editor(wx.Panel):
                self.CP1.GetSizer().Layout()
                self.OnPaneChanged()
                self.CP1.Layout()
-#               print p, self.CP1.panels[p].GetSize()
-#               print self.CP1.panels[p].elp
-#               for elp in self.CP1.panels[p].elp:
-#                   ss = elp.GetSize()
-#                   elp.SetSizeHints(-1, ss[1], maxH = ss[1])
-#                   print ss
-#                   elp.SetScrollRate(0,5)
-#                   elp.EnableScrolling(False, True)               
+               #print p, self.CP1.panels[p].GetSize()           
                m = max([m, self.CP1.panels[p].GetSize()[0]])
 
             self.CP1.switch_panel('text')
@@ -109,7 +109,7 @@ class property_editor(wx.Panel):
             self.CP1.GetSizer().Layout()
             self.OnPaneChanged()
             property_editor.screen_width = m
-#            print 'panel size ', m
+            #print 'panel size ', m
             self.Show(s)
         else:
             m = property_editor.screen_width
@@ -157,7 +157,8 @@ class property_editor(wx.Panel):
         self.CP1.GetSizer().Layout()
         self.CP1.update_panel()
         self.OnPaneChanged()
-
+        self._panel_shown_flag[0] = True
+        
     def ToggleAxes(self, e):
         obj = e.GetEventObject()
         isPressed = obj.GetValue()
@@ -165,18 +166,20 @@ class property_editor(wx.Panel):
         if isPressed:
           self.b1.SetValue(False)
           self.b3.SetValue(False)
-          self.CP2.Show()
           self.CP1.Hide()
           self.CP3.Hide()
           if self.sizer_olditem is not self.CP2:
              sizer.Replace(self.sizer_olditem, self.CP2)
              self.sizer_olditem = self.CP2
+          self.CP2.Layout()
+          self.CP2.Show()
         else:
           self.b2.SetValue(True)
         self.CP2.GetSizer().Layout()
         self.CP2.update_panel()
         self.OnPaneChanged()
         self.CP2.Layout()
+        self._panel_shown_flag[1] = True
         
     def ToggleSection(self, e):
         obj = e.GetEventObject()
@@ -197,7 +200,8 @@ class property_editor(wx.Panel):
         self.CP3.GetSizer().Layout()
         self.CP3.update_panel()
         self.OnPaneChanged()
-
+        self._panel_shown_flag[2] = True
+        
     def hndl_event(self, event):
         if event.GetEventObject() is self.CP1:
             pass
@@ -239,9 +243,9 @@ class property_editor(wx.Panel):
 
     def onTD_Selection(self, evt):
         if self.IsShown():
-            self.CP1.onTD_Selection(evt)
-            self.CP2.onTD_Selection(evt)          
-            self.CP3.onTD_Selection(evt)
+            if self._panel_shown_flag[0]: self.CP1.onTD_Selection(evt)
+            if self._panel_shown_flag[1]: self.CP2.onTD_Selection(evt)          
+            if self._panel_shown_flag[2]: self.CP3.onTD_Selection(evt)
         self.Layout()
         # this will make sure that button size is right..!?
          

@@ -726,8 +726,8 @@ class BookViewerInteractive(object):
             return ax.get_3d()
        v = cbook.on_off_args(args[0])
        ax.set_3d(v)
-       ax.del_artist(delall=True)
-       ax.realize()
+       #ax.del_artist(delall=True)
+       #ax.realize()
        self.draw()
        self.canvas.set_axes_selection(ax._artists[0])
        self.canvas.toolbar.Show3DMenu()       
@@ -1438,6 +1438,7 @@ class BookViewerInteractive(object):
                           (ylim[1]+ylim[0]+dd)/2)
                 self.zlim((zlim[1]+zlim[0]-dd)/2,
                           (zlim[1]+zlim[0]+dd)/2)
+                fig_axes.set_aspect('equal')
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'axesicon':
                 ax._show_3d_axes = True
@@ -1532,9 +1533,10 @@ class BookViewerInteractive(object):
            return ll
 #        if len(args) == 0: return
 
-        from matplotlib.cbook import is_string_like
+#        from matplotlib.cbook import is_string_like
+        from ifigure.utils.cbook import isstringlike
         name = args[0]
-        if not is_string_like(name):
+        if not isstringlike(name):
            tag, name = name
         else:
            tag = ''

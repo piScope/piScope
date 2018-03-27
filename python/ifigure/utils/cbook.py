@@ -1,4 +1,5 @@
 
+
 #  load image file
 #   this could be widget toolkit dependent
 import wx, os, string, weakref, matplotlib, threading, traceback, ifigure
@@ -6,11 +7,15 @@ import numpy as np
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('cbook')
 
+
 try:
     import Image
 except ImportError:
     from PIL import Image
     
+from ifigure.utils.wx3to4 import image_GetAlpha, image_SetAlpha, image_SetOptionInt, wxEmptyImage
+from ifigure.utils.wx3to4 import menu_Append, wxBitmapFromImage, wxCursorFromImage, menu_AppendItem
+
 def is_safename(txt):
     try:
        exec txt + '= 3' in {}, {}
@@ -113,11 +118,11 @@ def pil_to_image(pil, alpha=True):
     #import Image
     """ Method will convert PIL Image to wx.Image """
     if alpha:
-        image = apply( wx.EmptyImage, pil.size )
+        image = apply(wxEmptyImage, pil.size )
         image.SetData( pil.convert( "RGB").tostring() )
         image.SetAlphaData(pil.convert("RGBA").tostring()[3::4])
     else:
-        image = wx.EmptyImage(pil.size[0], pil.size[1])
+        image = wxEmptyImage(pil.size[0], pil.size[1])
         new_image = pil.convert('RGB')
         data = new_image.tostring()
         image.SetData(data)
@@ -132,8 +137,18 @@ def image_to_pil(image):
     """ Method will convert wx.Image to PIL Image """
     #pil = Image.new('RGB', (image.GetWidth(), image.GetHeight()))
     #pil.fromstring(image.GetData())
+
+
+    data = image.GetData()
+
+    import sys
+    if isinstance(image.GetData(), bytearray):
+        if sys.version_info > (3, 0):
+            data = bytes(data)
+        else:
+            data = str(data)
     pil = Image.frombytes('RGB', (image.GetWidth(), image.GetHeight()),
-                          image.GetData())
+                          data)
     print pil
     return pil
 
@@ -144,9 +159,9 @@ def make_crs_list(paths, hx, hy):
         im = wx.Image(path, wx.BITMAP_TYPE_PNG)
         # image = im.ConvertToBitmap()
         if im.HasAlpha(): im.ConvertAlphaToMask()
-        im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, hx) 
-        im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, hy)
-        crs.append(wx.CursorFromImage(im))
+        image_SetOptionInt(im, wx.IMAGE_OPTION_CUR_HOTSPOT_X, hx) 
+        image_SetOptionInt(im, wx.IMAGE_OPTION_CUR_HOTSPOT_Y, hy)
+        crs.append(wxCursorFromImage(im))
     return crs
 
 def make_bitmap_list(paths):
@@ -185,21 +200,22 @@ class ImageFiles(object):
      def bmp2array(bm):
          h, w = bm.GetSize()
          im = bm.ConvertToImage()
-         array = np.fromstring(im.GetData(),dtype=np.uint8)
+         array = np.fromstring(bytes(im.GetData()),dtype=np.uint8)
          array = array.reshape(w, h, array.shape[0]/w/h)
-         alpha = im.GetAlphaData() 
+         alpha = image_GetAlpha(im) 
          if alpha is not None:
-             alpha = np.fromstring(im.GetAlphaData(), 
+             alpha = np.fromstring(bytes(image_GetAlpha(im)), 
                            dtype=np.uint8).reshape(w, h, -1) 
          else:
              alpha = np.zeros((w, h, 1), dtype=np.uint8)+255
          return array, alpha,
+     
      def array2bmp(array, alpha):
          w = array.shape[0]
          h = array.shape[1]
-         im = wx.EmptyImage(h, w)
+         im = wxEmptyImage(h, w)
          im.SetData(array.tostring())
-         im.SetAlphaData(alpha.tostring())
+         image_SetAlpha(im, alpha)
          return im.ConvertToBitmap()
          
      def alpha_composite(ca, cb, aa, ab):
@@ -218,12 +234,12 @@ class ImageFiles(object):
          return resc, resa
 
      if fpath[-4:] == '.png':
-        bm = wx.BitmapFromImage(wx.Image(fpath,wx.BITMAP_TYPE_PNG))
+        bm = wxBitmapFromImage(wx.Image(fpath,wx.BITMAP_TYPE_PNG))
      if fpath[-4:] == '.bmp':
-        bm = wx.BitmapFromImage(wx.Image(fpath,wx.BITMAP_TYPE_BMP))
+        bm = wxBitmapFromImage(wx.Image(fpath,wx.BITMAP_TYPE_BMP))
  
      fpath2 = os.path.join(os.path.dirname(fpath), 'suppress.png')
-     bm2 = wx.BitmapFromImage(wx.Image(fpath2, wx.BITMAP_TYPE_PNG))
+     bm2 = wxBitmapFromImage(wx.Image(fpath2, wx.BITMAP_TYPE_PNG))
 
      array, alpha = bmp2array(bm)
      array2, alpha2 = bmp2array(bm2)
@@ -691,7 +707,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
            continue
        elif s[0] is '+':
            new_base=wx.Menu()
-           base.AppendMenu(id, s[1:], new_base)
+           menu_Append(base, id, s[1:], new_base)
            base=new_base
            isTop = True
            mmm = base
@@ -709,7 +725,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
            else:
                mmi = wx.MenuItem(base, id, s)
            if bmp is not None: mmi.SetBitmap(bmp)
-           base.AppendItem(mmi)
+           menu_AppendItem(base, mmi)           
            if s[0] is '^': mmi.Check(True)
            if s[0] is '-':
              mmi.Enable(False)
@@ -796,6 +812,9 @@ def isiterable(obj):
     except TypeError:
         return False
     return True
+
+def isstringlike(x):
+    return  (isinstance(x, str) or isinstance(x, unicode))
 
 def nd_iter(x):
     if x.size: return x

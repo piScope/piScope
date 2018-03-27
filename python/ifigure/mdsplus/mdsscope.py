@@ -79,6 +79,8 @@ from ifigure.mdsplus.event_listener import MDSSCOPE_EVT_MDSEVENT
 from ifigure.widgets.at_wxthread import at_wxthread
 
 from .utils import parse_server_string
+from ifigure.utils.wx3to4 import menu_Append, menu_AppendItem
+
 #
 #  debug setting
 #
@@ -1273,11 +1275,6 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self.Bind(wx.EVT_TEXT_ENTER, self.onShot, self.txt_shot)
         # File Menu
         newmenu = wx.Menu()
-#        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
-#        self.add_menu(newmenu, wx.ID_ANY,
-#                     "Book",
-#                     "Create a new book and open it",
-#                     self.onLoadBookNew)
         self.add_menu(self.filemenu, wx.ID_ANY,
                      "New Scope",
                      "Create a new book and open it in a scope",
@@ -1290,7 +1287,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                      "Import DWSscope...","Import DWScope file", 
                      self.onImportDW)
         openmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'Open', openmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                      "Book...",
                      "Import Book file (.bfz). Current book is deleted from project", 
@@ -1303,7 +1300,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                      "Import DWSscope...","Import DWScope file", 
                      self.onImportDW)
         self._recentmenu = wx.Menu()
-        openmenu.AppendMenu(ID_RECENT,
+        menu_Append(openmenu, ID_RECENT,
                                 "Recent Import...", self._recentmenu)
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
@@ -1353,12 +1350,12 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self.scopemenu= wx.Menu()
         self.menuBar.Append(self.scopemenu,"Scope")
         toolmenu = wx.Menu()
-        self.scopemenu.AppendMenu(wx.ID_ANY, 'Tools', toolmenu)
+        menu_Append(self.scopemenu, wx.ID_ANY, 'Tools', toolmenu)
         self.add_menu(toolmenu, wx.ID_ANY,
                      "Generate multiple pages...","Generate multiple pages from current page", 
                      self.onGenerateMultipage)
         self.commonvar_menu = wx.Menu()
-        toolmenu.AppendMenu(wx.ID_ANY, "Edit common variabls", self.commonvar_menu)
+        menu_Append(toolmenu, wx.ID_ANY, "Edit common variabls", self.commonvar_menu)
         self.add_menu(toolmenu, wx.ID_ANY,
                      "Reset MDSplus Workers","Reset MDS session workers", 
                      self.onResetWorker)
@@ -1503,7 +1500,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                  self.onCommonVarEditMenu(evt, label)
              mmi = wx.MenuItem(self.commonvar_menu, 
                                wx.ID_ANY, l)
-             self.commonvar_menu.AppendItem(mmi)
+             menu_AppendItem(self.commonvar_menu, mmi)
              if not self.book.dwglobal.getvar('use_shot_global'):
                  mmi.Enable(False)
              self.Bind(wx.EVT_MENU, f, mmi)
@@ -2080,6 +2077,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue
              range = figmds._default_xyrange['value'][0]
              if range[0] is None: range = defx
              if range[0] is None: continue
@@ -2096,6 +2094,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue             
              range = figmds._default_xyrange['value'][1]
              if range[0] is None: range = defy
              if range[0] is None: continue
@@ -2111,6 +2110,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue             
              xrange = figmds._default_xyrange['value'][0]
              yrange = figmds._default_xyrange['value'][1]
              if xrange[0] is None: xrange = defx

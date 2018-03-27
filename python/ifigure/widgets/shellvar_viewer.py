@@ -6,6 +6,7 @@ from ifigure.utils.cbook import ImageFiles, Write2Main, BuildPopUpMenu
 import ifigure.widgets.dialog as dialog
 
 from ifigure.widgets.var_viewerg2 import _PropertyGrid
+from ifigure.utils.wx3to4 import isWX3, GridTableBase
 #class _PropertyGrid( wx.grid.Grid ):
 #     def __init__(self, *args, **kargs):
 #         wx.grid.Grid.__init__(self, *args, **kargs)
@@ -114,9 +115,9 @@ class ShellVarViewerPopUp(wx.Menu):
         else:
            gt._sort = 1           
         self.parent.Refresh()    
-class ShellVarViewerGridTable(wx.grid.PyGridTableBase):
+class ShellVarViewerGridTable(GridTableBase):
     def __init__(self, obj, grid):
-        wx.grid.PyGridTableBase.__init__(self)
+        GridTableBase.__init__(self)
         self._obj=[]
         self._grid=grid
         self._sort = -1

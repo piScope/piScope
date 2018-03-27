@@ -128,7 +128,11 @@ class FigPage(FigObj):
            if not self.isempty(): self.del_artist(delall=True)
            for objname, figobj in self.get_children():
                figobj.realize()
-
+               
+    def realize_children(self):
+        for objname, figobj in self.get_children():
+            figobj.realize()
+        
     def generate_artist(self):
         ### this method generate artist
         ### if artist does exist, update artist

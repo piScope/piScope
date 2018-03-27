@@ -17,10 +17,65 @@ except:
 
 dprint1, dprint2, dprint3 = debug.init_dprints('SimpleShell')
 
-import wx.py.shell, wx.lib.shell
+import wx.py.shell #(wx4 removed this) wx.lib.shell
 from os.path import expanduser, abspath
 
+from ifigure.utils.wx3to4 import isWX3
+
+import time
+import thread
+from threading import Timer, Thread
+try:
+    from Queue import Queue, Empty
+except ImportError:
+    from queue import Queue, Empty  # python 3.x
+    
+ON_POSIX = 'posix' in sys.builtin_module_names
+
 sx_print_to_consol = False
+
+def enqueue_output(p, queue):
+    while True:
+        line = p.stdout.readline()
+        queue.put(line)
+        if p.poll() is not None: 
+           queue.put(p.stdout.read())
+           break
+    queue.put('process terminated')
+    
+def run_in_thread(p):
+    q = Queue()
+    t = Thread(target=enqueue_output, args=(p, q))
+    t.daemon = True # thread dies with the program
+    t.start()
+
+    lines = ["\n"]
+    line = ''
+    alive = True
+    app = wx.GetApp().TopWindow
+    if sx_print_to_consol:
+        write_cmd = app.proj_tree_viewer.consol.log.AppendText
+    else:
+        write_cmd = app.shell.WriteTextAndPrompt
+    while True:
+        time.sleep(0.01)                
+        try:  line = q.get_nowait() # or q.get(timeout=.1)
+        except Empty:
+            if len(lines) != 0:
+               wx.CallAfter(write_cmd, ''.join(lines))                   
+            lines = []
+        except:
+            import traceback
+            traceback.print_exc()
+            break
+        else: # got line
+            lines.append(line)
+        if line.startswith('process terminated'):
+            if len(lines) > 1:
+               wx.CallAfter(write_cmd, ''.join(lines[:-1]))                                  
+            break
+    return
+
 def sx(strin = ''):
     if strin == '': return
     if strin.startswith('cd '):
@@ -31,13 +86,11 @@ def sx(strin = ''):
     else:
         import subprocess as sp
         p = sp.Popen(strin, shell = True, stdout=sp.PIPE , stderr=sp.STDOUT)
-        txt = ''.join(p.stdout.readlines())
-    if sx_print_to_consol:
-        app = wx.GetApp().TopWindow
-        log = app.proj_tree_viewer.consol.log
-        log.AppendText(txt)
-    else:
-        print(txt)
+        t = Thread(target=run_in_thread, args = (p,))
+        t.daemon = True # thread dies with the program
+        t.start()
+        #run_in_thread(p)           
+        #txt = ''.join(p.stdout.readlines())
 class ShellBase(wx.py.shell.Shell):
     def setBuiltinKeywords(self):
         '''
@@ -150,10 +203,11 @@ class simple_shell_droptarget(wx.TextDropTarget):
         self.obj.GotoPos(pos)
         self.obj.write(txt)
         self.obj.GotoPos(pos+len(txt))
-        wx.CallAfter(self.obj.SetSTCFocus, True) 
-        wx.FutureCall(100, self.obj.SetFocus) 
-        return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
-#        self.obj.DoDropText(x, y, txt)
+        if isWX3:
+            wx.CallAfter(self.obj.SetSTCFocus, True) 
+            wx.CallLater(100, self.obj.SetFocus)
+        return True
+        #return super(simple_shell_droptarget, self).OnDropText(x, y, indata)
 
     def OnDragOver(self, x, y, default):
         self.obj.DoDragOver(x, y, default)
@@ -429,18 +483,9 @@ class SimpleShell(ShellBase):
         pass
 
     def execute_text(self, text):
-        #self.redirectStdout(True)
-        #self.redirectStderr(True)
         self.Execute(text)
         return
 
-        code = compile(text, '<string>', 'exec')
-        self.lvar["compiled_text"]=code
-        com='exec compiled_text'
-        self.Execute(com)
-        #self.redirectStdout(False)
-        #self.redirectStderr(False)
-        
     def execute_and_hide_main(self, text):
         self.Execute(text)
         self.Execute('import wx;wx.GetApp().TopWindow.goto_no_mainwindow()')
@@ -482,7 +527,10 @@ class SimpleShell(ShellBase):
 #        print  args, kargs
         if args[0].startswith('sx'):
             args = list(args)
-            args[0] = '!'+args[0].split('"')[1]
+            try:
+                args[0] = '!'+args[0].split('"')[1]
+            except IndexError:
+                return
             args = tuple(args)
         if self._no_record: return
         wx.py.shell.Shell.addHistory(self, *args, **kargs)
@@ -490,7 +538,11 @@ class SimpleShell(ShellBase):
         if wx.GetApp().IsMainLoopRunning():
            self.SendShellEnterEvent()        
         if self.ch is not None:
-           self.ch.append_text(args[0])
+           try:
+               self.ch.append_text(args[0])
+           except UnicodeError:
+               print("unicode error")
+               pass
            
     def GetContextMenu(self):
         menu = super(SimpleShell, self).GetContextMenu()
@@ -522,4 +574,7 @@ class SimpleShell(ShellBase):
     def onAutoCompOff(self, evt):
         self._auto_complete = False
 
+    def WriteTextAndPrompt(self, txt):
+        self.WriteText(txt)
+        self.prompt()
        

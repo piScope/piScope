@@ -48,7 +48,7 @@ def add_connection(self, new_name):
 def onNewConnection(self, e):
 
    
-    app = self.td.get_root_parent().app
+    app = self.td.get_app()
     ret, new_name=dialog.textentry(app,
              "Enter the name of new connection", "Add Connection", "")
     if ret:

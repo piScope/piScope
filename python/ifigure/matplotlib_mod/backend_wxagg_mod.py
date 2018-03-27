@@ -50,6 +50,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('FigureCanvasWxAggMod')
 from distutils.version import LooseVersion
 isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
+from ifigure.utils.wx3to4 import image_SetAlpha, wxEmptyImage
 
 class FigureCanvasWxAggMod(CanvasAgg):
     '''
@@ -73,14 +74,44 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.resize_happend = False
         self.timer = wx.Timer(self)
         self.empty_bytes = []
-
+#        self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseWheel)
+        self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
+        self._wheel_cb = None
+        self._pre_rot = 0
+        
+    def onMouseWheel(self, evt):
+        rot = evt.GetWheelRotation()
+        if rot != 0 and self._pre_rot == 0:
+            # start wheel            
+            event = {'guiEvent': evt, 'start': True,
+                     'end': False, 'direction': rot > 0 }
+        elif rot == 0 and self._pre_rot != 0:
+            # end  wheel            
+            event = {'guiEvent': evt, 'start': False,
+                     'end': True, 'direction': rot > 0 }
+        elif rot == 0:
+            event = None
+        else:
+            event = {'guiEvent': evt, 'start': False,
+                     'end': False, 'direction': rot > 0 }
+        self._pre_rot = rot 
+        try:
+            if event is not None: self._wheel_cb(event)
+        except:
+            import traceback
+            traceback.print_exc()
+        evt.Skip()
+        
+    def set_wheel_cb(self, wheel_cb):
+        self._wheel_cb = wheel_cb
+        
     def _onPaint(self, evt):
         def scale_bitmap(figure_image, bitmap):
            h, w, d  = figure_image.shape
            bitmapw, bitmaph = bitmap.GetSize()
-           image = wx.EmptyImage(w, h)
+           image = wxEmptyImage(w, h)
            image.SetData(figure_image[:,:,0:3].tostring())
-           image.SetAlphaData(figure_image[:,:,3].tostring())
+           image_SetAlpha(image, figure_image[:,:,3])
            return image.Scale(csize[0], csize[1]).ConvertToBitmap()
 
         csize = self.GetClientSize()

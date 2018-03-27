@@ -1,3 +1,4 @@
+
 import os, wx, logging, shutil
 import ifigure, ifigure.events
 import ifigure.utils.cbook as cbook
@@ -188,7 +189,7 @@ class PyModuleD(PyContents, pypy_code.PyCode):
 
     def onSelectModuleFile(self, e=None):
         open_dlg = wx.FileDialog ( None, message="Select module", 
-                             wildcard='*.py',style=wx.OPEN)
+                             wildcard='*.py',style=wx.FD_OPEN)
         if open_dlg.ShowModal() != wx.ID_OK:
             open_dlg.Destroy()    
             raise ValueError

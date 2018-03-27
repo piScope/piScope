@@ -111,7 +111,7 @@ class FigTripcolor(FigImage, TrianglePlots):
         '''
         x, y = self.getp(('x', 'y'))
         ptx = np.vstack((x.flatten(), y.flatten()))
-        t = self._artists[0].get_axes().transData
+        t = self._artists[0].axes.transData
         ptx = t.transform(ptx.transpose())
         dist = np.sqrt((ptx[:,0] - evt.x)** 2 + (ptx[:,1] -  evt.y)**2)
         if np.min(dist) < 5:

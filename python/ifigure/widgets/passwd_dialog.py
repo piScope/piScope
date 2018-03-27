@@ -1,5 +1,7 @@
 # Very minimalist password entry dialogue
 import wx
+from ifigure.utils.wx3to4 import FlexGridSizer
+
 class UsernamePasswordDialog(wx.Dialog):
     def __init__(self, parent, id=-1, title="Enter password", label="Enter Password;"):
         wx.Dialog.__init__(self, parent, id, title,style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER)
@@ -7,7 +9,7 @@ class UsernamePasswordDialog(wx.Dialog):
         self.buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.label = wx.StaticText(self, label=label)
 
-        sizer =  wx.FlexGridSizer(2, 2)
+        sizer =  FlexGridSizer(2, 2)
         sizer.AddGrowableCol(1,1)
         st1 = wx.StaticText(self, label="Name")
         self.field  = wx.TextCtrl(self, value="", size=(-1,-1))

@@ -48,11 +48,17 @@ ID_HIDEAPP = wx.NewId()
 ID_WINDOWS = wx.NewId()
 ID_HDF_EXPORT = wx.NewId()
 
+from ifigure.utils.wx3to4 import wxEmptyImage, menu_Append, image_SetAlpha, wxBitmapFromImage
+
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
         self._atable = []
         if not 'style' in kargs:kargs['style'] = wx.DEFAULT_FRAME_STYLE
         kargs['style'] = kargs['style']|wx.WS_EX_PROCESS_UI_UPDATES
+        
+        ### initial size setting to avoid gtk_window_resize assersion
+        kargs['size'] = (50,50)
+        
         super(FrameWithWindowList, self).__init__(*args, **kargs)
         # Creating the menubar.
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
@@ -196,7 +202,7 @@ class FrameWithWindowList(wx.Frame):
                      "Bring previous window forward",
                      self.onPrevWindow)
         self._windowmenu= wx.Menu()
-        helpmenu.AppendMenu(ID_WINDOWS, 'Viewers...', self._windowmenu)
+        menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, ID_HIDEAPP,
                      "Hide App",
@@ -263,12 +269,14 @@ class FramePlus(FrameWithWindowList):
     '''
     ID_COPY = wx.NewId()
     ID_PASTE = wx.NewId()
+    ID_COPYS = wx.NewId()
+    ID_PASTES = wx.NewId()    
     def __init__(self, *args,  **kargs):
         kargs["size"] = (10,10)
         super(FramePlus, self).__init__(*args, **kargs)
 
 
-        self._sb_timer = wx.Timer(self)
+
         # Setting up the menu.
         self.filemenu= wx.Menu()
         self.editmenu= wx.Menu()
@@ -288,6 +296,19 @@ class FramePlus(FrameWithWindowList):
         self._attaching = False
         self.Bind(wx.EVT_SIZE, self.onResize)
         
+    def onUpdateUI(self, evt):
+        s = (FramePlus.ID_COPY, FramePlus.ID_PASTE, 
+             FramePlus.ID_COPYS, FramePlus.ID_PASTES)
+        if evt.GetId() in s:
+            evt.Enable(True)
+            self.copy_mi.Enable(True)
+            self.paste_mi.Enable(True)
+            v = False if self.canvas._figure is None else True
+            self.copy_mis.Enable(v)
+            self.paste_mis.Enable(v)
+        else:        
+            super(FramePlus, self).onUpdateUI(evt)
+        
     def write_canvas_size_to_status_bar(self):
         size = self.canvas.GetSize()
         sb = self.GetStatusBar()
@@ -295,7 +316,7 @@ class FramePlus(FrameWithWindowList):
              self.GetTopLevelParent().SetStatusText('canvas size = '+str(size))               
         
     def onResize(self, evt):
-#        print 'onResize BookViewer'
+#        print 'onResize BookViewer', self.GetSize()
 #        if self.book._screen_ratio_lock is not None:
 #             self.set_canvas_ratio(self.book._screen_ratio_lock)
 
@@ -339,14 +360,14 @@ class FramePlus(FrameWithWindowList):
         id1 = FramePlus.ID_COPY
         self.copy_mi = self.add_menu(m, id1, "Copy", "",  
                      self.onCopy)
-        self.add_menu(m, wx.ID_ANY, "Copy Special...", "",  
+        self.copy_mis=self.add_menu(m, FramePlus.ID_COPYS, "Copy Special...", "",  
                       self.onCopyS)
 
         m.AppendSeparator()
         id2 = FramePlus.ID_PASTE
         self.paste_mi = self.add_menu(m, id2, "Paste", "", 
                      self.onPaste)
-        self.add_menu(m, wx.ID_ANY, "Paste Special...", "",  
+        self.paste_mis = self.add_menu(m, FramePlus.ID_PASTES, "Paste Special...", "",  
                       self.onPasteS)
 
         self.append_accelerator_table((wx.ACCEL_CTRL,  ord('C'), id1))        
@@ -413,6 +434,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
            del kargs["book"]
            self.book.set_open(True)
         else: self.book = None
+        
 
         self.gui_tree = None
         self.canvas = None
@@ -427,6 +449,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self._del_book_from_proj = 0
         super(BookViewerFrame, self).__init__(*args, **kargs)
         BookViewerInteractive.__init__(self)
+        
+        self._sb_timer = wx.Timer(self)
         
     def __del__(self):
         '''
@@ -503,7 +527,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 else:
                     evt.Enable(True);evt.Show(True)
             else:
-                FrameWithWindowList.onUpdateUI(self, evt)
+                FramePlus.onUpdateUI(self, evt)
  
 #    def Close(self):
 #        FramePlus.Close(self)
@@ -542,7 +566,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def add_bookmenus(self, editmenu, viewmenu):
         subm = wx.Menu()
-        editmenu.AppendMenu(BookViewerFrame.ID_PM[0], 'Add Page', subm)
+        menu_Append(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
 #        self.add_menu(editmenu, wx.ID_ANY, 
 #                     "Add Page",  "add a new page",  self.onAddPage)
         self.add_menu(subm, BookViewerFrame.ID_PM[1], 
@@ -611,7 +635,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def append_screen_ratio_menu(self, viewmenu):
         ratiomenu = wx.Menu()
-        viewmenu.AppendMenu(wx.ID_ANY, 'Canvas Size', ratiomenu)
+        menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
         self.add_menu(ratiomenu, wx.ID_ANY, 
                       "Aspect = 3:4", "set canvas x y ratio to 3:4",
                        self.onCanvasRatio3_4)
@@ -828,13 +852,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         Copy_to_Clipboard_mod copys the buffer data
         which does not have highlight drawn
         '''
+
         canvas = self.canvas.canvas
         figure_image = canvas.figure_image[0]
         h, w, d  = figure_image.shape
-        image = wx.EmptyImage(w, h)
+        image = wxEmptyImage(w, h)
         image.SetData(figure_image[:,:,0:3].tostring())
-        image.SetAlphaData(figure_image[:,:,3].tostring())
-        bmp = wx.BitmapFromImage(image)
+        image_SetAlpha(image, figure_image[:,:,3])
+        bmp = wxBitmapFromImage(image)
         canvas.Copy_to_Clipboard_mod(pgbar=True,
                                      bmp=bmp)
         if e is not None: e.Skip()
@@ -968,7 +993,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                                    defaultDir = os.getcwd(), 
                                    defaultFile = 'book_file',
                                    wildcard = "BookFile (*.bfz)|*.bfz",
-                                   style=wx.SAVE | wx.OVERWRITE_PROMPT)
+                                   style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         if save_dlg.ShowModal() == wx.ID_OK:
            path = save_dlg.GetPath()
            if path[-4:] != '.bfz':
@@ -1005,7 +1030,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         '''
         if file == '':
             open_dlg = wx.FileDialog ( None, message="Select book (.bfz) project to open", 
-                                   wildcard='*.bfz',style=wx.OPEN)
+                                   wildcard='*.bfz',style=wx.FD_OPEN)
             if open_dlg.ShowModal() == wx.ID_OK:
                 file = open_dlg.GetPath()
                 open_dlg.Destroy()
@@ -1325,17 +1350,18 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
            self.open_book()
            if self.nsec() > 0: self.isec(0)
            return
-
+       
         f_page=self.book.get_page(self.ipage)
         if f_page is not None:
           if f_page.isempty():
-              f_page.realize()
+               f_page.generate_artist()
           figure=f_page.get_artist(idx=0)
         else:
           figure = None
         self.canvas = ifigure_canvas(parent=self.panel1, 
                                      figure=figure)
-
+        f_page.realize_children()
+        
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(self.canvas, 1, wx.EXPAND)
 #        hbox.Add(self.property_editor, 0)
@@ -1630,9 +1656,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         wx.GetApp().TopWindow.Close()
 
     def onWindowClose(self, evt=None):
-#        from ifigure.ifigure_config import iFigureConfig
+        # print("onWindowClose", self)
+        # stop timer for statusbar
+        self._sb_timer.Stop()
+        self.Unbind(wx.EVT_TIMER)        
+
         bk = self.book
         self.close_book()
+        
         ifigure.events.SendCloseBookEvent(bk, w=self)
         if ((bk is not None and not bk._keep_data_in_tree) or
             (self._del_book_from_proj == 1 and bk is not None)):
@@ -1731,16 +1762,11 @@ class BookViewer(BookViewerFrame):
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
         # File Menu
-#        newmenu = wx.Menu()
-#        self.filemenu.AppendMenu(wx.ID_ANY, 'New', newmenu)
-#        self.add_menu(newmenu, wx.ID_ANY, 
-#                     "Book in new window", "Create Book", 
-#                     self.onNewBook)
         self.add_menu(self.filemenu, wx.ID_ANY, 
                      "New Figure", "Create Book", 
                      self.onNewBook)
         openmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'Open', openmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                      "Book...",
                      "Import Book file (.bfz). Current book is deleted from project", 
@@ -1752,7 +1778,7 @@ class BookViewer(BookViewerFrame):
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         exportmenu = wx.Menu()
-        self.filemenu.AppendMenu(wx.ID_ANY, 'Export...', exportmenu)
+        menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
         self.export_book_menu = self.add_menu(exportmenu,
                                         BookViewerFrame.ID_EXPORTBOOK, 
                                         "Export Book", "Export Book",
@@ -1812,7 +1838,7 @@ class BookViewer(BookViewerFrame):
         self.append_std_viewmenu2(self.viewmenu)
         # Adding the MenuBar to the Frame content.
 
-        self.property_editor.set_sizehint()
+        #self.property_editor.set_sizehint()
         self.gui_tree.toggle_panel(self.property_editor, show_prop)
 
         

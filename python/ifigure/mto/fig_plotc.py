@@ -198,7 +198,7 @@ class FigPlotC(FigPlot, FigControl):
         return 1
 
     def onAddPoint(self, evt):
-        axes = self._artists[0].get_axes()
+        axes = self._artists[0].axes
         if axes is None: return
         x = self.getp('x').copy()
         y = self.getp('y').copy()
@@ -374,7 +374,7 @@ class FigPlotC(FigPlot, FigControl):
         hit = False
         self._figc_hit = -1
         self._figc_hit_pos = (evt.xdata, evt.ydata)
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {}
         x = artist.get_xdata()
         y = artist.get_ydata()

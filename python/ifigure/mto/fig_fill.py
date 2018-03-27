@@ -324,7 +324,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
 #   def hit_test
 #
     def picker_a(self, artist, evt):
-        axes = artist.get_axes()
+        axes = artist.axes
         if axes is None: return False, {}
  
 

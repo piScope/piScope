@@ -37,6 +37,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     if (renderer._k_globj != renderer._num_globj): return
     #print ("finish gl draw", renderer._k_globj, renderer._num_globj)
     if not glcanvas._hittest_map_update:
+        glcanvas._no_hl = False
         id_dict = glcanvas.draw_mpl_artists(tag)
         im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
         gc = renderer.new_gc()
@@ -47,11 +48,20 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         renderer.draw_image(gc, round(x), round(y), im)
         gc.restore()
     else:
+        #
+        # need to draw twice due to buffering of pixel reading
+        #
+        glcanvas._no_hl = True
+        glcanvas._hittest_map_update = True        
         id_dict = glcanvas.draw_mpl_artists(tag)
         # im : image, im2, im2d: id, im3: depth
-        im, im2, im2d, im3 = glcanvas.read_data(tag) 
-        #import wx
-        #wx.GetApp().TopWindow.shell.lvar['_gl_image'] = im
+        im, im2, im2d, im3 = glcanvas.read_data(tag)
+        
+        glcanvas._hittest_map_update = False
+        id_dict = glcanvas.draw_mpl_artists(tag)
+        im = glcanvas.read_data(tag) # im : image, im2: id, im3: depth
+        glcanvas._hittest_map_update = True                
+
         gc = renderer.new_gc()
         x, y =trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
@@ -177,7 +187,7 @@ class ArtGL(object):
             c = self.axes
         elif self.figure is not None:
             c = self.figure
-        if c is None: return
+        if c is None: return []
         if self._gl_hl_use_array_idx:
             c.set_gl_hl_mask(self,
                              hit_id = self._gl_hit_array_id)
@@ -245,13 +255,16 @@ class LineGL(ArtGL, Line3D):
         m_facecolor = self.get_markerfacecolor()
         m_edgecolor = self.get_markeredgecolor()
         m_edgewidth = self.get_markeredgewidth()
+        m_marker = self.get_marker()
         m_size =  renderer.points_to_pixels(self._markersize)
+        marker_param = (m_size, m_edgecolor,
+                        m_facecolor, m_edgewidth, m_marker)
+
         if self._marker in self._gl_marker_tex:
             data = self._gl_marker_tex[self._marker]
-            if data['param'] == (m_size, m_edgecolor,
-                                 m_facecolor, m_edgewidth):
+            if data['param'] == marker_param:
                 return data['path']
-            
+
         marker_path = marker_image(self._marker.get_path(),
                                    m_size,
                                    self._marker.get_transform(),
@@ -259,8 +272,7 @@ class LineGL(ArtGL, Line3D):
                                    facecolor = m_facecolor,
                                    edgewidth = m_edgewidth)
         data = {'path': marker_path,
-                'param': (m_size, m_edgecolor,
-                          m_facecolor, m_edgewidth) }
+                'param': marker_param}
         self._gl_marker_tex[self._marker] = data
         return marker_path
     
@@ -380,7 +392,8 @@ class AxesImageGL(ArtGL, AxesImage):
         z = np.array([pp[2] for pp in p]).flatten()
         self._gl_3dpath = (x, y, z, np.hstack([n]*len(x)),
                            np.arange(len(x)).astype(np.int))
-        
+
+
     def make_hl_artist(self, container):
         idx = [0, 1, 2, 3]
         x  = [self._gl_3dpath[0][k] for k in idx]
@@ -416,21 +429,27 @@ class AxesImageGL(ArtGL, AxesImage):
                trans = self.axes.transAxes
            elif self.figure is not None:
                tag = self.figure
-               trans = self.figure.transFpigure
+               trans = self.figure.transFigure
            glcanvas.frame_request(self, trans)
 #           if not glcanvas.has_vbo_data(self):
            glcanvas.start_draw_request(self)
            if self._gl_3dpath is not None:
-              im = self.make_image(renderer.get_image_magnification())
+              try:
+                  im = self.to_rgba(self._A)
+                  im = (im*255).astype(int)
+              except:
+                  # this is for an old version of matplotlib
+                  im = self.make_image(renderer.get_image_magnification())
+              self._im_cache = im
               gc = renderer.new_gc()              
               gc.set_alpha(self.get_alpha())
               if self._gl_rgbacache_id != id(self._rgbacache):
                  if glcanvas.has_vbo_data(self):                                   
                      d = glcanvas.get_vbo_data(self)
                      for x in d:
-                         x['im_update'] = True              
+                         x['im_update'] = True
               renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
-                                     np.transpose(self._rgbacache, (1,0,2)),
+                                     np.transpose(self._im_cache, (1,0,2)),
                                      interp = self._gl_interp)
               self._gl_rgbacache_id = id(self._rgbacache)
               gc.restore()
@@ -496,7 +515,6 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
         z1 = np.hstack(z1)
         norms = np.hstack(norms).reshape(-1, 3)
         X3D, Y3D, Z3D = juggle_axes(x1, y1, z1, zdir)
-        
         ##does norm may mean anything, but let's leave it...        
         self._gl_3dpath = [X3D, Y3D, Z3D, norms, idxset]
         
@@ -649,7 +667,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         convert a path on flat surface
         to 3d path
         '''
-        print("calling convert 2dpath to 3dpath")
+        #print("calling convert 2dpath to 3dpath")
         x1 = []; y1 = []; z1 =[]; norms = []; idxset = []
         idxbase = 0
         if zdir == 'x':
@@ -678,7 +696,6 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 #        norms = np.hstack(norms).reshape(-1, 3)
         X3D, Y3D, Z3D = juggle_axes(x1, y1, z1, zdir)
         norms = np.array([norm]).reshape(-1, 3)
-
         self._gl_3dpath = [X3D, Y3D, Z3D, norms, idxset]
          
     def make_hl_artist(self, container):
@@ -759,10 +776,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
     def set_cz(self, cz):
         if cz is not None:
-#            if hasattr(self, '_segis'):
-#                self._gl_cz = np.hstack([cz[si:ei] for si, ei in self._segis])
-#            else:
-                self._gl_cz = cz
+            self._gl_cz = cz
         else:
             self._gl_cz = False
 
@@ -774,8 +788,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             if self._gl_cz:
                 if self._gl_facecolordata is not None:
                    self._gl_facecolor = self.to_rgba(self._gl_facecolordata)
-            elif self._gl_shade == False:
-                if self._gl_cz is None:
+            elif self._gl_shade =='flat':
+                if self._gl_cz:
                     z = [np.mean(self._gl_3dpath[2][idx])
                          for idx in self._gl_3dpath[4]]
                 else:
@@ -838,7 +852,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                elif self._gl_cz is not None: cz = self._gl_cz
                else: cz = self._gl_3dpath[2]
 
-               if len(d) > 0:
+               if len(d) > 0 and d[0] is not None:
                    if self._update_v:
                        d[0]['v'].need_update = True
                        self._gl_facecolor = self.to_rgba(cz)
@@ -853,7 +867,12 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                    if self._update_a:
                        if 'vertex_id' in d[0] and d[0]['vertex_id'] is not None:
                            d[0]['vertex_id'].need_update = True
-                   
+               else:
+                   self._update_a = False
+                   self._update_v = False
+                   self._update_fc = False
+                   self._update_ec = False
+                   self._update_i = False                                      
                # this happens when all surfaces are hidden.
                # if (len(d)) == 0: print('vbo zero length', self.figobj)   
            if self._update_ec or self._update_fc:
@@ -863,18 +882,31 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
            glcanvas.frame_request(self, trans)
 #           renderer.do_stencil_test = self.do_stencil_test
            glcanvas.start_draw_request(self)
-           if (self._gl_3dpath is not None and 
-               len(self._gl_3dpath[4] > 0)):
-                renderer.gl_draw_path_collection_e(
-                   gc, None, self._gl_3dpath,
-                   self.get_transforms(), self._gl_offset, None,
-                   self._gl_facecolor, self._gl_edgecolor,
-                   self._linewidths, self._linestyles,
-                   self._antialiaseds, self._urls,
-                   self._offset_position,
-                    stencil_test = self.do_stencil_test,
-                    view_offset = self._gl_voffset,
-                    array_idx = self._gl_array_idx)
+
+           if self._gl_3dpath is not None:
+               if isinstance(self._gl_3dpath[4], list):
+                   renderer.gl_draw_path_collection(
+                          gc, None, self._gl_3dpath,
+                          self.get_transforms(), self._gl_offset, None,
+                          self._gl_facecolor, self._gl_edgecolor,
+                          self._linewidths, self._linestyles,
+                          self._antialiaseds, self._urls,
+                          self._offset_position,
+                          stencil_test = self.do_stencil_test,
+                          view_offset = self._gl_voffset,
+                          array_idx = self._gl_array_idx)
+
+               else:
+                    renderer.gl_draw_path_collection_e(
+                        gc, None, self._gl_3dpath,
+                        self.get_transforms(), self._gl_offset, None,
+                        self._gl_facecolor, self._gl_edgecolor,
+                        self._linewidths, self._linestyles,
+                        self._antialiaseds, self._urls,
+                        self._offset_position,
+                        stencil_test = self.do_stencil_test,
+                        view_offset = self._gl_voffset,
+                        array_idx = self._gl_array_idx)
 
 #           renderer.do_stencil_test = False
            glcanvas.end_draw_request()
@@ -898,6 +930,7 @@ def poly_collection_3d_to_gl(obj):
     obj._update_v = True
     obj._update_fc = True
     obj._update_ec = True
+    obj._update_a = False
     obj._gl_solid_facecolor = None
     obj._gl_solid_edgecolor = None
     obj._gl_facecolor = None

@@ -1,4 +1,33 @@
-        * 11/07
+2018
+	* 1/30
+	** Running !-command in shell is changed to use threading, which
+	allows a long-running process while keeping GUI active.
+	** Maybe I should provide a interface to kill subprocesses lauched
+	by various ways from piScope?
+	
+	* 1/19
+	** OpenGL 3.2 based shaders are stable enough
+	** fixed a few wx4 migration issues
+	** turn on OpenGL by default. -g option is changed to SUPPRESS OpenGL
+	** Appearance panel is modified to choose OpenGL on/off, shader version.
+	
+        * 1/10
+        ** Migration to OpenGL 3.2 core is on-going
+	Most of the functionality seems working now.
+        Programs for Shader language 1.5 is named like xxxx_15.frag
+	Similary MyGLCanvas has now _12 and _15 versions to support old machines.
+	A gometry shader to draw thick line is added.
+	Future developement will be done only on GL3.2
+
+2017	
+	* 11/27
+        ** ifigure.utils.wx3to4 is added. This modules is used to absorb the API differences
+	between Classic and Phoenix. Note that it is not meant for general purpose module.
+	It covers only the APIs used in piScope.
+	** Various adjustment/fix are maded to use wx3to4 in many modules
+	** HGsupport::onHGreload is added to refresh hg folder using the repository data.
+	
+	* 11/07
 	** GLComponent::set_gl_hl_use_array_idx, GLComponent::get_gl_hl_use_array_idx
 	is modified to record the setting in setp. This allows to configure use_array_idx
 	before an artist is made
@@ -11,8 +40,8 @@
 	** Copy To Clipboard is added to CopySpecial menu
 	** following interactive commands calles threed('on') automatically
 	solid, revolve, surf, trisurf, surface. Note that plot command still
-	does not change axes to 3D mode automatically. A user must call threed('on')
-	if axes is in 2D mode.
+	does not change axes to 3D mode automatically. A user must call
+	threed('on') if axes is in 2D mode.
 	** fig_revolve::get_export_val is added	
         ** resolution downscaling on GPU side is added
 	

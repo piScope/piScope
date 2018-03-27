@@ -14,6 +14,8 @@ from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.script_editor import Notebook
 
+from ifigure.utils.wx3to4 import TextEntryDialog
+
 bitmaps = None
 
 class DlgMdsSessionData(DialogWithWindowList):
@@ -188,7 +190,7 @@ class DlgMdsSessionData(DialogWithWindowList):
 #        self.Thaw()
 
     def onAddVar(self, evt):
-        dlg = wx.TextEntryDialog(self.GetTopLevelParent(), 
+        dlg = TextEntryDialog(self.GetTopLevelParent(), 
                "Enter the name of variable", "Add variable", "")
         if dlg.ShowModal() == wx.ID_OK:
 #            self.Freeze()

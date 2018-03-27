@@ -1,9 +1,5 @@
 /*
-   a fragment shader written GLSL 1.2
-     -- limitation in 1.2 --
-       * geometry shader is not available
-          ** parametric curve needs to be expanded on CPU?
-       * drawarraysinstanced does not exist?
+   a fragment shader written GLSL 1.5 (OpenGL 3.2)
    
    1) clip if the point is outside the box
    2) set color using interpolated color
@@ -14,7 +10,7 @@
    1) shadow map
    2) line style
 */
-#version 120
+#version 150
 varying vec4 vColor0;
 varying vec3 ClipDistance0;
 varying vec3 normal;
