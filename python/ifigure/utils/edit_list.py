@@ -99,6 +99,7 @@ class FunctionButton(wx.Button):
         func = setting.pop('func', None)
         label = setting.pop('label', 'Default')
         style = setting.pop('style', 0)
+        self.send_event =  setting.pop('sendevent', False)        
         kargs['style'] = style
         wx.Button.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_BUTTON, self.onSelect)
@@ -127,6 +128,8 @@ class FunctionButton(wx.Button):
             _handler = self._handler
         if _handler is not None:
            _handler(ev)
+           if self.send_event:
+                self.GetParent().send_event(self, ev)              
         ev.Skip()
         
 class FunctionButtons(Panel):
@@ -1426,7 +1429,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
         dt1 = TextDropTarget(self)
         self.SetDropTarget(dt1)
-        min_w = max([len(args[2]), 8])
+        if len(args) > 2:
+            min_w = max([len(args[2]), 8])
+        else:
+            min_w = 8
         txt_w = self.Parent.GetTextExtent('A'*min_w)[0]
         txt_h = self.Size[1] * nlines
         self.SetMinSize((txt_w, txt_h))
@@ -1488,6 +1494,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
            self.Cut()
            return
         event.Skip()
+
         if self.changing_event:
             self.GetParent().send_changing_event(self, event)
             
