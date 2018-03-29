@@ -56,7 +56,7 @@ home = expanduser("~")
 from ifigure.utils.get_username import get_username
 usr = get_username()
 
-rcdir = os.getenv("PISCOPERC")
+rcdir = os.getenv("PISCOPERC", default="")
 if rcdir == '':
     rcdir=os.path.join(home, '.ifigure_rc')
 
