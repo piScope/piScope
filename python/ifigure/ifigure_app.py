@@ -729,15 +729,9 @@ class ifigure_app(BookViewerFrame):
        self.property_editor.set_sizehint()
 
  #      if os.path.exists(geom_file):
-       print 'I am here'
        from ifigure.ifigure_config import geom_file       
        try:
            val = self.read_geom_file()
-           print "val", val
-#           from ifigure.ifigure_config import geom_file
-#           fid=open(geom_file, 'r')
-#           val=pickle.load(fid)
-#           fid.close()
            if "editor_detached" in val:
 #               print 'editor_detached', val["editor_detached"]
                self.script_editor._first_open_style = val["editor_detached"]
@@ -1603,17 +1597,18 @@ class ifigure_app(BookViewerFrame):
         fid.close()
 
     def read_geom_file(self):
-        print 'read_geom_file'
         from ifigure.ifigure_config import geom_file
-        print type(geom_file), geom_file
         if os.path.exists(geom_file):
             fid=open(geom_file, 'r')
             val=pickle.load(fid)
             fid.close()
             return val
         else:
-            print("no geom file")
-            return {}
+            # this is temporary geometry data (used only first launch)
+            return {'sh': [True, False, True, True, True],
+                    'size': wx.Size(800, 500),
+                    'pos': [200, 248, 300] }
+
 
     def read_recent_files(self):
         val = self.read_geom_file()
