@@ -1601,10 +1601,13 @@ class ifigure_app(BookViewerFrame):
 
     def read_geom_file(self):
         from ifigure.ifigure_config import geom_file
-        fid=open(geom_file, 'r')
-        val=pickle.load(fid)
-        fid.close()
-        return val
+        if os.path.exists(geom_file):
+            fid=open(geom_file, 'r')
+            val=pickle.load(fid)
+            fid.close()
+            return val
+        else:
+            return {}
 
     def read_recent_files(self):
         val = self.read_geom_file()
