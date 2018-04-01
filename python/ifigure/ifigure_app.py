@@ -729,8 +729,11 @@ class ifigure_app(BookViewerFrame):
        self.property_editor.set_sizehint()
 
  #      if os.path.exists(geom_file):
+       print 'I am here'
+       from ifigure.ifigure_config import geom_file       
        try:
            val = self.read_geom_file()
+           print "val", val
 #           from ifigure.ifigure_config import geom_file
 #           fid=open(geom_file, 'r')
 #           val=pickle.load(fid)
@@ -1600,13 +1603,16 @@ class ifigure_app(BookViewerFrame):
         fid.close()
 
     def read_geom_file(self):
+        print 'read_geom_file'
         from ifigure.ifigure_config import geom_file
+        print type(geom_file), geom_file
         if os.path.exists(geom_file):
             fid=open(geom_file, 'r')
             val=pickle.load(fid)
             fid.close()
             return val
         else:
+            print("no geom file")
             return {}
 
     def read_recent_files(self):
