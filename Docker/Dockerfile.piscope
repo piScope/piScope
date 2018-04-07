@@ -1,0 +1,60 @@
+FROM jcwright/wxpython-base:latest
+MAINTAINER John C. Wright <jcwright@mit.edu>
+RUN whoami
+#As root, create piscope command and install mercurial need by piscope
+RUN /bin/echo -e '#!/bin/bash\npython $HOME/twopi/src/piScope/python/piscope.py -d' > /usr/bin/piscope && \
+    chmod +x /usr/bin/piscope
+RUN apt-get install -y mercurial
+
+#Change to 'user' and set default directory to user home directory
+WORKDIR /home/user
+ENV HOME /home/user
+USER user
+
+
+# wget sources, clone piScope from git
+RUN mkdir -p $HOME/twopi/src
+WORKDIR $HOME/twopi/src
+RUN git clone https://github.com/sshiraiwa/piScope.git
+RUN wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+RUN wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-4.0.3.tar.gz
+RUN wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz
+RUN wget https://github.com/mfem/mfem/archive/v3.3.2.tar.gz
+
+RUN tar -zxvf metis-5.1.0.tar.gz
+RUN tar -zxvf parmetis-4.0.3.tar.gz
+RUN tar -zxvf hypre-2.11.2.tar.gz
+RUN tar -zxvf v3.3.2.tar.gz
+
+#Install packages
+WORKDIR $HOME/twopi/src/metis-5.1.0
+RUN make config shared=1 prefix=$HOME/twopi  
+RUN make && make install
+
+WORKDIR $HOME/twopi/src/parmetis-4.0.3
+RUN make config shared=1 prefix=$HOME/twopi && make install
+
+RUN mkdir -p $HOME/twopi/src/hypre-2.11.2/src/cmbuild
+WORKDIR $HOME/twopi/src/hypre-2.11.2/src/cmbuild
+RUN cmake .. -DCMAKE_VERBOSE_MAKEFILE=1 -DHYPRE_INSTALL_PREFIX=$HOME/twopi -DHYPRE_SHARED=1 -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx
+RUN make verbose=1 && make install
+
+RUN mkdir -p $HOME/twopi/src/mfem-3.3.2/cmbuild_ser
+WORKDIR $HOME/twopi/src/mfem-3.3.2/cmbuild_ser
+RUN cmake .. -DCMAKE_VERBOSE_MAKEFILE=1 -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=$HOME/twopi/mfem-3.3.2/ser -DMFEM_ENABLE_EXAMPLES=1 -DMFEM_GIT_STRING="3.3.2release"
+RUN make verbose=1 && make install
+
+
+#Store piscope settings in mounted work directory (which is host directory container is launched from)
+WORKDIR /home/user
+ENV PISCOPERC /home/user/work/.piscope
+
+#start out in work directory, need to cd because it doesn't exist until container is launched
+RUN echo "cd work" >> ~/.bashrc
+RUN echo $PWD . DO NOT CLOSE THE XTERM
+
+#must be root on exit because parent container will run supervisor 
+#to start openbox window manager as non-root 'user'
+USER root
+RUN whoami
+ENV APP "xterm"
