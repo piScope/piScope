@@ -1,0 +1,110 @@
+FROM jcwright/piscope:latest
+MAINTAINER John C. Wright <jcwright@mit.edu>
+
+
+#Change to 'user' and set default directory to user home directory
+WORKDIR /home/user
+ENV HOME /home/user
+USER user
+
+# wget sources
+WORKDIR $HOME/twopi/src
+RUN wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+RUN wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-4.0.3.tar.gz
+RUN wget https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods/download/hypre-2.11.2.tar.gz
+RUN wget https://github.com/mfem/mfem/archive/v3.3.2.tar.gz
+
+RUN tar -zxvf metis-5.1.0.tar.gz
+RUN tar -zxvf parmetis-4.0.3.tar.gz
+RUN tar -zxvf hypre-2.11.2.tar.gz
+RUN tar -zxvf v3.3.2.tar.gz
+
+ENV MAKEFLAGS '-j 4'
+#Install packages
+WORKDIR $HOME/twopi/src/metis-5.1.0
+RUN make config shared=1 prefix=$HOME/twopi  
+RUN make && make install
+
+WORKDIR $HOME/twopi/src/parmetis-4.0.3
+RUN make config shared=1 prefix=$HOME/twopi && make install
+
+#Hypre
+RUN mkdir -p $HOME/twopi/src/hypre-2.11.2/src/cmbuild
+WORKDIR $HOME/twopi/src/hypre-2.11.2/src/cmbuild
+RUN cmake .. -DCMAKE_VERBOSE_MAKEFILE=1 -DHYPRE_INSTALL_PREFIX=$HOME/twopi -DHYPRE_SHARED=1 -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx
+RUN make verbose=1 && make install
+
+#MFEM serial
+RUN mkdir -p $HOME/twopi/src/mfem-3.3.2/cmbuild_ser
+WORKDIR $HOME/twopi/src/mfem-3.3.2/cmbuild_ser
+RUN cmake .. -DCMAKE_VERBOSE_MAKEFILE=1 -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=$HOME/twopi/mfem-3.3.2/ser -DMFEM_ENABLE_EXAMPLES=1 -DMFEM_GIT_STRING="3.3.2release"
+RUN make verbose=1 && make install
+
+# build mfem parallel
+WORKDIR $HOME/twopi/src/mfem-3.3.2 
+RUN mkdir cmbuild_par 
+WORKDIR $HOME/twopi/src/mfem-3.3.2/cmbuild_par 
+ENV LDFLAGS -L$HOME"/twopi/lib -lHYPRE -lmetis" 
+
+#RUN cmake .. -DCMAKE_VERBOSE_MAKEFILE=1 -DBUILD_SHARED_LIBS=1 -DCMAKE_INSTALL_PREFIX=$HOME/twopi/mfem-3.3.2/par -DHYPRE_DIR=$HOME/twopi/lib -DHYPRE_INCLUDE_DIRS=$HOME/twopi/include  -DMETIS_DIR=$HOME/twopi/lib -DMETIS_INCLUDE_DIRS=$HOME/twopi/include -DMFEM_USE_MPI=1 -DMFEM_USE_METIS_5=1 -DMFEM_ENABLE_EXAMPLES=1 -DCMAKE_CXX_COMPILER=mpicxx -DMFEM_GIT_STRING="3.3.2release" -DCMAKE_SHARED_LINKER_FLAGS="-L$HOME/twopi/lib -lHYPRE -lmetis" -DCMAKE_EXE_LINKER_FLAGS="-L$HOME/twopi/lib -lHYPRE -lmetis" && \
+#     make verbose=1 && make install
+#error unable to determine hypre version
+
+RUN sudo apt-get install -y libboost-all-dev
+# clone PyMFEM from git #releases/tag/v3.3.2.1
+ENV PYTHONPATH=$HOME/twopi/lib/python2.7/site-packages:$PYTHONPATH
+RUN mkdir -p $HOME/twopi/lib/python2.7/site-packages
+WORKDIR $HOME/twopi/src
+RUN git clone --branch v3.3.2.1 https://github.com/mfem/PyMFEM.git
+RUN cd PyMFEM && \
+    cp Makefile_templates/Makefile.local.shared.twopi Makefile.local && \
+    make ser  
+#RUN cd PyMFEM && make pyinstall PREFIX=$HOME/twopi 
+#make par
+
+#opencascade required by gmesh and PetraM 3D
+RUN sudo apt-get install -y libfreetype6-dev tcl-dev tk-dev \
+      libxt-dev libfreeimage-dev libtbb-dev libgl2ps-dev libgl1-mesa-dev\
+      libglu1-mesa-dev libxt-dev libxmu-dev libxi-dev
+
+WORKDIR $HOME/twopi/src
+COPY opencascade-7.2.0.tgz .
+RUN tar xfz opencascade-7.2.0.tgz 
+RUN cd opencascade-7.2.0 && mkdir cmbuild
+WORKDIR $HOME/twopi/src/opencascade-7.2.0/cmbuild
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/twopi && make && make install
+
+WORKDIR $HOME/twopi/src/PyMFEM
+RUN make pyinstall PREFIX=$HOME/twopi 
+
+#add gmesh and glvis
+WORKDIR $HOME/twopi/src
+RUN sudo apt-get install -y libfltk1.3 libfltk1.3-dev gfortran
+RUN wget http://gmsh.info/src/gmsh-3.0.6-source.tgz && tar xfz gmsh-3.0.6-source.tgz
+RUN mkdir $HOME/twopi/src/gmsh-3.0.6-source/cmbuild
+WORKDIR $HOME/twopi/src/gmsh-3.0.6-source/cmbuild
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/twopi -DCMAKE_INSTALL_RPATH=$HOME/twopi/lib
+
+#(note  -DMFEM_DIR=~/work/mfem-3.3.2/cmbuild must be adjusted to point MFEM serial cmake buiild
+#directory)
+WORKDIR $HOME/twopi/src
+RUN git clone https://github.com/GLVis/glvis.git
+RUN cd glvis && mkdir cmbuild
+WORKDIR $HOME/twopi/src/glvis/cmbuild
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/twopi -DMFEM_DIR=$HOME/twopi/mfem-3.3.2/ser &&\
+   make && make install
+
+
+WORKDIR $HOME/twopi/src
+RUN wget https://github.com/nschloe/meshio/archive/v1.8.17.tar.gz
+RUN tar -zxf v1.8.17.tar.gz && cd meshio-1.8.17 && python setup.py install --prefix=$HOME/twopi
+
+
+RUN echo $PWD . DO NOT CLOSE THE XTERM
+#must be root on exit because parent container will run supervisor 
+#to start openbox window manager as non-root 'user'
+USER root
+ENV  PATH $HOME/twopi/bin:$PATH
+RUN apt-get install -y emacs
+ENV APP "xterm"
+
