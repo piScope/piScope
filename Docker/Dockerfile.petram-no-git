@@ -1,4 +1,4 @@
-FROM jcwright/piscope:latest
+FROM jcwright/petram-base:latest
 MAINTAINER John C. Wright <jcwright@mit.edu>
 
 #Change to 'user' and set default directory to user home directory
