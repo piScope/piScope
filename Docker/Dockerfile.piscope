@@ -15,7 +15,7 @@ USER user
 # wget sources, clone piScope from git
 RUN mkdir -p $HOME/twopi/src
 WORKDIR $HOME/twopi/src
-RUN git clone https://github.com/sshiraiwa/piScope.git
+RUN git clone https://github.com/piScope/piScope.git
 
 
 #Store piscope settings in mounted work directory (which is host directory container is launched from)
