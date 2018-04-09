@@ -1,6 +1,7 @@
 FROM jcwright/petram-base:latest
 MAINTAINER John C. Wright <jcwright@mit.edu>
 
+RUN apt-get install -y emacs
 
 #Change to 'user' and set default directory to user home directory
 WORKDIR /home/user
@@ -25,6 +26,6 @@ RUN echo $PWD . DO NOT CLOSE THE XTERM
 #to start openbox window manager as non-root 'user'
 USER root
 ENV  PATH $HOME/twopi/bin:$PATH
-#RUN apt-get install -y emacs
 ENV APP "xterm"
+
 

@@ -20,22 +20,42 @@ Instructions for launching piscope and petram via a docker container.
     Containers will also be accessed through the VirtualBox shared network
     rather than localhost, typically something like `http://192.168.99.100:6082/`
 
+- Installing PetraM (about 5 GB) or PiScope (about 2 GB) from existing docker image.
 
-- Copy the Dockerfile.* files to a directory to build the images.
+    docker pull jcwright/piscope
+
+  or for PetraM (also requires local build step, skip to end of next
+  bullet.) 
+  
+     docker pull jcwright/petram-base
+
+
+- Building from scratch
+   Copy the Dockerfile.* files to a directory to build the images.
    Container images can be run  from any directory after they are built. 
-   When building Dockerfile.petram, define the environmental variable `GITAUTH`
-   for access the currently private PetraM repository of the form
-   `username:password` or just provide it on the command line in place
-   of  `${GITAUTH}`.
 
    Run:
 
       docker build -t jcwright/wxpython-base -f Dockerfile.wxpython-base .
       docker build -t jcwright/piscope -f Dockerfile.piscope .
-      docker build -t jcwright/petram --build-arg GITAUTH=${GITAUTH} -f Dockerfile.petram .
+	  docker build -t jcwright/petram-base -f Dockerfile.petram-base .
 
-  The last one is optional and not needed to run piscope workflows. Keep
-  the namespace preamble (jcwright) because the builds and scripts use
+  Now you can build PetraM itself. This command must be run in the
+  directory containing the cloned PetraM repos: PetraM\_Base, PetraM\_RF
+  and PetraM\_Geom.
+  
+ 	  docker build -t jcwright/petram -f Dockerfile.petram .
+
+   Alternatively, when building Dockerfile.petram-no-git for cases
+   where you have not checked out the git repos, define the
+   environmental variable `GITAUTH` for access the currently private
+   PetraM repository of the form `username:password` or just provide
+   it on the command line in place of `${GITAUTH}`. 
+ 
+     docker build -t jcwright/petram-no-git --build-arg GITAUTH=${GITAUTH} -f Dockerfile.petram-no-git .
+
+  Note that PetraM is not needed for running PiScope.  Keep the
+  namespace preamble (jcwright) because the builds and scripts use
   that namespace.
 
 - Now, set up a working directory in which to run piscope.
@@ -51,14 +71,31 @@ Instructions for launching piscope and petram via a docker container.
   Enterprise do support native virtualization. 
 
 
-  These scripts cleanup previous images and deploy a new one. They
-  essentially boil down to running this single command:
+ These scripts cleanup previous images and deploy a new one. They
+ essentially boil down to running this single command:
 
     docker run -d --name piscope-instance -v $HOME/.ssh:/home/user/.ssh -v $PWD:/home/user/work -p 6080:6080 jcwright/piscope
 
+ PetraM may be invoked in the same way with:
+
+    docker run -d --name petram-instance -v $HOME/.ssh:/home/user/.ssh -v $PWD:/home/user/work -p 6080:6080 jcwright/petram
+
 - Miscellaneous
-   The piscope image starts up using the openbox window manager. You
-   can change this via the desktop menu through
-   Debian->WindowManagers->ICEWm
+    - The piscope image starts up using the openbox window manager. You
+      can change this via the desktop menu through
+      Debian->WindowManagers->ICEWm
 
+    - You can have multiple instances of piscope and/or petram running
+      but make sure to select a different local port (the first 6080).
 
+    - Cleaning.
+
+After bulding from scratch, you can remove intermediate docker
+images with, but be aware this will remove cached steps from any
+other docker images you may be working on:
+
+    docker system prune
+
+To check actual disk usage:
+
+    docker system df
