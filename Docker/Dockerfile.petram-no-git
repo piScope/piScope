@@ -1,0 +1,31 @@
+FROM jcwright/piscope:latest
+MAINTAINER John C. Wright <jcwright@mit.edu>
+
+#Change to 'user' and set default directory to user home directory
+WORKDIR /home/user
+ENV HOME /home/user
+ENV PetraM $HOME/twopi
+USER user
+
+#git auth
+ENV PYTHONPATH=$PetraM/lib/python2.7/site-packages:$PYTHONPATH
+ARG GITAUTH=${GITAUTH}
+RUN echo git auth is $GITAUTH
+
+WORKDIR $PetraM/src
+RUN git clone https://${GITAUTH}@github.com/piScope/PetraM_Base.git
+RUN mkdir -p $PetraM/lib/python2.7/site-packages
+RUN cd PetraM_Base && make PYTHON=python && make install 
+	
+RUN git clone https://${GITAUTH}@github.com/piScope/PetraM_RF.git
+RUN cd PetraM_RF && make PYTHON=python && make install 
+
+RUN git clone https://${GITAUTH}@github.com/piScope/PetraM_Geom.git
+RUN cd PetraM_Geom && make PYTHON=python && make install PYTHON=python
+
+
+RUN echo $PWD . DO NOT CLOSE THE XTERM
+USER root
+ENV  PATH $HOME/twopi/bin:$PATH
+
+ENV APP "xterm"
