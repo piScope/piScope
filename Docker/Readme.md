@@ -33,12 +33,14 @@ Instructions for launching piscope and petram via a docker container.
 - Building from scratch
    Copy the Dockerfile.* files to a directory to build the images.
    Container images can be run  from any directory after they are built. 
+   `petram-base` requires opencascade tar file to be present from
+    https://www.opencascade.com/content/latest-release
 
    Run:
 
       docker build -t jcwright/wxpython-base -f Dockerfile.wxpython-base .
       docker build -t jcwright/piscope -f Dockerfile.piscope .
-	  docker build -t jcwright/petram-base -f Dockerfile.petram-base .
+      docker build -t jcwright/petram-base -f Dockerfile.petram-base .
 
   Now you can build PetraM itself. This command must be run in the
   directory containing the cloned PetraM repos: PetraM\_Base, PetraM\_RF
@@ -74,7 +76,7 @@ Instructions for launching piscope and petram via a docker container.
  These scripts cleanup previous images and deploy a new one. They
  essentially boil down to running this single command:
 
-    docker run -d --name piscope-instance -v $HOME/.ssh:/home/user/.ssh -v $PWD:/home/user/work -p 6080:6080 jcwright/piscope
+    docker run -d --name piscope-instance -v $HOME/.ssh:/home/user/ssh_mount -v $PWD:/home/user/work -p 6080:6080 jcwright/piscope
 
  PetraM may be invoked in the same way with:
 

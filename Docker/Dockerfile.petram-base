@@ -5,7 +5,23 @@ MAINTAINER John C. Wright <jcwright@mit.edu>
 #Change to 'user' and set default directory to user home directory
 WORKDIR /home/user
 ENV HOME /home/user
+ENV LD_LIBRARY_PATH $HOME/twopi/lib:$LD_LIBRARY_PATH
 USER user
+
+
+RUN sudo apt-get install -y emacs
+
+#opencascade required by gmesh and PetraM 3D
+RUN sudo apt-get install -y libfreetype6-dev tcl-dev tk-dev \
+      libxt-dev libfreeimage-dev libtbb-dev libgl2ps-dev libgl1-mesa-dev\
+      libglu1-mesa-dev libxt-dev libxmu-dev libxi-dev
+
+WORKDIR $HOME/twopi/src
+COPY opencascade-7.2.0.tgz .
+RUN tar xfz opencascade-7.2.0.tgz 
+RUN cd opencascade-7.2.0 && mkdir cmbuild
+WORKDIR $HOME/twopi/src/opencascade-7.2.0/cmbuild
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/twopi && make && make install
 
 # wget sources
 WORKDIR $HOME/twopi/src
@@ -51,31 +67,6 @@ ENV LDFLAGS -L$HOME"/twopi/lib -lHYPRE -lmetis"
 #error unable to determine hypre version
 
 RUN sudo apt-get install -y libboost-all-dev
-# clone PyMFEM from git #releases/tag/v3.3.2.1
-ENV PYTHONPATH=$HOME/twopi/lib/python2.7/site-packages:$PYTHONPATH
-RUN mkdir -p $HOME/twopi/lib/python2.7/site-packages
-WORKDIR $HOME/twopi/src
-RUN git clone --branch v3.3.2.1 https://github.com/mfem/PyMFEM.git
-RUN cd PyMFEM && \
-    cp Makefile_templates/Makefile.local.shared.twopi Makefile.local && \
-    make ser  
-#RUN cd PyMFEM && make pyinstall PREFIX=$HOME/twopi 
-#make par
-
-#opencascade required by gmesh and PetraM 3D
-RUN sudo apt-get install -y libfreetype6-dev tcl-dev tk-dev \
-      libxt-dev libfreeimage-dev libtbb-dev libgl2ps-dev libgl1-mesa-dev\
-      libglu1-mesa-dev libxt-dev libxmu-dev libxi-dev
-
-WORKDIR $HOME/twopi/src
-COPY opencascade-7.2.0.tgz .
-RUN tar xfz opencascade-7.2.0.tgz 
-RUN cd opencascade-7.2.0 && mkdir cmbuild
-WORKDIR $HOME/twopi/src/opencascade-7.2.0/cmbuild
-RUN cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/twopi && make && make install
-
-WORKDIR $HOME/twopi/src/PyMFEM
-RUN make pyinstall PREFIX=$HOME/twopi 
 
 #add gmesh and glvis
 WORKDIR $HOME/twopi/src
@@ -100,11 +91,21 @@ RUN wget https://github.com/nschloe/meshio/archive/v1.8.17.tar.gz
 RUN tar -zxf v1.8.17.tar.gz && cd meshio-1.8.17 && python setup.py install --prefix=$HOME/twopi
 
 
+# clone PyMFEM from git #releases/tag/v3.3.2.1
+ENV PYTHONPATH=$HOME/twopi/lib/python2.7/site-packages:$PYTHONPATH
+RUN mkdir -p $HOME/twopi/lib/python2.7/site-packages
+WORKDIR $HOME/twopi/src
+RUN git clone --branch v3.3.2.1 https://github.com/mfem/PyMFEM.git
+RUN cd PyMFEM && \
+    cp Makefile_templates/Makefile.local.shared.twopi Makefile.local && \
+    make ser  
+WORKDIR $HOME/twopi/src/PyMFEM
+RUN make pyinstall PREFIX=$HOME/twopi 
+
 RUN echo $PWD . DO NOT CLOSE THE XTERM
 #must be root on exit because parent container will run supervisor 
 #to start openbox window manager as non-root 'user'
-USER root
 ENV  PATH $HOME/twopi/bin:$PATH
-RUN apt-get install -y emacs
+USER root
 ENV APP "xterm"
 

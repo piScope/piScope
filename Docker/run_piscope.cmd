@@ -11,7 +11,7 @@ docker rm piscope-instance
 docker stop piscope-instance
 
 echo Starting piscope container as image piscope-instance
-docker run -d --name piscope-instance -v %HOMEPATH%:/home/user/.ssh -v %CD%:/home/user/work -p 6080:6080 jcwright/piscope
+docker run -d --name piscope-instance -v %HOMEPATH%:/home/user/ssh_mount -v %CD%:/home/user/work -p 6080:6080 jcwright/piscope
 
 echo Remove instance after exiting
 docker stop piscope-instance

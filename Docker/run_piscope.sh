@@ -2,7 +2,7 @@
 
 # was but removed because of docker-machine use
 # script_dir="`cd $(dirname $0); pwd`"
-# $script_dir/run_base.sh  -c piscope-example -i jcwright77/piscope -v ~/.ssh:/home/user/.ssh -p 6080  "$@"
+# $script_dir/run_base.sh  -c piscope-example -i jcwright/piscope -v ~/.ssh:/home/user/.ssh -p 6080  "$@"
 
 echo \'Nix command script to start piscope
 
@@ -16,7 +16,7 @@ docker rm piscope-instance
 docker stop piscope-instance
 
 echo Starting piscope container as image piscope-instance
-docker run -d --name piscope-instance -v $HOME/.ssh:/home/user/.ssh -v $PWD:/home/user/work -p 6080:6080 jcwright/piscope
+docker run -d --name piscope-instance -v $HOME/.ssh:/home/user/ssh_mount -v $PWD:/home/user/work -p 6080:6080 jcwright/piscope
 
 
 
