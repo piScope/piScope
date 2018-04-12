@@ -80,7 +80,10 @@ Instructions for launching piscope and petram via a docker container.
 
  PetraM may be invoked in the same way with:
 
-    docker run -d --name petram-instance -v $HOME/.ssh:/home/user/.ssh -v $PWD:/home/user/work -p 6080:6080 jcwright/petram
+    docker run -d --name petram-instance -v $HOME/.ssh:/home/user/ssh_mount -v $PWD:/home/user/work -p 6080:6080 jcwright/petram
+
+ Note different mount point for users ssh directory. This is to permit permission checking for some platforms such as
+ Windows 10 Home which use VirtualBox with docker.
 
 - Miscellaneous
     - The piscope image starts up using the openbox window manager. You
