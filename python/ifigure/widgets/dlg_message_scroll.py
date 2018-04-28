@@ -26,7 +26,7 @@ class DlgMessageScroll(wx.Dialog):
         button1=wx.Button(panel, label="O.K.")
         vbox.Add(button1, 0, wx.ALIGN_RIGHT|wx.RIGHT, 20)
         self.Bind(wx.EVT_CLOSE, self.onWindowClose)
-
+        self.Bind(wx.EVT_BUTTON, self.onOK, button1)
         #panel.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         #panel.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
         #self.tip.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
@@ -45,6 +45,8 @@ class DlgMessageScroll(wx.Dialog):
             except:
                 pass
 
+    def onOK(self, e):
+        self.Close()
     def onWindowClose(self, e):
         e.Skip()
 
