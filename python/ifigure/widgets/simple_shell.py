@@ -527,7 +527,10 @@ class SimpleShell(ShellBase):
 #        print  args, kargs
         if args[0].startswith('sx'):
             args = list(args)
-            args[0] = '!'+args[0].split('"')[1]
+            try:
+                args[0] = '!'+args[0].split('"')[1]
+            except IndexError:
+                return
             args = tuple(args)
         if self._no_record: return
         wx.py.shell.Shell.addHistory(self, *args, **kargs)
@@ -535,7 +538,11 @@ class SimpleShell(ShellBase):
         if wx.GetApp().IsMainLoopRunning():
            self.SendShellEnterEvent()        
         if self.ch is not None:
-           self.ch.append_text(args[0])
+           try:
+               self.ch.append_text(args[0])
+           except UnicodeError:
+               print("unicode error")
+               pass
            
     def GetContextMenu(self):
         menu = super(SimpleShell, self).GetContextMenu()

@@ -729,12 +729,9 @@ class ifigure_app(BookViewerFrame):
        self.property_editor.set_sizehint()
 
  #      if os.path.exists(geom_file):
+       from ifigure.ifigure_config import geom_file       
        try:
            val = self.read_geom_file()
-#           from ifigure.ifigure_config import geom_file
-#           fid=open(geom_file, 'r')
-#           val=pickle.load(fid)
-#           fid.close()
            if "editor_detached" in val:
 #               print 'editor_detached', val["editor_detached"]
                self.script_editor._first_open_style = val["editor_detached"]
@@ -947,8 +944,10 @@ class ifigure_app(BookViewerFrame):
             import piscope, subprocess, shlex
             import ifigure.widgets.canvas.ifigure_canvas
             options = ' '
-            if ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
+            if not ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
                options = options + '-g '
+            if redirect_std:
+               options = options + '-d '                
             command = sys.executable + ' ' + piscope.__file__ + options  + path
             if os.altsep is not None:
                command = command.replace(os.sep, os.altsep)
@@ -1141,8 +1140,11 @@ class ifigure_app(BookViewerFrame):
         import piscope, subprocess, shlex
         import ifigure.widgets.canvas.ifigure_canvas
         options = ' '
-        if ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
+        if not ifigure.widgets.canvas.ifigure_canvas.turn_on_gl:
             options = options + '-g '
+        if redirect_std:
+            options = options + '-d '                
+
         command = sys.executable + '  ' + piscope.__file__ + options
         if os.altsep is not None:
             command = command.replace(os.sep, os.altsep)
@@ -1596,10 +1598,17 @@ class ifigure_app(BookViewerFrame):
 
     def read_geom_file(self):
         from ifigure.ifigure_config import geom_file
-        fid=open(geom_file, 'r')
-        val=pickle.load(fid)
-        fid.close()
-        return val
+        if os.path.exists(geom_file):
+            fid=open(geom_file, 'r')
+            val=pickle.load(fid)
+            fid.close()
+            return val
+        else:
+            # this is temporary geometry data (used only first launch)
+            return {'sh': [True, False, True, True, True],
+                    'size': wx.Size(800, 500),
+                    'pos': [200, 248, 300] }
+
 
     def read_recent_files(self):
         val = self.read_geom_file()

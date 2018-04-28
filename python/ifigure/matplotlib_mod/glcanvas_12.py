@@ -100,7 +100,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
            
     #@wait_gl_finish           
     def set_uniform(self, func, name, *args, **kwargs):
-        loc = self._p_uniform_loc[name]       
+        #loc = self._p_uniform_loc[name]
+        loc = glGetUniformLocation(self._p_shader, name)                
         func(loc, *args, **kwargs)
 
     def select_shader(self, shader):

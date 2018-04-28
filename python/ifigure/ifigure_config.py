@@ -1,13 +1,17 @@
-
-from matplotlib.artist import ArtistInspector
-from ifigure.utils.setting_parser import iFigureSettingParser as SP
-import re, os
+import re
+import os
 from os.path import expanduser
 import traceback
+from distutils.version import LooseVersion
+
+from matplotlib.artist import ArtistInspector
+
+from ifigure.utils.setting_parser import iFigureSettingParser as SP
 import ifigure.utils.debug as debug
+
 dprint1, dprint2, dprint3 = debug.init_dprints('ifiure_config')
 
-from distutils.version import LooseVersion
+
 import matplotlib
 isMPL2 = LooseVersion(matplotlib.__version__) >= LooseVersion("2.0")
 if isMPL2:
@@ -52,7 +56,9 @@ home = expanduser("~")
 from ifigure.utils.get_username import get_username
 usr = get_username()
 
-rcdir=os.path.join(home, '.ifigure_rc')
+rcdir = os.getenv("PISCOPERC", default="")
+if rcdir == '':
+    rcdir=os.path.join(home, '.ifigure_rc')
 
 ### piscope's own package site
 ### made in .ifigure_rc

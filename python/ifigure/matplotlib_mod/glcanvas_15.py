@@ -107,7 +107,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
     #@wait_gl_finish           
     def set_uniform(self, func, name, *args, **kwargs):
         if not name in self._p_uniform_loc: return
-        loc = self._p_uniform_loc[name]
+        loc = glGetUniformLocation(self._p_shader, name)        
+        #loc = self._p_uniform_loc[name]
         self._current_uniform[name] = (func, args, kwargs)
         #print('set_uniform', name, args)
         func(loc, *args, **kwargs)

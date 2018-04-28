@@ -99,6 +99,7 @@ class FunctionButton(wx.Button):
         func = setting.pop('func', None)
         label = setting.pop('label', 'Default')
         style = setting.pop('style', 0)
+        self.send_event =  setting.pop('sendevent', False)        
         kargs['style'] = style
         wx.Button.__init__(self, *args, **kargs)
         self.Bind(wx.EVT_BUTTON, self.onSelect)
@@ -127,6 +128,8 @@ class FunctionButton(wx.Button):
             _handler = self._handler
         if _handler is not None:
            _handler(ev)
+           if self.send_event:
+                self.GetParent().send_event(self, ev)              
         ev.Skip()
         
 class FunctionButtons(Panel):
@@ -1426,7 +1429,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
         dt1 = TextDropTarget(self)
         self.SetDropTarget(dt1)
-        min_w = max([len(args[2]), 8])
+        if len(args) > 2:
+            min_w = max([len(args[2]), 8])
+        else:
+            min_w = 8
         txt_w = self.Parent.GetTextExtent('A'*min_w)[0]
         txt_h = self.Size[1] * nlines
         self.SetMinSize((txt_w, txt_h))
@@ -1438,6 +1444,8 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             self._send_setfocus_event = True
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+        self._wxval = None
 
         #    def Paste(self):
 #        print 'paste called'
@@ -1486,6 +1494,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
            self.Cut()
            return
         event.Skip()
+
         if self.changing_event:
             self.GetParent().send_changing_event(self, event)
             
@@ -1545,16 +1554,29 @@ class TextCtrlCopyPaste(wx.TextCtrl):
           ord(u'\u2019'): unicode("'"),
         }
         try:
-            val = str(wx.TextCtrl.GetValue(self))
+            wxval = wx.TextCtrl.GetValue(self)
+            val = str(wxval)
         except UnicodeEncodeError:
-            val = str(wx.TextCtrl.GetValue(self).translate(punctuation))
+            try:
+                val = str(wxval.translate(punctuation))
+            except UnicodeEncodeError:
+                import traceback
+                msgs = [x for x in traceback.format_exc().split('\n') if len(x)>0]
+                dprint1(msgs[-1])
+                self._wxval = wxval
+                return wxval
+        self._wxval = None
+                
         if self._use_escape:
             return val.decode('string_escape')
         else:
             return val
 
     def SetValue(self, value):
-        value = str(value)
+        try:
+            value = str(value)
+        except UnicodeEncodeError:
+            pass
         if self._use_escape:
             wx.TextCtrl.SetValue(self, value.encode('string_escape'))
         else:
@@ -2701,14 +2723,9 @@ class ArrowStylePanel(wx.Panel):
            return True
        if self.mode != '':
           if self.elp is not None:
-              self.GetSizer().Remove(self.elp)
+              self.GetSizer().Detach(self.elp)
               self.elp.Destroy()
-              self.elp = wx.Panel(self)
-              self.elp.Show()
-              self.GetSizer().Add(self.elp,  1, wx.EXPAND)
               self.GetParent().Layout()
-              self.GetSizer().Remove(self.elp)
-              self.elp.Destroy()
        self.mode = mode
 
        keys=self.panels[self.mode]
@@ -3507,7 +3524,7 @@ class EditListCore(object):
         sizer =  wx.GridBagSizer()
 
         self.widgets=[]
-
+        self.widgets_enable=[]        
         # by default, widgets are added in (row, col)
         # row increass in this loop
         row = 0
@@ -3519,6 +3536,7 @@ class EditListCore(object):
            noexpand = False
            expand_space = 5
            alignright = False
+           enabled = True
            if len(val) > 4:
               if 'expand_space' in val[3]:
                   expand_space = val[3]['expand_space']
@@ -3535,7 +3553,10 @@ class EditListCore(object):
                txt=None
                col = 0
                span = (1, 2)
-
+           if val[2] < -1:
+              val = __builtins__['list'](val)
+              val[2] = val[2] + 10000
+              enabled = False
            if val[2] == -1:
                w=wx.StaticText(self, wx.ID_ANY, '')
 #               sizer.Add(w, (row,0), span, 
@@ -4029,13 +4050,15 @@ class EditListCore(object):
                  w=wx.StaticText(self, wx.ID_ANY, 'Custom UI is not defined!')
 
            w.Fit()
-           self.widgets.append((w, txt) )
+           self.widgets.append((w, txt))
+           self.widgets_enable.append(enabled)
            alignright = setting.pop('alignright', alignright)
 
            alignment = wx.ALL|wx.ALIGN_CENTER_VERTICAL
            if not noexpand: alignment  = wx.EXPAND|alignment
            if alignright: alignment  = wx.ALIGN_RIGHT|alignment
-           
+           if not enabled:
+              w.Enable(False)
            sizer.Add(p, (row, col), span, alignment, expand_space)
            row = row+1
            k = k + 1
@@ -4072,25 +4095,24 @@ class EditListCore(object):
                elif err is None: 
                   pass
                   #print 'no check in setvalue'
+            en = self.widgets_enable[i]
+            if not en:
+               w.Enable(False)
+               if txt is not None: txt.Enable(False)
             i=i+1
-            
+    def update_label(self, ll):
+        i=0
+        for w, txt in self.widgets:
+            if txt is not None:
+               label = ll[i][0] if ll[i][0] is not None else ""
+               txt.SetLabel(label)
+            i=i+1
+       
     def send_event(self, evtobj, evt0):
         if self.call_sendevent is not None:
             self.call_sendevent.send_event(self, evt0)
             return
         self.send_some_event(evtobj, evt0, EditorChanged)         
-#        i=0
-#        for w, txt in self.widgets:
-#            if w == evtobj: break
-#            i=i+1
-#        evt=EditListEvent(EditorChanged, wx.ID_ANY)
-#        evt.SetEventObject(evtobj)
-#        evt.elp = self
-#        evt.widget_idx = i
-#        if hasattr(evt0, 'signal'):
-#           evt.signal = evt0.signal
-#        handler=self.GetParent()
-#        handler.ProcessEvent(evt)
 
     def send_changing_event(self, evtobj, evt0):
         self.send_some_event(evtobj, evt0, EditorChanging)
@@ -4120,9 +4142,14 @@ class EditListCore(object):
             value = [value]*len(self.widgets)
         for k, pair in enumerate(self.widgets):
             w, txt = pair
+            en = self.widgets_enable[k]
             if len(value) == k: break
-            if txt is not None: txt.Enable(value[k])
-            if w is   not None: w.Enable(value[k])
+            if en:
+                v = value[k]
+            else:
+                v = False
+            if txt is not None: txt.Enable(v)
+            if w is   not None: w.Enable(v)
             
     def _textctrl_enter(self, evt):
         pass
@@ -4142,13 +4169,6 @@ class ScrolledEditListPanel(EditListCore, SP):
             SP.Enable(self, value)
         EditListCore.Enable(self, value=value)
         
-#    def onResize(self, evt):
-#        print 'Resize Scrolled window', self.GetSize()
-        #self.SetScrollRate(0,5)        
-        #wx.ScrolledWindow.onResize(self, evt)
-        #self.SetupScrolling()
-#        evt.Skip()
-     
 class EditListPanel(EditListCore, wx.Panel):
     def __init__(self, parent, list=None, 
                        call_sendevent=None, edge=5, tip=None,):
@@ -4160,7 +4180,7 @@ class EditListPanel(EditListCore, wx.Panel):
         if isinstance(value, bool): 
             wx.Panel.Enable(self, value)
         EditListCore.Enable(self, value=value)
-        
+
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,

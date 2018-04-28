@@ -2077,6 +2077,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue
              range = figmds._default_xyrange['value'][0]
              if range[0] is None: range = defx
              if range[0] is None: continue
@@ -2093,6 +2094,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue             
              range = figmds._default_xyrange['value'][1]
              if range[0] is None: range = defy
              if range[0] is None: continue
@@ -2108,6 +2110,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         requests = {}
         for axes in figpage.walk_axes():
              figmds, axes = self._find_first_figmds(axes = axes)
+             if figmds is None: continue             
              xrange = figmds._default_xyrange['value'][0]
              yrange = figmds._default_xyrange['value'][1]
              if xrange[0] is None: xrange = defx
