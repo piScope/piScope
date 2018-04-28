@@ -2318,6 +2318,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
    def on_mouse_wheel(self, event):
        axes=self.axes_selection()
        if axes is None: return
+       if axes.figobj is None: return
        if not axes.figobj.get_3d(): return
        if event['start']:
            self._wheel_start_range = axes.get_w_lims()           
