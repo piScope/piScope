@@ -6,7 +6,7 @@ class DlgMessageScroll(wx.Dialog):
                             style=wx.CAPTION|
                             wx.CLOSE_BOX|
                             wx.MINIMIZE_BOX| 
-                            wx.RESIZE_BORDER)
+                            wx.RESIZE_BORDER|wx.STAY_ON_TOP)
 
         vbox=wx.BoxSizer(wx.VERTICAL)
 
