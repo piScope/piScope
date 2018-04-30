@@ -204,11 +204,13 @@ class draghandler_rb_d(object):
     def dragstart(self, evt):
         if self.rb is not None: 
            self.rb.figure.lines.remove(self.rb)
+        if evt is None: return
         x, y = self._calc_xy(evt)
         self._show_box(x,y)
         self.dragging = True
 
     def dodrag(self, evt):
+        if evt is None: return
         x, y = self._calc_xy(evt)
         self._show_box(x,y)
 #        self.panel.draw()

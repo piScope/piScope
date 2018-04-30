@@ -47,6 +47,7 @@ class DlgMessageScroll(wx.Dialog):
 
     def onOK(self, e):
         self.Close()
+
     def onWindowClose(self, e):
         e.Skip()
 
