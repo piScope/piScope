@@ -2147,7 +2147,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self._cbar_image = None
 
         a = self._artists[0]
-        zp = np.vstack((np.arange(255),np.arange(255)))
+
+        scale = self._caxis_param().scale        
+        zp = np.vstack((cmesh, cmesh))
+
         if self.getp('cdir') == 'h':
            y = self._artists[0].get_ylim()
           # y = (0,1)
@@ -2161,6 +2164,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.set_axtcolor(['x', tc], a)
            self.set_axlcolor(['x', (lc, lc)], a)
            extent=[cmesh[0], cmesh[-1], min(y), max(y)]
+        
         elif self.getp('cdir') == 'v':
            x = self._artists[0].get_xlim()
           # x = (0,1)
@@ -2175,12 +2179,15 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.set_axtcolor(['y', tc], a)
            self.set_axlcolor(['y', (lc, lc)], a)
            extent=[min(x), max(x), cmesh[0], cmesh[-1]]
-
+           
         self._cbar_image = self._artists[0].imshow(zp,
                                    extent=extent, 
                                    aspect='auto', origin='lower')
         self._cbar_image.nozsort = True
 #        self._cbar_image.set_zorder(-1)
+        self._caxis_param().set_crangeparam_to_artist(self._cbar_image,
+                                                      check=False)        
+
         if self._caxis_param().cmap is not None:
              self._cbar_image.set_cmap(self._caxis_param().cmap)
 
@@ -2219,16 +2226,18 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         p.scale = scale     
 
     def cmesh(self):
-        cmin, cmax = self._caxis_param().range
-        scale = self._caxis_param().scale
+        param = self._caxis_param()
+        cmin, cmax = param.range
+        scale = param.scale
+        
         if scale == 'linear':
            cmesh=np.linspace(cmin, cmax, 256)
         elif scale == 'symlog':
-           cmesh=np.linspace(cmin, cmax, 256)            
+           cmesh=np.linspace(cmin, cmax, 256)           
         else:
            #
            cmin = cmin if cmin > 0.0 else cmax*1e-16
-           cmesh = np.logspace(np.log10(cmin), np.log10(cmax), 256)
+           cmesh=np.linspace(cmin, cmax, 256)           
         return cmesh
 
     def canvas_menu(self):
@@ -2336,6 +2345,8 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         ca = self._caxis_param()
         ca.cmap = value
         self._cbar_image.set_cmap(ca.cmap)
+        ca.set_crangeparam_to_artist(self._cbar_image, check=False)
+        
         for a in self._parent._artists:
              ca.set_artist_rangeparam(a)
         self._parent.set_bmp_update(False)
@@ -2423,12 +2434,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         p.set_ticks(self.get_axes_artist_by_name(name)[0])
         #p.set_ticks(self.get_axes_artist_by_name(param[0])[0])
         self.set_bmp_update(False)
+        
     def get_axformat(self, a, name):
         ca = self._caxis_param()        
         return ca.format
     
-
-
-
 
 

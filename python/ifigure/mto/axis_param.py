@@ -108,12 +108,13 @@ class AxisRangeParam(Memberholder):
                       set_ticks = None):
         set_lim(self.range)
         set_auto(False)
+        suffix = self.name
         if self.scale == 'log':
-            kargs = {'basex':self.base} 
+            kargs = {'base'+suffix:self.base} 
         elif self.scale == 'symlog':
-            kargs = {'basex':self.base,
-                     'linthreshx':self.symloglin,
-                     'linscalex':self.symloglinscale}                         
+            kargs = {'base'+suffix:self.base,
+                     'linthresh'+suffix:self.symloglin,
+                     'linscale'+suffix:self.symloglinscale}                         
         else:
            kargs = {}
 
@@ -559,15 +560,16 @@ class AxisCParam(AxisParam):
            for a2 in figobj.get_mappable():
                self.set_crangeparam_to_artist(a2)
 
-    def set_crangeparam_to_artist(self, a2):
+    def set_crangeparam_to_artist(self, a2, check=True):
         '''
         a2 is artist
         '''
-        for m in self._member:
-            if a2 in m().get_mappable(): break
-        else:
-            return
-#        cm = get_cmap(self.cmap) 
+        if check:
+            for m in self._member:
+                if a2 in m().get_mappable(): break
+            else:
+                return
+
         if self._cm is None:
             self._cm = get_cmap(self.cmap, 256)
         cm = self._cm

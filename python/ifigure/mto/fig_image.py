@@ -223,8 +223,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                                 np.min(y), np.max(y), )
                   else:
                       xp, yp, zp = self.interp_image(x, y, z)
-                      extent = (self.get_xaxisparam().range + 
-                            self.get_yaxisparam().range)
+                      extent = (np.min(x), np.max(x), 
+                                np.min(y), np.max(y), )
                   args=[]
                   kywds=self._var["kywds"]
                   kywds['alpha'] = self.getp('alpha')
@@ -242,6 +242,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
                   kywds["aspect"]=aspect
                   kywds["origin"]='lower'
+                  kywds["interpolation"]=self.getp("interp")        
                   self.set_artist(container.imshow(*args, 
     #                            picker=cpicker.Picker,
                                    extent=extent,  **kywds))
@@ -305,6 +306,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                   args=[]
                   kywds = {}
                   kywds['alpha'] = self.getp('alpha')
+                  kywds["interpolation"]=self.getp("interp")                          
 #                  print lp[0]
                   if cax.scale == 'linear':
                       args.append(zp)                      
@@ -579,10 +581,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 "ydata": y}
 
     def interp_image(self, x, y, z):
-        dprint2('interpolating image data')
-#        return x, y, z
+        return x, y, z
+
+        # a newer matplotlib interplate by itself for log scale.
+        dprint2('interpolating image data')        
+
+        '''
         axes = self.get_container()
-#        axes = self.get_parent()._artists[0]
 
         atrans = axes.transAxes.transform
         idtrans = axes.transData.inverted().transform
@@ -597,6 +602,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             np.transpose(
             np.vstack((np.floor(p0[1])-1+np.zeros(long(dy)),
                        np.linspace(p0[1], p1[1], dy)))))[:,1]
+        print p0, p1, dx, dy, xp, yp
         # eliminate points outside the data range
         #xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
         #yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
@@ -638,7 +644,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         zp[yp>np.max(y),:] = np.nan
      
         return xp, yp, zp
-
+        '''
 
     def get_data_extent(self):
         if self._data_extent is not None:
