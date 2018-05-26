@@ -39,7 +39,8 @@ class StatusBarPopup(wx.Menu):
           ["*4", self.on4, None],
           ["*6", self.on6, None],
           ["*8", self.on8, None],
-          ("!", None, None),]
+          ("!", None, None),
+          ["Copy Text", self.onCopyText, None] ]
         #print(ifigure._cursor_config["format"][3])
         if ifigure._cursor_config["format"][-2] == 'e':
              m[0][0] = '^Use e'
@@ -88,6 +89,11 @@ class StatusBarPopup(wx.Menu):
         ef = txt[-2]
         ifigure._cursor_config["format"] = '{:.8'+ef+'}'
         self.parent.refresh_cursor_string()
+        
+    def onCopyText(self, evt):
+        if wx.TheClipboard.Open():
+             wx.TheClipboard.SetData(wx.TextDataObject(self.parent.GetStatusText()))
+             wx.TheClipboard.Close()    
 
 class StatusBarWithXY(wx.StatusBar):
     def __init__(self, parent, id, *args, **kargs):
