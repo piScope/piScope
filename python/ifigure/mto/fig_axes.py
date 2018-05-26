@@ -2135,7 +2135,16 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         if self._cbar_image is not None:
            self._cbar_image.remove()
            self._cbar_image = None
+        self.remove_2nd_artist()
         super(FigColorBar, self).del_artist(*args, **kywds)
+
+    def remove_2nd_artist(self):
+        if len(self._artists) == 2:
+           artist = self._artists[1]
+           artist.figobj=None
+           artist.figobj_hl=[]
+           artist.remove()
+           self._artists = [self._artists[0]]
 
     def update_cbar_image(self):
         if self._caxis_param is None: return
@@ -2210,6 +2219,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         artist.figobj_hl=[]
         artist.set_zorder(self.getp('zorder'))
         self._artists.append(artist)
+
 
     def set_update_cbar_image(self,value, a):
         self.update_cbar_image()
@@ -2288,15 +2298,14 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
 #                         self.get_ylcolor(self._artists[0]))
            self._artists[0].set_ylim((0,1))
            self._artists[0].set_xlim(lim)
-           self._artists[1].remove()
         elif value == 'h':
            self.setp('cdir', value)
            self._artists[0].set_xlim((0,1))
            self._artists[0].set_ylim(lim)
-           self._artists[1].remove()
-        self._artists = [self._artists[0]]
+        self.remove_2nd_artist()
         self.update_cbar_image()
         ifigure.events.SendPVDrawRequest(self)
+
     def get_cbardir(self, a):
         return self.getp('cdir')
 
