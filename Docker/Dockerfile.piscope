@@ -25,7 +25,7 @@ ENV PISCOPERC /home/user/work/.piscope
 #start out in work directory, need to cd because it doesn't exist until container is launched
 RUN echo "cd work" >> ~/.bashrc
 RUN echo "cp -r ~/ssh_mount ~/.ssh" >> ~/.bashrc
-RUN echo "chmod 700 ~/.ssh && chmod 600 ~/.ssh/*" >> ~/.bashrc 
+RUN echo "chmod 700 ~/.ssh && chmod +rwX ~/.ssh/*" >> ~/.bashrc
 RUN echo $PWD . DO NOT CLOSE THE XTERM
 
 #must be root on exit because parent container will run supervisor 
