@@ -118,6 +118,7 @@ class GLCompound(object):
         hidx = self.hidden_component
         self.hide_component(idx+hidx)
         self.set_bmp_update(False)
+        evt.GetEventObject().unselect_all()
         ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
                              wait_idle=True, refresh_hl=False)
 
@@ -132,6 +133,7 @@ class GLCompound(object):
         self.hide_component([])
         self.setSelectedIndex([])
         self.set_bmp_update(False)
+        self.set_bmp_update(False)        
         ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
                              wait_idle=True, refresh_hl=False)
 
