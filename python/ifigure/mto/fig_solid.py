@@ -465,7 +465,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
 
     def get_export_val(self, a):
         val =  {"vertices":  self.getp("v"),}
-        if self.getvar('cz'):
+        if self.getvar('cz') and self.getvar("cdata") is not None:
             val['cdata'] = self.getvar("cdata")
         return val
 
