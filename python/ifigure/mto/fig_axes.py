@@ -2148,7 +2148,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
 
     def update_cbar_image(self):
         if self._caxis_param is None: return
-        dprint1('update_cbar_image')
+        dprint2('update_cbar_image')
         array = np.vstack((np.arange(256),np.arange(256)))
         self.set_cbarscale()
         cmesh = self.cmesh()
@@ -2397,7 +2397,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
 #        print 'handle_axes_change'
         evtTD = data['td']
 #        hist = self.get_root_parent().app.history
-        dprint1('handle_axes_changed in cbar')
+        dprint2('handle_axes_changed in cbar')
         if evtTD == self:
            return
         else:
