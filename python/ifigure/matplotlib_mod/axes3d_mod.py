@@ -166,7 +166,8 @@ class Axes3DMod(Axes3D):
                         x-x0-radius:x-x0+radius]).flatten()        
         if len(dd) == 0: return False, None
 
-        mask = np.array([id_dict[x]()._gl_pickable if x in id_dict else False
+        mask = np.array([id_dict[x]()._gl_pickable if x in id_dict 
+                         and id_dict[x]() is not None else False
                          for x in d])
         if not any(mask): return False, None
 

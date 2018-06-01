@@ -360,6 +360,7 @@ class BookViewerInteractive(object):
                   try:
                       obj.realize()
                   except:
+                      traceback.print_exc()
                       print("failed to realize (destroied)" + str(obj))
                       obj.destroy()
               self._interactive_update_request = ([], [])

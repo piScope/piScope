@@ -162,6 +162,7 @@ def SendCloseFileEvent(td, w=None, file=file):
 def SendSelectionEvent(td, w=None, selections=[], mode='replace', useProcessEvent=True):
     # events sent when figobj is selected 
     # selections can be self.selection or self.axes_selection
+    if td is None: return
     if td.get_root_parent().app is None: return
 
     evt=TreeDictEvent(ArtistSelection, 

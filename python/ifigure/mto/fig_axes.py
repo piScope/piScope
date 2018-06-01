@@ -24,6 +24,7 @@ from matplotlib.lines import Line2D
 from matplotlib.colors import Colormap
 import matplotlib.transforms as transforms
 from scipy.interpolate import griddata
+import matplotlib.ticker as mticker
 
 from ifigure.mto.fig_obj import FigObj
 from ifigure.mto.fig_plot import FigPlot
@@ -2134,7 +2135,16 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         if self._cbar_image is not None:
            self._cbar_image.remove()
            self._cbar_image = None
+        self.remove_2nd_artist()
         super(FigColorBar, self).del_artist(*args, **kywds)
+
+    def remove_2nd_artist(self):
+        if len(self._artists) == 2:
+           artist = self._artists[1]
+           artist.figobj=None
+           artist.figobj_hl=[]
+           artist.remove()
+           self._artists = [self._artists[0]]
 
     def update_cbar_image(self):
         if self._caxis_param is None: return
@@ -2147,7 +2157,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self._cbar_image = None
 
         a = self._artists[0]
-        zp = np.vstack((np.arange(255),np.arange(255)))
+
+        scale = self._caxis_param().scale        
+        zp = np.vstack((cmesh, cmesh))
+
         if self.getp('cdir') == 'h':
            y = self._artists[0].get_ylim()
           # y = (0,1)
@@ -2161,6 +2174,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.set_axtcolor(['x', tc], a)
            self.set_axlcolor(['x', (lc, lc)], a)
            extent=[cmesh[0], cmesh[-1], min(y), max(y)]
+        
         elif self.getp('cdir') == 'v':
            x = self._artists[0].get_xlim()
           # x = (0,1)
@@ -2176,13 +2190,35 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.set_axlcolor(['y', (lc, lc)], a)
            extent=[min(x), max(x), cmesh[0], cmesh[-1]]
 
-        self._cbar_image = self._artists[0].imshow(zp,
-                                   extent=extent, 
-                                   aspect='auto', origin='lower')
+        if len(self._artists) == 1:
+            self.generate_twin_artist()
+            
+        self._cbar_image = self._artists[1].imshow(zp,
+                                                   extent=extent,
+                                                   interpolation='bicubic',
+                                                   resample=True,
+                                                   aspect='auto',
+                                                   origin='lower')
         self._cbar_image.nozsort = True
 #        self._cbar_image.set_zorder(-1)
+        self.call_set_crangeparam_to_artist(self._caxis_param())
+        
         if self._caxis_param().cmap is not None:
              self._cbar_image.set_cmap(self._caxis_param().cmap)
+
+    def generate_twin_artist(self):
+        if  self.getp('cdir') == 'v':
+            artist=self._artists[0].twinx()
+            artist.yaxis.set_major_locator(mticker.NullLocator())
+            artist.yaxis.set_major_formatter(mticker.NullFormatter())            
+        else:
+            artist=self._artists[0].twiny()
+            artist.xaxis.set_major_locator(mticker.NullLocator())
+            artist.xaxis.set_major_formatter(mticker.NullFormatter())            
+        artist.figobj=self
+        artist.figobj_hl=[]
+        artist.set_zorder(self.getp('zorder'))
+        self._artists.append(artist)
 
 
     def set_update_cbar_image(self,value, a):
@@ -2219,16 +2255,19 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         p.scale = scale     
 
     def cmesh(self):
-        cmin, cmax = self._caxis_param().range
-        scale = self._caxis_param().scale
+        param = self._caxis_param()
+        cmin, cmax = param.range
+        scale = param.scale
+        
         if scale == 'linear':
            cmesh=np.linspace(cmin, cmax, 256)
         elif scale == 'symlog':
-           cmesh=np.linspace(cmin, cmax, 256)            
+           cmesh=np.linspace(cmin, cmax, 256)           
         else:
            #
            cmin = cmin if cmin > 0.0 else cmax*1e-16
-           cmesh = np.logspace(np.log10(cmin), np.log10(cmax), 256)
+           cmesh=np.linspace(cmin, cmax, 256)
+
         return cmesh
 
     def canvas_menu(self):
@@ -2263,8 +2302,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.setp('cdir', value)
            self._artists[0].set_xlim((0,1))
            self._artists[0].set_ylim(lim)
+        self.remove_2nd_artist()
         self.update_cbar_image()
         ifigure.events.SendPVDrawRequest(self)
+
     def get_cbardir(self, a):
         return self.getp('cdir')
 
@@ -2319,8 +2360,7 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         canvas = evt.GetEventObject()
 
         name = ca.cmap
-        if name.endswith('_r'):
-           s = {"reverse":True}
+        if name.endswith('_r'):           s = {"reverse":True}
         else:
            s = {"reverse":False}
         l =[["", name, 11, s]]
@@ -2336,6 +2376,8 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         ca = self._caxis_param()
         ca.cmap = value
         self._cbar_image.set_cmap(ca.cmap)
+        self.call_set_crangeparam_to_artist(ca)
+        
         for a in self._parent._artists:
              ca.set_artist_rangeparam(a)
         self._parent.set_bmp_update(False)
@@ -2345,6 +2387,12 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         ca = self._caxis_param()
         return ca.cmap
 
+    def call_set_crangeparam_to_artist(self, ca):
+        scale = ca.scale
+        ca.scale = 'linear'
+        ca.set_crangeparam_to_artist(self._cbar_image, check=False)        
+        ca.scale = scale
+        
     def handle_axes_change(self, data):
 #        print 'handle_axes_change'
         evtTD = data['td']
@@ -2423,12 +2471,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         p.set_ticks(self.get_axes_artist_by_name(name)[0])
         #p.set_ticks(self.get_axes_artist_by_name(param[0])[0])
         self.set_bmp_update(False)
+        
     def get_axformat(self, a, name):
         ca = self._caxis_param()        
         return ca.format
     
-
-
-
 
 

@@ -4100,7 +4100,14 @@ class EditListCore(object):
                w.Enable(False)
                if txt is not None: txt.Enable(False)
             i=i+1
-            
+    def update_label(self, ll):
+        i=0
+        for w, txt in self.widgets:
+            if txt is not None:
+               label = ll[i][0] if ll[i][0] is not None else ""
+               txt.SetLabel(label)
+            i=i+1
+       
     def send_event(self, evtobj, evt0):
         if self.call_sendevent is not None:
             self.call_sendevent.send_event(self, evt0)

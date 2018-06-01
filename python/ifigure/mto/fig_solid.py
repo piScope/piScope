@@ -432,7 +432,8 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         var = {name:check(self, name) for name in names}
         for name in names:
             if not var[name]: var[name+'data'] = self.getp(name)
-
+        var['hidden'] = self.hidden_component
+        
         data['FigSolid'] = (1, var)
         data = super(FigSolid, self).save_data2(data)
         return data
@@ -443,6 +444,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         var = d[1]
 
         names = self._saveload_names()
+        self.hide_component(var.pop('hidden', []))
         for name in names:
             if var[name]:
                  self.setp(name, 
@@ -463,7 +465,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
 
     def get_export_val(self, a):
         val =  {"vertices":  self.getp("v"),}
-        if self.getvar('cz'):
+        if self.getvar('cz') and self.getvar("cdata") is not None:
             val['cdata'] = self.getvar("cdata")
         return val
 

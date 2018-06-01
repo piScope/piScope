@@ -204,11 +204,16 @@ class draghandler_rb_d(object):
     def dragstart(self, evt):
         if self.rb is not None: 
            self.rb.figure.lines.remove(self.rb)
+        if evt is None: return
         x, y = self._calc_xy(evt)
         self._show_box(x,y)
         self.dragging = True
 
     def dodrag(self, evt):
+        if evt is None: return
+        if self.st_event is None: 
+            self.unbind_mpl()
+            return
         x, y = self._calc_xy(evt)
         self._show_box(x,y)
 #        self.panel.draw()
@@ -673,6 +678,8 @@ class ifigure_canvas_draghandler_selecta(draghandler_base2, draghandler_rb_d):
         super(ifigure_canvas_draghandler_selecta, self).dragstart(evt)
     def dodrag(self, evt):
         super(ifigure_canvas_draghandler_selecta, self).dodrag(evt)
+        if self.st_event is None:
+            return
         x = [self.st_event.x, evt.x]
         y = [self.st_event.y, evt.y]
         box1 = [min(x), max(x), min(y), max(y)]
@@ -2318,6 +2325,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
    def on_mouse_wheel(self, event):
        axes=self.axes_selection()
        if axes is None: return
+       if axes.figobj is None: return
        if not axes.figobj.get_3d(): return
        if event['start']:
            self._wheel_start_range = axes.get_w_lims()           

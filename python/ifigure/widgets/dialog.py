@@ -172,13 +172,14 @@ def message(parent=None, message='', title='', style=0,
     dlg.Destroy()
     return ret
 
-def showtraceback(parent = None, txt='', title='', traceback='None\n'):
-    dlg=wx.MessageDialog(parent, 
-                         txt + '\n'+
-                         traceback,
-                         title, 
-                         wx.OK)
-    ret=dlg.ShowModal()
+def showtraceback(parent = None, txt='', title="Error", traceback='None\n'):
+    from ifigure.widgets.dlg_message_scroll import DlgMessageScroll
+
+
+    dlg = DlgMessageScroll(parent, wx.ID_ANY, title)
+    dlg.update(txt + '\n'+traceback)
+    ret = dlg.ShowModal()
+
     dlg.Destroy()
 
 def progressbar(parent, message, title, count):   
