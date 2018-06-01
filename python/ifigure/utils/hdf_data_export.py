@@ -212,7 +212,7 @@ def hdf_data_export(page = None,
             ddd = data[key][k]
             for key2 in six.iterkeys(ddd):
                 labels = (key, k, key2)
-                #print 'checking ', labels
+                #print 'checking ', labels, ddd.keys()
                 if (labels in export_flag and
                      not export_flag[labels]): continue
 
@@ -225,14 +225,14 @@ def hdf_data_export(page = None,
                      meta = {}
                 if do_complex:
                     cdata_grp = data_grp.create_group(key2 + '(Complex)')
-                    dataset1 = cdata_grp.create_dataset('Real', data=ddd[key].real)
-                    dataset2 = cdata_grp.create_dataset('Imag', data=ddd[key].imag)
+                    dataset1 = cdata_grp.create_dataset('Real', data=ddd[key2].real)
+                    dataset2 = cdata_grp.create_dataset('Imag', data=ddd[key2].imag)
                     for key3 in six.iterkeys(meta):
                         cdata_grp.attrs[key3] =  str(meta[key3])
                     dataset1.attrs['comment'] = 'real part'
                     dataset2.attrs['comment'] = 'imaginary part'
-                    dataset1.attrs['shape']   = str(ddd[key].real.shape)
-                    dataset2.attrs['shape']   = str(ddd[key].imag.shape)
+                    dataset1.attrs['shape']   = str(ddd[key2].real.shape)
+                    dataset2.attrs['shape']   = str(ddd[key2].imag.shape)
                 else:
                     dataset = data_grp.create_dataset(key2,data=ddd[key2])
                     for key3 in six.iterkeys(meta):
