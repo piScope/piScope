@@ -654,8 +654,11 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
             renderer=a.figure._cachedRenderer        
         
             for item in alist:
+                # skip this case since it fails
+                if (isinstance(item, matplotlib.text.Text) and
+                    renderer is None): continue
                 try:
-                   # sometime this failes for text object...!?
+
                    box1 = item.get_window_extent(renderer).extents
                    box = merge_box(box, box1)
                 except:
@@ -1933,7 +1936,8 @@ class FigInsetAxes(FigAxes):
         v=self.convert_transform_rect(t1, t2, rect)
         return v
 
-    def calc_rect(self):
+    def calc_rect(self, ignore_pagemargin = False):
+        #ignore_pagemargin is not used
         ax_main = self._parent
         rect, use_def, margin=ax_main.calc_rect()
         w = self.getp("inset_w")

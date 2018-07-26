@@ -21,6 +21,7 @@ _usage() {
     echo '   -n : (optional) : no main window'
     echo '   -g : (optional) : open off GL'
     echo '   -k : (optional) : use open GL (LIBGL_ALWAYS_SOFTWARE=1)'    
+    echo '   -u : (optional) : unsuppress Gtk-warning'
     echo '   file: (optional) : .bfz or .pfz file to open'
     exit 1
 }
@@ -29,7 +30,7 @@ EXTRA=''
 EXTRA2=''
 EXTRA3=''
 EXTRA4=''
-while getopts "r:e:f:sdchpngk" opts
+while getopts "r:e:f:sdchpngku" opts
 do 
    case $opts in
       e) INTERPRETER=$OPTARG
@@ -49,6 +50,8 @@ do
       g) EXTRA5='-g'
          ;;
       k) export LIBGL_ALWAYS_SOFTWARE=1
+         ;;
+      u) UNSUPPRESS_GTK=1
          ;;
       h) _usage;;
       :|\?) _usage;;
@@ -73,4 +76,10 @@ DIR=$(dirname $MEDIR)
 # python add script directory in search path 
 APP=$DIR/python/piscope.py
 
-$INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+if [ -z ${UNSUPPRESS_GTK+x} ];then
+   unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
+else
+   $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+fi
+
+ 
