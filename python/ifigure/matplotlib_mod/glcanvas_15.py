@@ -274,9 +274,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         #glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
         glDisable(GL_CULL_FACE)
-        c= (GLfloat * 2)()        
-        glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, c)
-        self._line_width_range = list(np.transpose(c))
+        #c= (GLfloat * 2)()        
+        #glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, c)
+        #self._line_width_range = list(np.transpose(c))
 
         glEnable(GL_MULTISAMPLE)
         #glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST)
