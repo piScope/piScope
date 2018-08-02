@@ -187,7 +187,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uColor', 1, (0, 0, 0., 1.0))
 
         #
-        # line 
+        # line & triangles
         #
         fs = compile_file('lines'+frag_suffix, GL_FRAGMENT_SHADER)
         gs = compile_file('lines'+geom_suffix, GL_GEOMETRY_SHADER)        
@@ -215,7 +215,23 @@ class MyGLCanvas(glcanvas.GLCanvas):
                          'uRT0', 'uRT1', 'uisFinal', 'uisClear', 
                          'uSCSize', 'uisSolid',
                           'uNormalM', 'uLineWidth']
+        
         for name in names:  define_unform(self.lshader, name)
+        
+        fs = compile_file('lines'+frag_suffix, GL_FRAGMENT_SHADER)
+        gs = compile_file('triangles'+geom_suffix, GL_GEOMETRY_SHADER)        
+        vs = compile_file('lines'+vert_suffix, GL_VERTEX_SHADER)
+        vao = glGenVertexArrays(1)
+        glBindVertexArray(vao)
+        self.tshader = shaders.compileProgram(vs, gs, fs)
+        glBindFragDataLocation(self.tshader, 0, 'FragData0')
+        glBindFragDataLocation(self.tshader, 1, 'FragData1')
+        glLinkProgram(self.tshader)
+        glDeleteVertexArrays(1, [vao])        
+        self.select_shader(self.tshader)
+        
+        for name in anames:  define_attrib(self.tshader, name)
+        for name in names:  define_unform(self.tshader, name)
         
         #
         #  default shader
@@ -668,6 +684,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self._shadow = False
             
         self.select_shader(self.lshader); setup_shader()
+        self.select_shader(self.tshader); setup_shader()        
         self.select_shader(self.shader); setup_shader()
         
     def set_oit_mode_tex(self, texs, firstpath = True):
@@ -1817,8 +1834,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             
         if not(linewidth[0] > 0.0 and not self._shadow): return
         if linewidth[0] == 0.0: return
-        
-        self.select_shader(self.lshader)
+
+        if vbos['eprimitive'] == GL_TRIANGLES:
+            self.select_shader(self.tshader)
+        else:
+            self.select_shader(self.lshader)
+            
         glBindVertexArray(vbos['vao'])
         if vbos['ie'] is not None:        
            vbos['ie'].bind()
@@ -1848,7 +1869,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              GL_UNSIGNED_INT, None)
         #self.set_depth_mask()
         if self._wireframe == 2: self.set_depth_test()                        
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
+        #glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)            
         if self._wireframe == 2: self.set_depth_test()
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
@@ -1905,24 +1926,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
             #else:
             #    idxset0 = paths[4].astype(np.uint32, copy=False)            
             if len(paths[4][0]) == 4:
-                #idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 4)
                 idxset0 = idxset0.reshape(-1, 4)
-                #idxset = np.hstack((idxset0[:, :3], idxset0[:, 2:], idxset0[:, :1])).flatten()
-                #idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
-                #                     idxset0[:,2:], idxset0[:,3:], idxset0[:,:1])).flatten()
                 idxset=  idxset0[:,[0, 1, 2, 2, 3, 0]].flatten()                
-                idxsete = idxset0[:,[0, 1, 1, 2, 2, 3, 3, 0]].flatten()                
+                #idxsete = idxset0[:,[0, 1, 1, 2, 2, 3, 3, 0]].flatten()
+                idxsete = idxset
             elif len(paths[4][0]) == 3:
                 idxset  = idxset0                
                 idxset0 = idxset0.reshape(-1, 3)                
-                #idxset0 = np.hstack(paths[4]).astype(np.uint32).reshape(-1, 3)
-                #idxset  = idxset0.flatten()
-                #idxsete = np.hstack((idxset0[:,:2], idxset0[:,1:3],
-                #                     idxset0[:,2:], idxset0[:,:1],)).flatten()
-                #idxset  = idxset0
-                idxsete = idxset0[:,[0, 1, 1, 2, 2, 0]].flatten()
+                idxsete = idxset0[:,[0, 1, 2, 1, 2, 0]].flatten()
+                #idxsete = idxset                
             elif len(paths[4][0]) == 2:
                 idxset  = idxset0
+                print idxset.shape
+                #idxset=  idxset0[:,[0, 1, 0]].flatten()
                 idxsete = None
             else:
                 assert False, "Unsupported element shape"
@@ -1930,19 +1946,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if len(paths[4][0]) == 4:
             counts = 3
             nindex = len(paths[4])*6
-            nindexe = len(paths[4])*8
+            nindexe = len(paths[4])*6
             primitive = GL_TRIANGLES
-            eprimitive = GL_LINES
+            eprimitive = GL_TRIANGLES
         elif len(paths[4][0]) == 3:
             counts = 3
-            nindex = len(paths[4])*len(paths[4][0])
+            nindex = len(paths[4])*3
             nindexe = len(paths[4])*6
             primitive  = GL_TRIANGLES            
-            eprimitive = GL_LINES
+            eprimitive = GL_TRIANGLES            
         elif len(paths[4][0]) == 2:                        
             counts = 2
-            nindex = len(paths[4])*len(paths[4][0])
-            nindexe = nindex
+            nindex = len(paths[4])*2
+            nindexe = len(paths[4])*3
             primitive  = None
             eprimitive = GL_LINES
         else:

@@ -8,8 +8,8 @@
 */
 
 #version 150
-layout(lines) in;
-layout(triangle_strip, max_vertices = 4) out;
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 10) out;
 
 in  vec4  vColor[];
 in  float vArrayID[];
@@ -63,6 +63,47 @@ void main()
     
     gDist  = uLineWidth+extra_w;            
     gl_Position = gl_in[1].gl_Position - n1;
+
+    EmitVertex();
+    EmitVertex();    
+
+    n = vec4( (gl_in[2].gl_Position[1]-gl_in[1].gl_Position[1])*uSCSize.y,
+                  (-gl_in[2].gl_Position[0]+gl_in[1].gl_Position[0])*uSCSize.x,
+		   0, 0);
+
+    len = sqrt(pow(n.x, 2) + pow(n.y, 2));
+    n = n/len*(uLineWidth+0.7);
+    n.xy = n.xy/uSCSize.xy;
+
+    n0 = n*gl_in[1].gl_Position.w;
+    n1 = n*gl_in[2].gl_Position.w;
+    
+    gColor = vColor[1];
+    gArrayID = vArrayID[1];
+    gAtlas = vAtlas[1];
+    gClipDistance = vClipDistance[1];
+
+    
+    gDist  = -uLineWidth-extra_w;
+    gl_Position = gl_in[1].gl_Position + n0;
+    EmitVertex();
+    EmitVertex();    
+    
+    gl_Position = gl_in[1].gl_Position - n0;
+    gDist  = uLineWidth+extra_w;    
+    EmitVertex();
+
+    gColor = vColor[2];
+    gArrayID = vArrayID[2];
+    gClipDistance = vClipDistance[2];
+    gAtlas = vAtlas[2];    
+    
+    gl_Position = gl_in[2].gl_Position + n1;
+    gDist  = -uLineWidth-extra_w;        
+    EmitVertex();
+    
+    gDist  = uLineWidth+extra_w;            
+    gl_Position = gl_in[2].gl_Position - n1;
 
     EmitVertex();
 

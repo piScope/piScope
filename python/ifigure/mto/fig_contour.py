@@ -370,59 +370,67 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
            container = self.get_container()
            if container is None: return
 
-           de = self.get_data_extent()
-           x=(de[0], de[1],de[1],de[0],de[0])
-           y=(de[2], de[2],de[3],de[3],de[2])
-
-           facecolor='k'
            if isinstance(alist[0], Poly3DCollectionGL):
-               hl = alist[0].make_hl_artist(container)
-               facecolor = 'none'
-               self._hit_path = None               
-           elif isinstance(alist[0], Line3DCollectionGL):
-               hl = alist[0].make_hl_artist(container)
-               facecolor = 'none'
-               self._hit_path = None
-           else:
-               hl= container.plot(x, y, marker='s', 
-                                 color='k', linestyle='None',
-                                 markerfacecolor='None',
-                                 markeredgewidth =  0.5,                                  
-                                 scalex=False, scaley=False)
-           for item in hl:
-              alist[0].figobj_hl.append(item)
+               hl = alist[0].add_hl_mask()               
+               for item in hl:
+                   alist[0].figobj_hl.append(item)
+           else:          
+               de = self.get_data_extent()
+               x=(de[0], de[1],de[1],de[0],de[0])
+               y=(de[2], de[2],de[3],de[3],de[2])
+
+               facecolor='k'
+               if isinstance(alist[0], Poly3DCollectionGL):
+                   hl = alist[0].make_hl_artist(container)
+                   facecolor = 'none'
+                   self._hit_path = None               
+               elif isinstance(alist[0], Line3DCollectionGL):
+                   hl = alist[0].make_hl_artist(container)
+                   facecolor = 'none'
+                   self._hit_path = None
+               else:
+                   hl= container.plot(x, y, marker='s', 
+                                     color='k', linestyle='None',
+                                     markerfacecolor='None',
+                                     markeredgewidth =  0.5,                                  
+                                     scalex=False, scaley=False)
+               for item in hl:
+                  alist[0].figobj_hl.append(item)
 
 
-           if self._hit_path is not None:
-              v = self._hit_path.vertices
-              hl= container.plot(v[:,0], v[:,1], marker='s', 
-                                 color='k', linestyle='None',
-                                 markerfacecolor='None',
-                                 markeredgewidth =  0.5,  
-                                 scalex=False, scaley=False)
-              for item in hl:
-                 alist[0].figobj_hl.append(item)
+               if self._hit_path is not None:
+                  v = self._hit_path.vertices
+                  hl= container.plot(v[:,0], v[:,1], marker='s', 
+                                     color='k', linestyle='None',
+                                     markerfacecolor='None',
+                                     markeredgewidth =  0.5,  
+                                     scalex=False, scaley=False)
+                  for item in hl:
+                     alist[0].figobj_hl.append(item)
 
-           hlp = Rectangle((de[0],de[2]),
-                            de[1]-de[0],
-                            de[3]-de[2],
-                            alpha=0.3, facecolor=facecolor,
-                            figure = figure, 
-                            transform= container.transData)
-           if ax is not None:
-              x0, y0 = ax._artists[0].transAxes.transform((0,0))
-              x1, y1 = ax._artists[0].transAxes.transform((1,1))
-              bbox = Bbox([[x0,y0],[x1,y1]])
-              hlp.set_clip_box(bbox)
-              hlp.set_clip_on(True)
-           figure.patches.append(hlp)
-           alist[0].figobj_hl.append(hlp)
+               hlp = Rectangle((de[0],de[2]),
+                                de[1]-de[0],
+                                de[3]-de[2],
+                                alpha=0.3, facecolor=facecolor,
+                                figure = figure, 
+                                transform= container.transData)
+               if ax is not None:
+                  x0, y0 = ax._artists[0].transAxes.transform((0,0))
+                  x1, y1 = ax._artists[0].transAxes.transform((1,1))
+                  bbox = Bbox([[x0,y0],[x1,y1]])
+                  hlp.set_clip_box(bbox)
+                  hlp.set_clip_on(True)
+               figure.patches.append(hlp)
+               alist[0].figobj_hl.append(hlp)
         else:
            for a in alist:
               if len(a.figobj_hl) == 0: continue
               for hl in a.figobj_hl[:-1]:
                  hl.remove()
-              figure.patches.remove(a.figobj_hl[-1])
+              if isinstance(alist[0], Poly3DCollectionGL):
+                 a.figobj_hl[-1].remove()
+              else:
+                  figure.patches.remove(a.figobj_hl[-1])
               a.figobj_hl=[]
 #
 #   Setter/Getter

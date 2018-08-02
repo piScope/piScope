@@ -210,7 +210,6 @@ class Axes3DMod(Axes3D):
         #     if it is the closet artist in the area of checking
         #     then return True
 
-        
         if self._gl_id_data is None: return False
         if self._gl_mask_artist is None: return False
 
@@ -220,6 +219,7 @@ class Axes3DMod(Axes3D):
         x0, y0, id_dict, im, imd, im2 = self._gl_id_data
               
         arr = self._gl_mask_artist.get_array()
+
         for k in id_dict.keys():
             if (id_dict[k]() == artist):
                if hit_id is not None:
@@ -230,7 +230,7 @@ class Axes3DMod(Axes3D):
                        m = (im == k)                       
                else:
                    m = (im == k)
-                   
+               
                c = self.figure.canvas.hl_color                           
                arr[:,:,:3][m] = np.array(c, copy=False)
                arr[:,:,3][m] = amask               

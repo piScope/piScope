@@ -51,7 +51,7 @@ do
          ;;
       k) export LIBGL_ALWAYS_SOFTWARE=1
          ;;
-      u) UNSUPPRESS_GTK=1
+      u) UNSUPPRESS_GTK=1	     
          ;;
       h) _usage;;
       :|\?) _usage;;
@@ -76,10 +76,14 @@ DIR=$(dirname $MEDIR)
 # python add script directory in search path 
 APP=$DIR/python/piscope.py
 
-if [ -z ${UNSUPPRESS_GTK+x} ];then
-   unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
-else
+if ! [ -x "$(command -v unbeffer)" ]; then
    $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+else
+   if [ -z ${UNSUPPRESS_GTK+x} ];then
+       unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
+   else
+       $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+   fi
 fi
 
  

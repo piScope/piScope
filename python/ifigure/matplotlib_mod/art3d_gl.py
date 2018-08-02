@@ -137,7 +137,7 @@ class ArtGL(object):
             c = self.figure
         if not self._gl_pickable:
             return False, {}
-        
+
         check, array_id =  c.gl_hit_test(evt.x, evt.y,
                                          self, radius = 3)
         if check:
