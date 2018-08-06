@@ -1332,7 +1332,7 @@ class ScriptEditor(wx.Panel):
         return False, False
 
 
-    def clsoe_page(self, ipage):
+    def close_page(self, ipage):
         p=self.nb.GetPage(ipage)
         idx=self.page_list.index(p)
 
@@ -1354,7 +1354,9 @@ class ScriptEditor(wx.Panel):
         del self.page_list[idx]
         del self.file_list[idx]
 
+        wx.CallAfter(self.call_remove_page, ipage, self.nb.GetPageCount())
         self.nb.DeletePage(ipage)
+
         app = wx.GetApp().TopWindow
         if app.proj is None: return
         ifigure.events.SendCloseFileEvent(app.proj, 
@@ -1394,20 +1396,22 @@ class ScriptEditor(wx.Panel):
             if ret == wx.ID_CANCEL:
                e.Veto()
                return
-
         delfile=self.file_list[idx]
         del self.page_list[idx]
         del self.file_list[idx]
 
+        # make sure to remove a page on linux...
+        wx.CallAfter(self.call_remove_page, ipage, self.nb.GetPageCount())
         app = wx.GetApp().TopWindow
-#        if len(self.file_list) == 0: 
-#           self.Hide()
-#           app._force_layout()
+        e.Skip()
         if app.proj is None: return
         ifigure.events.SendCloseFileEvent(app.proj, 
                                          w=e.GetEventObject(),
                                          file=delfile)
-        
+    def call_remove_page(self, ipage, cpage):
+        if (self.nb.GetPageCount() == cpage):
+            self.nb.RemovePage(ipage)
+
     def switch_wdir(self, owdir, nwdir):
 #        print owdir, nwdir
 #        print self.file_list
@@ -1796,7 +1800,7 @@ class ScriptEditorFrame(FrameWithWindowList):
     def onCloseDoc(self, e):
         if self._se is None: return
         ipage = self._se.nb.GetSelection()
-        self._se.clsoe_page(ipage)
+        self._se.close_page(ipage)
     
     def onSaveDoc(self, e):
         if self._se is None: return
