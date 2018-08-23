@@ -1264,8 +1264,10 @@ class ScriptEditor(wx.Panel):
         if ipage is None:
             ipage=self.nb.GetSelection()
         p=self.nb.GetPage(ipage)
+        if not p in self.page_list:
+            self.onModified(None)
+            return
         idx=self.page_list.index(p)
-
         save_file=False
         if saveas:
            open_dlg = wx.FileDialog (None,
@@ -1334,6 +1336,10 @@ class ScriptEditor(wx.Panel):
 
     def close_page(self, ipage):
         p=self.nb.GetPage(ipage)
+        if not p in self.page_list: 
+            # somehow page is already closed...?
+            return
+
         idx=self.page_list.index(p)
 
         if p.GetModify():
@@ -1380,6 +1386,9 @@ class ScriptEditor(wx.Panel):
     def onClose(self, e):
         ipage=self.nb.GetSelection()
         p=self.nb.GetPage(ipage)
+        if not p in self.page_list: 
+            # somehow page is already closed...?
+            return
         idx=self.page_list.index(p)
 
         if p.GetModify():

@@ -221,9 +221,10 @@ class FigLegend(FigObjGPHolder):
                 if v() is not None]
            args.append(v)
         else:
-           h = self.get_container()._get_legend_handles()
-           args.append([x for x in h if hasattr(x, 'figobj')])
-           self.setp('legendhandle', [weakref.ref(x) for x in h if hasattr(x, 'figobj')])
+           if hasattr(self.get_container(), "_get_legend_handles"):
+               h = self.get_container()._get_legend_handles()
+               args.append([x for x in h if hasattr(x, 'figobj')])
+               self.setp('legendhandle', [weakref.ref(x) for x in h if hasattr(x, 'figobj')])
 
         if self.getp('legendlabel') is not None:
            args.append(self.getp('legendlabel'))
@@ -253,12 +254,13 @@ class FigLegend(FigObjGPHolder):
            c.legend_ = None
            c.add_artist(a)
 
-        for h in self.getp('legendhandle'):
-            if (hasattr(h(), 'figobj') and 
-                h().figobj is not None):
-                h().figobj.add_update_client(self)
-            else:
-               print('h() does not have figobj')
+        if self.getp('legendhandle') is not None:
+            for h in self.getp('legendhandle'):
+                if (hasattr(h(), 'figobj') and 
+                    h().figobj is not None):
+                    h().figobj.add_update_client(self)
+                else:
+                    print('h() does not have figobj')
 #        xy = self.get_gp(0).get_device_point()
 
         lp=self.getp("loaded_property") 
