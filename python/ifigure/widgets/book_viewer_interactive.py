@@ -1321,7 +1321,8 @@ class BookViewerInteractive(object):
            kargs['cz'] = True
            kargs['cdata'] = args[0][...,-1]
            args = (args[0][...,:-1],)
-        
+
+        def_width = 0.0
         if len(args) == 2:
              verts = args[0]
              idxset= args[1]             
@@ -1334,6 +1335,7 @@ class BookViewerInteractive(object):
                  verts = np.hstack((args[0], np.zeros((args[0].shape[0], 1))
                                +zvalue))
              args = (verts, idxset)
+             if idxset.shape[1] == 2: def_width=1.0
         elif len(args) == 1:
              verts = args[0]
              if verts.shape[-1] == 4:
@@ -1345,9 +1347,12 @@ class BookViewerInteractive(object):
                  verts = np.dstack((args[0], np.zeros((args[0].shape[0], args[0].shape[1], 1))
                           +zvalue))
              args = (verts,)
+             if verts.shape[1] == 2: def_width=1.0             
         else:
             assert False, "wrong number of arguments, solid(v, idx) or solid(v)"
             
+        linewidth = kargs.pop("linewidth", def_width)
+        kargs['linewidth']=linewidth
         fig_axes = self.get_axes(ipage=None, iaxes=self.isec())
         if not fig_axes.get_3d():
             fig_axes.set_3d(True)
