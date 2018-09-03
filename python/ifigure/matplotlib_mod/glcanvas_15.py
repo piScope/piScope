@@ -1831,9 +1831,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glBindVertexArray(0)        
             self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
             vbos['i'].unbind()
-            
-        if not(linewidth[0] > 0.0 and not self._shadow): return
-        if linewidth[0] == 0.0: return
+
+
+        #if not(linewidth[0] > 0.0 and not self._shadow): return
+        if self._shadow: return
+
+        if  vbos['primitive'] is not None:            
+            if linewidth[0] == 0.0: return
 
         if vbos['eprimitive'] == GL_TRIANGLES:
             self.select_shader(self.tshader)
@@ -1855,7 +1859,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
         
         self.setLineWidth(linewidth[0]*multisample)
-        self.EnableEdgeColor(vbos)
+
+        # Line draw is done using facecolor.
+        if  vbos['primitive'] is not None:        
+            self.EnableEdgeColor(vbos)
+        else:
+            if linewidth[0] == 0.0: 
+                self.EnableEdgeColor(vbos)
+                self.setLineWidth(1.0*multisample)                
+            else:
+                self.EnableFaceColor(vbos)           
         glDepthFunc(GL_LEQUAL)
 
         if not self._shadow:
@@ -1865,6 +1878,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         #self.set_uniform(glUniform4fv, 'uViewOffset', 1,
         #                 (0, 0, -0.01, 0.))
+
         glDrawElements(vbos['eprimitive'], nindexe,
                              GL_UNSIGNED_INT, None)
         #self.set_depth_mask()
@@ -1873,7 +1887,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe == 2: self.set_depth_test()
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
-        vbos['ec'].unbind()
+
+        if  vbos['primitive'] is not None:
+            vbos['ec'].unbind()            
+        else:
+            if linewidth[0] == 0.0: 
+                vbos['ec'].unbind()            
+            else:
+                vbos['fc'].unbind()
+            
         self.DisableVertexAttrib('inColor')
         
         glDepthFunc(GL_LESS)
@@ -2067,7 +2089,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 vbos['ec'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
                 vbos['ec'].set_array(col)
-            
             vbos['ec'].need_update = False
         if vbos['vertex_id'] is None  or vbos['vertex_id'].need_update:
             counts = vbos['counts']
