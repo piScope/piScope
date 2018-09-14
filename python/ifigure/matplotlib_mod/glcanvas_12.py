@@ -1454,17 +1454,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
            glNormalPointer(GL_FLOAT, 0, None)
            vbos['n'].unbind()
 
-
-        if vbos['vertex_id'] is not None:
-           vertex_id = vbos['vertex_id']
-           vertex_id.bind()
-           self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
-                                    0, None)
-           vertex_id.unbind()
-           self.set_uniform(glUniform1i,  'uUseArrayID', 1)           
-           self.EnableVertexAttrib('vertex_id')
-        else:
-           self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
         glEnableClientState(GL_COLOR_ARRAY)
         first, counts = vbos['first'], vbos['counts']
         offset = list(offset)+[0]
@@ -1558,8 +1548,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
 
-        if vbos['vertex_id'] is not None:        
-           self.DisableVertexAttrib('vertex_id')           
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
 
     def makevbo_path_collection(self, vbos, gc, paths, facecolor, 
@@ -1572,22 +1560,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #print 'draw_path_collection', len(facecolor)
 
         if vbos['v'] is None or vbos['v'].need_update:
-            norms = [None]*len(paths)
-            xyzs = [None]*len(paths)
-            counts = [None]*len(paths)
-            for idx, a in enumerate(paths):
-                p = [np.array((a.vertices[k][0], a.vertices[k][1], a.zvalues[k]))
-                     for k in range(3)]
-                n = np.cross(p[2]-p[0], p[1]-p[0])
-                
-                if np.sum(n*n) != 0:
-                    n = -n/np.sqrt(np.sum(n*n))
-                xyzs[idx] = np.hstack((a.vertices[:len(a.zvalues)], 
-                                       np.vstack(a.zvalues))).flatten()
-                counts[idx]  = len(a.zvalues)
-                norms[idx] = np.array([n[0], n[1], n[2]]*len(a.zvalues))
-            xyzs = np.hstack(xyzs).astype(np.float32)
-            norms = np.hstack(norms).astype(np.float32)
+            xyzs = np.transpose(np.vstack((paths[0],
+                                           paths[1],
+                                           paths[2])))
+            
+            xyzs = xyzs.flatten().astype(np.float32)
+            norms = paths[3].astype(np.float32).flatten()
+            counts = np.array([len(x) for x in paths[4]])
             first = np.array(counts).cumsum()
             first = list(np.hstack((np.array([0]), first[:-1])))
 
