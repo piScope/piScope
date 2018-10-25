@@ -229,11 +229,32 @@ class AxesMod(Axes):
                 l = a.figobj
                 l.set_legendlabel_prop(l.getp('legendlabelprop'), a)
 
+
+        #
+        #  zorder of rasterized artsits is moved to negative
+        #  before rendering
+        #
+        artists = self.get_children()
+        artists.remove(self.patch)
+        artists.remove(self.title)
+        artists.remove(self._left_title)
+        artists.remove(self._right_title)
+        rastered_a = [a for a in artists if a.get_rasterized()]
+
+        if len(rastered_a) > 0:
+            delta_a = np.max([a.zorder for a in rastered_a])+1
+            for a in rastered_a:
+                a.zorder = a.zorder-delta_a
+        
         try:        
             super(AxesMod, self).draw(renderer)
         except:
             traceback.print_exc()
         finally:
+            if len(rastered_a) > 0:
+                for a in rastered_a:
+                    a.zorder = a.zorder+delta_a
+                
             if hide_xbottom:
                 for xtick in xticks:
                     xtick.label1.set_color(col1)
