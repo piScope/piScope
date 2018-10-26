@@ -2327,9 +2327,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
        if axes is None: return
        if axes.figobj is None: return
        if not axes.figobj.get_3d(): return
+       
        if event['start']:
-           self._wheel_start_range = axes.get_w_lims()           
+           self._wheel_start_range = axes.get_w_lims()
+           
        elif event['end']:
+           # apparently this event is not returned on linux...
            self._wheel_end_range = axes.get_w_lims()
            requests = self.make_range_request_pan(axes.figobj, auto=False)                 
            #requests = self.expand_requests(requests)
@@ -2345,7 +2348,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            axes.set_ylim3d(miny - dy, maxy + dy)
            axes.set_zlim3d(minz - dz, maxz + dz)
            axes.figobj.set_bmp_update(False)
-           self.draw_later()
+           requests = self.make_range_request_pan(axes.figobj, auto=False)                 
+           self.send_range_action(requests, '3D zoom')
+           #self.draw_later()
            
    def set_pmode(self):
        self.toolbar.ExitInsertMode()
