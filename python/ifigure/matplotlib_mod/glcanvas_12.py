@@ -684,7 +684,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
-                if (a._gl_hl and not self._hittest_map_update):
+                if ((a._gl_hl and not self._hittest_map_update)
+                    and not self._no_hl):                    
                     # second condition indicate it is during pan/rotate
                     self.set_uniform(glUniform1i, 'uHasHL', 1)
                 else:
