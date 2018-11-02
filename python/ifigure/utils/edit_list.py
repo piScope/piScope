@@ -3091,37 +3091,37 @@ class MDSserver(ComboBox):
             super(MDSserver, self).onHit(evt)
 
 
-#class MDSSource0(wx.Panel):
-#    def __init__(self, parent, id, *args, **kargs):
-#       wx.Panel.__init__(self, parent, id)
-#       self.SetSizer(wx.BoxSizer(wx.VERTICAL))
-#       self.mode=''
-#       self.l = [["experiment", "cmod", 200],
-#            ["default_node", "", 200],
-#            ["x", "", 200],
-#            ["y", "", 200],
-#            ["z", "", 200],
-#            ["xerr", "", 200],
-#            ["xerr", "", 200],
-#            ["title", "", 200],]
-
-#       self.elp = EditListPanel(self, self.l, call_sendevent=self,
-#                                edge = 0)
-#       self.elp.Show()
-#       self.GetSizer().Add(self.elp,  1, wx.EXPAND)
-
-#    def GetValue(self):
-#        v = self.elp.GetValue()
-#        val = [(self.l[k][0], v[k]) for k in range(len(v))]
-#        return val
-
-#    def SetValue(self, value):
-#        self.elp.SetValue(value)
-
-#    def send_event(self, obj,  evt):
-#        evt.SetEventObject(self)
-#        self.GetParent().send_event(self, evt)
-
+class FilePath(Panel):
+    def __init__(self, parent, id, *args, **kargs):
+        self.wildcard = kargs.pop("wildcard", "*")
+        self.defaultpath =  kargs.pop("defaultpath", "")
+        self.message =  kargs.pop("message", "Select file to read")
+        Panel.__init__(self, parent, id)
+        self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
+        self.t1=TextCtrlCopyPaste(self, wx.ID_ANY,
+                                  '',
+                                  style=wx.TE_PROCESS_ENTER)
+        self.bt = wx.Button(self, label='Browse...')
+        self.bt.Bind(wx.EVT_BUTTON, self.onBrowse)
+        self.GetSizer().Add(self.t1, 1, wx.EXPAND|wx.ALL, 2)
+        self.GetSizer().Add(self.bt, 0, wx.EXPAND|wx.ALL, 2)
+        
+    def SetValue(self, value):
+        self.t1.SetValue(value)
+        
+    def GetValue(self):        
+        return str(self.t1.GetValue())
+     
+    def onBrowse(self, evt):
+        from ifigure.widgets.dialog import read
+        path = read(parent=self,
+                    message=self.message,
+                    wildcard=self.wildcard,
+                    defaultfile=self.defaultpath)
+        if path != '':
+            self.SetValue(path)
+            self.send_event(self, evt)            
+       
 class MDSSource0(wx.Panel):
     bitmaps = None
     tag_order = ['x', 'y', 'z', 'xerr', 'yerr']
@@ -4013,9 +4013,9 @@ class EditListCore(object):
                  setting=val[3]
               else:
                  setting = {}
+              w = TickLabelSizeSelector(self, wx.ID_ANY, setting = setting)                 
               if val[1] is not None:
                   w.SetValue(val[1])
-              w = TickLabelSizeSelector(self, wx.ID_ANY, setting = setting)
               p = w
            elif val[2] == 43:      # array text box
               if len(val)==4 and val[3] is not None:
@@ -4033,6 +4033,14 @@ class EditListCore(object):
                   w.SetValue(val[1])
               col = 0
               span = (1,2)
+              p = w
+           elif val[2] == 45:
+              if len(val)==4 and val[3] is not None:
+                  setting=val[3]
+              else:
+                  setting = {}              
+              w = FilePath(self, wx.ID_ANY, wx.Panel, **setting)
+              if val[1] is not None: w.SetValue(val[1])              
               p = w
            elif val[2] == 99:               ## custom UI component
               setting = val[3]
@@ -4414,6 +4422,7 @@ def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
       42: TickLabelSizeSelector
       43: ArrayTextBox
       44: GL azim/elev panel
+      45: File path
       99: Custom UI (To use UI component which is not defined here)
 
     """
