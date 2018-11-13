@@ -35,7 +35,7 @@ class MiniFrameWithWindowList(wx.MiniFrame, WithWindowList_MixIn):
 class DialogWithWindowList(wx.Dialog, WithWindowList_MixIn):
     def __init__(self, *args, **kargs):
         style = kargs.pop('style', wx.DEFAULT_DIALOG_STYLE)
-        kargs['style'] = style
+        kargs['style'] = style         
         super(DialogWithWindowList, self).__init__(*args, **kargs)
         WithWindowList_MixIn.__init__(self)
 

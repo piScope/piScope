@@ -214,13 +214,23 @@ void main() {
      if (dot(n,c)*dot(n,l) > 0.01){
 	isVisible = 1.0;
      }
-     /*sh = sh * isVisible; */
-     /*
-     isVisible = clamp(sign(dot(n,c)*dot(n,l)), 0., 1);     
-     float cT = (clamp(abs(dot(n,l)) * isVisible, 0.2, 1)-0.2)/0.8;
-     */
      float cT = clamp(abs(dot(n,l)) * isVisible, 0., 1)*sh;
-     
+
+     /* add fixed lights */
+     float isVisible2 = 0.0;     
+     vec3 l2 = normalize(vec3(0,-1,0.6));
+     if (dot(n,c)*dot(n,l2) > -0.005){
+	isVisible2 = 1.0;
+     }
+     float cT2 = clamp(abs(dot(n,l2)) * isVisible2, 0., 1)*0.5;
+     vec3 l3 = normalize(vec3(-1, 1,0.6));
+     isVisible2 = 0.0;     
+     if (dot(n,c)*dot(n,l3) > -0.005){
+	isVisible2 = 1.0;
+     }
+     cT2 = cT2 + clamp(abs(dot(n,l3)) * isVisible2, 0., 1)*0.5;
+     cT2 = cT2 * uAmbient[0];
+
      vec3  sp_ray = reflect(-l, n);
      /*isVisible = clamp(sign(dot(sp_ray,c)), 0, 1)*isVisible;*/
      float cA = clamp(clamp(dot(sp_ray, c), 0,1 )*isVisible, 0., 1);
@@ -228,9 +238,9 @@ void main() {
 
      vec4 cAmbient = vColor * uAmbient;
      float LightPow = uLightPow;
-     vec4 cDiff = vColor * vec4(LightPow*cT,
-                                LightPow*cT,
-				LightPow*cT, 1);
+     vec4 cDiff = vColor * vec4(LightPow*cT + cT2,
+                                LightPow*cT + cT2,
+				LightPow*cT + cT2, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
      FragData0 = cAmbient + cDiff + cSpec;

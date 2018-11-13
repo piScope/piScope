@@ -2496,6 +2496,11 @@ class ComboBox(ComboBoxCompact):
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
     def onHit(self, evt):
         self.GetParent().send_event(self, evt)
+    def SetChoices(self, ch):
+        self.Clear()
+        for c in ch:
+           self.Append(c)
+        self.SetSelection(0)   
 
 class ComboBox_Float(ComboBoxCompact):
     def __init__(self, *args, **kargs):
@@ -3537,10 +3542,16 @@ class EditListCore(object):
            expand_space = 5
            alignright = False
            enabled = True
-           if len(val) > 4:
-              if 'expand_space' in val[3]:
-                  expand_space = val[3]['expand_space']
-                  del val[3]['expand_space']
+           UpdateUI = None
+           if len(val) >= 4:
+              if val[3] is not None:
+                  ### val[3] can be either tuple or dict
+                  if 'expand_space' in val[3]:
+                      expand_space = val[3]['expand_space']
+                      del val[3]['expand_space']
+                  if 'UpdateUI' in val[3]:                      
+                      UpdateUI = val[3]["UpdateUI"]
+                      del val[3]["UpdateUI"]
 
            if val[0] is not None:
                txt=wx.StaticText(self, wx.ID_ANY, val[0])
@@ -3981,6 +3992,7 @@ class EditListCore(object):
                  setting = {}
               w = DialogButton(self, wx.ID_ANY, setting = setting)
               p = w
+              alignright = setting.pop('alignright', alignright)                               
               noexpand = setting.pop('noexpand', False)
            elif val[2] == 141:
               if len(val)==4:
@@ -3989,6 +4001,7 @@ class EditListCore(object):
                  setting = {}
               w = FunctionButton(self, wx.ID_ANY, setting = setting)
               p = w
+              alignright = setting.pop('alignright', alignright)                 
               noexpand = setting.pop('noexpand', False)
            elif val[2] == 241:
               if len(val)==4:
@@ -4058,6 +4071,10 @@ class EditListCore(object):
                  w=wx.StaticText(self, wx.ID_ANY, 'Custom UI is not defined!')
 
            w.Fit()
+           if UpdateUI is not None:
+               print("setting update event")
+               w.Bind(wx.EVT_UPDATE_UI, UpdateUI)
+              
            self.widgets.append((w, txt))
            self.widgets_enable.append(enabled)
            alignright = setting.pop('alignright', alignright)

@@ -1439,7 +1439,10 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def onTD_Selection(self, evt):
         pass
     def onTD_SelectionInFigure(self, evt):
-        pass
+        td = evt.GetTreeDict()
+        name = td.name
+        self.set_status_text(name, timeout = 5000)
+
     def onTD_Replace(self, evt):
 #        print 'replace event, bookviewer'
         self.canvas.onTD_Replace(evt)
