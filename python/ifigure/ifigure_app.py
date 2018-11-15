@@ -104,8 +104,17 @@ class WindowList(list):
        ret = [item() for item in self if item() is not None]
        self = [item for item in self if item() is not None]
        return ret
+   
    def add_item(self, item):
        self.append(weakref.ref(item))
+       
+   def remove_item(self, item):
+       t = None
+       for k in self:
+           if k() is item: t = k
+       if t is not None:
+           self.remove(t)
+       
    def get_next(self, current):
        ret = self._get_valid_item()
        self._validate_ref()
@@ -1125,6 +1134,7 @@ class ifigure_app(BookViewerFrame):
         self.canvas.unselect_all()
         self.proj.CloseProject()
         self.script_editor.close_all_pages()
+        self.onTD_CloseFile() # close editor
         self._set_proj(None)
         self.ipage=-1
         self.proj_tree_viewer.update_widget()
@@ -1142,15 +1152,22 @@ class ifigure_app(BookViewerFrame):
         import ifigure
         from ifigure.ifigure_config import icondir as path
         icon_path=os.path.join(path, 'app_logo_small.png')
-        info = wx.AboutDialogInfo()
- 
+        try:
+            info = wx.AboutDialogInfo()
+            use_adv = False
+        except:
+            info = wx.adv.AboutDialogInfo()
+            use_adv = True
         info.SetIcon(wx.Icon(icon_path, wx.BITMAP_TYPE_PNG))
         info.SetName('piScope')
         info.SetVersion('beta ')
         info.SetDescription('Python scripting workbench for \n   - browing MDSplus Data.\n   - analysing experiemntal data.\n   - running simulation codes.\n        ...\n')
-        info.SetCopyright('(C) 2012 - 2016 S. Shirawa')
+        info.SetCopyright('(C) 2012 - 2018 S. Shirawa')
         info.SetWebSite('http://piscope.psfc.mit.edu/')
-        wx.AboutBox(info)
+        if use_adv:
+            wx.adv.AboutBox(info)
+        else:
+            wx.AboutBox(info)
 
     def onClearCommandHistory(self, e):
         self.proj_tree_viewer.ch.clear_text()
@@ -1687,7 +1704,7 @@ class ifigure_app(BookViewerFrame):
             list = self.script_editor.get_filelist()
             self.update_open_filelist(list)
 
-    def onTD_CloseFile(self, evt):
+    def onTD_CloseFile(self, evt=None):
         list = self.script_editor.get_filelist()
         if len(list) == 0:
              if self.isEditorAttached():

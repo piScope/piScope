@@ -1321,6 +1321,8 @@ class ScriptEditor(wx.Panel):
     def close_all_pages(self):
         self.file_list=[]
         self.page_list=[]
+        while self.nb.GetPageCount() > 0:
+            self.nb.RemovePage(self.nb.GetPageCount()-1)
         self.nb.DeleteAllPages()
 
     def check_if_need_save(self, p):
