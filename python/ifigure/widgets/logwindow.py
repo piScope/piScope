@@ -160,10 +160,15 @@ class Logwindow(wx.MiniFrame):
     def onWindowClose(self, e=None):
         self.Hide()
         e.Veto()
+        
+    def call_remove_page(self, ipage, cpage):
+        if (self.nb.GetPageCount() == cpage):
+            self.nb.RemovePage(ipage)
 
     def onPageClose(self, e=None):
         ipage=self.nb.GetSelection()
         p=self.nb.GetPage(ipage)
+        wx.CallAfter(self.call_remove_page, ipage, self.nb.GetPageCount())        
         i = 0
         for x in self.threadlist:
             if x[2] == p:
