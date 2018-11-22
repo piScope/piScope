@@ -2166,8 +2166,8 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
         zp = np.vstack((cmesh, cmesh))
 
         if self.getp('cdir') == 'h':
-           y = self._artists[0].get_ylim()
-          # y = (0,1)
+           self._artists[0].set_ylim((0, 1))
+           y = (0,1)
            a.set_xlim((cmesh[0], cmesh[-1]))
            a.set_autoscalex_on(False)
            a.set_autoscaley_on(False)
@@ -2180,8 +2180,8 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            extent=[cmesh[0], cmesh[-1], min(y), max(y)]
         
         elif self.getp('cdir') == 'v':
-           x = self._artists[0].get_xlim()
-          # x = (0,1)
+           x = self._artists[0].set_xlim((0, 1))
+           x = (0,1)
            a.set_ylim((cmesh[0], cmesh[-1]))
            a.set_autoscalex_on(False)
            a.set_autoscaley_on(False)
@@ -2194,9 +2194,11 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
            self.set_axlcolor(['y', (lc, lc)], a)
            extent=[min(x), max(x), cmesh[0], cmesh[-1]]
 
-        if len(self._artists) == 1:
-            self.generate_twin_artist()
-            
+        if len(self._artists) > 1:
+            self._artists[1].remove()
+            self._artists = [self._artists[0],]
+        self.generate_twin_artist()
+
         self._cbar_image = self._artists[1].imshow(zp,
                                                    extent=extent,
                                                    interpolation='bicubic',
@@ -2204,11 +2206,10 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
                                                    aspect='auto',
                                                    origin='lower')
         self._cbar_image.nozsort = True
-#        self._cbar_image.set_zorder(-1)
         self.call_set_crangeparam_to_artist(self._caxis_param())
         
         if self._caxis_param().cmap is not None:
-             self._cbar_image.set_cmap(self._caxis_param().cmap)
+            self._cbar_image.set_cmap(self._caxis_param().cmap)
 
     def generate_twin_artist(self):
         if  self.getp('cdir') == 'v':
