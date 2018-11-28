@@ -66,7 +66,7 @@ void main() {
                           uViewOffset);
     vec4 pos2 = uProjM * (uViewM *(uWorldM*Vertex) + uViewOffset);
     gl_Position = vec4(pos2[0], pos2[1], pos1[2], pos2[3]);
-    gl_PointSize = 2;    
+    gl_PointSize = 6;    
     
     camera_dir = - (uViewM * uWorldM * Vertex).xyz;
     light_dir  = (uViewM * uWorldM * uLightDir).xyz;
