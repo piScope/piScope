@@ -61,6 +61,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cdata', None)
         p.add_key('shade', 'linear')
         p.add_key('array_idx', None)
+        p.add_key('use_pointfill', False)
         p.add_key('draw_last', False)
 
         v, kywds,d, flag = p.process(*args, **kywds)
@@ -204,6 +205,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         kywds['edgecolor'] = (ec,)
         kywds['linewidths'] =  0.0 if self.getp('linewidth') is None else self.getp('linewidth')
         kywds['shade'] = self.getvar('shade')
+        kywds['use_pointfill'] = self.getvar('use_pointfill')        
 
         args = (v[...,:3],) if idxset is None else (v[...,:3], idxset)
         self._artists = [container.plot_solid(*args, **kywds)]

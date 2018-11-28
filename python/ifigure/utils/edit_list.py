@@ -4206,6 +4206,16 @@ class EditListPanel(EditListCore, wx.Panel):
             wx.Panel.Enable(self, value)
         EditListCore.Enable(self, value=value)
 
+'''        
+   use_frame=True
+   def_style = (wx.CAPTION|
+             wx.CLOSE_BOX|
+             wx.MINIMIZE_BOX| 
+             wx.RESIZE_BORDER|
+             wx.FRAME_FLOAT_ON_PARENT|
+             wx.FRAME_TOOL_WINDOW)
+   base_widget = wx.Frame
+'''
 class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None, 
                  style=wx.DEFAULT_DIALOG_STYLE,
@@ -4302,7 +4312,6 @@ class EditListDialogTab(wx.Dialog):
 #        win.SetSizeHints(win)
         win.Fit()
         win.Layout()
-        
         
 def _DialogEditListCore(list, modal = True, style = wx.DEFAULT_DIALOG_STYLE,
                    tip = None, parent = None, pos=(-1,-1), size=(-1,-1),

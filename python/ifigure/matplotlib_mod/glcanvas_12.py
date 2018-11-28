@@ -1619,7 +1619,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           stencil_test = False,
                                           lighting = True,
                                           view_offset = (0, 0, 0, 0),
-                                          array_idx = None):
+                                          array_idx = None,
+                                          use_pointfill = True):
         if vbos is None: return
         first, counts = vbos['first'], vbos['counts']
 
@@ -1694,6 +1695,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
                   if self._wireframe == 1:
                       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
                   check_gl_error()
+                  if use_pointfill:
+                      self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, +0.005, 0))
+                      glEnable(GL_PROGRAM_POINT_SIZE);
+                      glDrawElements(GL_POINTS, len(counts)*counts[0],
+                                 GL_UNSIGNED_INT, None)
+                      glDisable(GL_PROGRAM_POINT_SIZE)
+                      self.set_uniform(glUniform4fv, 'uViewOffset', 1,
+                                   (0, 0, 0., 0.))
                   glDrawElements(primitive_mode, len(counts)*counts[0],
                                  GL_UNSIGNED_INT, None)
                   if self._wireframe == 1:

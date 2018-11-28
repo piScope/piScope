@@ -56,7 +56,8 @@ void main() {
                           uViewOffset);
     vec4 pos2 = uProjM * (uViewM *(uWorldM*gl_Vertex) + uViewOffset);
     gl_Position = vec4(pos2[0], pos2[1], pos1[2], pos2[3]);    
-
+    gl_PointSize = 2;
+    
     if (uisAtlas == 1){
        vec4 vertex2 = vec4(Vertex2);
        vertex2.w = 1;

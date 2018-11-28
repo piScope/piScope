@@ -651,7 +651,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._gl_facecolordata = kargs.pop('facecolordata', None)
         self._gl_voffset = kargs.pop('view_offset', (0,0,0,0.))
         self._gl_array_idx = kargs.pop('array_idx', None)        
-        
+        self._gl_use_pointfill  = kargs.pop('use_pointfill', False)        
+
         self._cz = None
         self._gl_cz = None
         self._update_ec = True
@@ -906,7 +907,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                         self._offset_position,
                         stencil_test = self.do_stencil_test,
                         view_offset = self._gl_voffset,
-                        array_idx = self._gl_array_idx)
+                        array_idx = self._gl_array_idx,
+                        use_pointfill = self._gl_use_pointfill)
 
 #           renderer.do_stencil_test = False
            glcanvas.end_draw_request()

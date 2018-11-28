@@ -1782,7 +1782,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                           stencil_test = False,
                                           lighting = True,
                                           view_offset = (0, 0, 0, 0),
-                                          array_idx = None):
+                                          array_idx = None,
+                                          use_pointfill = True):        
         if vbos is None: return
         if len(paths[4][0]) > 4:
             self.draw_path_collection(vbos, gc,  paths, 
@@ -1814,6 +1815,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if self._wireframe == 1:
                     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
                 check_gl_error()
+                if use_pointfill:
+                    # pointfill will fill voids when area is filled with a
+                    # lot of very small triangles...
+                    # maybe usefull for a high resolution 2D simulaiton plot
+                    self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, +0.005, 0))
+                    glEnable(GL_PROGRAM_POINT_SIZE);
+                    glDrawElements(GL_POINTS, nindex, GL_UNSIGNED_INT, None)
+                    glDisable(GL_PROGRAM_POINT_SIZE)
+                    self.set_uniform(glUniform4fv, 'uViewOffset', 1,
+                                   (0, 0, 0., 0.))
                 glDrawElements(vbos['primitive'], nindex,
                                      GL_UNSIGNED_INT, None)
                 if self._wireframe == 1:
