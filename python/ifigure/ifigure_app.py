@@ -215,6 +215,10 @@ class ifigure_app(BookViewerFrame):
        self.SetSize((msx, msy))
        self.Layout()
        self.Centre()
+       h, w = self.GetPosition()
+       if h < 0 or w < 0:
+           self.SetSize((msx-(100-h), msy-(100-h)))           
+           self.SetPosition((100, 100))
        if not hide:  
           wx.CallAfter(self.Show, True)
           wx.CallAfter(self.Raise)

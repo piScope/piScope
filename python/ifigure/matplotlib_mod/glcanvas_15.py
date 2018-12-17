@@ -1821,7 +1821,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     # maybe usefull for a high resolution 2D simulaiton plot
                     self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, +0.005, 0))
                     glEnable(GL_PROGRAM_POINT_SIZE);
-                    glDrawElements(GL_POINTS, nindex, GL_UNSIGNED_INT, None)
+                    #glDrawElements(GL_POINTS, nindex, GL_UNSIGNED_INT, None)
                     glDisable(GL_PROGRAM_POINT_SIZE)
                     self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                                    (0, 0, 0., 0.))

@@ -1,6 +1,9 @@
 import numpy as np 
 import ifigure
 
+import ifigure.utils.debug as debug
+dprint1, dprint2, dprint3 = debug.init_dprints('GL_COMPOUND')
+
 class GLCompound(object):
     def isCompound(self):
         return self.hasvar('array_idx')
@@ -151,3 +154,6 @@ class GLCompound(object):
 
         return m
     
+
+    def canvas_unselected(self):
+        self._artists[0]._gl_hit_array_id = []        
