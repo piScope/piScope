@@ -659,7 +659,7 @@ class VarViewerG(wx.Panel):
                    dlg.Destroy()
                    if ret  != wx.ID_OK: continue
                self.GetTopLevelParent().set_status_text('Paste tree variable', timeout = 3000)
-               obj.setvar(key, data)
+               obj.setvar(key, data[key])
                obj._var_changed = True
             self.update()
         elif mode == 'trash':
