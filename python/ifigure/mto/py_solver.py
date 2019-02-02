@@ -604,7 +604,9 @@ class PyParametric(BaseSolver):
             parent = self
 
         i = 0
-        pgb = dialog.progressbar(self.get_root_parent().app,
+        
+        app = wx.GetApp().TopWindow
+        pgb = dialog.progressbar(app,
                     'prepareing '+str(len(value))+ ' sol folders',
                     'initialize sol', len(value))
 

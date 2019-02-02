@@ -393,27 +393,6 @@ class ShellVarViewer(wx.Panel):
         if self._selection[2]:
             l1.extend([v for v in self._varlist if v[1] == 'module'])
         self.grid.GetTable().set_variable_list(l1)        
-        
-#    def onEdit(self, e):
-#        idx=e.GetIndex()
-#        new_name=e.GetText()
-#        if new_name == '': 
-#          e.Veto()
-#          return
-#        name = self.list.GetItem(0, 0) #GetItem(row, col)
-#        val  = self.list.GetItem(0, 1) #GetItem(row, col)
-#
-#        self._obj.delvar(self._keys[idx])
-#        self._obj.setvar(new_name, val.GetText())
-#        self.fill_list(self._obj)
-
-#    def onEditValue(self, e):
-#        row=self._startrow
-#        gt=self.grid.GetTable()
-#        obj=gt.GetTreeDict()
-#        name=(obj.get_varlist())[row]
-#        val=eval(str(self.ct1.GetValue()))
-#        self.grid.ForceRefresh()
 
     def SetDropTarget(self, tg):
         self.grid.GetGridWindow().SetDropTarget(tg)
