@@ -209,7 +209,6 @@ class JobRunner(object):
            elif com == 'value':
                try:
                    expr = job.params[0]
-                   print "evaluatging value", expr
                    r =self.connection.get(expr).data()
                    return r
                except:
@@ -218,7 +217,6 @@ class JobRunner(object):
            elif com == 'valuesig':
                try:
                    expr = job.params[0]
-                   print "evaluatging valuesig", expr
                    r =self.connection.get('_piscopevar=execute($)', expr).data()
                    return r
                except:
