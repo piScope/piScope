@@ -746,7 +746,7 @@ class Axes3DMod(Axes3D):
                 shade = kwargs.pop('shade', 'flat')
                 if shade != 'linear':
                     cdata = np.mean(cdata, -1)
-                kwargs['facecolordata'] = cdata.real
+                kwargs['facecolordata'] = np.real(cdata)
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, **kwargs)
@@ -759,7 +759,7 @@ class Axes3DMod(Axes3D):
                 else:
                     cdata = Z3D
                 shade = kwargs.get('shade', 'flat')
-                kwargs['facecolordata'] = cdata.real
+                kwargs['facecolordata'] = np.real(cdata)
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, idxset, **kwargs)
@@ -807,7 +807,7 @@ class Axes3DMod(Axes3D):
                 shade = kwargs.pop('shade', 'linear')
                 if shade != 'linear':
                     cdata = np.mean(cdata, -1)
-                kwargs['facecolordata'] = cdata.real
+                kwargs['facecolordata'] = np.real(cdata)
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, **kwargs)
@@ -819,7 +819,7 @@ class Axes3DMod(Axes3D):
                     cdata = cdata
                 else:
                     cdata = Z3D
-                kwargs['facecolordata'] = cdata.real
+                kwargs['facecolordata'] = np.real(cdata)
                 kwargs.pop('facecolor', None) # get rid of this keyword
             kwargs['cz'] = cz
             o =  self.plot_solid(verts, idxset, **kwargs)
