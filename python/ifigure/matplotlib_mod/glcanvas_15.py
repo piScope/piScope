@@ -2128,7 +2128,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return vbos
      
     def set_view_offset(self, offset_base = (0, 0, 0., 0)):
-        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))       
+        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))
+#        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.000, 0.)))               
         if self._use_frustum:
            self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
         else:
