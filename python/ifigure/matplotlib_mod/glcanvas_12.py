@@ -64,7 +64,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._read_data_pixbuf_target1 = (weakref.ref(dummy()), 0)        
         self._read_data_pixbuf_target2 = (weakref.ref(dummy()), 0)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
-        self._gl_scale
+        self._gl_scale = 1.0        
         
         if MyGLCanvas.offscreen: 
             self.SetSize((2,2))
@@ -451,7 +451,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
            a = (dist+1.)/dist
            glOrtho(-a, a, -a, a, minZ, maxZ)
-           projM = ortho(-a, a, -a, a, minZ, maxZ,, view_scale = self._gl_scale)
+           projM = ortho(-a, a, -a, a, minZ, maxZ, view_scale = self._gl_scale)
            self.set_uniform(glUniform1i,  'isFrust',  0)           
         #projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
         projM = np.dot(self.M_extra, projM)
