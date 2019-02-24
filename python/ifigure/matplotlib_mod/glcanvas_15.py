@@ -69,6 +69,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._read_data_pixbuf_target1 = (weakref.ref(dummy()), 0)        
         self._read_data_pixbuf_target2 = (weakref.ref(dummy()), 0)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
+        self._gl_scale = 1.0
 
         if MyGLCanvas.offscreen: 
             self.SetSize((2,2))
@@ -536,11 +537,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1f,  'farZ',  -maxZ)
         
         if self._use_frustum:
-           projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           #projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           projM = frustum(-minZ/near_clipping,
+                            minZ/near_clipping,
+                           -minZ/near_clipping,
+                            minZ/near_clipping,
+                            minZ, maxZ, view_scale = self._gl_scale)
            self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
            a = (dist+1.)/dist
-           projM = ortho(-a, a, -a, a, minZ, maxZ)
+           projM = ortho(-a, a, -a, a, minZ, maxZ, view_scale = self._gl_scale)
            self.set_uniform(glUniform1i,  'isFrust',  0)
         projM = np.dot(self.M_extra, projM)
         return projM, minZ, maxZ
@@ -585,8 +591,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         V = np.array((0, 0, 1))
         #zfront, zback = -10, 10
         
-        import mpl_toolkits.mplot3d.proj3d as proj3d        
-        viewM = proj3d.view_transformation(E, R, V)
+        from ifigure.matplotlib_mod.axes3d_mod  import view_transformation
+        viewM = view_transformation(E, R, V)
 
         self.set_uniform(glUniformMatrix4fv, 'uWorldM', 1, GL_TRUE, self.M[0])
         self.set_uniform(glUniformMatrix4fv, 'uViewM', 1, GL_TRUE, viewM)

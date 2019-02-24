@@ -7,7 +7,6 @@ from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.text import Text
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-import mpl_toolkits.mplot3d.proj3d as proj3d
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.transforms as trans
 from matplotlib.colors import ColorConverter
@@ -88,6 +87,59 @@ def arrow3d(base, r1, r2, ort, l, h, m = 13, pivot = 'tail'):
     return t1
 
 
+def world_transformation(xmin, xmax,
+                         ymin, ymax,
+                         zmin, zmax,
+                         view_scale = 1):
+    dx, dy, dz = (xmax-xmin), (ymax-ymin), (zmax-zmin)
+    return np.array([
+        [1.0/dx,0,0,-xmin/dx],
+        [0,1.0/dy,0,-ymin/dy],
+        [0,0,1.0/dz,-zmin/dz],
+        [0,0,0,1.0]])
+
+def view_transformation(E, R, V):
+    n = (E - R)
+    ## new
+#    n /= mod(n)
+#    u = np.cross(V,n)
+#    u /= mod(u)
+#    v = np.cross(n,u)
+#    Mr = np.diag([1.]*4)
+#    Mt = np.diag([1.]*4)
+#    Mr[:3,:3] = u,v,n
+#    Mt[:3,-1] = -E
+    ## end new
+
+    ## old
+    n = n / np.sqrt(np.sum(n**2))
+    u = np.cross(V, n)
+    u = u / np.sqrt(np.sum(u**2))
+    v = np.cross(n, u)
+    Mr = [[u[0],u[1],u[2],0],
+          [v[0],v[1],v[2],0],
+          [n[0],n[1],n[2],0],
+          [0,   0,   0,   1],
+          ]
+    #
+    Mt = [[1, 0, 0, -E[0]],
+          [0, 1, 0, -E[1]],
+          [0, 0, 1, -E[2]],
+          [0, 0, 0, 1]]
+    ## end old
+
+    return np.dot(Mr, Mt)
+
+def persp_transformation(zfront, zback):
+    a = (zfront+zback)/(zfront-zback)
+    b = -2*(zfront*zback)/(zfront-zback)
+    from ifigure.matplotlib_mod.canvas_common import view_scale
+    return np.array([[view_scale,0,0,0],
+                     [0,view_scale,0,0],
+                     [0,0,a,b],
+                     [0,0,-1,0]
+                     ])
+
 from functools import wraps
 def use_gl_switch(func):
     '''
@@ -140,6 +192,24 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = True
         self._upvec = np.array([0,0,1])
         self._ignore_screen_aspect_ratio = True
+        self._gl_scale = 1.0
+        
+    def view_init(self, elev=None, azim=None):
+        """
+        Copied form Axes3D to play with self.dist
+        """
+        from ifigure.matplotlib_mod.canvas_common import camera_distance
+        self.dist = camera_distance # default 10
+
+        if elev is None:
+            self.elev = self.initial_elev
+        else:
+            self.elev = elev
+
+        if azim is None:
+            self.azim = self.initial_azim
+        else:
+            self.azim = azim
 
     def gl_hit_test(self, x, y, artist, radius = 3):
         #
@@ -976,9 +1046,9 @@ class Axes3DMod(Axes3D):
         zmin, zmax = self.get_zlim3d()
 
         # transform to uniform world coordinates 0-1.0,0-1.0,0-1.0
-        worldM = proj3d.world_transformation(xmin, xmax,
-                                             ymin, ymax,
-                                             zmin, zmax)
+        worldM = world_transformation(xmin, xmax, ymin, ymax,zmin, zmax,
+                                      view_scale = self._gl_scale)
+
         # look into the middle of the new coordinates
         R = np.array([0.5, 0.5, 0.5])
 
@@ -989,7 +1059,7 @@ class Axes3DMod(Axes3D):
 
         self.eye = E
         self.vvec = R - E
-        self.vvec = self.vvec / proj3d.mod(self.vvec)
+        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
 
         if abs(relev) > np.pi/2:
             V = np.array((0, 0, -1))
@@ -999,9 +1069,9 @@ class Axes3DMod(Axes3D):
         zfront, zback = -self.dist, self.dist
         #zfront, zback = self.dist-1, self.dist+1
 
-        viewM = proj3d.view_transformation(E, R, V)
+        viewM = view_transformation(E, R, V)
         if self._use_frustum:
-           perspM = proj3d.persp_transformation(zfront, zback)
+           perspM = persp_transformation(zfront, zback)
         else:
            a = (zfront+zback)/(zfront-zback)            
            b = -2*(zfront*zback)/(zfront-zback)            
@@ -1023,6 +1093,8 @@ class Axes3DMod(Axes3D):
         self._matrix_cache_extra = M
            
         perspM = np.dot(M, perspM)
+        
+        # perspM is used to draw Axes,,,
         return  worldM, viewM, perspM, E, R, V, self.dist
     
     def get_proj(self):
@@ -1149,6 +1221,7 @@ class Axes3DMod(Axes3D):
                 if (glcanvas is not None and
                     glcanvas.init):
                     glcanvas.set_lighting(**self._lighting)
+                    glcanvas._gl_scale = self._gl_scale
                 else: 
                     return
             renderer._num_globj = gl_len
@@ -1170,7 +1243,29 @@ class Axes3DMod(Axes3D):
                 self.texts.remove(self._3d_axes_icon[5]())                
             self._3d_axes_icon  = None
 
+
+        if self._gl_scale != 1.0:
+            print("gl_scale", self._gl_scale)            
+            xmin, xmax = self.get_xlim3d()
+            ymin, ymax = self.get_ylim3d()
+            zmin, zmax = self.get_zlim3d()
+            dx = (xmax - xmin)/self._gl_scale/2.
+            dy = (ymax - ymin)/self._gl_scale/2.
+            dz = (zmax - zmin)/self._gl_scale/2.
+            xmid = (xmax + xmin)/2.
+            ymid = (ymax + ymin)/2.
+            zmid = (zmax + zmin)/2.       
+            self.set_xlim3d([xmid-dx, xmid+dx])
+            self.set_ylim3d([ymid-dy, ymid+dy])
+            self.set_zlim3d([zmid-dz, zmid+dz])
+        
         val = Axes3D.draw(self, renderer)
+        
+        if self._gl_scale != 1.0:        
+            self.set_xlim3d([xmin, xmax])
+            self.set_ylim3d([ymin, ymax])
+            self.set_zlim3d([zmin, zmax])
+        
         self.set_frame_on(frameon)
         return val
 
