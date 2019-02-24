@@ -64,6 +64,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._read_data_pixbuf_target1 = (weakref.ref(dummy()), 0)        
         self._read_data_pixbuf_target2 = (weakref.ref(dummy()), 0)        
         self._wireframe = 0 # 1: wireframe + hidden line elimination 2: wireframe
+        self._gl_scale
         
         if MyGLCanvas.offscreen: 
             self.SetSize((2,2))
@@ -432,6 +433,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glLoadIdentity()
         dist = self.M[-1]
 
+
         # viwe range shoud be wide enough to avoid near clipping 
         minZ = dist-near_clipping
         maxZ = dist+near_clipping
@@ -439,14 +441,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1f,  'farZ',  -maxZ)
         
         if self._use_frustum:
-#           glFrustum(-1, 1, -1, 1, minZ, maxZ) this is original (dist = 10, so 9 is adjustment)
-           #glFrustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
-           projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)           
+           #projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
+           projM = frustum(-minZ/near_clipping,
+                            minZ/near_clipping,
+                           -minZ/near_clipping,
+                            minZ/near_clipping,
+                            minZ, maxZ, view_scale = self._gl_scale)
            self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
            a = (dist+1.)/dist
            glOrtho(-a, a, -a, a, minZ, maxZ)
-           projM = ortho(-a, a, -a, a, minZ, maxZ)
+           projM = ortho(-a, a, -a, a, minZ, maxZ,, view_scale = self._gl_scale)
            self.set_uniform(glUniform1i,  'isFrust',  0)           
         #projM = read_glmatrix(mode = GL_PROJECTION_MATRIX)
         projM = np.dot(self.M_extra, projM)
@@ -500,8 +505,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         V = np.array((0, 0, 1))
         #zfront, zback = -10, 10
         
-        import mpl_toolkits.mplot3d.proj3d as proj3d        
-        viewM = proj3d.view_transformation(E, R, V)
+        from ifigure.matplotlib_mod.axes3d_mod  import view_transformation
+        viewM = view_transformation(E, R, V)
 
         self.set_uniform(glUniformMatrix4fv, 'uWorldM', 1, GL_TRUE, self.M[0])
         self.set_uniform(glUniformMatrix4fv, 'uViewM', 1, GL_TRUE, viewM)

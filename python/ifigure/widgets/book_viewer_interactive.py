@@ -1388,19 +1388,28 @@ class BookViewerInteractive(object):
             fig_axes.set_bmp_update(False)            
         elif len(args) == 1:            
             if args[0] == 'xy':
-                ax.elev, ax.azim = 90, 180
+                if ax.elev == 90 and ax.azim == 180:
+                    ax.elev, ax.azim = -90, 180
+                else:
+                    ax.elev, ax.azim = 90, 180
                 ax._upvec = np.array([0,1,0])
                 fig_axes.set_bmp_update(False)                            
             elif args[0] == 'xz':
-                ax.elev, ax.azim = 0, -90
+                if ax.elev == 0 and ax.azim == -90:
+                    ax.elev, ax.azim = 180, -90
+                else:
+                    ax.elev, ax.azim = 0, -90
                 ax._upvec = np.array([0,0,1])                
                 fig_axes.set_bmp_update(False)                
             elif args[0] == 'yx':
                 ax.elev, ax.azim = -90, 0
                 ax._upvec = np.array([0,0,1])                
                 fig_axes.set_bmp_update(False)                
-            elif args[0] == 'yz':                
-                ax.elev, ax.azim = 0, 0
+            elif args[0] == 'yz':
+                if ax.elev == 0 and ax.azim == 0:
+                    ax.elev, ax.azim = 180, 0
+                else:
+                    ax.elev, ax.azim = 0, 0
                 ax._upvec = np.array([0,0,1])                
                 fig_axes.set_bmp_update(False)                
             elif args[0] == 'zx':                

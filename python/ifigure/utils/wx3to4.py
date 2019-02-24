@@ -95,6 +95,12 @@ def tree_InsertItemBefore(tree, pitem, pos, label, image=-1, selImage=-1, data=N
     else:
         return tree.InsertItem(pitem, pos, label, image=image, selImage=selImage, data=data)
 
+def grid_ClientSizeTuple(grid, *args, **kwargs):
+    if isWX3:
+         return grid.ClientSizeTuple()
+    else:
+         return grid.ClientSize
+
 @wrap_method('SetOptionInt', 'SetOption')
 def image_SetOptionInt(image, *args, **kwargs):
     return args, kwargs

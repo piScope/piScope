@@ -2348,6 +2348,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
            axes.set_ylim3d(miny - dy, maxy + dy)
            axes.set_zlim3d(minz - dz, maxz + dz)
            axes.figobj.set_bmp_update(False)
+           #axes._gl_scale = axes._gl_scale*(1.-df*2)
            requests = self.make_range_request_pan(axes.figobj, auto=False)                 
            self.send_range_action(requests, '3D zoom')
            #self.draw_later()
@@ -2405,6 +2406,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 requests = self.make_xyauto_request(ax.figobj, 'y', requests=requests)
                 if ax.figobj.get_3d():
                     requests = self.make_xyauto_request(ax.figobj, 'z', requests=requests)
+                    ax._gl_scale = 1.0
                 requests[ax.figobj] = ax.figobj.compute_new_range(request = requests[ax.figobj])
                 self.send_range_action(requests, 'range')
 

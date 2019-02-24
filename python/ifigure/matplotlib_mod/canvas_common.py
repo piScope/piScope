@@ -28,7 +28,9 @@ try:
 except ImportError:
     haveOpenGL = False
 
-near_clipping = 8.   ## must be float
+near_clipping = 9.     ## must be float (default 8)
+camera_distance = 10.  ## must be float (default 10)
+view_scale = 1.
 
 multisample = 1
 multisample_init_done = False
@@ -71,28 +73,30 @@ def check_framebuffer(message, mode = GL_FRAMEBUFFER):
     #print "test sample", glGetIntegerv(GL_SAMPLE_BUFFERS)
     return True
 
-def frustum(left, right, bottom, top, zNear, zFar):
+def frustum(left, right, bottom, top, zNear, zFar, view_scale = 1):
     dx = right - left
     dy = top - bottom
     A = (right + left) / (right - left)
     B = (top + bottom) / (top - bottom)
     C = -(zFar + zNear) / (zFar - zNear)
     D = - (2*zFar* zNear) / (zFar - zNear)
-    return np.array([[2*zNear/dx, 0,           A, 0],
-                     [0,          2*zNear/dy,  B, 0],
-                     [0,          0,           C, D],
-                     [0,          0,          -1, 0]])
-def ortho(left, right, bottom, top, zNear, zFar):
+    M =  np.array([[2*zNear/dx*view_scale, 0,           A, 0],
+                   [0,          2*zNear/dy*view_scale,  B, 0],
+                   [0,          0,           C, D],
+                   [0,          0,          -1, 0]])
+    return M
+ 
+def ortho(left, right, bottom, top, zNear, zFar, view_scale = 1):
     dx = right - left
     dy = top - bottom
     dz = zFar - zNear
     tx = - (right + left) / (right - left)
     ty = - (top + bottom) / (top - bottom)
     tz = - (zFar + zNear) / (zFar - zNear)
-    return np.array([[2/dx, 0,     0,     tx],
-                     [0,    2/dy,  0,     ty],
-                     [0,    0,     -2/dz, tz],
-                     [0,    0,     0,     1.]])
+    return np.array([[2/dx*view_scale, 0,     0,     tx],
+                     [0,    2/dy*view_scale,  0,     ty],
+                     [0,    0,     -2/dz,    tz],
+                     [0,    0,     0,        1.]])
 
  
 def wait_gl_finish(method):
