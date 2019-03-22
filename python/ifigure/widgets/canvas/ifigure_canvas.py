@@ -1320,7 +1320,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
       self._3d_rot_mode = 0
       self._frameart_mode = False
       self._alt_shift_hit = False
-
+      self._full_screen_mode = False
+      
       self.selection=[]
       self.axes_selection=cbook.WeakNone()
 
@@ -2267,8 +2268,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          else:
             if not drag_happend:
                if len(self.selection):
-                  self.unselect_all()
-                  self.refresh_hl()
+                  if (any([s().figobj.isCompound() for s in self.selection]) and
+                      event.guiEvent.ShiftDown()):
+                      # 
+                      pass
+                  else:
+                      self.unselect_all()
+                      self.refresh_hl()
 #                  self.draw_later()
                axes=self.axes_selection()
                if axes is not None:
