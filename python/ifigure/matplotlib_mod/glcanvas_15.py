@@ -1976,7 +1976,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 #idxsete = idxset                
             elif len(paths[4][0]) == 2:
                 idxset  = idxset0
-                print idxset.shape
+                #print idxset.shape
                 #idxset=  idxset0[:,[0, 1, 0]].flatten()
                 idxsete = None
             else:
