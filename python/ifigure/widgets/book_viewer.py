@@ -73,6 +73,33 @@ class FrameWithWindowList(wx.Frame):
     def onActivate(self, evt):
         if evt.GetActive():
            wx.GetApp().process_child_focus(self)
+  
+           from ifigure.utils.cbook import get_current_display_size         
+           x0, y0, xd, yd = get_current_display_size(self)
+
+           #
+           #  Make sure that window is "visible". 
+           #
+           w, h = self.GetPosition()
+           sw, sh = self.GetSize()
+           xm = 10
+           ym = 25
+           do_set = False
+           if w +sw <= xm:
+               w = -sw + xm
+               do_set = True
+           elif w  > xd - xm:
+               w = xd - xm
+               do_set = True               
+           if h <= 0:
+               h = ym
+               do_set = True               
+           elif h > yd - ym:
+               h = yd - ym
+               do_set = True
+           if do_set:
+               dprint2("adjusting window position", (w, h))
+               self.SetPosition((w, h))               
         evt.Skip()
         
     def onChildFocus(self, evt):
