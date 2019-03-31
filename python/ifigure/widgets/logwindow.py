@@ -84,7 +84,9 @@ class Logwindow(wx.MiniFrame):
         for t, td, log, status in self.threadlist:
            if t.isAlive():
                c = c+1
-        if c > 3 : return
+        if c > self.GetParent().aconfig.setting['max_thread']:
+            return
+        
         i = 0
         for t, td, log, status in self.threadlist:
            if status == 0: 
