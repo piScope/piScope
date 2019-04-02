@@ -2268,7 +2268,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
          else:
             if not drag_happend:
                if len(self.selection):
-                  if (any([s().figobj.isCompound() for s in self.selection]) and
+                  if (any([s().figobj.isCompound() for s in self.selection if s() is not None]) and
                       event.guiEvent.ShiftDown()):
                       # 
                       pass
