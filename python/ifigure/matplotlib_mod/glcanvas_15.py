@@ -2055,9 +2055,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['i'].need_update = False
 
         if vbos['i'].need_update:
-            vbos['i'].set_array(idxset)
+            if len(vbos['i']) > len(idxset):
+                # we need  not to change the size of i ...!?
+                data = np.zeros(len(vbos['i']), np.uint32)
+                data = data.reshape(-1, len(paths[4][0]))
+                idxset0 = idxset.reshape(-1, len(paths[4][0]))
+                data[:len(idxset0),:] = idxset0
+                data = data.flatten()
+                vbos['i'].set_array(data)
+            else:
+                vbos['i'].set_array(idxset)                
+
             vbos['counts'] = len(paths[4][0])
             vbos['i'].need_update = False
+            
             if idxsete is not None:
                 vbos['ie'].set_array(idxsete)
             else:
