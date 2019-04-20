@@ -1326,12 +1326,12 @@ class TreeDict(object):
             files=os.listdir(path)
             for x in files:
                fullpath=os.path.join(path, x)
-               if os.path.isfile(fullpath):
-                  f=os.remove
-                  rmgeneric(fullpath, f)
-               elif os.path.isdir(fullpath):
+               if os.path.isdir(fullpath):
                   removeall(fullpath)
                   f=os.rmdir
+                  rmgeneric(fullpath, f)
+               elif os.path.isfile(fullpath):
+                  f=os.remove
                   rmgeneric(fullpath, f)
         
 #       if self._can_have_child:
