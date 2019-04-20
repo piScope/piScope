@@ -966,9 +966,22 @@ class TimeTrace(FigPlot):
 
     def expand_catalog(self):
         if not self.hasvar('x_catalog'): return
-        x = self.getvar('x_catalog').restore(0)
-        self.delvar('x_catalog')
-        y = self.getvar('y_catalog').restore(0)
+        try:
+            x = self.getvar('x_catalog').restore(0)
+        except IOError:
+            print("IOError during catalog expansion")
+            self.delvar('x_catalog')
+            self.delvar('y_catalog')
+            return
+        try:
+            y = self.getvar('y_catalog').restore(0)            
+        except IOError:
+            print("IOError during catalog expansion")
+            self.delvar('x_catalog')            
+            self.delvar('y_catalog')
+            return
+
+        self.delvar('x_catalog')        
         self.delvar('y_catalog')
         if x.size != y.size:
              dprint1('catalog data x and y has different length')
