@@ -84,8 +84,10 @@ class AskRC(wx.Dialog):
         wx.Dialog.__init__(self, parent, id, title)
 
         box = wx.BoxSizer(wx.VERTICAL)
-
-        vbox = wx.FlexGridSizer(2,2)
+        
+        from ifigure.utils.wx3to4 import FlexGridSizer
+        vbox = FlexGridSizer(2,2)
+        
         stline1 = wx.StaticText(self, 3, 'R')
         self.sc1 = wx.SpinCtrl(self, -1, '')
         self.sc1.SetRange(1,8)

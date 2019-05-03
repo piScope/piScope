@@ -49,7 +49,10 @@ dirname=os.path.dirname(ifigure.__file__)
 class primitive_widgets(wx.Panel):
     def __init__(self, parent):
         super(primitive_widgets, self).__init__(parent)
-        sizer = wx.FlexGridSizer(1, 2) 
+
+        from ifigure.utils.wx3to4 import FlexGridSizer                        
+        sizer = FlexGridSizer(1, 2)
+        
         self.SetSizer(sizer)
         self.Controls=[]
         self.events=None 
@@ -212,7 +215,10 @@ class margin_widget(wx.Panel):
 
         big_sizer=wx.BoxSizer(wx.VERTICAL)
         big_sizer2=wx.BoxSizer(wx.HORIZONTAL)
-        sizer = wx.FlexGridSizer(2, 2) 
+
+        from ifigure.utils.wx3to4 import FlexGridSizer                
+        sizer = FlexGridSizer(2, 2)
+        
         sizer.AddGrowableCol(1)
         sizer.Add(st1, 0, wx.ALIGN_CENTER_VERTICAL, 3)
         sizer.Add(self.h_slider, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
@@ -299,7 +305,9 @@ class marginp_widget(wx.Panel):
 
         big_sizer=wx.BoxSizer(wx.VERTICAL)
         big_sizer2=wx.BoxSizer(wx.HORIZONTAL)
-        sizer = wx.FlexGridSizer(2, 2) 
+
+        from ifigure.utils.wx3to4 import FlexGridSizer        
+        sizer = FlexGridSizer(2, 2) 
         sizer.AddGrowableCol(1)
         sizer.Add(st1, 0, wx.ALIGN_CENTER_VERTICAL, 3)
         sizer.Add(self.h_slider, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,3)
