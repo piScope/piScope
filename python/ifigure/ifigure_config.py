@@ -116,29 +116,45 @@ else:
 crashed_process = []
 
 from ifigure.utils.pid_exists import pid_exists
-for item in os.listdir(tempdir_base):
-    if item.startswith('pid'):
-       pid = int(item[3:])
-       if not pid_exists(pid):
-#       try:
-#          os.kill(pid, 0)
-#       except OSError:
-           try:
-              dname = os.path.join(tempdir_base, item)
-              for item2 in os.listdir(dname):
-                  if item2.startswith('###untitled_'):
-                     f = os.path.join(tempdir_base, item, item2)
-                     shutil.rmtree(f)
-              if len(os.listdir(dname)) == 0:
-                  try:
-                      print(('removing past crush dir', dname))
-                      shutil.rmtree(dname)
-                  except:
-                      print('Failed to remove crush dir')
-           except:
-               pass
-           
-tempdir=os.path.join(tempdir_base, 'pid'+str(os.getpid()))
+
+#
+# temporary directory is <hostname>.PID_xxxx
+#    we add hostname to the temporary file,
+#    in order to avoid deleteing the work directory
+#    when the tmporary directory is on the share drive
+#    and when a user opens the same project file from
+#    more than two different computers
+#
+#    hostname is taken by using socket.gethostname()
+#    if it fails
+#    we use a nominal hostname = "HOST"
+#
+for item0 in os.listdir(tempdir_base):
+   item = item0.split('.')[-1]
+   if item.startswith('pid'):
+      pid = int(item[3:])
+      if not pid_exists(pid):
+          try:
+             dname = os.path.join(tempdir_base, item0)
+             for item2 in os.listdir(dname):
+                 if item2.startswith('###untitled_'):
+                    f = os.path.join(tempdir_base, item0, item2)
+                    shutil.rmtree(f)
+             if len(os.listdir(dname)) == 0:
+                 try:
+                     print(('removing past crush dir', dname))
+                     shutil.rmtree(dname)
+                 except:
+                     print('Failed to remove crush dir')
+          except:
+              pass
+try:
+  import socket
+  name = socket.gethostname().split('.')[0]
+except:
+  name = "HOST"
+tempdir=os.path.join(tempdir_base, name + '.pid'+str(os.getpid()))
+
 if os.path.exists(tempdir) == False:
     os.mkdir(tempdir)
 
