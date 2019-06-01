@@ -195,7 +195,7 @@ class AbsFileContainer(object):
     def add_extfolder(self, basepath):
 
         import ifigure.mto.py_script as py_script
-        from py_extfile import make_external
+        from ifigure.mto.py_extfile import make_external
         if not os.path.exists(basepath):
             raise ValueError("no such directory")
         basefolder = self.add_folder(os.path.basename(basepath))
@@ -681,7 +681,7 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
                 yield child
 
     def tree_viewer_menu(self):
-        from hg_support import has_hg
+        from ifigure.mto.hg_support import has_hg
       # return MenuString, Handler, MenuImage
         s, f, c, g = self.eval_script_location()
         ss = '-' if s is None else ''
@@ -1176,7 +1176,7 @@ class PyFolder(TreeDict, AbsModuleContainer, AbsScriptContainer,
             return PyFolder._image_id[0]
 
     def tree_viewer_menu(self):
-        from hg_support import has_hg
+        from ifigure.mto.hg_support import has_hg
         # return MenuString, Handler, MenuImage
         menu = [
             ('Add Text',   self.onAddNewText, None),

@@ -722,7 +722,7 @@ class TreeDict(object):
         '''
         generator to wolk through tree
         '''
-        from py_extfile import ExtMixIn
+        from ifigure.mto.py_extfile import ExtMixIn
         yield self
         if stop_at_ext and isinstance(self, ExtMixIn):
             return
@@ -1949,7 +1949,8 @@ class TreeDict(object):
         strtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S. %f")
         # print strtime
         m = hashlib.md5()
-        m.update(strtime+str(seed))
+        bytechar = (strtime+str(seed)).encode('latin-1')
+        m.update(bytechar)
         txt = m.hexdigest()
         return txt
 
