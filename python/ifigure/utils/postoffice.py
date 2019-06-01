@@ -1,7 +1,11 @@
+from __future__ import print_function
+
+
 '''
 PostOffice 
 simple postoffice to send a file
 '''
+
 import wx
 import binascii
 #import sys, socket, shlex, threading, os, binascii, subprocess, time, tempfile

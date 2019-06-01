@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :fig_mds
 #
 #          container to create and hold figures
@@ -260,7 +261,7 @@ def_plot_options = {'plot': (('',), {'color': 'auto',
 
 class FigMds(FigGrp):
     def __init__(self, *args, **kargs):
-        if kargs.has_key('dwplot'):
+        if 'dwplot' in kargs:
             dwplot = kargs['dwplot']
             del(kargs['dwplot'])
         else:
@@ -290,7 +291,7 @@ class FigMds(FigGrp):
 
     def import_dwplot(self, dwplot):
         def read_dwplot(name, dwplot):
-            if dwplot.has_key(name):
+            if name in dwplot:
                 return dwplot[name]
             return ''
 
@@ -1218,8 +1219,8 @@ class FigMds(FigGrp):
             val = eval(txt, {}, lc)
         except:
             print('Failed to evaluate shot text')
-            print('shot text', txt)
-            print('name space', lc)
+            print(('shot text', txt))
+            print(('name space', lc))
             # print traceback.format_exc()
             return None, None
         if 0 < val < 1000:

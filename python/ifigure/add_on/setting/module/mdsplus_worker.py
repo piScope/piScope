@@ -1,9 +1,12 @@
+from __future__ import print_function
+
 '''
    setting add-on for mds mp/sp workers.
  
    2014 02 worker type setting is removed. it uses always "mp" worker.
 
 '''
+
 from ifigure.mdsplus.mdsscope import MDSWorkerPool
 from ifigure.mdsplus.mds_sp_worker_pool import MDSSPWorkerPool
 from ifigure.mdsplus.mds_mpth_worker_pool import MDSMPWorkerPool

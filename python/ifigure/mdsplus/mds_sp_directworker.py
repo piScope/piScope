@@ -192,7 +192,7 @@ if __name__ == '__main__':
                 r2 = {}
 #               r = {n:r[n] for n in def_names if r.has_key(n)}
                 for n in def_names:
-                    if r.has_key(n):
+                    if n in r:
                         r2[n] = r[n]
 
                 ch.send(r2)

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
 MDSplus job runner
 
@@ -7,7 +9,6 @@ There is two modes:
   2) a mode which uses MDSplus.Tree and MDSplusData
      This mode is for multiprocessing worker
 '''
-
 
 import sys
 import time
@@ -27,7 +28,7 @@ try:
         '''
 
         def get(self, expr, *args, **kwargs):
-            print 'expression'+expr
+            print('expression'+expr)
             return Connection.get(self, expr, *args, **kwargs)
 except:
     traceback.print_exc()

@@ -46,7 +46,7 @@ extname = 'afile_ext'
 
 
 def init(self, *args, **kargs):
-    if not kargs.has_key("src"):
+    if "src" not in kargs:
         self.onLoadFile(file='')
 
 

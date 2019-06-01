@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 import collections
 from ifigure.utils.edit_list import TextDropTarget

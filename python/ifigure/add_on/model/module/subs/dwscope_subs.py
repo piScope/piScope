@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 from ifigure.utils.cbook import Write2Main
 from ifigure.mto.py_code import PyData
@@ -68,11 +69,11 @@ def import_dwscope(file):
         print(line)
         arr = command.split('.')
         if len(arr) == 3:
-            if not d.has_key(arr[1]):
+            if arr[1] not in d:
                 d[arr[1]] = {}
             d[arr[1]][arr[2]] = data
         if len(arr) == 2:
-            if not d.has_key(arr[1]):
+            if arr[1] not in d:
                 d[arr[1]] = {}
             d[arr[1]] = data
 

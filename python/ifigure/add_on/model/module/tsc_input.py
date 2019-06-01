@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from ifigure.mto.py_contents import Namelist, TSCInputFile
 from collections import OrderedDict
@@ -58,7 +59,7 @@ extname = 'namelist_ext'
 
 
 def init(self, *args, **kargs):
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile()
 
 
@@ -166,7 +167,7 @@ def load_tscinputfile(obj):
 
     nm = load_file(file)
 
-    print('reading file', file)
+    print(('reading file', file))
     obj.setvar0(nm)
 
 # def fromat_float(num):
@@ -226,7 +227,7 @@ def tree2txt(self, var0=None):
 
 def onGenerateRestartInput(self, e=None, filename='inputa',
                            update_card=None, stop_time=None):
-    print('here', update_card, stop_time)
+    print(('here', update_card, stop_time))
     var0 = self.td.getvar0()
     if update_card is not None:
         d = TSCInputFile()
@@ -323,6 +324,6 @@ def onPlotTimeDep(self, e=None, *args, **kargs):
                 plt.title(x)
                 new_plot = False
             except:
-                print('failed to generate picture for', key)
+                print(('failed to generate picture for', key))
                 new_plot = True
     pass

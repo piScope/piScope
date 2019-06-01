@@ -1,5 +1,7 @@
+from __future__ import print_function
+
 '''
-  reag gfile
+  read gfile
 
      2015 09 22
         Sign of Bt and Ip is positive when it orients
@@ -24,6 +26,7 @@
         mesh size number
 
 '''
+
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData
 from ifigure.mto.py_code import PyCode
@@ -366,7 +369,7 @@ def load_file(file=None):
         if line.startswith('&'):
             s = string_split_ig(line, ' |,')
             sec = s[0][1:]
-            print 'making new sec ', sec, line.__repr__(), s
+            print('making new sec ', sec, line.__repr__(), s)
             nm[sec] = OrderedDict()
             if len(s) > 1:
                 line = ' '.join(s[1:])
@@ -404,7 +407,7 @@ def load_file(file=None):
 #          print s
 #          if s[0] is '': del s[0]
                 if debug != 0:
-                    print('create dict key', sec, varname)
+                    print(('create dict key', sec, varname))
                 # print 'create dict key', sec, varname
                 nm[sec][varname] = []
                 if s.endswith('/'):
@@ -460,7 +463,7 @@ def scale_p(self, factor=None):
         else:
             return
 
-    print('Pres scale by', str(factor))
+    print(('Pres scale by', str(factor)))
     td[:]["table"]["pres"] *= factor
     td[:]["table"]["pressmid"] *= np.abs(factor)
     td[:]["table"]["pressrz"] *= factor
@@ -483,7 +486,7 @@ def scale_b(self, factor=None):
         else:
             return
 
-    print('Bt scale by', str(factor))
+    print(('Bt scale by', str(factor)))
 
     td[:]["table"]["ffprim"] *= factor*factor
     td[:]["table"]["fpol"] *= factor
@@ -507,7 +510,7 @@ def scale_i(self, factor=None):
         else:
             return
 
-    print('Ip scale by', str(factor))
+    print(('Ip scale by', str(factor)))
 
     td[:]["table"]["psirz"] *= factor
     td[:]["table"]["qpsi"] *= np.abs(1./factor)
@@ -529,7 +532,7 @@ def onScaleBt(self, evt):
 
 
 def init(self, *args, **kargs):
-    if not kargs.has_key("src"):
+    if "src" not in kargs:
         self.onLoadFile(file='')
 
 

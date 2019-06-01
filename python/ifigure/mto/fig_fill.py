@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #  Name   :fig_fill.py
 #
@@ -60,7 +61,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
             obj._data_extent = None
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -110,7 +111,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         ZUser.__init__(self)
 
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigFill, self).__init__(*args, **kywds)
 

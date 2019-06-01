@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.widgets.simple_shell import ShellBase
 import wx
 import os
@@ -60,7 +61,7 @@ class DebuggerInterpreter(IP):
             from code import softspace
             import sys
             if softspace(sys.stdout, 0):
-                print
+                print()
 
 
 class DebugShell(ShellBase):
@@ -242,12 +243,12 @@ class DebuggerPanel(wx.Panel):
             wx.Yield()
 
     def handle_user_return(self, frame, return_value):
-        print('return', frame, return_value, self._call_count)
+        print(('return', frame, return_value, self._call_count))
         if self._call_count > 0:
             self._call_count = self._call_count - 1
         else:
             self._status = 'stop'
-            print('exiting debug mode : return value = ', return_value)
+            print(('exiting debug mode : return value = ', return_value))
             self.exit_debug_mode()
 
     def handle_user_call(self, frame, return_value):
@@ -255,7 +256,7 @@ class DebuggerPanel(wx.Panel):
 
     def handle_user_exception(self, frame, exc_info):
         self._status = 'stop'
-        print('exiting debug mode : exception info = ', exc_info)
+        print(('exiting debug mode : exception info = ', exc_info))
         self.exit_debug_mode()
 
     def exit_debug_mode(self):

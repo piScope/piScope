@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   Edit list
 #
@@ -167,7 +168,7 @@ class FunctionButtons(Panel):
 
 class LabelPanel(Panel):
     def __init__(self, *args, **kargs):
-        if kargs.has_key("setting"):
+        if "setting" in kargs:
             setting = kargs["setting"]
             del kargs["setting"]
         super(LabelPanel, self).__init__(*args, **kargs)
@@ -236,7 +237,7 @@ class LabelPanel2(LabelPanel):
 
 class AxisPositionPanel(Panel):
     def __init__(self, *args, **kargs):
-        if kargs.has_key("setting"):
+        if "setting" in kargs:
             setting = kargs["setting"]
             del kargs["setting"]
         super(AxisPositionPanel, self).__init__(*args, **kargs)
@@ -321,7 +322,7 @@ class AxisPositionPanel(Panel):
 
 class LogLinScale(Panel):
     def __init__(self, *args, **kargs):
-        if kargs.has_key("setting"):
+        if "setting" in kargs:
             setting = kargs["setting"]
             del kargs["setting"]
         super(LogLinScale, self).__init__(*args, **kargs)
@@ -415,7 +416,7 @@ class LogLinScale(Panel):
 
 class AxisRange(wx.Panel):
     def __init__(self, *args, **kargs):
-        if kargs.has_key("setting"):
+        if "setting" in kargs:
             setting = kargs["setting"]
             del kargs["setting"]
         super(AxisRange, self).__init__(*args, **kargs)
@@ -1289,7 +1290,7 @@ class ColorMapNB(wx.Notebook):
 
 class ColorMap(wx.Panel):
     def __init__(self, *args, **kargs):
-        if kargs.has_key("setting"):
+        if "setting" in kargs:
             #           setting = kargs["setting"]
             del kargs["setting"]
 #        else: setting = {"reverse": False}
@@ -1843,7 +1844,7 @@ class Slider(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.t1 = None
-        if setting.has_key("text_box"):
+        if "text_box" in setting:
             if setting["text_box"] == True:
                 self.t1 = TextCtrlCopyPaste(self, wx.ID_ANY,
                                             str(setting["val"]),
@@ -2485,7 +2486,7 @@ class CheckBoxModifiedELP(Panel):
             self.Layout()
 
     def _set_size(self):
-        print(self.elp.GetSize(), self.elp2.GetSize())
+        print((self.elp.GetSize(), self.elp2.GetSize()))
 
 #   self.elp[i]=EditListPanel(nb, [x[0:4] for x in list])
 #   value = DialogEditListTab(tab, l, tip=tip, parent=parent,
@@ -2789,7 +2790,7 @@ class GenericCoordsTransform(wx.Panel):
                  self.axes, self.axes_sel_mode)
         self.axes_sel_mode = False
         self.set_button_eneable()
-        print('getvalue in generic...', value)
+        print(('getvalue in generic...', value))
 
         return value
 
@@ -2884,7 +2885,7 @@ class ArrowStylePanel(wx.Panel):
         # print 'switch panel', mode, self.mode
         if self.elp is not None:
             self._elp_values[self.mode] = self.elp.GetValue()
-        if not self.panels.has_key(mode):
+        if mode not in self.panels:
             return False
         if self.mode == mode:
             self.GetParent().Layout()
@@ -3400,7 +3401,7 @@ class MDSSource0(wx.Panel):
     def onPageClose(self, evt):
         ipage = self.nb.GetSelection()
         label = self.nb.GetPageText(ipage).strip()
-        print label, 'closing'
+        print(label, 'closing')
         if str(label) in ['x', 'y', 'z', 'xerr', 'yerr']:
             ret = dialog.message(self,
                                  '"'+label+'"' + " is reserved and cannot be deleted",
@@ -3883,7 +3884,7 @@ class EditListCore(object):
             elif val[2] == 4:
                 if len(val) == 4:
                     setting = val[3]
-                    if setting.has_key("style") is False:
+                    if ("style" in setting) is False:
                         #                    setting["style"]=wx.CB_DROPDOWN
                         setting["style"] = wx.TE_PROCESS_ENTER
                 else:
@@ -3899,7 +3900,7 @@ class EditListCore(object):
                     setting = val[3]
                     if "readonly" in setting:
                         setting["style"] = wx.CB_READONLY if setting["readonly"] else wx.DROPDOWN
-                    if setting.has_key("style") is False:
+                    if ("style" in setting) is False:
                         setting["style"] = wx.TE_PROCESS_ENTER
                 else:
                     setting = {"style": wx.CB_READONLY,

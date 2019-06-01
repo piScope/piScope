@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
    connections is a board game from 80's
 
@@ -9,6 +11,7 @@
       develop an algorithm to decide next move in 
       order to implement one player mode.
 '''
+
 from ifigure.widgets.book_viewer import BookViewer
 from matplotlib.patches import Rectangle
 import wx

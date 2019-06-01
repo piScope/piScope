@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 
   class:FigureCanvasWxMod
@@ -14,6 +16,7 @@
 
 
 """
+
 # uncomment the following to use wx rather than wxagg
 import matplotlib
 import wx

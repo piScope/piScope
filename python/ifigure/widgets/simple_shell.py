@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx.py.shell  # (wx4 removed this) wx.lib.shell
 from threading import Timer, Thread
 import thread

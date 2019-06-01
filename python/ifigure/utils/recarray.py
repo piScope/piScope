@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import collections
 
@@ -10,8 +11,8 @@ def rec2dict(arr, cls=collections.OrderedDict):
     elif arr.dtype.names is not None:
         r = cls()
         for name in arr.dtype.names:
-            print name
-            print isinstance(arr[name], np.recarray)
+            print(name)
+            print(isinstance(arr[name], np.recarray))
             if isinstance(arr[name], np.recarray):
                 r[name] = rec2dict(arr[name])
             elif (isinstance(arr[name], np.ndarray) and

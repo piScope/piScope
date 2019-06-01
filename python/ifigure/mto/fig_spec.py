@@ -45,7 +45,7 @@ class FigSpec(FigImage):
                     obj.setvar(key, default_kargs[key])
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj

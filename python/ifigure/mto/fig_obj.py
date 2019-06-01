@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :fig_obj
 #
 #          base class for fig_obj
@@ -332,7 +333,7 @@ class FigObj(TreeDict, MetadataHolder):
         process keyword given to __init__
         store them to var
         '''
-        if kywds.has_key(name):
+        if name in kywds:
             self.setvar(name, kywds[name])
             del kywds[name]
         else:
@@ -987,7 +988,7 @@ class FigObj(TreeDict, MetadataHolder):
             obj = args[0]
             name = obj.name
 
-        if not kargs.has_key('keep_zorder'):
+        if 'keep_zorder' not in kargs:
             kargs['keep_zorder'] = False
 
         figpage = self.get_figpage()
@@ -1036,7 +1037,7 @@ class FigObj(TreeDict, MetadataHolder):
             except:
                 import sys
                 import traceback
-                print("FigObj::getp error:", sys.exc_info()[0])
+                print(("FigObj::getp error:", sys.exc_info()[0]))
                 print(traceback.format_exc())
 #              print "fig obj att not found "+name
                 return [None]*len(name)
@@ -1057,7 +1058,7 @@ class FigObj(TreeDict, MetadataHolder):
             return None
 
     def hasp(self, name):
-        return self._attr.has_key(name)
+        return name in self._attr
 
 
 #
@@ -1175,7 +1176,7 @@ class FigObj(TreeDict, MetadataHolder):
     def onShowAtt(self, e):
         from matplotlib.artist import getp
         for key in self._attr.keys():
-            print(key, type(self._attr[key]))
+            print((key, type(self._attr[key])))
         for a in self._artists:
             print(getp(a))
 
@@ -1263,7 +1264,7 @@ class FigObj(TreeDict, MetadataHolder):
             box = a.get_window_extent(a.figure._cachedRenderer)
             return box.xmin, box.xmax, box.ymin, box.ymax
         except:
-            print('error in get_artist_extent for ', a)
+            print(('error in get_artist_extent for ', a))
             print(traceback.format_exc())
             return [None]*4
         return [None]*4
@@ -1575,7 +1576,7 @@ class FigObj(TreeDict, MetadataHolder):
             pass
 #           print "no loaded property....artist was not realized when saved?"
 #        print(loaded_prop)
-        if val.has_key("format"):
+        if "format" in val:
             if val["format"] == 2:
                 attr = pickle.load(fid)
                 for k in attr:
@@ -1642,7 +1643,7 @@ class FigObj(TreeDict, MetadataHolder):
 #   set artist property
 #
     def mpl_set(self, name, *value, **kargs):
-        if kargs.has_key("ia"):
+        if "ia" in kargs:
             ia = kargs["ia"]
         else:
             ia = 0

@@ -1,6 +1,9 @@
+from __future__ import print_function
+
 '''
 fake listner thread for debugging
 '''
+
 import multiprocessing as mp
 import threading
 import Queue
@@ -74,4 +77,4 @@ if __name__ == '__main__':
     listener_thread.task_queue.put(('exit', ''), False)
     listener_thread.queue.put('stop')
 
-    print 'good bye'
+    print('good bye')

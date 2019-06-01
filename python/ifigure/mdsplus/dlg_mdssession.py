@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.widgets.script_editor import Notebook
 from ifigure.utils.wx3to4 import TextEntryDialog, GridSizer
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
@@ -419,7 +420,7 @@ class DlgMdsSession(DialogWithWindowList):
 #        self._selected_page = label
 
     def onClosePage(self, evt):
-        print 'onClose'
+        print('onClose')
         ipage = self.nb.GetSelection()
         label = str(self.nb.GetPageText(ipage))
         if label.startswith('*'):
@@ -604,7 +605,7 @@ class DlgMdsSession(DialogWithWindowList):
 
     def onEL_Changed(self, evt):
         from ifigure.mdsplus.fig_mds import required_variables
-        print evt.widget_idx
+        print(evt.widget_idx)
         if evt.widget_idx == 0:
             plot_type = str(evt.elp.GetValue()[0])
             v = required_variables[plot_type]

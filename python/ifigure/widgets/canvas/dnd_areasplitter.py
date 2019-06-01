@@ -1,3 +1,4 @@
+from __future__ import print_function
 import ifigure.widgets.canvas.custom_picker as cpicker
 
 
@@ -22,7 +23,7 @@ def dnd_sp(x, y, canvas):
     for axes in reversed(figure.axes):
         hit, extra = cpicker.axes_picker(axes, evt,
                                          canvas=canvas.canvas)
-        print(hit, extra)
+        print((hit, extra))
 
 
 #    except Exception:

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   Obsolete module (use connection module)
 #
@@ -122,7 +123,7 @@ def onRec(self, file=None, rfile=None, rdir=None):
     p = subprocess.Popen(shlex.split(command), stderr=subprocess.STDOUT,
                          stdout=subprocess.PIPE)
     p.wait()
-    print('stdout', p.stdout.read())
+    print(('stdout', p.stdout.read()))
 
 
 def onExec(self, e=None, command=None, wait=True):
@@ -139,7 +140,7 @@ def onExec(self, e=None, command=None, wait=True):
         while p.wait() == None:
             wx.SafeYield()
             time.sleep(0.25)
-    print('stdout', p.stdout.read())
+    print(('stdout', p.stdout.read()))
 
 
 def onSend(self, file=None, rdir=None, rfile=None):
@@ -170,7 +171,7 @@ def onSend(self, file=None, rdir=None, rfile=None):
                          stdout=subprocess.PIPE)
 
     p.wait()
-    print('stdout', p.stdout.read())
+    print(('stdout', p.stdout.read()))
 
     #scp_paramiko('localhost', port, file, rfile)
 

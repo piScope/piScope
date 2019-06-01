@@ -1,3 +1,4 @@
+from __future__ import print_function
 # uncomment the following to use wx rather than wxagg
 from matplotlib.backends.backend_agg import RendererAgg
 import os
@@ -94,7 +95,7 @@ def check_framebuffer(message, mode=GL_FRAMEBUFFER):
         print(str(GL_FRAMEBUFFER_UNSUPPORTED))
 
         return False
-    print "test sample", glGetIntegerv(GL_SAMPLE_BUFFERS)
+    print("test sample", glGetIntegerv(GL_SAMPLE_BUFFERS))
     return True
 
 
@@ -135,7 +136,7 @@ def wait_gl_finish(method):
 def check_gl_error():
     error = glGetError()
     if error != 0:
-        print("GL error ", error)
+        print(("GL error ", error))
 
 
 class vbos_dict(dict):
@@ -361,7 +362,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
 
     def EnableVertexAttrib(self, name):
-        print "enable", name, self._p_attrib_loc[name]
+        print("enable", name, self._p_attrib_loc[name])
         glEnableVertexAttribArray(self._p_attrib_loc[name])
 
     def DisableVertexAttrib(self, name):

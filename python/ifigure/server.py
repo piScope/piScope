@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
     server thread for ifigure.
     accept connection from remote host and
@@ -18,6 +20,7 @@
        2012.12.01  v 0.1
       
 '''
+
 
 import subprocess
 import shlex

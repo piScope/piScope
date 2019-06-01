@@ -39,7 +39,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
             obj._objs = []  # for debug....
             obj._data_extent = None
             return obj
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -79,7 +79,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
         YUser.__init__(self)
         TrianglePlots.__init__(self)
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigTriplot, self).__init__(*args, **kywds)
 

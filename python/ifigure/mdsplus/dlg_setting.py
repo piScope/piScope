@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.utils.edit_list import DialogEditListTab
 import ifigure.widgets.dialog as dialog
 import wx

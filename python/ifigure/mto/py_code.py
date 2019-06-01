@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :py_code
 #
 #          base class for TreeDict which can
@@ -141,7 +142,7 @@ class AbsFileContainer(object):
         self.add_child(name, obj)
         obj.mk_owndir()
         path = os.path.join(obj.owndir(), obj.name + '.txt')
-        print('creating file ', path)
+        print(('creating file ', path))
         open(path, 'a').close()
         obj.set_path_pathmode(path)
         obj.store_mtime()
@@ -389,7 +390,7 @@ class AbsModuleContainer(object):
         dest = os.path.join(child.owndir(), name+'.py')
         shutil.copyfile(temp, dest)
 
-        print('loading...', dest)
+        print(('loading...', dest))
         child.load_module(dest)
 
         w = None
@@ -421,7 +422,7 @@ class AbsModuleContainer(object):
 
     def onAddAbsModule(self, e, file=None):
         self.add_absmodule(file)
-        print('loading add-on', file)
+        print(('loading add-on', file))
         e.Skip()
 
     def build_module_menu(self, mod_path):
@@ -500,7 +501,7 @@ class AbsScriptContainer(object):
         if name is None:
             name = self.get_next_name(child.get_namebase())
         if self.has_child(name):
-            print 'doing here'
+            print('doing here')
             name = self.get_next_name(name)
         idx = self.add_child(name, child)
         #print('loading add-on', file)
@@ -661,8 +662,8 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
         s, f, c, g = self.eval_script_location()
         if s is not None:
             if self._run_verbose:
-                print('Entering :', self.name)
-                print('   Running ', s.get_full_path())
+                print(('Entering :', self.name))
+                print(('   Running ', s.get_full_path()))
             s.do_run()
 
     def do_clean(self):
@@ -671,7 +672,7 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
             c.do_run()
         for name, treeobj in self.get_children():
             if isinstance(treeobj, PyModel):
-                print("Entering : ", name)
+                print(("Entering : ", name))
                 treeobj.do_clean()
 
     def walk_model(self):
@@ -924,21 +925,21 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
 
     def load_data2(self, data):
         h2 = data['PyModel'][1]
-        if h2.has_key("r"):
+        if "r" in h2:
             self._run_script = h2["r"]
-        if h2.has_key("c"):
+        if "c" in h2:
             self._cleanup_script = h2["c"]
-        if h2.has_key("f"):
+        if "f" in h2:
             self._finish_script = h2["f"]
-        if h2.has_key("g"):
+        if "g" in h2:
             self._gui_script = h2["g"]
-        if h2.has_key("background"):
+        if "background" in h2:
             self._background = h2["background"]
-        if h2.has_key("run_after"):
+        if "run_after" in h2:
             self._run_after = str(h2["run_after"])
-        if h2.has_key("run_mode"):
+        if "run_mode" in h2:
             self._run_mode = h2["run_mode"]
-        if h2.has_key("run_verbose"):
+        if "run_verbose" in h2:
             self._run_verbose = h2["run_verbose"]
         return super(PyModel, self).load_data2(data)
 
@@ -1017,7 +1018,7 @@ class PyParam(PyCode):
             for name, child in item.get_children():
                 if isinstance(child, PyParam):
                     for key in (child.getvar()).keys():
-                        if not d.has_key(key):
+                        if key not in d:
                             d[key] = [(child.get_full_path(), child)]
                         else:
                             d[key].append((child.get_full_path(), child))
@@ -1037,7 +1038,7 @@ class PyParam(PyCode):
                 return d.keys()
 
         for key in item.getvar().keys():
-            if not d.has_key(key):
+            if key not in d:
                 d[key] = (item.get_full_path(), item)
             else:
                 d[key].append((item.get_full_path(), item))
@@ -1080,14 +1081,14 @@ class PyParam(PyCode):
     def onPrint(self, e):
         d = self.eval_all_keys(path=True)
         for key in d:
-            print(key, 'defined as...')
+            print((key, 'defined as...'))
             for x in d[key]:
                 val = x[1]._var[key]
                 if isinstance(val, str):
                     if val.startswith('='):
                         val = eval(val[1:])
 
-                print('   ', str(val), ' at ',  x[1].get_full_path())
+                print(('   ', str(val), ' at ',  x[1].get_full_path()))
 
     def onExport(self, e):
         d = {}

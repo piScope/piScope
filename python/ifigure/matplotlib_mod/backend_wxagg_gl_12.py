@@ -1,3 +1,4 @@
+from __future__ import print_function
 # uncomment the following to use wx rather than wxagg
 from matplotlib.backends.backend_agg import RendererAgg
 import os
@@ -128,7 +129,7 @@ def wait_gl_finish(method):
 def check_gl_error():
     error = glGetError()
     if error != 0:
-        print("GL error ", error)
+        print(("GL error ", error))
 
 
 class vbos_dict(dict):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 from .gl_compound import GLCompound
 from matplotlib.collections import LineCollection
@@ -50,7 +51,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
             obj._decimate_limit = _decimate_limit
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -100,7 +101,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         CUser.__init__(self)
 
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigPlot, self).__init__(*args, **kywds)
 
@@ -883,7 +884,7 @@ class StepPlot(FigPlot):
     written in FigPLot
     '''
     def __new__(cls, *args, **kywds):
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigPlot.__new__(cls, *args, **kywds)
 #            obj = set_hidden_vars(obj)
             obj._use_decimate = False
@@ -968,7 +969,7 @@ class TimeTrace(FigPlot):
 
     '''
     def __new__(cls, *args, **kywds):
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigPlot.__new__(cls, *args, **kywds)
 #            obj = set_hidden_vars(obj)
             obj._use_decimate = True

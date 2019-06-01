@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import weakref
 import threading
@@ -71,14 +72,14 @@ class EventDrivenThread(threading.Thread):
                 print(event)
                 print(self.events)
                 if event in self.events:
-                    print('calling method for ', event)
+                    print(('calling method for ', event))
                     for m in self.events[event]:
                         m(event)
         remove_queue(self.queue)
         send_event(self.finish_event)
         self.queue = None
         self.events = None
-        print('Exiting...', self.name)
+        print(('Exiting...', self.name))
 
     def onQuitThread(self, e):
         self.flag = False

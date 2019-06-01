@@ -1,3 +1,4 @@
+from __future__ import print_function
 import weakref
 import os
 import traceback
@@ -83,7 +84,7 @@ class VarViewerGValue(object):
         return self._var.keys()
 
     def hasvar(self, name):
-        return self._var.has_key(name)
+        return name in self._var
 
     def setvar(self, *args):
         if len(args) == 2:
@@ -664,7 +665,7 @@ class VarViewerG(wx.Panel):
         evt.Skip()
 
     def onGridLDClick(self, evt):
-        print 'Grid DClick'
+        print('Grid DClick')
         evt.Skip()
 
     def onButton(self, evt, mode):

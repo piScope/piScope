@@ -55,7 +55,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
             obj._fine_artist = None
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -105,7 +105,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
         CUser.__init__(self)
 
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigSurface, self).__init__(*args, **kywds)
         self._method = 'plot_surface'
@@ -625,7 +625,7 @@ class FigRevolve(FigSurface):
             obj._fine_artist = None
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj

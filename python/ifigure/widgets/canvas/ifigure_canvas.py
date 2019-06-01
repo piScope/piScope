@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 #
 #  Name   :ifigure_canvas
@@ -1247,7 +1248,7 @@ class ifigure_popup(wx.Menu):
         #        print 'set frame art'
         canvas = e.GetEventObject()
         for item in canvas.selection:
-            print item()
+            print(item())
             if item() is not None:
                 item().figobj.set_frameart(True)
         canvas.draw_all()
@@ -1267,7 +1268,7 @@ class ifigure_popup(wx.Menu):
 
     def onArrange(self, e):
         canvas = e.GetEventObject()
-        print('arrange', e.ExtraInfo)
+        print(('arrange', e.ExtraInfo))
 
         dx = [0]*len(canvas.selection)
         dy = [0]*len(canvas.selection)
@@ -4162,7 +4163,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         print('key_event')
 
     def dnd_motion(self, evt):
-        print('dnd motion', evt.xdata, evt.ydata)
+        print(('dnd motion', evt.xdata, evt.ydata))
         pass
 
     def _check_can_group(self):

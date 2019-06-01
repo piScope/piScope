@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import scipy.io as sio
 import wx
@@ -66,7 +67,7 @@ def init(self, *args, **kargs):
     nm = Matfile()
     nm['data'] = MatData()
     obj.setvar0(nm)
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile(None)
     # self.onLoadFile()
 

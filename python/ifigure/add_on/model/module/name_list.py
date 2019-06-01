@@ -1,3 +1,4 @@
+from __future__ import print_function
 #################################################
 #
 #   NameList : PyData to hold a fortran namelist
@@ -83,7 +84,7 @@ def init(self, *args, **kargs):
     obj.mk_owndir()
     nm = Namelist()
     obj.setvar0(nm)
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile()
     else:
         try:
@@ -319,7 +320,7 @@ def load_namelistfile(obj):
         child.destroy()
 
     nm = load_file(file)
-    print('reading file', file)
+    print(('reading file', file))
     obj.setvar0(nm)
     mtime = os.path.getmtime(file)
     obj.setvar('namelist_mtime', mtime)

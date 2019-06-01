@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import collections
 from scipy.io.idl import readsav
@@ -65,7 +66,7 @@ def init(self, *args, **kargs):
     obj.mk_owndir()
     nm = IDLfile()  # nm['data'] = IDLData()
     obj.setvar0(nm)
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile(None)
     # self.onLoadFile()
 
@@ -82,8 +83,8 @@ def load_matfile(obj):
     def idl2dict(dd, cls=collections.OrderedDict):
         r = cls()
         for name in dd.keys():
-            print name
-            print isinstance(dd[name], np.recarray)
+            print(name)
+            print(isinstance(dd[name], np.recarray))
             if isinstance(dd[name], np.recarray):
                 r[name] = rec2dict(dd[name], cls=cls)
             else:

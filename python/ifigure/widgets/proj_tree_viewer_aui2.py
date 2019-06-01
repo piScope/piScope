@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 import sys
 import weakref
@@ -524,9 +525,9 @@ class ProjTreeViewer(wx.Panel):
         oitem = croot
         while True:
             try:
-                ntd2 = nge.next()
+                ntd2 = next(nge)
                 try:
-                    oitem2 = oge.next()
+                    oitem2 = next(oge)
                     otd2 = self.tree.GetPyData(oitem2)
                 except Exception:
                     otd2 = None

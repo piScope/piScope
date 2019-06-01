@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 from ifigure.utils.cbook import parseStr
 from ifigure.fig_objects.py_code import PyData

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from .miniframe_with_windowlist import MiniFrameWithWindowList
 import os
 import wx
@@ -177,7 +178,7 @@ class VideoplayerBar(bp.ButtonPanel):
             v.stop_play()
             v.step_rev()
         else:
-            print btask
+            print(btask)
 
     def reset_btn_toggle_bitmap(self):
         self.set_toggle('')

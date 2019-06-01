@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 
 #  load image file
@@ -141,7 +142,7 @@ def pil_to_image(pil, alpha=True):
     #import Image
     """ Method will convert PIL Image to wx.Image """
     if alpha:
-        image = apply(wxEmptyImage, pil.size)
+        image = wxEmptyImage(*pil.size)
         image.SetData(pil.convert("RGB").tostring())
         image.SetAlphaData(pil.convert("RGBA").tostring()[3::4])
     else:
@@ -173,7 +174,7 @@ def image_to_pil(image):
             data = str(data)
     pil = Image.frombytes('RGB', (image.GetWidth(), image.GetHeight()),
                           data)
-    print pil
+    print(pil)
     return pil
 
 
@@ -939,7 +940,7 @@ def isndarray(obj):
 def GetModuleDir(mname):
     import sys
     namelist = mname.split('.')
-    if sys.modules.has_key(namelist[0]) is False:
+    if (namelist[0] in sys.modules) is False:
         try:
             top = __import__(namelist[0], globals(), locals(), [], -1)
         except Exception:
@@ -1005,7 +1006,7 @@ def LaunchEmacs(file):
 
 
 def ProcessKeywords(kywds, name, value=None):
-    if kywds.has_key(name):
+    if name in kywds:
         value = kywds[name]
         del kywds[name]
     return value, kywds
@@ -1153,19 +1154,19 @@ class DictDiffer(object):
         self.show_detail()
 
     def show_detail(self):
-        print("Added:", self.added())
+        print(("Added:", self.added()))
         for item in self.added():
-            print(item, ':', self.current_dict[item])
+            print((item, ':', self.current_dict[item]))
 
-        print("Removed:", self.removed())
+        print(("Removed:", self.removed()))
         for item in self.removed():
-            print(item, ':', self.past_dict[item])
+            print((item, ':', self.past_dict[item]))
 
-        print("Changed:", self.changed())
+        print(("Changed:", self.changed()))
         for item in self.changed():
-            print(item, ':', self.current_dict[item], self.past_dict[item])
+            print((item, ':', self.current_dict[item], self.past_dict[item]))
 
-        print("Unchanged:", self.unchanged())
+        print(("Unchanged:", self.unchanged()))
 
     def added(self):
         return self.set_current - self.intersect

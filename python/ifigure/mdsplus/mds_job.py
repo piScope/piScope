@@ -1,3 +1,4 @@
+from __future__ import print_function
 class MDSjob(object):
     def __init__(self, command, *args):
         self.command = command
@@ -7,7 +8,7 @@ class MDSjob(object):
         return str(self.command) + ' ' + str(self.params)
 
     def print_job(self):
-        print(self.command, self.params)
+        print((self.command, self.params))
 
     def txt_job(self):
         return (self.command, self.params)

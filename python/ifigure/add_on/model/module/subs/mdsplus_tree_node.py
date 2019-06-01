@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData
@@ -101,14 +102,14 @@ def call_mdsvalue(self, str):
     port = parent.getvar("port")
     mds.port = port
     mds.server = server
-    print(tree, shot, port, server, str)
+    print((tree, shot, port, server, str))
     try:
         res = mds.open(tree, shot)
         print(res)
         return mds.value(str)
     except Exception:
         print("!!!!!! Error in evaluating the following node  !!!!!!")
-        print("TREE/SHOT", tree, shot)
-        print("NODE", str)
+        print(("TREE/SHOT", tree, shot))
+        print(("NODE", str))
         print(sys.exc_info())
     return None

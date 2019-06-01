@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :fig_axes
 #
 #          this class to manage matplotlib.axes
@@ -1946,7 +1947,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 class FigInsetAxes(FigAxes):
     def __init__(self, *args, **kywds):
         #        self.child=[]
-        if kywds.has_key("draggable"):
+        if "draggable" in kywds:
             self.setvar("draggable", kywds["draggable"])
             del kywds["draggable"]
         else:

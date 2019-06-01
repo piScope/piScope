@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -43,7 +44,7 @@ def sendMail(to, subject, text, files=[], server="mail1.psfc.mit.edu",
         msg.attach(part)
 
     if ssl:
-        print(server, ssl_port)
+        print((server, ssl_port))
         smtp = smtplib.SMTP_SSL(server, ssl_port)
         smtp.login(ssl_username, ssl_passwd)
     else:

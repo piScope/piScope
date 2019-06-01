@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.mto.treedict import TreeDict
 import ifigure
 import os

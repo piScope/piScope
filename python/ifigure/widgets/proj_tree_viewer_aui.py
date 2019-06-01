@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.utils.wx3to4 import tree_InsertItemBefore, wxNamedColour, tree_GetItemData, tree_SetItemData
 import ifigure.utils.debug as debug
 from ifigure.widgets.command_history import CommandHistory
@@ -398,7 +399,7 @@ class TreeCtrl(wx.TreeCtrl):
                 return (t1.get_parent().i_child(t1) -
                         t2.get_parent().i_child(t2))
             except:
-                print(t1, t2)
+                print((t1, t2))
                 return False
         else:
             return t1[2].OnCompareItems(t1, t2)
@@ -1244,7 +1245,7 @@ class ProjTreeViewer(wx.Panel):
         oitem = croot
         while True:
             try:
-                ntd2 = nge.next()
+                ntd2 = next(nge)
                 nindex = nindex + 1
                 oindex = oindex + 1
                 if len(oge_list) > oindex:
@@ -1384,9 +1385,9 @@ class ProjTreeViewer(wx.Panel):
         oitem = croot
         while True:
             try:
-                ntd2 = nge.next()
+                ntd2 = next(nge)
                 try:
-                    oitem2 = oge.next()
+                    oitem2 = next(oge)
                     otd2 = self.tree.GetPyData(oitem2)
                     # if not isinstance(otd2, TreeDict): continue
                 except Exception:
@@ -1407,8 +1408,8 @@ class ProjTreeViewer(wx.Panel):
                         oitem = pitem
                         pitem = self.tree.GetItemParent(pitem)
 
-                    print "adding sibling", ntd2.get_full_path()
-                    print "next to", self.tree.GetPyData(oitem).get_full_path()
+                    print("adding sibling", ntd2.get_full_path())
+                    print("next to", self.tree.GetPyData(oitem).get_full_path())
                     nindex = self.fill_sub_tree_org(
                         pitem,
                         ntd2,

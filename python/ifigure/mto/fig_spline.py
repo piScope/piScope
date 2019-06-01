@@ -1,3 +1,4 @@
+from __future__ import print_function
 from ifigure.mto.fig_obj import FigObj, mask_negative
 from ifigure.widgets.canvas.file_structure import *
 from ifigure.mto.axis_user import XUser, YUser
@@ -62,7 +63,7 @@ class FigSpline(FigObj, XUser, YUser):
             obj._sp_interp = 1
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -95,7 +96,7 @@ class FigSpline(FigObj, XUser, YUser):
         YUser.__init__(self)
 
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigSpline, self).__init__(*args, **kywds)
 

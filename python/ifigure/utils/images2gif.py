@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """ MODULE images2gif
 
 Provides a function (writeGif) to write animated gif from a series
@@ -220,7 +222,7 @@ def writeGif(filename, images, duration=0.1, loops=0, dither=1):
     # write
     try:
         n = _writeGifToFile(fp, images2, durations, loops)
-        print(n, 'frames written')
+        print((n, 'frames written'))
     finally:
         fp.close()
 

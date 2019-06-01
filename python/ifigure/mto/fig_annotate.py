@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 __author__ = "Syun'ichi Shiraiwa"
 __copyright__ = "Copyright, S. Shiraiwa, PiScope Project"
@@ -31,7 +32,7 @@ class FigAnnotate(FigObj):
             arrowprops = dict(arrowstyle="->",
                               connectionstyle="arc3")
         self._objs = []  # for debug....
-        if kywds.has_key("draggable"):
+        if "draggable" in kywds:
             self.setvar("draggable", kywds["draggable"])
             del kywds["draggable"]
         else:

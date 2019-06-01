@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
    ifigure.interactive  
 
@@ -12,6 +14,7 @@
    programmed to use __doc__ in this file.
 
 '''
+
 import matplotlib.mlab as mlab
 from functools import wraps
 import logging
@@ -1470,7 +1473,7 @@ def video(*args, **kargs):
         x = args[1]
         y = args[2]
     else:
-        raise(ValueError('data dimension is not right'))
+        raise ValueError
 
     v = videoviewer()
     o = v.image(*args, **kargs)

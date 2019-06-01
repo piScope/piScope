@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #  Name   : py_script
 #
@@ -87,7 +88,7 @@ class AnsHolder(object):
     def RunA(self, *args, **kargs):
         self.Run(*args, **kargs)
         if 'ans' in kargs:
-            obj = kargs['ans'].func_defaults[1]
+            obj = kargs['ans'].__defaults__[1]
         else:
             obj = self
         val = obj._ans
@@ -170,7 +171,7 @@ class AbsScript(object):
             except ExitScript:
                 return True
             except ScriptStop as e:
-                print('Script execution stops : ', e.message)
+                print(('Script execution stops : ', e.message))
                 return False
             except Exception:
                 print('script exectuion failed')
@@ -755,7 +756,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
             obj.add_child(path[-1], script)
             fpath = os.path.join(script.owndir(), path[-1]+'.py')
             script.set_path_pathmode(fpath)
-            print('creating...', script)
+            print(('creating...', script))
             ifigure.events.SendChangedEvent(script, w=wx.GetApp().TopWindow)
         return script
 
@@ -772,7 +773,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         sol_list = self._make_list2([], proj.find_by_full_path(base_sol))
         for sol, src_name in sol_list:
             script = self._find_script_in_sol(sol, src_name)
-            print('running...', script.get_full_path())  # value
+            print(('running...', script.get_full_path()))  # value
             if value[4]:
                 wx.CallAfter(script.do_run_t, None, *
                              (value[2][1]), **(value[3][1]))
@@ -811,7 +812,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         src_file = FileHolder.path2fullpath(self)
         for sol, src_name in sol_list:
             script = self._find_script_in_sol(sol, src_name)
-            print('updating...', script)
+            print(('updating...', script))
             dest_file = FileHolder.path2fullpath(script)
             shutil.copyfile(src_file, dest_file)
 

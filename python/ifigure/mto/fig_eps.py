@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #  fig_eps
 #
@@ -447,7 +448,7 @@ class FigEPS(FigBox):
 #        file = '/Users/shiraiwa/piscope_src/example/images/cmod_logo_official_better_color.eps'
 
         self.setvar('org_epsfile', file)
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
             kywds['xy'] = self.getvar('xy')
         super(FigEPS, self).__init__(**kywds)

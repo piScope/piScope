@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   this is a skelton for a optimizer
 #
@@ -15,9 +16,9 @@ import ifigure.events
 
 def modifier(worker, names, values):
     print('Running modifier')
-    print('working on model directory ...', worker)
+    print(('working on model directory ...', worker))
     for name, value in zip(names, values):
-        print('appling new parameter...', name, value)
+        print(('appling new parameter...', name, value))
         worker.parameters.setvar(name, value)
 
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #  description
 #     make_release generate a release version directory
@@ -55,7 +56,7 @@ def make_header(release='piscope_release'):
                     continue
                 for l in lines:
                     if l.upper().find('COPYRIGHT(C)') != -1:
-                        print('skipping ', path)
+                        print(('skipping ', path))
                         break
                 else:
                     #                     print 'processing ', path
@@ -65,7 +66,7 @@ def make_header(release='piscope_release'):
                         fid.write(l)
                     fid.close()
                     c = c + 1
-    print('total ', str(c) + ' files are processed')
+    print(('total ', str(c) + ' files are processed'))
 #            if c > 3: return
 
 
@@ -93,7 +94,7 @@ def check_print():
                                 continue
                         print((path, l))
                         c = c + 1
-    print('total ', str(c) + ' PRINT statement detected')
+    print(('total ', str(c) + ' PRINT statement detected'))
 #            if c > 3: return
 
 
@@ -146,7 +147,7 @@ def make_release(release='piscope_release', version='beta'):
                     os.remove(path)
                     continue
                 if f.startswith('.nfs'):
-                    print('removing ', path)
+                    print(('removing ', path))
                     os.remove(path)
                     continue
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :py_content
 #
 #      base class for contents, in which
@@ -458,7 +459,7 @@ class MDSPlusTree(Namelist):
         return pydata[0].get_full_path()+'.get_contents("'+txt+'")'
 
     def get_info(self):
-        print('getting info', self.mds_path)
+        print(('getting info', self.mds_path))
 
     def eval(self, td, **kargs):
         return self.mds_eval(td, **kargs)
@@ -469,7 +470,7 @@ class MDSPlusTree(Namelist):
         '''
 #       import ifigure.utils.mdsplusr as mds
         if debug:
-            print('eval', key, self.mds_path)
+            print(('eval', key, self.mds_path))
 
 #       td = self._td()
         if key == "value":

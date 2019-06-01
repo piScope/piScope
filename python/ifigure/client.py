@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
     client.py
 
@@ -24,6 +26,7 @@
         get('varname')
 
 '''
+
 import socket
 import subprocess
 import sys
@@ -206,7 +209,7 @@ def _get_random_name():
 def _save_parameter_file(*args, **kargs):
     try:
         return sr
-    except IOError, error:
+    except IOError as error:
         return False
 
 

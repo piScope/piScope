@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 __author__ = "Syun'ichi Shiraiwa"
 __copyright__ = "Copyright, S. Shiraiwa, PiScope Project"
@@ -44,12 +45,12 @@ class FigLegend(FigObjGPHolder):
         '''
 
         self._objs = []  # for debug....
-        if kywds.has_key("draggable"):
+        if "draggable" in kywds:
             self.setvar("draggable", kywds["draggable"])
             del kywds["draggable"]
         else:
             self.setvar("draggable", False)
-        if kywds.has_key("container_idx"):
+        if "container_idx" in kywds:
             self._container_idx = kywds["container_idx"]
             del kywds["container_idx"]
         else:

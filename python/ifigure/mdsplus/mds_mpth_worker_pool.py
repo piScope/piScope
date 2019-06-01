@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   MDS worker pool for threaded worker and multiprocessing worker.
 #
@@ -88,7 +89,7 @@ class MDSWorkerPoolBase(object):
                 ana_group = xxx[1]()
                 ana_groups.append(ana_group)
                 del MDSWorkerPoolBase.job_list[job_id]
-        print('cancelled jobs', ana_groups)
+        print(('cancelled jobs', ana_groups))
         return ana_groups
 
     def has_noresult(self):

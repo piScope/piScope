@@ -1,3 +1,4 @@
+from __future__ import print_function
 # uncomment the following to use wx rather than wxagg
 from canvas_common import *
 import numpy as np
@@ -318,8 +319,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         iNumSamples = (GLint * 1)()
         glGetIntegerv(GL_SAMPLE_BUFFERS, iMultiSample)
         glGetIntegerv(GL_SAMPLES, iNumSamples)
-        print("MSAA on, GL_SAMPLE_BUFFERS ",  np.array(iMultiSample),
-              " ", np.array(iNumSamples))
+        print(("MSAA on, GL_SAMPLE_BUFFERS ",  np.array(iMultiSample),
+              " ", np.array(iNumSamples)))
 
     def setLineWidth(self, l):
         self.set_uniform(glUniform1f,  'uLineWidth', l)
@@ -1827,7 +1828,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if len(edgecolor) == np.sum(counts):
                 col = edgecolor
             else:
-                print edgecolor.shape, counts
+                print(edgecolor.shape, counts)
                 assert False, "edge color length is wrong"
             col = np.hstack(col).astype(np.float32)
             if vbos['ec'] is None:

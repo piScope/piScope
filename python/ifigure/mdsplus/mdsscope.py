@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #         dwscope implementation on piscope
 #
@@ -1109,7 +1110,7 @@ class ScopeEngine(object):
             try:
                 txt = eval(txt[1:], globals(), self._shot_dict)
             except:
-                print('Failed to evaluate string', txt[1:])
+                print(('Failed to evaluate string', txt[1:]))
                 print(traceback.format_exc())
                 raise
         return txt
@@ -2503,7 +2504,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
 
     def onMDSEvent(self, e):
         txt = str(self.txt_shot.GetValue())
-        print('MDS event', e.mdsevent_name, self)
+        print(('MDS event', e.mdsevent_name, self))
         self.check_valid_worker_type()
 
         if (txt.startswith('=') or

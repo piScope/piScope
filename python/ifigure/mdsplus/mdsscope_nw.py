@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   MDSScope no-window
 #
@@ -93,7 +94,7 @@ class FakeBookViewerFrame(object):
         self._parent = ''
         self._status_txt = ['']*10
         self._print_status = True
-        if kargs.has_key("book"):
+        if "book" in kargs:
             self.book = kargs["book"]
             del kargs["book"]
   #          self.book.set_open(True)
@@ -104,7 +105,7 @@ class FakeBookViewerFrame(object):
 
     def SetTitle(self, title):
         self._title = title
-        print('title: ', title)
+        print(('title: ', title))
 
     def GetTitle(self):
         return self._title
@@ -112,7 +113,7 @@ class FakeBookViewerFrame(object):
     def SetStatusText(self, txt, idx):
         self._status_txt[idx] = txt
         if self._print_status:
-            print('status: ', txt)
+            print(('status: ', txt))
 
     def get_page(self, ipage=None):
         if ipage is None:

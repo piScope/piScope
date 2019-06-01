@@ -1,3 +1,4 @@
+from __future__ import print_function
 '''
    BookViewrInteractive
 
@@ -31,6 +32,7 @@
    also it copies doc_string from functions
    in ifigure.interactive
 '''
+
 
 import traceback
 import ifigure.utils.debug as debug
@@ -1328,7 +1330,7 @@ class BookViewerInteractive(object):
             return
         if len(args) == 1 and isinstance(args[0], str):
             args = ((args[0],),)
-        if kargs.has_key("axes2"):
+        if "axes2" in kargs:
             kargs["container_idx"] = 1 if kargs["axes2"] else 0
             del kargs["axes2"]
 

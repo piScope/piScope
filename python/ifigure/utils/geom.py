@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import sys
 
@@ -209,7 +210,7 @@ def area_intersection_x(x1, x2, y0, area, internal_only=False,
         else:
             continue
         if debug:
-            print q1, q2, ans
+            print(q1, q2, ans)
         if 0. < ans[-1] <= 1.:
             if not internal_only or (internal_only and
                                      (0. < ans[0] <= 1.)):
@@ -254,7 +255,7 @@ def area_intersection_y(x0, y1, y2, area, internal_only=False,
         else:
             continue
         if debug:
-            print ans
+            print(ans)
         if 0. < ans[-1] <= 1.:
             if not internal_only or (internal_only and
                                      (0. < ans[0] <= 1.)):

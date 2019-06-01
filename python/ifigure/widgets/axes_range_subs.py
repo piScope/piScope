@@ -478,7 +478,7 @@ class AdjustableRangeHolder(object):
                     if m.is_suppress():
                         continue
                     ax = m.get_xaxisparam()
-                    if newrange.has_key(ax):
+                    if ax in newrange:
                         xrange = newrange[ax]
                     else:
                         xrange = ax.range
@@ -509,11 +509,11 @@ class AdjustableRangeHolder(object):
                         continue
                     ax = m.get_xaxisparam()
                     ay = m.get_yaxisparam()
-                    if newrange.has_key(ax):
+                    if ax in newrange:
                         xrange = newrange[ax]
                     else:
                         xrange = ax.range
-                    if newrange.has_key(ay):
+                    if ay in newrange:
                         yrange = newrange[ay]
                     else:
                         yrange = ay.range
@@ -544,11 +544,11 @@ class AdjustableRangeHolder(object):
                         continue
                     ax = m.get_xaxisparam()
                     ay = m.get_yaxisparam()
-                    if newrange.has_key(ax):
+                    if ax in newrange:
                         xrange = newrange[ax]
                     else:
                         xrange = ax.range
-                    if newrange.has_key(ay):
+                    if ay in newrange:
                         yrange = newrange[ay]
                     else:
                         yrange = ay.range

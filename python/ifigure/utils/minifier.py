@@ -1,3 +1,4 @@
+from __future__ import print_function
 # {{{ http://code.activestate.com/recipes/576704/ (r16)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -683,7 +684,7 @@ def main():
     options, args = parser.parse_args()
     try:
         source = open(args[0]).read()
-    except Exception, e:
+    except Exception as e:
         print(e)
         parser.print_help()
         sys.exit(2)

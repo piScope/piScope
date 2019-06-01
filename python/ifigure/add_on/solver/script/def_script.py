@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import time
 print(" ")
@@ -7,8 +8,8 @@ print(" ##########################")
 print("")
 print(" Running evniroment for script file")
 proj = obj.get_root_parent()
-print("   proj    =", proj)
-print("   treeobj =", obj)
+print(("   proj    =", proj))
+print(("   treeobj =", obj))
 print(" ")
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import socket
 import threading
 import SocketServer
@@ -22,7 +23,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         param = data[1:]
 
         response = ''
-        print("Request ", data)
+        print(("Request ", data))
         if com == 'c':  # connection request
             tree, shot, node = param.split(',')
             try:
@@ -47,8 +48,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
                 r = MDSplus.Data.compile(expr).evaluate().data()
                 sr = pickle.dumps(r)
                 response = binascii.b2a_hex(sr)
-                print("sending data (length)", len(
-                    response), 'original :', type(sr))
+                print(("sending data (length)", len(
+                    response), 'original :', type(sr)))
                 print(type(binascii.a2b_hex(response)))
 
             except Exception:
@@ -58,8 +59,8 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
             r = MDSplus.Data.compile(param).evaluate().data()
             sr = pickle.dumps(r)
             response = binascii.b2a_hex(sr)
-            print("sending data (length)", len(
-                response), 'original :', type(sr))
+            print(("sending data (length)", len(
+                response), 'original :', type(sr)))
             print(type(binascii.a2b_hex(response)))
         #response = "{}: {}".format(cur_thread.name, data)
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
 
-    print(ip, port)
+    print((ip, port))
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
     server_thread = threading.Thread(target=server.serve_forever)
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     # usr=os.getenv("USER")
     from ifigure.utils.get_username import get_username
     usr = get_username()
-    print("Server loop running in thread:", server_thread.name)
+    print(("Server loop running in thread:", server_thread.name))
 
     raw_input()
 

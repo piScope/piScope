@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 import time
@@ -29,7 +30,7 @@ class Daemon:
             if pid > 0:
                 # exit first parent
                 sys.exit(0)
-        except OSError, e:
+        except OSError as e:
             sys.stderr.write("fork #1 failed: %d (%s)\n" %
                              (e.errno, e.strerror))
             sys.exit(1)
@@ -44,7 +45,7 @@ class Daemon:
             if pid > 0:
                 # exit from second parent
                 sys.exit(0)
-        except OSError, e:
+        except OSError as e:
             sys.stderr.write("fork #2 failed: %d (%s)\n" %
                              (e.errno, e.strerror))
             sys.exit(1)
@@ -63,7 +64,7 @@ class Daemon:
         atexit.register(self.delpid)
         pid = str(os.getpid())
         file(self.pidfile, 'w+').write("%s\n" % pid)
-        print(pid, self.pidfile)
+        print((pid, self.pidfile))
 
     def delpid(self):
         print('Removing pid file')
@@ -113,7 +114,7 @@ class Daemon:
             while 1:
                 os.kill(pid, SIGTERM)
                 time.sleep(0.1)
-        except OSError, err:
+        except OSError as err:
             err = str(err)
             if err.find("No such process") > 0:
                 if os.path.exists(self.pidfile):

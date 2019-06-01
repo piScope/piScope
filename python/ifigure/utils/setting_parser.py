@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
    Setting Parser
 
@@ -39,6 +41,7 @@
        sp.set_rule('student', {'name':'', 'age':16})
        print sp.read_file(filename)
 '''
+
 import os
 from ifigure.utils.cbook import isiterable
 
@@ -98,7 +101,7 @@ class SettingParser(object):
             if nocheck or (name2 in rule):
                 rule[name2] = value
             else:
-                print('Undefined field :', name2, ' in rule ' + name)
+                print(('Undefined field :', name2, ' in rule ' + name))
             lc = lc+1
         return lc, rule
 
@@ -197,7 +200,7 @@ class iFigureSettingParser(SettingParser):
         if not os.path.exists(os.path.dirname(t)):
             self.mk_filepath_dir(os.path.dirname(t))
         else:
-            print('making directory', t)
+            print(('making directory', t))
             os.mkdir(t)
 
     def read_setting(self, mname, fromDefault=False):

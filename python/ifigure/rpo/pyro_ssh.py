@@ -1,3 +1,4 @@
+from __future__ import print_function
 import Pyro4
 import subprocess
 import shlex
@@ -76,7 +77,7 @@ class PyroSSH(object):
 #           logging.exception("nslookup failed")
 #           p.terminate()
 #           return None
-        print('killing process', p.pid)
+        print(('killing process', p.pid))
         p.terminate()
         p.kill()
         return uri
@@ -102,7 +103,7 @@ class PyroSSH(object):
             p = self.process[idx]
             self.process.remove(p)
             self.proxy.remove(proxy)
-            print('terminating process', p.pid)
+            print(('terminating process', p.pid))
             p.terminate()
             p.kill()
 

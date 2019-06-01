@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   fig_contour
 #
@@ -84,7 +85,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             obj._expression = ''
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -147,7 +148,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 
         self._pick_pos = None
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigContour, self).__init__(**kywds)
 
@@ -266,7 +267,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             y = y.flatten()
             z = z.flatten()
             args, self._tri = tri_args(x, y, self._tri)
-            print args
+            print(args)
         else:
             args = []
             if x is not None:

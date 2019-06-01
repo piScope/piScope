@@ -41,7 +41,7 @@ class FigBox(FigObjGPHolder):
         '''
 
         self._objs = []  # for debug....
-        if kywds.has_key("draggable"):
+        if "draggable" in kywds:
             self.setvar("draggable", kywds["draggable"])
             del kywds["draggable"]
         else:

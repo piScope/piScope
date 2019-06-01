@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import weakref
 import threading
@@ -90,4 +91,4 @@ class EventDrivenThread(threading.Thread):
         if self.rqueue is not None:
             self.rqueue.put(self.name)
         self.rqueue = None
-        print('Exiting...', self.name)
+        print(('Exiting...', self.name))

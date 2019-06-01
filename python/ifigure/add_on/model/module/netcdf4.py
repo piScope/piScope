@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData
@@ -69,7 +70,7 @@ extname = 'nc4_ext'
 def init(self, *args, **kargs):
     #   a function called when py_module is initialized
     self.td.mk_owndir()
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile()
     # self.onLoadFile()
 
@@ -166,13 +167,13 @@ def load_file(fname, check_format=False):
         fname2 = fname[:-3]
 #       print fname2
         if not os.path.exists(fname2):
-            print('!!!!!!!!!!!! netcdf file is not found', fname2)
+            print(('!!!!!!!!!!!! netcdf file is not found', fname2))
             return
         g = Dataset(fname2, 'r')
     else:
         #       print fname
         if not os.path.exists(fname):
-            print('!!!!!!!!!!!! netcdf file is not found', fname)
+            print(('!!!!!!!!!!!! netcdf file is not found', fname))
             return
         g = Dataset(fname, 'r')
     if check_format:
@@ -231,7 +232,7 @@ def onCheckFormat(self, e=None):
     if file == '':
         return
     format = load_file(file, check_format=True)
-    print format
+    print(format)
 
 
 def onUpdateTree(self, e=None):

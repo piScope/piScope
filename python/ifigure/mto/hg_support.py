@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
    HGSupport is subclass to add Mercurial support to
    TreeDict objects. Currently following classes has
@@ -15,6 +17,7 @@
        revert  : discard all changes in tree and files 
        clone   : make clone outside the project directory
 '''
+
 from ifigure.utils.get_username import get_username
 import os
 import wx
@@ -245,7 +248,7 @@ try:
         try:
             repo2 = repo.hg_clone(url, dpath)
         except:
-            print url, dpath
+            print(url, dpath)
             dialog.showtraceback(parent=app,
                                  txt='Failed to clone subtree from '+url,
                                  title='Failed to clone',
@@ -379,7 +382,7 @@ try:
                     break
 
             else:
-                print(isBinary(path), path)
+                print((isBinary(path), path))
                 if isBinary(path):
                     if item in include or any(fnmatch(itemb, x) for x in include):
                         repo.hg_add(path)
@@ -941,7 +944,7 @@ try:
                 #  and gather *.py to make PyScript
                 #  I should be handling other files here too?
                 #
-                print vars
+                print(vars)
                 td = handle_pure_file_repo(parent, name, owndir)
                 td.setvar(vars)
                 load_fpath = False
@@ -1057,7 +1060,7 @@ try:
                 self.save2(fid)
                 fid.close()
                 return True
-            except IOError, error:
+            except IOError as error:
                 dprint1('Failed to create current tree data')
                 return False
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #         figure_viewer (book viewer)
 #         subset of ifigure_app.
@@ -482,7 +483,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.history = UndoRedoHistory(self)
 
         ###
-        if kargs.has_key("book"):
+        if "book" in kargs:
             self.book = kargs["book"]
             del kargs["book"]
             self.book.set_open(True)
@@ -1689,7 +1690,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         from ifigure.matplotlib_mod.mpl_utils import call_savefig_method
 
         for k in range(self.num_page()):
-            print('printing page: ', str(k))
+            print(('printing page: ', str(k)))
             self.show_page(k)
             self.draw()
             name = ret0+'_'+str(k)+'.pdf'

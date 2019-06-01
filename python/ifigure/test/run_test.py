@@ -1,6 +1,9 @@
+from __future__ import print_function
+
 '''
 test module
 '''
+
 from ifigure.interactive import figure, property
 import numpy as np
 import traceback

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #  Name   :undo_redo_history.py
 #
@@ -63,8 +64,8 @@ dprint1, dprint2, dprint3 = debug.init_dprints('UndoRedoHistory')
 
 
 def weakref_method(meth, callback):
-    weak_obj = weakref.ref(meth.im_self, callback)
-    weak_func = weakref.ref(meth.im_func, callback)
+    weak_obj = weakref.ref(meth.__self__, callback)
+    weak_func = weakref.ref(meth.__func__, callback)
     return weak_obj, weak_func
 
 
@@ -639,7 +640,7 @@ class UndoRedoAddRemoveArtists(History):
             # print child, self.filenames[k]
             parent.move_child(child.get_ichild(), self.child_idx[k])
             child.realize()
-            print('removing', self.filenames[k])
+            print(('removing', self.filenames[k]))
             os.remove(self.filenames[k])
             o_list.append(child)
         self.filenames = []
@@ -668,7 +669,7 @@ class UndoRedoAddRemoveArtists(History):
             idx = figobj.get_ichild()
             filename = os.path.join(self.proj.getvar('wdir'), '.trash',
                                     self.proj.random_tmp_name(seed=k))
-            print('saving', filename)
+            print(('saving', filename))
             figobj.save_subtree(filename)
             self.filenames.append(filename)
             self.child_idx.append(idx)

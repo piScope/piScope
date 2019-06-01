@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
    Wave Viewer is a video viewer modifiied to view
    a wave field expreesed by complex number.

@@ -1,3 +1,4 @@
+from __future__ import print_function
 ######################################################
 #     sample "run" script for parametric solver
 ######################################################
@@ -40,9 +41,9 @@ import ifigure.events
 def modifier(worker, name, param):
 
     print('Running modifier')
-    print('working on model directory ...', model)
+    print(('working on model directory ...', model))
     for i in range(len(name)):
-        print('appling new parameter...', name[i], param[i])
+        print(('appling new parameter...', name[i], param[i]))
         worker.parameters.setvar(name[i], param[i])
 
 
@@ -119,7 +120,7 @@ def run_workers(workers, sol):
                     w = o
                     break
         except Queue.Empty:
-            print('not respond', finished)
+            print(('not respond', finished))
             continue
         if t == 'abort job':
             abroted = True
@@ -167,7 +168,7 @@ if solver._num_worker < 1:
         name, case_xxx = xxx
         rmodel = case_xxx.get_child(name=rname)
         model = rmodel.resolve_td_path(rpath)
-        print(case_xxx, model)
+        print((case_xxx, model))
         if model is not None:
             solver.apply_modifier(modifier, case_xxx, k)
             model.Run()

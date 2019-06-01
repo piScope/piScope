@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   ArgsParser
 #
@@ -66,7 +67,7 @@ def bit(n, l):
 
 
 def convert_ndarray(v, name):
-    if not v.has_key(name):
+    if name not in v:
         return v
     if v[name] is None:
         return v
@@ -89,7 +90,7 @@ def convert_ndarray(v, name):
 
 
 def apply_squeeze(v, name, minimum_1D=False):
-    if not v.has_key(name):
+    if name not in v:
         return v
     if isdynamic(v[name]):
         return v
@@ -155,31 +156,31 @@ class ArgsParser(object):
     def check_pairs(self, value):
         flag = True
         for name1, name2 in self.pairs:
-            if (not value.has_key(name1) and
-                    value.has_key(name2)):
+            if (name1 not in value and
+                    name2 in value):
                 flag = False
-            if (value.has_key(name1) and
-                    not value.has_key(name2)):
+            if (name1 in value and
+                    name2 not in value):
                 flag = False
         return flag
 
     def check_exclusives(self, value):
         flag = True
         for name1, name2 in self.exclusives:
-            if (value.has_key(name1) and
-                    value.has_key(name2)):
+            if (name1 in value and
+                    name2 in value):
                 flag = False
-            if (value.has_key(name1) and
-                    value.has_key(name2)):
+            if (name1 in value and
+                    name2 in value):
                 flag = False
         return flag
 
     def has_exclusives(self, name, value):
         for name1, name2 in self.exclusives:
             if name1 == name:
-                return value.has_key(name2)
+                return name2 in value
             if name2 == name:
-                return value.has_key(name1)
+                return name1 in value
         return False
 
     def check(self, value, incond):
@@ -227,7 +228,7 @@ class ArgsParser(object):
                     return False
             elif cond == 'any':
                 return True
-            print('ArgsParser::Unknown condition (ignored)', cond)
+            print(('ArgsParser::Unknown condition (ignored)', cond))
             return True
 
         def do_check2(value, conds):
@@ -293,14 +294,14 @@ class ArgsParser(object):
         ### pair is not set
         defv_names = []
         for v in self.vars:
-            if (len(v) == 3 and not value.has_key(v[0]) and
+            if (len(v) == 3 and v[0] not in value and
                     not self.has_exclusives(v[0], value)):
                 value[v[0]] = v[1]
                 defv_names.append(v[0])
 
         # handle keyword values
         for key, v, t in self.key:
-            if kywds.has_key(key):
+            if key in kywds:
                 #               value.append((key, kywds[key]))
                 val = kywds[key]
                 if t is not None:
@@ -337,7 +338,7 @@ if __name__ == '__main__':
         p.add_key('w', 'default keyword')  # keyword argment
 
         v, kywds, defv_names,  flag = p.process(*args, **kywds)
-        print(v, kywds, defv_names, flag)
+        print((v, kywds, defv_names, flag))
 
     def hogehoge2(*args, **kywds):
         '''
@@ -356,7 +357,7 @@ if __name__ == '__main__':
 #      p.set_squeeze('x', 'y')
 
         v, kywds, d, flag = p.process(*args, **kywds)
-        print(v, kywds, d, flag)
+        print((v, kywds, d, flag))
 
     def hogehoge3(*args, **kywds):
         '''
@@ -379,7 +380,7 @@ if __name__ == '__main__':
         p.set_exclusive('n', 'v')
 
         v, kywds, d, flag = p.process(*args, **kywds)
-        print(v, kywds, d, flag)
+        print((v, kywds, d, flag))
 
     print("hogehoge1(x, y(option), w='default keyword)")
     print('case 1')

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 import ifigure
 from ifigure.utils.cbook import parseStr
@@ -92,7 +93,7 @@ def make_treedicts(tree, this):
     dicttop = MDSPlusTree()
     top.setvar0(dicttop)
 
-    print("tree nodes :", len(tree))
+    print(("tree nodes :", len(tree)))
 
     for k in range(len(tree)-1):
         arr = split_str(tree[k+1], '[\:.]')

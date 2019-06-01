@@ -1,3 +1,4 @@
+from __future__ import print_function
 import subprocess as sp
 import os
 import Pyro4
@@ -6,7 +7,7 @@ import Pyro4
 class ProxyNeTe(object):
     def fill_array(self, i, txt):
         ct = []
-        print(i, txt[i])
+        print((i, txt[i]))
         for t in range(1+i, long(txt[i])+1+i):
             ct.append(txt[t])
         return t+1, ct

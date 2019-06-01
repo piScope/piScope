@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   fig_image
 #
@@ -69,7 +70,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     obj.setvar(key, default_kargs[key])
             return obj
 
-        if kywds.has_key('src'):
+        if 'src' in kywds:
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
@@ -114,7 +115,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         self._pick_pos = None
         self._cb_added = False
         args = []
-        if not kywds.has_key('src'):
+        if 'src' not in kywds:
             kywds = self.getvar("kywds")
         super(FigImage, self).__init__(**kywds)
 

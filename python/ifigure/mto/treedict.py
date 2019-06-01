@@ -1,3 +1,4 @@
+from __future__ import print_function
 #  Name   :treedict
 #
 #          base class for all model_tree_object
@@ -279,7 +280,7 @@ class TreeDict(object):
         raise AttributeError('Tree name should not start from "_"')
 
     def __setattr__(self, attr, val):
-        if not self.__dict__.has_key('_TreeDict__initialised'):
+        if '_TreeDict__initialised' not in self.__dict__:
            #         this test allows attributes to be set in the __init__ method
             return object.__setattr__(self, attr, val)
         elif attr.startswith("_"):
@@ -327,7 +328,7 @@ class TreeDict(object):
 
     def _process_kywd(self, kywds, key, defv):
         #        print 'in', kywds
-        if kywds.has_key(key):
+        if key in kywds:
             self.setvar(key, kywds[key])
             del kywds[key]
         else:
@@ -337,7 +338,7 @@ class TreeDict(object):
 
     def _process_kywd2(self, kywds, key, defv):
         #        print 'in', kywds
-        if kywds.has_key(key):
+        if key in kywds:
             val = kywds[key]
             del kywds[key]
         else:
@@ -652,7 +653,7 @@ class TreeDict(object):
         for name in a[1:]:
             p = p.get_child(name=name)
             if p is None:
-                print('can not find', name)
+                print(('can not find', name))
                 return None
         return p
 
@@ -819,7 +820,7 @@ class TreeDict(object):
         return self._var.keys()
 
     def hasvar(self, name):
-        return self._var.has_key(name)
+        return name in self._var
 
     def setvar(self, *args):
         #       print self, args
@@ -841,7 +842,7 @@ class TreeDict(object):
         eval("x", "y", "z") = evaluate "x", "y", "z"
         eval() = return self._var0
         '''
-        if kargs.has_key('np'):
+        if 'np' in kargs:
             np = kargs['np']
         else:
             np = False
@@ -1013,7 +1014,7 @@ class TreeDict(object):
         """
         compare vars stored in two tree dicts
         """
-        print("comparing", self.get_full_path(), td.get_full_path())
+        print(("comparing", self.get_full_path(), td.get_full_path()))
         diff = cbook.DictDiffer(self.getvar(), td.getvar())
 
     def setnote(self, *args):
@@ -1024,7 +1025,7 @@ class TreeDict(object):
             try:
                 a = self._var[args[0]]
             except KeyError:
-                print("!!!", self.get_full_path(), " does not have ", name)
+                print(("!!!", self.get_full_path(), " does not have ", name))
                 return
             self._note[args[0]] = args[1]
         if len(args) == 1:
@@ -1422,7 +1423,7 @@ class TreeDict(object):
             try:
                 __func__(path)
             except OSError:
-                print('Remove error', path)
+                print(('Remove error', path))
 
         def removeall(path):
             if not os.path.isdir(path):
@@ -1613,7 +1614,7 @@ class TreeDict(object):
                 for key in h2["var"]:
                     obj._var[key] = h2["var"][key]
             obj._note = h2["note"]
-            if h2.has_key('format'):
+            if 'format' in h2:
                 dprint2('Fileformat ', h2["format"])
                 if h2["format"] == 1:
                     obj.load_data(fid)
@@ -1704,7 +1705,7 @@ class TreeDict(object):
         obj, ol, nl = TreeDict().load(fid)
         name = obj.get_next_name(obj.get_namebase())
         if obj.name != name:
-            print("renaming object name", obj.name, "->", name)
+            print(("renaming object name", obj.name, "->", name))
         self.add_child(name, obj)
         return obj, ol, nl
 
@@ -1773,7 +1774,7 @@ class TreeDict(object):
             fid = open(fpath, 'wb')
             self.save2(fid)
             fid.close()
-        except IOError, error:
+        except IOError as error:
             print(traceback.format_exc())
             return False
         if not maketar:
@@ -2119,7 +2120,7 @@ class TopTreeDict(TreeDict):
             #  to files.
             self.save(fid)
             fid.close()
-        except IOError, error:
+        except IOError as error:
             return False
 
         # set proj.filename
@@ -2304,10 +2305,10 @@ if __name__ == '__main__':
     root.add_child("test2", TreeDict())
     root.test.add_child("test3", TreeDict())
 
-    print("root", root)
-    print("root.test", root.test)
-    print("root.test.test3", root.test.test3)
-    print("root.test2", root.test2)
+    print(("root", root))
+    print(("root.test", root.test))
+    print(("root.test.test3", root.test.test3))
+    print(("root.test2", root.test2))
 
     gen = root.walk_tree()
     print(gen.next().get_full_path())

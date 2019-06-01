@@ -1,3 +1,4 @@
+from __future__ import print_function
 from matplotlib.image import FigureImage
 from functools import wraps
 from ifigure.matplotlib_mod.is_supported_renderer import isSupportedRenderer
@@ -17,6 +18,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 import matplotlib.transforms as trans
 from matplotlib.colors import ColorConverter
+from functools import reduce
 cc = ColorConverter()
 
 
@@ -1303,7 +1305,7 @@ class Axes3DMod(Axes3D):
             self._3d_axes_icon = None
 
         if self._gl_scale != 1.0:
-            print("gl_scale", self._gl_scale)
+            print(("gl_scale", self._gl_scale))
             xmin, xmax = self.get_xlim3d()
             ymin, ymax = self.get_ylim3d()
             zmin, zmax = self.get_zlim3d()

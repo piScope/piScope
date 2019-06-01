@@ -1,3 +1,4 @@
+from __future__ import print_function
 import ifigure.utils.cbook as cbook
 import ifigure
 import os
@@ -617,37 +618,37 @@ class ProjectTop(TopTreeDict, AbsScriptContainer, AbsFileContainer):
         #
         h2 = self.getvar("load_property")
 
-        if h2.has_key("isetting"):
+        if "isetting" in h2:
             oid = h2["isetting"]
             self._psetting = self.resolve_olist_nlist_map(oid, olist, nlist)
-        if h2.has_key("imodel"):
+        if "imodel" in h2:
             oid = h2["imodel"]
             self._pmodel = self.resolve_olist_nlist_map(oid, olist, nlist)
-        if h2.has_key("isolver"):
+        if "isolver" in h2:
             oid = h2["isolver"]
             self._psolver = self.resolve_olist_nlist_map(oid, olist, nlist)
-        if h2.has_key("ibook"):
+        if "ibook" in h2:
             oid = h2["ibook"]
             self._pbook = self.resolve_olist_nlist_map(oid, olist, nlist)
-        if h2.has_key("isol"):
+        if "isol" in h2:
             oid = h2["isol"]
             self._psol = self.resolve_olist_nlist_map(oid, olist, nlist)
 
-        if h2.has_key("isetting_path"):
+        if "isetting_path" in h2:
             self._psetting = self.resolve_td_path(h2["isetting_path"])
-        if h2.has_key("imodel_path"):
+        if "imodel_path" in h2:
             self._pmodel = self.resolve_td_path(h2["imodel_path"])
-        if h2.has_key("isolver_path"):
+        if "isolver_path" in h2:
             self._psolver = self.resolve_td_path(h2["isolver_path"])
-        if h2.has_key("ibook_path"):
+        if "ibook_path" in h2:
             self._pbook = self.resolve_td_path(h2["ibook_path"])
-        if h2.has_key("isol_path"):
+        if "isol_path" in h2:
             self._psol = self.resolve_td_path(h2["isol_path"])
 
         self.delvar("load_property")
 
         if self._pbook is None:
-            print("??? self._pbook is None", "adjusting ...")
+            print(("??? self._pbook is None", "adjusting ..."))
             if self.num_book() == 0:
                 self.onAddBook()
             else:

@@ -65,7 +65,7 @@ class ProxyWorkerBase(object):
                                 def_names.append(n)
                         r2 = {}
                         for n in def_names:
-                            if r.has_key(n):
+                            if n in r:
                                 if isinstance(r[n], ndarray) and can_compress:
                                     r[n] = squeeze(r[n])
                                 if (isinstance(r[n], ndarray) and

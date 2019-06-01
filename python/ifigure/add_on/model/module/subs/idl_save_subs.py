@@ -1,3 +1,4 @@
+from __future__ import print_function
 import wx
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData
@@ -52,7 +53,7 @@ module_init = None
 
 def expand_recarray(top, var):
     for name in var.dtype.names:
-        print(name,  type(var.field(name)))
+        print((name,  type(var.field(name))))
 
         if isinstance(var.field(name), numpy.recarray):
             child = PyData()

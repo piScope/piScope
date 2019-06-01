@@ -66,7 +66,7 @@ wildcard = 'csv(*.csv)|*.csv|Any|*'
 def init(self, *args, **kargs):
     #   a function called when py_module is initialized
     self.td.mk_owndir()
-    if not kargs.has_key('src'):
+    if 'src' not in kargs:
         self.onLoadFile()
 
 
@@ -86,7 +86,7 @@ def load_csv_file(obj):
     with open(file, 'rU') as csvfile:
         spamreader = csv.reader(csvfile, dialect='excel')
 #                                delimiter=' ', quotechar='|')
-        keys = spamreader.next()
+        keys = next(spamreader)
         d = {k: [] for k in keys}
         for row in spamreader:
             for k, num in zip(keys, row):

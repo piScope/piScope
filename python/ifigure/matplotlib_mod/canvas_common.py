@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import numpy as np
 import time
@@ -120,7 +121,7 @@ def wait_gl_finish(method):
 def check_gl_error():
     error = glGetError()
     if error != 0:
-        print("GL error ", error)
+        print(("GL error ", error))
 
 
 class vbos_dict(dict):

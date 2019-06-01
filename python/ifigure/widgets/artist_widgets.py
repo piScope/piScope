@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #   collection of widgets for artists
 #
@@ -473,7 +474,7 @@ class base_artist_widget(object):
     def set_artist_property(self, evt):
         # routine to set property of artist based on
         # evt happend on aritst_widgets
-        print("debug", "set_artist_property", self)
+        print(("debug", "set_artist_property", self))
         pass
 
     def set_target_artist(self, a, td=None):
@@ -1195,7 +1196,7 @@ class artist_widgets(wx.Panel):
 
     def switch_panel(self, mode):
 
-        if not self.panels.has_key(mode):
+        if mode not in self.panels:
             return False
         if self.mode == mode:
             return True
@@ -1319,7 +1320,7 @@ class panel1(artist_widgets):
                 self.GetTopLevelParent().canvas._figure.figobj):
             self.enable(False)
             return
-        if self.panels.has_key(mode):
+        if mode in self.panels:
             if self.mode == mode:
                 self.enable(True)
             self.panels[mode].set_value(self.artists[0]())
@@ -1331,7 +1332,7 @@ class panel1(artist_widgets):
     def change_artist_panel(self, figobj):
         name = figobj.get_namebase()
 
-        if not self.panels.has_key(name):
+        if name not in self.panels:
             if name in panel1.plistd:
                 self.append_panel(name)
             else:
