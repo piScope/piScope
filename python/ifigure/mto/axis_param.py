@@ -1,5 +1,4 @@
 import weakref
-from sets import Set
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import LogNorm, Normalize, Colormap, SymLogNorm
 import ifigure
@@ -588,7 +587,7 @@ class AxisCParam(AxisParam):
 
         figobjs = [a2.figobj for a2 in a.get_children()
                    if hasattr(a2, 'figobj')]
-        for figobj in Set(figobjs):
+        for figobj in set(figobjs):
             for a2 in figobj.get_mappable():
                 self.set_crangeparam_to_artist(a2)
 

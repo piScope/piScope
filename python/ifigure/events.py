@@ -144,8 +144,9 @@ def SendSimpleTDEvent2(evt, td=None, w=None, useProcessEvent=False):
 #       wx.PostEvent(handler, evt)
 
 
-def SendEditFileEvent(td, w=None, file=file, readonly=False):
+def SendEditFileEvent(td, w=None, file=None, readonly=False):
     #    if td.get_root_parent().app is None: return
+    if file is None: return
 
     handler = td.get_root_parent().app.GetEventHandler()
     evt = TreeDictEvent(EditFile, wx.ID_ANY)
@@ -157,10 +158,11 @@ def SendEditFileEvent(td, w=None, file=file, readonly=False):
 #    handler.ProcessEvent(evt)
 
 
-def SendCloseFileEvent(td, w=None, file=file):
+def SendCloseFileEvent(td, w=None, file=None):
     if td.get_root_parent().app is None:
         return
-
+    if file is None: return
+    
     handler = td.get_root_parent().app.GetEventHandler()
     evt = TreeDictEvent(CloseFile, wx.ID_ANY)
     evt.SetTreeDict(td)
