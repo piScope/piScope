@@ -8,7 +8,7 @@ import wx
 
 import weakref
 import array
-from scipy.misc import imresize
+
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
 import matplotlib

@@ -5,7 +5,6 @@ import time
 import wx
 import weakref
 import array
-from scipy.misc import imresize
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
 
@@ -1110,11 +1109,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             data = glReadPixels(0, 0, wim, him, GL_RGBA, GL_UNSIGNED_BYTE)
         image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
-
-        # if multisample > 1:
-        #glDeleteFramebuffers(1, [frame2])
-        #w,h,d = image.shape
-        #image = imresize(image, (w/multisample , h/multisample, d))
 
         glReadBuffer(GL_NONE)
         if self._hittest_map_update:
