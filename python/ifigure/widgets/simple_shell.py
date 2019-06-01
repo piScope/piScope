@@ -102,8 +102,8 @@ class ShellBase(wx.py.shell.Shell):
         '''
         this overwrite the origial setBuiltinKeywords
         '''
-        import __builtin__
-        __builtin__.exit = __builtin__.quit = \
+        from six.moves import builtins 
+        builtins.exit = builtins.quit = \
             self.quit
 
     def OnKeyDown(self, evt):
@@ -297,10 +297,10 @@ class SimpleShell(ShellBase):
         '''
         this overwrite the origial setBuiltinKeywords
         '''
-        import __builtin__
-        __builtin__.exit = __builtin__.quit = \
+        from six.moves import builtins 
+        builtins.exit = builtins.quit = \
             self.quit
-        __builtin__.sx = sx
+        builtins.sx = sx
 
     def set_command_history(self, panel):
         self.ch = panel

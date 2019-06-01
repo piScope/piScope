@@ -1031,7 +1031,10 @@ class FigObj(TreeDict, MetadataHolder):
     def getp(self, name=None):
         if name is None:
             return self._attr
-        if hasattr(name, '__iter__'):
+        
+        from ifigure.utils.cbook import isiterable_not_string
+        
+        if isiterable_not_string(name):        
             try:
                 return tuple([self._attr.get(n, None) for n in name])
             except:

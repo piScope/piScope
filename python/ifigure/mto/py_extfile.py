@@ -1,8 +1,4 @@
 from __future__ import print_function
-from py_code import PyFolder, PyData
-from py_file import PyFile, PyText
-from py_script import PyScript
-from treedict import TreeDict
 import os
 import wx
 import ifigure
@@ -10,6 +6,10 @@ import ifigure.widgets.dialog as dialog
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('PyExtFile')
 
+from ifigure.mto.py_code import PyFolder, PyData
+from ifigure.mto.py_file import PyFile, PyText
+from ifigure.mto.py_script import PyScript
+from ifigure.mto.treedict import TreeDict
 
 class ExtMixIn(object):
     def owndir(self):

@@ -904,7 +904,9 @@ def isiterable(obj):
         return False
     return True
 
-
+def isiterable_not_string(obj):
+    return hasattr(obj, '__iter__') and not isinstance(obj, str)
+    
 def isstringlike(x):
     return (isinstance(x, str) or isinstance(x, unicode))
 

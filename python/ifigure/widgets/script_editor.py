@@ -1188,7 +1188,7 @@ class ScriptEditor(wx.Panel):
 
         self.sp = wx.SplitterWindow(self, wx.ID_ANY,
                                     style=wx.SP_NOBORDER | wx.SP_LIVE_UPDATE | wx.SP_3DSASH)
-        from find_panel import PanelWithFindPanel
+        from ifigure.widgets.find_panel import PanelWithFindPanel
         self.nb_panel = PanelWithFindPanel(self.sp)
         self.nb = Notebook(self.nb_panel,
                            style=(aui.AUI_NB_DEFAULT_STYLE |
