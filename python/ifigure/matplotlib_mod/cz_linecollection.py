@@ -8,15 +8,15 @@ from matplotlib.colors import Colormap
 
 
 class CZLineCollection(LineCollection):
-    def __init__(self,  x, y, cz, 
-                 cmap='jet', linestyle='solid', 
-                 pickradius=5,  alpha = None,  **kargs):
+    def __init__(self,  x, y, cz,
+                 cmap='jet', linestyle='solid',
+                 pickradius=5,  alpha=None,  **kargs):
         if linestyle is None:
-           kargs['linestyle'] = 'solid'
-           self._nodraw = True
+            kargs['linestyle'] = 'solid'
+            self._nodraw = True
         else:
-           kargs['linestyle'] = linestyle
-           self._nodraw = False
+            kargs['linestyle'] = linestyle
+            self._nodraw = False
         self.x = x
         self.y = y
         self.cz = cz
@@ -33,8 +33,10 @@ class CZLineCollection(LineCollection):
 
     def get_xdata(self):
         return self.x
+
     def get_ydata(self):
         return self.y
+
     def get_czdata(self):
         return self.cz
 
@@ -44,7 +46,8 @@ class CZLineCollection(LineCollection):
     def set_xdata(self, x):
         self.x = x
         if (x.size != self.y.size or
-            x.size != self.cz.size): return
+                x.size != self.cz.size):
+            return
         segments = self._calc_segments()
         self.set_segments(segments)
         self.set_xydata()
@@ -54,7 +57,8 @@ class CZLineCollection(LineCollection):
     def set_ydata(self, y):
         self.y = y
         if (y.size != self.x.size or
-            y.size != self.cz.size): return
+                y.size != self.cz.size):
+            return
         segments = self._calc_segments()
         self.set_segments(segments)
         self.set_xydata()
@@ -64,7 +68,8 @@ class CZLineCollection(LineCollection):
     def set_czdata(self, cz):
         self.cz = cz
         if (cz.size != self.x.size or
-            cz.size != self.y.size): return
+                cz.size != self.y.size):
+            return
         segments = self._calc_segments()
         self.set_segments(segments)
         self.set_xydata()
@@ -72,16 +77,17 @@ class CZLineCollection(LineCollection):
         self.set_alpha(self._cz_alpha)
 
     def set_alpha(self, v):
-#        LineCollection.set_alpha(self, v)
-#        calling superclass set_alpha does make color along
-#        the line constant
+        #        LineCollection.set_alpha(self, v)
+        #        calling superclass set_alpha does make color along
+        #        the line constant
         self._alpha = None
         self._cz_alpha = v
         ec = self.get_edgecolors()
-        r = (ec[:,0] != 0.)
-        g = (ec[:,1] != 0.)
-        b = (ec[:,2] != 0.)
-        if self._cz_alpha is None: v = 1.0
+        r = (ec[:, 0] != 0.)
+        g = (ec[:, 1] != 0.)
+        b = (ec[:, 2] != 0.)
+        if self._cz_alpha is None:
+            v = 1.0
         ec[np.logical_or(np.logical_or(r, g), b), 3] = v
 
 #        self.get_edgecolors()[:,3] = v
@@ -99,45 +105,57 @@ class CZLineCollection(LineCollection):
 
     def set_color(self, v):
         pass
+
     def get_color(self):
         pass
 
     def set_linewidth(self, v):
         LineCollection.set_linewidth(self, v)
+
     def get_linewidth(self):
         v = LineCollection.get_linewidth(self)[0]
         return v
 
     def set_linestyle(self, v):
         if v is None or v == 'None':
-           self._nodraw = True
+            self._nodraw = True
         else:
-           self._nodraw = False
-           LineCollection.set_linestyle(self, v)
+            self._nodraw = False
+            LineCollection.set_linestyle(self, v)
         self._cz_linesytle_name = v
 
     def get_linestyle(self):
-        if self._nodraw: return 'None'
+        if self._nodraw:
+            return 'None'
         return self._cz_linesytle_name
 
     def set_marker(self, v):
         pass
+
     def get_marker(self):
         pass
+
     def set_markersize(self, v):
         pass
+
     def get_markersize(self):
         pass
+
     def set_markeredgecolor(self, v):
         pass
+
     def get_markeredgecolor(self):
         pass
+
     def set_markerfacecolor(self, v):
         pass
+
     def get_markerfacecolor(self):
         pass
+
     def set_markeredgewidth(self, v):
         pass
+
     def get_markeredgewidth(self):
         pass
 
@@ -145,7 +163,7 @@ class CZLineCollection(LineCollection):
         '''
         a hit test based on what is used in 
         line2D
-        '''        
+        '''
         from matplotlib.lines import segment_hits
         if self.figure is None:
             pixels = self.pickradius
@@ -178,7 +196,7 @@ class CZLineCollection(LineCollection):
     def draw(self, *argrs, **kargs):
         self._transform_path()
         if not self._nodraw:
-           LineCollection.draw(self, *argrs, **kargs)
+            LineCollection.draw(self, *argrs, **kargs)
 
     def _calc_segments(self):
         points = np.array([self.x, self.y]).T.reshape(-1, 1, 2)

@@ -12,7 +12,13 @@
    programmed to use __doc__ in this file.
 
 '''
-import logging, ifigure, wx, weakref, os
+import matplotlib.mlab as mlab
+from functools import wraps
+import logging
+import ifigure
+import wx
+import weakref
+import os
 import numpy as np
 from ifigure.utils.triangulation_wrapper import delaunay
 #from ifigure.utils.cbook import isiterable, isndarray, message
@@ -22,97 +28,104 @@ _update = True
 _lastisec = 0
 
 aviewer = None
+
+
 def set_aviewer(viewer):
     # called from ifigure_app.aviewer
     from ifigure.widgets.book_viewer import BookViewer
     if (viewer == wx.GetApp().TopWindow or
-        isinstance(viewer, BookViewer)):
+            isinstance(viewer, BookViewer)):
         globals()['aviewer'] = viewer
     elif (globals()['aviewer'] is not None):
         try:
-          if (globals()['aviewer'].book is None): 
-              globals()['aviewer'] = None
+            if (globals()['aviewer'].book is None):
+                globals()['aviewer'] = None
         except:
-              globals()['aviewer'] = None
+            globals()['aviewer'] = None
     if viewer is None:
-        if globals()['aviewer'] in wx.GetApp().TopWindow.viewers: return
+        if globals()['aviewer'] in wx.GetApp().TopWindow.viewers:
+            return
         globals()['aviewer'] = None
 
-from functools import wraps
+
 def check_aviewer(func):
     @wraps(func)
     def checker(*args, **kargs):
         def func2(*args, **kargs):
-#              return figure()
-              from ifigure.utils.cbook import message
-              message("*** No current viewer (no plot) ***")
-              return None
+            #              return figure()
+            from ifigure.utils.cbook import message
+            message("*** No current viewer (no plot) ***")
+            return None
 
-        ### check if aviewer in still right object
+        # check if aviewer in still right object
         try:
-           book = aviewer.book
+            book = aviewer.book
         except:
-           return func2(*args, **kargs)
+            return func2(*args, **kargs)
 
         if aviewer.book is None:
-           globals()['aviewer'] = None
-           return func2(*args, **kargs)
+            globals()['aviewer'] = None
+            return func2(*args, **kargs)
         else:
-           return func(*args, **kargs)
-    
+            return func(*args, **kargs)
+
     return checker
+
 
 def redirect_to_aviewer(func):
     @wraps(func)
     def checker(*args, **kargs):
         if aviewer is None:
             figure()
-            wx.Yield() # yield let wx to process event including
-                       # project_tree_widget update
+            wx.Yield()  # yield let wx to process event including
+            # project_tree_widget update
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = _hold
         kargs['update'] = _update
-        ret =  m(*args, **kargs)
+        ret = m(*args, **kargs)
         aviewer.Raise()
         return ret
     return checker
+
 
 def redirect_to_aviewer_3D(func):
     @wraps(func)
     def checker(*args, **kargs):
         if aviewer is None:
             figure()
-            wx.Yield() # yield let wx to process event including
-                       # project_tree_widget update
+            wx.Yield()  # yield let wx to process event including
+            # project_tree_widget update
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = _hold
         kargs['update'] = _update
         aviewer.threed('on')
-        ret =  m(*args, **kargs)
+        ret = m(*args, **kargs)
         aviewer.Raise()
         return ret
     return checker
+
 
 def redirect_to_aviewer_hold(func):
     @wraps(func)
     def checker(*args, **kargs):
         def func2(*args, **kargs):
-#              from ifigure.utils.cbook import message
-              return figure()
+            #              from ifigure.utils.cbook import message
+            return figure()
 #              message("*** No current viewer (no plot) ***")
 #              return None
         if aviewer is None:
-           figure()
+            figure()
 #           return func2(*args, **kargs)
 #        else:
 
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = True
         kargs['update'] = _update
-        ret =  m(*args, **kargs)
+        ret = m(*args, **kargs)
         aviewer.Raise()
         return ret
     return checker
+
 
 @redirect_to_aviewer
 def showpage(ipage):
@@ -121,12 +134,14 @@ def showpage(ipage):
     '''
     pass
 
+
 @redirect_to_aviewer
 def cla(reset_color_cycle=True):
     '''
     clear current axis
     '''
     pass
+
 
 @redirect_to_aviewer
 def cls():
@@ -135,6 +150,7 @@ def cls():
     isec is moved to 0
     '''
     pass
+
 
 @redirect_to_aviewer
 def clf():
@@ -145,42 +161,48 @@ def clf():
     '''
     pass
 
+
 @redirect_to_aviewer
 def nsec(*args, **kargs):
-   '''
-   nsec is the same as subplot
-   see subplot help (type 'subplot(' to show help)
-   '''
-   pass
+    '''
+    nsec is the same as subplot
+    see subplot help (type 'subplot(' to show help)
+    '''
+    pass
+
+
 @redirect_to_aviewer
 def nsection(*args, **kargs):
-   '''
-   nsection is the same as subplot
-   see subplot help (type 'subplot(' to show help)
-   '''
-   pass
+    '''
+    nsection is the same as subplot
+    see subplot help (type 'subplot(' to show help)
+    '''
+    pass
+
+
 @redirect_to_aviewer
 def subplot(*args, **kargs):
-   '''
-   set page section format. 
-      subplot(3)     3 rows
-      subplot(1, 3)     3 columns
-      subplot(2, 3)  2x3
-      subplot(2, 3, (0,1)) 2x3 and (0,1) merged
-      subplot(2, 3, (0,1), (2, 3)) 2x3 and (0,1), (2, 3) merged
+    '''
+    set page section format. 
+       subplot(3)     3 rows
+       subplot(1, 3)     3 columns
+       subplot(2, 3)  2x3
+       subplot(2, 3, (0,1)) 2x3 and (0,1) merged
+       subplot(2, 3, (0,1), (2, 3)) 2x3 and (0,1), (2, 3) merged
 
-      'sort' = 'col' or 'column' or 'c' : sort result in column
-      'sort' = 'row' or 'r' :             sort result in row
+       'sort' = 'col' or 'column' or 'c' : sort result in column
+       'sort' = 'row' or 'r' :             sort result in row
 
-      dx and dy are optional arguments to determine the
-      width and height of each column and row
-      if these are used, the number of dx and dy should be 
-      ncol-1, nrow-1, respectively
-    
-      example: subplot(2,2, (0,1), dx=0.4)
+       dx and dy are optional arguments to determine the
+       width and height of each column and row
+       if these are used, the number of dx and dy should be 
+       ncol-1, nrow-1, respectively
 
-   '''
-   pass
+       example: subplot(2,2, (0,1), dx=0.4)
+
+    '''
+    pass
+
 
 @redirect_to_aviewer
 def isec(i=None):
@@ -191,6 +213,7 @@ def isec(i=None):
     '''
     pass
 
+
 @redirect_to_aviewer
 def isection(i=None):
     '''
@@ -199,6 +222,7 @@ def isection(i=None):
     otherwize it returns rrent ax
     '''
     pass
+
 
 @redirect_to_aviewer
 def addpage(num=1, before=False):
@@ -213,6 +237,8 @@ def delpage():
     '''
     delete current page
     '''
+
+
 @redirect_to_aviewer
 def suptitle(txt, size=None, color=None):
     '''
@@ -220,15 +246,17 @@ def suptitle(txt, size=None, color=None):
     '''
     pass
 
+
 @redirect_to_aviewer
-def title(txt,size=None, color=None):
+def title(txt, size=None, color=None):
     '''
     set section  title
     '''
     pass
 
+
 @redirect_to_aviewer
-def xlabel(txt, name = 'x', size=None, color=None):
+def xlabel(txt, name='x', size=None, color=None):
     '''
     set xaxis label
        xlabel(txt)
@@ -237,8 +265,9 @@ def xlabel(txt, name = 'x', size=None, color=None):
     '''
     pass
 
+
 @redirect_to_aviewer
-def xtitle(txt, name = 'x', size=None, color=None):
+def xtitle(txt, name='x', size=None, color=None):
     '''
     set xaxis label 
        xtitle(txt)
@@ -246,8 +275,10 @@ def xtitle(txt, name = 'x', size=None, color=None):
        xtitle(txt, size=10, color='red')
     '''
     pass
+
+
 @redirect_to_aviewer
-def ylabel(txt, name = 'y', size=None, color=None):
+def ylabel(txt, name='y', size=None, color=None):
     '''
     set yaxis label
        ylabel(txt)
@@ -256,8 +287,9 @@ def ylabel(txt, name = 'y', size=None, color=None):
     '''
     pass
 
+
 @redirect_to_aviewer
-def ytitle(txt, name = 'y', size=None, color=None):
+def ytitle(txt, name='y', size=None, color=None):
     '''
     set yaxis label
        ytitle(txt)
@@ -265,14 +297,17 @@ def ytitle(txt, name = 'y', size=None, color=None):
        ytitle(txt,  size=10, color='red')
     '''
     pass
+
+
 @redirect_to_aviewer
-def zlabel(txt, name = 'z', size=None, color=None):
+def zlabel(txt, name='z', size=None, color=None):
     '''
     set zaxis label
        zlabel(txt)
        zlabel(txt, size=10, color='red')
     '''
     pass
+
 
 @redirect_to_aviewer
 def ztitle(*args):
@@ -283,14 +318,16 @@ def ztitle(*args):
     '''
     pass
 
+
 @redirect_to_aviewer
-def clabel(txt, name = 'c'):
+def clabel(txt, name='c'):
     '''
     set caxis label
        clabel(txt)
        clabel(txt, 'c2')
     '''
     pass
+
 
 @redirect_to_aviewer
 def ctitle(*args):
@@ -301,67 +338,84 @@ def ctitle(*args):
     '''
     pass
 
+
 @redirect_to_aviewer_hold
-def xlog(value=True, base = None):
+def xlog(value=True, base=None):
     '''
     set xlog
     xlog()
     xlog(False)
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def ylog(value=True, base = None):
+def ylog(value=True, base=None):
     '''
     set ylog
     ylog()
     ylog(False)
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def clog(value=True, base = None):
+def clog(value=True, base=None):
     '''
     set ylog
     clog()
     clog(False)
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def zlog(value=True, base = None):
+def zlog(value=True, base=None):
     '''
     set zlog
     zlog()
     zlog(False)
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def xsymlog(base = None, linthresh = None, linscale = None, name  = 'x'):
+def xsymlog(base=None, linthresh=None, linscale=None, name='x'):
     '''
     set symlog in x
 
     [x,y, z, c]symlog(base = None, linthresh = None, linscale = None, name  = 'x')
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def ysymlog(base = None, linthresh = None, linscale = None,  name  = 'y'):
+def ysymlog(base=None, linthresh=None, linscale=None,  name='y'):
     '''
     set symlog in y
     [x,y, z, c]symlog(base = None, linthresh = None, linscale = None, name  = 'y')
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def zsymlog(base = None, linthresh = None, linscale = None, name  = 'z'):
+def zsymlog(base=None, linthresh=None, linscale=None, name='z'):
     '''
     set symlog in z
     [x,y, z, c]symlog(base = None, linthresh = None, linscale = None,  name  = 'z')
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def csymlog(base = None, linthresh = None, linscale = None, name  = 'c'):
+def csymlog(base=None, linthresh=None, linscale=None, name='c'):
     '''
     set symlog in c
     [x,y, z, c]symlog(base = None, linthresh = None, linscale = None, name  = 'c')
     '''
     pass
+
+
 @redirect_to_aviewer_hold
 def xlinear(value=True):
     '''
@@ -370,6 +424,8 @@ def xlinear(value=True):
     xlinear(False) # makes log scale
     '''
     pass
+
+
 @redirect_to_aviewer_hold
 def ylinear(value=True):
     '''
@@ -378,6 +434,8 @@ def ylinear(value=True):
     ylinear(False) # makes log scale
     '''
     pass
+
+
 @redirect_to_aviewer_hold
 def clinear(value=True):
     '''
@@ -386,6 +444,8 @@ def clinear(value=True):
     clinear(False) # makes log scale
     '''
     pass
+
+
 @redirect_to_aviewer_hold
 def zlinear(value=True):
     '''
@@ -395,33 +455,38 @@ def zlinear(value=True):
     '''
     pass
 
+
 @redirect_to_aviewer
-def xauto(name = 'x'):
+def xauto(name='x'):
     '''
     auto scale x
     '''
     pass
 
-@redirect_to_aviewer       
-def yauto(name = 'y'):
+
+@redirect_to_aviewer
+def yauto(name='y'):
     '''
     auto scale y
     '''
     pass
 
-@redirect_to_aviewer       
-def zauto(name = 'z'):
+
+@redirect_to_aviewer
+def zauto(name='z'):
     '''
     auto scale z
     '''
     pass
 
-@redirect_to_aviewer       
-def cauto(name = 'c'):
+
+@redirect_to_aviewer
+def cauto(name='c'):
     '''
     auto scale c
     '''
     pass
+
 
 @redirect_to_aviewer
 def xlim(*range, **kargs):
@@ -430,6 +495,8 @@ def xlim(*range, **kargs):
     example) xlim(min, max) , xlim((min, max)), or xlim([min, max])
     '''
     pass
+
+
 @redirect_to_aviewer
 def ylim(*range, **kargs):
     '''
@@ -438,6 +505,7 @@ def ylim(*range, **kargs):
     '''
     pass
 
+
 @redirect_to_aviewer
 def zlim(*range, **kargs):
     '''
@@ -445,6 +513,7 @@ def zlim(*range, **kargs):
     example) zlim(min, max) , zlim((min, max)), or zlim([min, max])
     '''
     pass
+
 
 @redirect_to_aviewer
 def clim(*range, **kargs):
@@ -462,12 +531,14 @@ def twinx():
     '''
     pass
 
+
 @redirect_to_aviewer
 def twiny():
     '''
     twinx
     '''
     pass
+
 
 @redirect_to_aviewer_hold
 def oplot(*args, **kargs):
@@ -477,14 +548,17 @@ def oplot(*args, **kargs):
     see plot for all arguments
     '''
     pass
+
+
 @redirect_to_aviewer_hold
-def oerrorbar( *args, **kargs):
+def oerrorbar(*args, **kargs):
     '''
     oerrrobar: 
         overplot errorbar
     see errorbar for all arguments
     '''
     pass
+
 
 @redirect_to_aviewer
 def loglog(*args, **kargs):
@@ -493,6 +567,8 @@ def loglog(*args, **kargs):
     loglog(x, y, s)
     '''
     pass
+
+
 @redirect_to_aviewer
 def semilogy(*args, **kargs):
     '''
@@ -501,6 +577,7 @@ def semilogy(*args, **kargs):
     '''
     pass
 
+
 @redirect_to_aviewer
 def semilogx(*args, **kargs):
     '''
@@ -508,6 +585,7 @@ def semilogx(*args, **kargs):
     semilogx(x, y, s)
     '''
     pass
+
 
 @redirect_to_aviewer
 def timetrace(*args, **kargs):
@@ -518,6 +596,8 @@ def timetrace(*args, **kargs):
     timetrace(x, y) 
     '''
     pass
+
+
 @redirect_to_aviewer
 def plotc(*args, **kargs):
     '''
@@ -525,6 +605,8 @@ def plotc(*args, **kargs):
     however, it has extra menus to edit points
     '''
     pass
+
+
 @redirect_to_aviewer
 def errorbarc(*args, **kargs):
     '''
@@ -532,6 +614,7 @@ def errorbarc(*args, **kargs):
     however, it has extra menus to edit points
     '''
     pass
+
 
 @redirect_to_aviewer
 def plot(*args, **kargs):
@@ -570,6 +653,7 @@ def plot(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def scatter(*args, **kargs):
     """
@@ -585,6 +669,7 @@ def scatter(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def hist(*args, **kargs):
     """
@@ -594,8 +679,9 @@ def hist(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
-def triplot( *args, **kargs):
+def triplot(*args, **kargs):
     """
     triplot : plot triangles
 
@@ -606,8 +692,9 @@ def triplot( *args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
-def errorbar( *args, **kargs):
+def errorbar(*args, **kargs):
     """
     errorbar : xy plot with errorbar
 
@@ -620,10 +707,11 @@ def errorbar( *args, **kargs):
         xerr = [0.1, 0.2, ....] 
         ### assign upper and lower error separately
         xerr = [[0.1, 0.2, ...],[0.4, 0.7...]]
-               
+
     identical to calling plot with mpl_command = 'errorbar'
     """
     pass
+
 
 @redirect_to_aviewer
 def annotate(*args, **kargs):
@@ -635,15 +723,17 @@ def annotate(*args, **kargs):
       'figure' and 'axes' is from 0 to 1 (fraction)
       other opstions are not supported
     '''
-    pass 
+    pass
+
 
 @redirect_to_aviewer
-def ispline( *args, **kargs):
+def ispline(*args, **kargs):
     """
     ispline : xy plot 
     ispline(x, y)
     """
     pass
+
 
 @redirect_to_aviewer
 def contour(*args, **kargs):
@@ -659,6 +749,7 @@ def contour(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def contourf(*args, **kargs):
     """
@@ -672,6 +763,7 @@ def contourf(*args, **kargs):
     v: a list of contour levels
     """
     pass
+
 
 @redirect_to_aviewer
 def quiver(*args, **kargs):
@@ -694,6 +786,8 @@ def quiver(*args, **kargs):
 
     """
     pass
+
+
 @redirect_to_aviewer
 def quiver3d(*args, **kargs):
     '''
@@ -703,48 +797,53 @@ def quiver3d(*args, **kargs):
     if cz is True and cdata is None, z is used for color
     '''
 
+
 @redirect_to_aviewer
 def image(*args, **kargs):
     """
     image : show image 
-   
+
     image(z)
     image(x, y, z)
     """
     pass
 
-import matplotlib.mlab as mlab
+
 @redirect_to_aviewer
-def specgram(x, NFFT=256, 
-       Fs=2, 
-       Fc=0, 
-       detrend = mlab.detrend_none,
-       window = mlab.window_hanning,
-       noverlap=128, 
-       xextent=None, 
-       pad_to=None, 
-       sides='default', 
-       scale_by_freq=None, 
-        **kwargs):
+def specgram(x, NFFT=256,
+             Fs=2,
+             Fc=0,
+             detrend=mlab.detrend_none,
+             window=mlab.window_hanning,
+             noverlap=128,
+             xextent=None,
+             pad_to=None,
+             sides='default',
+             scale_by_freq=None,
+             **kwargs):
     '''
     plot spectrogram. Run matplotlib.pyplot.specgram
     and call image using the returnd spectrum.
     keywords are the same as specgram.
     '''
     pass
+
+
 @redirect_to_aviewer
 def spec(*args, **kargs):
     """
     spectram
     spec(t, v)
     spec(v)
-    """ 
+    """
     pass
+
+
 @redirect_to_aviewer
 def tripcolor(*args, **kargs):
     """
     tricolor : show image using triangulation
-   
+
     tripcolor(z)
     tripcolor(x, y, z)
     tripcolor(tri, z)
@@ -753,6 +852,8 @@ def tripcolor(*args, **kargs):
     tri can be evaluated by tri = delauney(x, y) beforehand
     """
     pass
+
+
 @redirect_to_aviewer
 def tricontour(*args, **kargs):
     """
@@ -766,11 +867,12 @@ def tricontour(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def tricontourf(*args, **kargs):
     """
     tri-contour plot with fill mode
-   
+
     tricontourf(x, y, z, n)
     tricontourf(x, y, z, v)
     tricontourf(tri, x, y, z, n)
@@ -779,12 +881,13 @@ def tricontourf(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def axline(*args, **kargs):
     """
     axline : axhline or axvline
 
-   
+
     axline(x) or axline([x1,x2,x3...])  : vline
     axline([], y) or axline([], [y1,y2,y3...]) : hline
     axline([x1, x2...],[y1, y2...]) : mixed vline and hline
@@ -793,6 +896,8 @@ def axline(*args, **kargs):
            color, marker, alpha, and other attirbute.
     """
     pass
+
+
 @redirect_to_aviewer
 def axlinec(*args, **kargs):
     """
@@ -800,11 +905,12 @@ def axlinec(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def axspan(*args, **kargs):
     """
     axspan : axhspan or axvspan
-   
+
     axspan([x1,x2])     : v-span
     axspan([], [y1,y2]) : h-span
     axspan([x1, x2], [y1,y2]) : mixed v-span h-span
@@ -817,6 +923,7 @@ def axspan(*args, **kargs):
           drag is also applied to all artists.
     """
     pass
+
 
 @redirect_to_aviewer
 def axspanc(*args, **kargs):
@@ -849,6 +956,7 @@ def figtext(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer_hold
 def arrow(*args, **kargs):
     """
@@ -857,6 +965,7 @@ def arrow(*args, **kargs):
     arrow(x1, y1, x2, y2)
     """
     pass
+
 
 @redirect_to_aviewer_hold
 def figarrow(*args, **kargs):
@@ -879,6 +988,7 @@ def legend(*args, **kargs):
     """
     pass
 
+
 @redirect_to_aviewer
 def fill(*args, **kargs):
     '''
@@ -886,12 +996,14 @@ def fill(*args, **kargs):
     '''
     pass
 
+
 @redirect_to_aviewer
 def fill_between(*args, **kargs):
     '''
     fill_between(x, y,  y2=[0]*len(x), where=None)
     '''
     pass
+
 
 @redirect_to_aviewer
 def fill_betweenx(*args, **kargs):
@@ -920,6 +1032,7 @@ def surface(x, y, z, **kargs):
     surf(x, y, z, **kargs):
     '''
     pass
+
 
 @redirect_to_aviewer_3D
 def revolve(*args, **kargs):
@@ -974,6 +1087,8 @@ def solid(v, **kargs):
        figure();solid(ptx, box)
     '''
     pass
+
+
 @redirect_to_aviewer_3D
 def trisurf(v, **kargs):
     '''
@@ -984,6 +1099,7 @@ def trisurf(v, **kargs):
     trisurf(tri, z, **kargs):
     '''
     pass
+
 
 @redirect_to_aviewer
 def property(obj, name, *args):
@@ -996,12 +1112,15 @@ def property(obj, name, *args):
     '''
     pass
 
+
 @redirect_to_aviewer
 def threed(*args):
     '''
     turn on/off three-D axis mode
     '''
     pass
+
+
 @redirect_to_aviewer
 def lighting(**kwargs):
     '''
@@ -1016,9 +1135,13 @@ def lighting(**kwargs):
                                  #2 wireframe
     '''
     pass
+
+
 @redirect_to_aviewer
 def _view(*args, **kwargs):
     pass
+
+
 def view(*args, **kwargs):
     '''
        set 3D view
@@ -1038,30 +1161,40 @@ def view(*args, **kwargs):
         return v.view()
     else:
         return _view(*args, **kwargs)
+
+
 @redirect_to_aviewer
 def xnames(*args, **kwargs):
     '''
     return list of x axis name of current plot
     '''
     pass
+
+
 @redirect_to_aviewer
 def ynames(*args, **kwargs):
     '''
     return list of y axis name of current plot
     '''
     pass
+
+
 @redirect_to_aviewer
 def znames(*args, **kwargs):
     '''
     return list of z axis name of current plot
     '''
     pass
+
+
 @redirect_to_aviewer
 def cnames(*args, **kwargs):
     '''
     return list of c axis name of current plot
     '''
     pass
+
+
 @redirect_to_aviewer
 def cbar(*args, **kwargs):
     '''
@@ -1077,12 +1210,13 @@ def cbar(*args, **kwargs):
 def aviewer():
     return aviewer
 
+
 @check_aviewer
 def draw():
     '''
     draw draws the window contents. this command 
     is intended to use with update('off') in script
-    
+
     ex) ou = update()
         update('off')
         .... do some mupltiple plotting
@@ -1092,6 +1226,7 @@ def draw():
     '''
     aviewer.draw()
 
+
 @check_aviewer
 def hold(val=None):
     '''
@@ -1099,22 +1234,24 @@ def hold(val=None):
     adding a new one
        hold("on"), hold(1), hold(True)  -> hold is on
        hold("off"),hold(0), hold(False) -> hold is off
-       
-    '''
-    if val is None: 
-       return globals()["_hold"]
 
-    if isinstance(val, bool): globals()["_hold"]=val
+    '''
+    if val is None:
+        return globals()["_hold"]
+
+    if isinstance(val, bool):
+        globals()["_hold"] = val
     if isinstance(val, int):
-       if (val == 1):
-           globals()["_hold"]= True
-       if (val == 0):
-           globals()["_hold"]= False
+        if (val == 1):
+            globals()["_hold"] = True
+        if (val == 0):
+            globals()["_hold"] = False
     if isinstance(val, str):
-       if (val.upper() == 'ON'):
-           globals()["_hold"]= True
-       if (val.upper() == 'OFF'):
-           globals()["_hold"]= False
+        if (val.upper() == 'ON'):
+            globals()["_hold"] = True
+        if (val.upper() == 'OFF'):
+            globals()["_hold"] = False
+
 
 @check_aviewer
 def update(val=None):
@@ -1124,31 +1261,34 @@ def update(val=None):
     update('on'), update(1), update(True) : automatic update on
     update('off'), update(0), update(False) : automatic update off
     '''
-    if val is None: return globals()["_update"]
-    if isinstance(val, bool): globals()["_update"]=val
+    if val is None:
+        return globals()["_update"]
+    if isinstance(val, bool):
+        globals()["_update"] = val
     if isinstance(val, int):
-       if (val == 1):
-           globals()["_update"]= True
-           if not globals()["_update"]:
-              draw()
-       if (val == 0):
-           globals()["_update"]= False
+        if (val == 1):
+            globals()["_update"] = True
+            if not globals()["_update"]:
+                draw()
+        if (val == 0):
+            globals()["_update"] = False
     if isinstance(val, str):
-       if (val.upper() == 'ON'):
-           if not globals()["_update"]:
-              draw()
-           globals()["_update"]= True
+        if (val.upper() == 'ON'):
+            if not globals()["_update"]:
+                draw()
+            globals()["_update"] = True
 
-       if (val.upper() == 'OFF'):
-           globals()["_update"]= False
+        if (val.upper() == 'OFF'):
+            globals()["_update"] = False
 
-           
+
 @check_aviewer
 def ipage():
     '''
     get current page number
     '''
     return globals()['aviewer'].ipage
+
 
 @check_aviewer
 def close(*args):
@@ -1163,61 +1303,67 @@ def close(*args):
     else:
         # close all viewer whith has close method
         # having close method indicates it inherit
-        # BookViewerInteractive        
+        # BookViewerInteractive
         from __main__ import ifig_app
         for v in ifig_app.viewers[:]:
-            if hasattr(v, 'close'): v.close()
-    
+            if hasattr(v, 'close'):
+                v.close()
+
 
 def clear():
     from __main__ import ifig_app
     ifig_app.shell.clear()
 
-def newbook(name = '', basename=None):
+
+def newbook(name='', basename=None):
     '''
     add a new book
     '''
     from __main__ import ifig_app
-    book = ifig_app.proj.onAddBook(basename = basename)
-    i_page=book.add_page()
+    book = ifig_app.proj.onAddBook(basename=basename)
+    i_page = book.add_page()
     page = book.get_page(i_page)
-    page.realize()    
+    page.realize()
     page.add_axes()
     page.realize_children()
-    page.set_area([[0,0, 1,1]])
-    return book 
+    page.set_area([[0, 0, 1, 1]])
+    return book
 #    ifigure.events.SendShowPageEvent(page)
+
 
 def _open_book(book, viewer, **kwargs):
     from __main__ import ifig_app
     if ifig_app.find_bookviewer(book) is not None:
-       ifig_app.find_bookviewer(book).Raise()
-       ifig_app.aviewer = ifig_app.find_bookviewer(book)
-       return
-    ifigure.events.SendOpenBookEvent(book, w=ifig_app, 
+        ifig_app.find_bookviewer(book).Raise()
+        ifig_app.aviewer = ifig_app.find_bookviewer(book)
+        return
+    ifigure.events.SendOpenBookEvent(book, w=ifig_app,
                                      viewer=viewer, useProcessEvent=True, **kwargs)
     ifigure.events.SendChangedEvent(book, w=ifig_app, useProcessEvent=True)
-    ifigure.events.SendCanvasSelected(book.get_child(0), w = None, 
+    ifigure.events.SendCanvasSelected(book.get_child(0), w=None,
                                       useProcessEvent=True)
 
-def _get_book_by_number(parent, num, basename = 'book'):
+
+def _get_book_by_number(parent, num, basename='book'):
     from ifigure.mto.fig_book import FigBook
     name = basename+str(num)
     if parent.has_child(name):
-            book = parent.get_child(name = name)
-            if not isinstance(book, FigBook): return None
-            return book
+        book = parent.get_child(name=name)
+        if not isinstance(book, FigBook):
+            return None
+        return book
     else:
-            book = FigBook()
-            ipage = book.add_page()
-            book.get_page(ipage).add_axes()
-            book.get_page(ipage).realize()
-            book.get_page(ipage).set_area([[0,0,1,1]])
-            parent.add_child(name, book)
-            ifigure.events.SendChangedEvent(book, w=wx.GetApp().TopWindow)
-            return book
+        book = FigBook()
+        ipage = book.add_page()
+        book.get_page(ipage).add_axes()
+        book.get_page(ipage).realize()
+        book.get_page(ipage).set_area([[0, 0, 1, 1]])
+        parent.add_child(name, book)
+        ifigure.events.SendChangedEvent(book, w=wx.GetApp().TopWindow)
+        return book
 
-def figure(file = '', book = None, viewer = None, **kwargs):
+
+def figure(file='', book=None, viewer=None, **kwargs):
     '''
     create a new book and open it in a new figure window
          figure()  : open empty figure
@@ -1237,25 +1383,30 @@ def figure(file = '', book = None, viewer = None, **kwargs):
         parent = book if book is not None else wx.GetApp().TopWindow.proj
         book = _get_book_by_number(parent, num)
         file = ''
-        if book is None: return
+        if book is None:
+            return
     if book is None:
         book = newbook()
-    if book.num_page() == 0: book.add_page()
-    if viewer is None: viewer=BookViewer
+    if book.num_page() == 0:
+        book.add_page()
+    if viewer is None:
+        viewer = BookViewer
     _open_book(book, viewer, **kwargs)
     viewer = wx.GetApp().TopWindow.find_bookviewer(book)
-    if file == '': return viewer
+    if file == '':
+        return viewer
 
     import os
     file = os.path.expanduser(file)
     if file.endswith('.bfz'):
-        evt = None 
-        wx.CallAfter(viewer.onLoadBook, evt, file = file)
+        evt = None
+        wx.CallAfter(viewer.onLoadBook, evt, file=file)
     return viewer
 
-#def scope(type='direct'):
+# def scope(type='direct'):
 
-def scope(file = '',  book = None,  viewer = None, **kwargs):
+
+def scope(file='',  book=None,  viewer=None, **kwargs):
     '''
     open mdsscope
        scope() : open empty scope
@@ -1271,49 +1422,55 @@ def scope(file = '',  book = None,  viewer = None, **kwargs):
     elif isinstance(file, int):
         num = file
         parent = book if book is not None else wx.GetApp().TopWindow.proj
-        book = _get_book_by_number(parent, num, basename = 'scope')
+        book = _get_book_by_number(parent, num, basename='scope')
         file = ''
-        if book is None: return
-    from ifigure.mdsplus.mdsscope import MDSScope 
-    if viewer is None: viewer = MDSScope
+        if book is None:
+            return
+    from ifigure.mdsplus.mdsscope import MDSScope
+    if viewer is None:
+        viewer = MDSScope
     if book is None:
-        book = newbook(basename = 'scope')
-    if book.num_page() == 0: book.add_page()
+        book = newbook(basename='scope')
+    if book.num_page() == 0:
+        book.add_page()
     book.get_page(0).set_nomargin(True)
     _open_book(book, viewer, **kwargs)
     viewer = wx.GetApp().TopWindow.find_bookviewer(book)
-    if file == '': return viewer
+    if file == '':
+        return viewer
 
     import os
     file = os.path.expanduser(file)
     if file.endswith('.dat'):
-        wx.CallAfter(viewer.onImportDW, None, file = file)
+        wx.CallAfter(viewer.onImportDW, None, file=file)
     elif file.endswith('.bfz'):
-        evt = None 
-        wx.CallAfter(viewer.onLoadBook, evt, file = file)
+        evt = None
+        wx.CallAfter(viewer.onLoadBook, evt, file=file)
     return viewer
 
-def videoviewer(file = '', book = None):
+
+def videoviewer(file='', book=None):
 
     from ifigure.widgets.video_viewer import VideoViewer
-    viewer = figure(file = file, book = book, viewer = VideoViewer)
+    viewer = figure(file=file, book=book, viewer=VideoViewer)
     return viewer
+
 
 def video(*args, **kargs):
     '''
     video viewer is to look video image (3D array)
     vidoe(x, y, z) or video(z)
     '''
-    if len(args) == 1: 
-       z = args[0]
-       x = np.arange(z.shape[-1])
-       y = np.arange(z.shape[-2])
-    elif len(args) == 3: 
-       z = args[0]
-       x = args[1]
-       y = args[2]
+    if len(args) == 1:
+        z = args[0]
+        x = np.arange(z.shape[-1])
+        y = np.arange(z.shape[-2])
+    elif len(args) == 3:
+        z = args[0]
+        x = args[1]
+        y = args[2]
     else:
-       raise(ValueError('data dimension is not right'))
+        raise(ValueError('data dimension is not right'))
 
     v = videoviewer()
     o = v.image(*args, **kargs)
@@ -1321,43 +1478,48 @@ def video(*args, **kargs):
 
     return v
 
+
 def scopenw(book):
     from ifigure.mdsplus.mdsscope_nw import MDSScopeNW
-    return MDSScopeNW(book = book)
+    return MDSScopeNW(book=book)
 
-def tscope(file = '',  book = None):
+
+def tscope(file='',  book=None):
     from __main__ import ifig_app
     proj = ifig_app.proj
 
     if proj.setting.has_child('ts_worker'):
         workers = proj.setting.ts_worker
     else:
-        file = os.path.join(ifigure.__path__[0], 'add_on', 
+        file = os.path.join(ifigure.__path__[0], 'add_on',
                             'setting', 'module', 'mdsplus_worker.py')
 
         workers = proj.setting.add_absmodule(file)
         workers.rename('ts_worker')
         workers.setvar('translater', 'ts')
-    v = scope(file = file, book = book, worker = workers)
+    v = scope(file=file, book=book, worker=workers)
     v.book.setvar('mdsplus_server', 'mdsplus.partenaires.cea.fr:8000:')
+
 
 try:
     from petram.pi.shell_commands import petram
     has_petra = True
 except:
-    has_petra = False    
+    has_petra = False
 
-def edit(file = ''):
+
+def edit(file=''):
     app = wx.GetApp().TopWindow
     app.open_editor_panel()
     if file == '':
         app.script_editor.NewFile()
     else:
-       import os
-       file = os.path.expanduser(file)
-       app.script_editor.OpenFile(file)
+        import os
+        file = os.path.expanduser(file)
+        app.script_editor.OpenFile(file)
     if not app.isEditorAttached():
-       app.script_editor.Raise()
+        app.script_editor.Raise()
+
 
 def debug(command, *args):
     '''
@@ -1374,17 +1536,19 @@ def debug(command, *args):
     elif command.startswith('s'):
         ifigure.utils.debug.set_level(args[0], args[1])
 
+
 def profile(txt, *args):
     '''
     profile(txt)
     profile(txt, filename)
-    
+
     run cProfile with locals in Shell
     '''
     from __main__ import ifig_app
     import cProfile
-    l = ifig_app.shell.lvar 
+    l = ifig_app.shell.lvar
     cProfile.runctx(txt, {}, l, *args)
+
 
 def profile_start():
     '''
@@ -1398,7 +1562,8 @@ def profile_start():
     print('starting profiler')
     pr = cProfile.Profile()
     pr.enable()
-    return pr   
+    return pr
+
 
 def profile_stop(pr, sortby='cumulative'):
     '''
@@ -1410,17 +1575,18 @@ def profile_stop(pr, sortby='cumulative'):
              'ncalls', pcalls', 'line', 'name',
              'nfl', stdname', 'time', 'tottime'
     '''
-    import StringIO, pstats
+    import StringIO
+    import pstats
     pr.disable()
-    #print 'stopped profiler'
-    lsortby = ['cumulative', 'calls', 'cumtime', 
+    # print 'stopped profiler'
+    lsortby = ['cumulative', 'calls', 'cumtime',
                'file', 'filename', 'module',
                'ncalls', 'pcalls', 'line', 'name',
-                'nfl', 'stdname', 'time', 'tottime']
+               'nfl', 'stdname', 'time', 'tottime']
     if not sortby in lsortby:
-       print('invalid sortby')
-       print(lsortby)
-       return
+        print('invalid sortby')
+        print(lsortby)
+        return
 
     s = StringIO.StringIO()
     sortby = sortby
@@ -1428,7 +1594,8 @@ def profile_stop(pr, sortby='cumulative'):
     ps.print_stats()
     print((s.getvalue()))
 
-def server(param = None, extra = None):
+
+def server(param=None, extra=None):
     '''
     server : control server mode
         server('on') : start server
@@ -1442,68 +1609,72 @@ def server(param = None, extra = None):
     import ifigure.server
     server = ifigure.server.Server()
     if param == 'on':
-        server.start(host = extra)
+        server.start(host=extra)
     elif param == 'off':
         server.stop()
     elif param is None:
         return server.info()
 
 
-def importv(dest=None, path = ''):
+def importv(dest=None, path=''):
     '''
     import variables which was saved as pickled file
 
     '''
-    import cPickle as pickle 
+    import cPickle as pickle
     from ifigure.mto.py_code import PyData
     if dest is None:
-       from __main__ import ifig_app
-       dest = PyData()
-       ifig_app.proj.add_child('data', dest)
-       
+        from __main__ import ifig_app
+        dest = PyData()
+        ifig_app.proj.add_child('data', dest)
+
     if path == '':
-        open_dlg = wx.FileDialog (None, message="Select Data File", 
-                                  style=wx.FD_OPEN)
+        open_dlg = wx.FileDialog(None, message="Select Data File",
+                                 style=wx.FD_OPEN)
         if open_dlg.ShowModal() != wx.ID_OK:
-           open_dlg.Destroy()
-           return
+            open_dlg.Destroy()
+            return
         path = open_dlg.GetPath()
         open_dlg.Destroy()
-        if path == '': return 
+        if path == '':
+            return
     fid = open(path, 'r')
     data = pickle.load(fid)
     fid.close()
 
     for key in data:
-       dest.setvar(key, data[key])
+        dest.setvar(key, data[key])
 
     ifigure.events.SendChangedEvent(dest, w=ifig_app, useProcessEvent=True)
     return dest
 
-def exportv(variables, names, path = ''):
+
+def exportv(variables, names, path=''):
     '''
     export variables as pickled file
-   
+
     example: export([x, y, z], ['x', 'y', 'z'])
     note: one can make data_tree object and save it as project
           or export subtree.
 
     '''
     import cPickle as pickle
-    save_dlg = wx.FileDialog ( None, message="Enter Data File Name", 
-                              defaultDir = os.getcwd(), 
-                              style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-    if save_dlg.ShowModal() != wx.ID_OK: 
+    save_dlg = wx.FileDialog(None, message="Enter Data File Name",
+                             defaultDir=os.getcwd(),
+                             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+    if save_dlg.ShowModal() != wx.ID_OK:
         save_dlg.Destroy()
         return
     path = save_dlg.GetPath()
     save_dlg.Destroy()
-    if path == '': return
+    if path == '':
+        return
 
     fid = open(path, 'w')
-    d = {n:v for v, n in zip(variables,names)}
+    d = {n: v for v, n in zip(variables, names)}
     pickle.dump(d, fid)
     fid.close()
+
 
 def quit():
     '''
@@ -1511,6 +1682,7 @@ def quit():
     '''
     from __main__ import ifig_app
     ifig_app.onQuit()
+
 
 def glinfo():
     '''
@@ -1523,13 +1695,14 @@ def glinfo():
         print("OpenGL not avaiable")
         return
     print('OpenGL Ver. : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VERSION))
-    print('GS Lang Ver.: ' + OpenGL.GL.glGetString(OpenGL.GL.GL_SHADING_LANGUAGE_VERSION))    
+    print('GS Lang Ver.: ' +
+          OpenGL.GL.glGetString(OpenGL.GL.GL_SHADING_LANGUAGE_VERSION))
     print('Vendor      : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VENDOR))
     print('Renderer    : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_RENDERER))
 
 
-def setupmodel(package = '', root = '', path = 'setup_scripts', model=None,
-               del_scripts = True):
+def setupmodel(package='', root='', path='setup_scripts', model=None,
+               del_scripts=True):
     '''
     Utility command to setup simulation model. It uses 
     mercurial repositories to store skelton scripts (and
@@ -1553,33 +1726,36 @@ def setupmodel(package = '', root = '', path = 'setup_scripts', model=None,
                          in hg repo at ~/hg_root/ppkags
     '''
     from ifigure.utils.model_setup_tools import setup
-    return setup(package=package, model=model, root=root, path = path, 
-          del_scripts=del_scripts)
+    return setup(package=package, model=model, root=root, path=path,
+                 del_scripts=del_scripts)
 
-def autoplay(viewer = None, interval = 0.2):
+
+def autoplay(viewer=None, interval=0.2):
     #timer = wx.Timer()
-    #self.viewer.Bind( 
+    # self.viewer.Bind(
 
+    if viewer is None:
+        viewer = aviewer
+    if viewer is None:
+        return
 
-    if viewer is None: viewer = aviewer
-    if viewer is None: return
-    def step_viewer(player = viewer, interval=interval):
-        ipage  = viewer.ipage
-        num_page=viewer.book.num_page()
+    def step_viewer(player=viewer, interval=interval):
+        ipage = viewer.ipage
+        num_page = viewer.book.num_page()
         if ipage == num_page-1:
             ipage = 0
         else:
             ipage = ipage + 1
         viewer.show_page(ipage)
         if viewer.timer is not None:
-             viewer.timer.Start(interval*1000., oneShot=True)
+            viewer.timer.Start(interval*1000., oneShot=True)
 
     viewer.timer = wx.Timer(viewer)
     viewer.Bind(wx.EVT_TIMER, step_viewer)
     if viewer.isPropShown():
         viewer.toggle_property()
 
-    viewer.timer.Start(interval*1000., oneShot=True)    
+    viewer.timer.Start(interval*1000., oneShot=True)
 
     from __main__ import ifig_app
     x = ifig_app.shell.raw_input('stop?')
@@ -1587,12 +1763,14 @@ def autoplay(viewer = None, interval = 0.2):
     viewer.timer = None
 
 
-### get_shellvar/put_shellvar is to manipulate shell variable
-### from client
+# get_shellvar/put_shellvar is to manipulate shell variable
+# from client
 def get_shellvar(name):
     var = wx.GetApp().TopWindow.shell.lvar
     if name in var:
         return var[name]
+
+
 def put_shellvar(name, value):
     var = wx.GetApp().TopWindow.shell.lvar
     var[name] = value
@@ -1601,35 +1779,24 @@ def put_shellvar(name, value):
 #  TODO (following functions needs to be revised
 #
 
+
 def get_page(ipage=None):
-    return aviewer.get_page(ipage = ipage)
+    return aviewer.get_page(ipage=ipage)
+
+
 def get_axes(ipage=None, iaxes=None):
     return aviewer.get_axes(ipage=ipage, iaxes=iaxes)
 
 
-def twinc():    
-    if aviewer is None: return
+def twinc():
+    if aviewer is None:
+        return
     fig_p = get_page(ipage=None)
-    if fig_p is None:  
-       print("no page exists. use addpage() to create a page")
-       return
+    if fig_p is None:
+        print("no page exists. use addpage() to create a page")
+        return
     axes = get_axes(ipage=None, iaxes=None)
     axes.add_axis_param(dir='c')
     axes.set_bmp_update(False)
-    draw() 
-    ifigure.events.SendChangedEvent(axes, w = aviewer, useProcessEvent=True)
-   
-
-
-
-
-
-
-
-
-    
-    
- 
-    
-
-    
+    draw()
+    ifigure.events.SendChangedEvent(axes, w=aviewer, useProcessEvent=True)

@@ -2,7 +2,9 @@ import wx
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData
 from ifigure.mto.py_code import PyCode
-import os, re, string
+import os
+import re
+import string
 import numpy
 from collections import OrderedDict
 import idlsave
@@ -22,11 +24,11 @@ import idlsave
 
 #      Py_Modules does not check the dependency of
 #      modules.
-#      If moduels used in Py_Modules depends on 
-#      each other by for example module variable, 
-#      it will cause complicate  module loading 
+#      If moduels used in Py_Modules depends on
+#      each other by for example module variable,
+#      it will cause complicate  module loading
 #      order-dependency problem.
-#      
+#
 #   name of module
 module_name = 'gfile_subs'
 #   module_evt_handler
@@ -39,49 +41,53 @@ module_name = 'gfile_subs'
 #   or True
 #   if it return False, ifigure stops exectuion at
 #   this module
-#  
-module_evt_handler=[("Load File", "onLoadFile", True)]
+#
+module_evt_handler = [("Load File", "onLoadFile", True)]
 #
 #   A function called when py_module is initialized
 #
-module_init= None
+module_init = None
 ######################################################
+
+
 def expand_recarray(top, var):
     for name in var.dtype.names:
-       print(name,  type(var.field(name)))
+        print(name,  type(var.field(name)))
 
-       if isinstance(var.field(name), numpy.recarray):
-           child=PyData()
-           top.add_child(name, child)
-           expand_recarray(child, var.field(name))
-       else:
-           top.setvar(name, var.field(name))
+        if isinstance(var.field(name), numpy.recarray):
+            child = PyData()
+            top.add_child(name, child)
+            expand_recarray(child, var.field(name))
+        else:
+            top.setvar(name, var.field(name))
+
 
 def read_sav_file(this):
-    file=this.getvar("filename")
+    file = this.getvar("filename")
     s = idlsave.read(file)
     for key in s.keys():
         if isinstance(s[key], numpy.recarray):
-           child=PyData()
-           this.add_child(key, child)
-           expand_recarray(child, s[key])
+            child = PyData()
+            this.add_child(key, child)
+            expand_recarray(child, s[key])
         else:
-           this.setvar(key, s[key])
+            this.setvar(key, s[key])
 
 
 def onLoadFile(self_obj):
-    open_dlg = wx.FileDialog ( None, message="Select .sav file", 
-                               wildcard='*.*',
-                               style=wx.FD_OPEN)
+    open_dlg = wx.FileDialog(None, message="Select .sav file",
+                             wildcard='*.*',
+                             style=wx.FD_OPEN)
     if open_dlg.ShowModal() != wx.ID_OK:
-         open_dlg.Destroy()    
-         return False
+        open_dlg.Destroy()
+        return False
     file = open_dlg.GetPath()
-    open_dlg.Destroy() 
+    open_dlg.Destroy()
     for name, child in self_obj.get_children():
         child.destroy()
     self_obj.setvar("filename", file)
     read_sav_file(self_obj)
+
 
 def onWriteFile(self_obj):
     pass

@@ -11,6 +11,7 @@ GetCurrentProcess.restype = wintypes.HANDLE
 
 SIZE_T = ctypes.c_size_t
 
+
 class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
     _fields_ = [
         ('cb', wintypes.DWORD),
@@ -26,6 +27,7 @@ class PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
         ('PrivateUsage', SIZE_T),
     ]
 
+
 GetProcessMemoryInfo = ctypes.windll.psapi.GetProcessMemoryInfo
 GetProcessMemoryInfo.argtypes = [
     wintypes.HANDLE,
@@ -34,9 +36,11 @@ GetProcessMemoryInfo.argtypes = [
 ]
 GetProcessMemoryInfo.restype = wintypes.BOOL
 
+
 def get_current_process():
     """Return handle to current process."""
     return GetCurrentProcess()
+
 
 def get_memory_info(process=None):
     """Return Win32 process memory counters structure as a dict."""
@@ -51,10 +55,12 @@ def get_memory_info(process=None):
                 for name, _ in counters._fields_)
     return info
 
+
 def get_memory_usage(process=None):
     """Return this process's memory usage in bytes."""
     info = get_memory_info(process=process)
     return info['PrivateUsage']
+
 
 if __name__ == '__main__':
     import pprint

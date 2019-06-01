@@ -1,8 +1,8 @@
 #
 #   MDSScope no-window
 #
-#       no window version of scope. 
-#       a user can load data without opening book 
+#       no window version of scope.
+#       a user can load data without opening book
 #       on a screen. Internally it uses exact same
 #       ScopeEngine to process MDSplus sessions
 #
@@ -14,9 +14,9 @@
 #     >> from ifigure.widgets.book_viewer import BookViewer
 #     >> proj.lh_scope.Open(BookViewer)
 #
-#*******************************************  
+# *******************************************
 #     Copyright(c) 2012- S.Shiraiwa
-#*******************************************
+# *******************************************
 __author__ = "Syun'ichi Shiraiwa"
 __copyright__ = "Copyright, S. Shiraiwa, PiScope Project"
 __credits__ = ["Syun'ichi Shiraiwa"]
@@ -25,7 +25,18 @@ __maintainer__ = "Syun'ichi Shiraiwa"
 __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
-import wx, sys, time, weakref, logging, threading, Queue, os, shutil, numpy, traceback, collections
+import wx
+import sys
+import time
+import weakref
+import logging
+import threading
+import Queue
+import os
+import shutil
+import numpy
+import traceback
+import collections
 import multiprocessing as mp
 #import wx.aui as aui
 import ifigure
@@ -68,10 +79,13 @@ dprint1, dprint2, dprint3 = debug.init_dprints('MDSScope')
 class FakeTextCtrl(object):
     def __init__(self, *args, **kargs):
         self._value = ''
+
     def SetValue(self, value):
         self._value = value
+
     def GetValue(self):
         return self._value
+
 
 class FakeBookViewerFrame(object):
     def __init__(self, *args, **kargs):
@@ -80,54 +94,58 @@ class FakeBookViewerFrame(object):
         self._status_txt = ['']*10
         self._print_status = True
         if kargs.has_key("book"):
-           self.book = kargs["book"]
-           del kargs["book"]
- #          self.book.set_open(True)
-        else: self.book = None
+            self.book = kargs["book"]
+            del kargs["book"]
+  #          self.book.set_open(True)
+        else:
+            self.book = None
 
-        self.ipage=0
+        self.ipage = 0
 
     def SetTitle(self, title):
         self._title = title
         print('title: ', title)
+
     def GetTitle(self):
         return self._title
+
     def SetStatusText(self, txt, idx):
         self._status_txt[idx] = txt
         if self._print_status:
-             print('status: ', txt)
+            print('status: ', txt)
 
     def get_page(self, ipage=None):
         if ipage is None:
-           f_page=self.book.get_page(self.ipage)           
+            f_page = self.book.get_page(self.ipage)
         else:
-           f_page=self.book.get_page(ipage)
+            f_page = self.book.get_page(ipage)
         return f_page
+
 
 class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
     def __init__(self, *args, **kargs):
         if "show_prop" in kargs:
-           show_prop = kargs["show_prop"]
-           del kargs["show_prop"]
+            show_prop = kargs["show_prop"]
+            del kargs["show_prop"]
         else:
-           show_prop = False
+            show_prop = False
         if "worker" in kargs:
             self.workers = kargs['worker']
-            del kargs["worker"]          
-        else: 
+            del kargs["worker"]
+        else:
             self.workers = None
 
         super(MDSScopeNW, self).__init__(*args, **kargs)
-        ScopeEngine.__init__(self, no_window = True)
+        ScopeEngine.__init__(self, no_window=True)
 
         if self.book is not None:
-#            for page in self.book.walk_page():
+            #            for page in self.book.walk_page():
             self.prepare_dwglobal(self.book)
             if not self.book.hasvar('mdsplus_server'):
                 p = SettingParser()
                 v = p.read_setting('mdsplus.default_mdsserver')
                 self.book.setvar('mdsplus_server',
-                                  v['server'])
+                                 v['server'])
 #                                 'direct::CMOD')
             if not self.book.hasvar('mdsscript_main'):
                 self.book.setvar('mdsscript_main',
@@ -139,11 +157,11 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
                 self.book.setvar('mdsscope_listenevent',
                                  True)
             if not self.book.hasvar('dwscope_filename'):
-                self.book.setvar('dwscope_filename','')
+                self.book.setvar('dwscope_filename', '')
             from ifigure.mdsplus.fig_mdsbook import convert2figmdsbook
             convert2figmdsbook(self.book)
 
-        self.g = {} ## global variabls for mainthread scripting
+        self.g = {}  # global variabls for mainthread scripting
         self._title_mdsjob_count = 0
         self._mdsjob_count = 0
         self._cur_shot = 0
@@ -162,10 +180,10 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
         self.timer = None
 
         self.previous_shot_set = [[]]
-        self.event_dict ={}
+        self.event_dict = {}
         self.InitUI()
         from numpy import linspace
-        self._shot_dict = {'linspace':linspace}      
+        self._shot_dict = {'linspace': linspace}
 #        self.Thaw()
 
         proj = self.book.get_root_parent()
@@ -174,15 +192,15 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
             if proj.setting.has_child('mdsplus_worker'):
                 self.workers = proj.setting.mdsplus_worker
             else:
-                file = os.path.join(ifigure.__path__[0], 'add_on', 
-                            'setting', 'module', 'mdsplus_worker.py')
+                file = os.path.join(ifigure.__path__[0], 'add_on',
+                                    'setting', 'module', 'mdsplus_worker.py')
 
                 workers = proj.setting.add_absmodule(file)
                 workers.rename('mdsplus_worker')
                 self.workers = workers
 
         p = SettingParser()
-        p.set_rule('global_set',{}, nocheck=True)
+        p.set_rule('global_set', {}, nocheck=True)
         self.scope_setting = p.read_setting('mdsplus.scope_setting')
 
         from ifigure.ifigure_config import rcdir, ifiguredir
@@ -192,50 +210,52 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
         if not os.path.exists(user_file):
             shutil.copy(def_file, user_file)
         self.startup_script = user_file
-        dc = {}; dg = {}
+        dc = {}
+        dg = {}
         from ifigure.mdsplus.fig_mds import read_scriptfile
         exec read_scriptfile(self.startup_script) in dg, dc
         self.startup_values = dc
 
-        self._start_mds_threads() # start session runner and event listener
+        self._start_mds_threads()  # start session runner and event listener
 
-        self.workers.call_method('onStartWorker')        
+        self.workers.call_method('onStartWorker')
 #        self.start_pool()
         self.open_engine()
-   
+
     def __del__(self):
         self.close_engine()
-   
+
     def close(self):
         self.close_engine()
 
-    def InitUI(self):  
+    def InitUI(self):
         self.txt_shot = FakeTextCtrl()
 
     def show_page(self, ipage=0, last=False, first=False):
         self.ipage = ipage
         self.prepare_dwglobal(self.book)
 
-    def _handle_apply_abort(self, allshot = True, figaxes='all', 
-                            do_apply = False):
+    def _handle_apply_abort(self, allshot=True, figaxes='all',
+                            do_apply=False):
         from ifigure.mdsplus.mdsscope import mds_thread
         #mds_thread = globals()['mds_thread']
-        mds_thread._time = time.time() 
+        mds_thread._time = time.time()
         if self._mode == 'apply' or do_apply:
             self._mode = 'abort'
             try:
-               self.eval_mdsdata(allshot, figaxes=figaxes)
+                self.eval_mdsdata(allshot, figaxes=figaxes)
             except:
-               dprint1('Error happend while evaluating mdsplus data')
-               dprint1(traceback.format_exc())
-               self.eval_mdsdata_done(status=-1)
+                dprint1('Error happend while evaluating mdsplus data')
+                dprint1(traceback.format_exc())
+                self.eval_mdsdata_done(status=-1)
         else:
-            c = message('abort',(self,))
+            c = message('abort', (self,))
             mds_thread.queue.put(c)
 
     def show_mdsjob_count(self):
-        if (self._title_mdsjob_count == 
-            self._mdsjob_count): return
+        if (self._title_mdsjob_count ==
+                self._mdsjob_count):
+            return
 
         if self._mdsjob_count != 0:
             txt = ' --'+'{:3d}'.format(self._mdsjob_count) + '--'
@@ -243,11 +263,11 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
             txt = ''
         work_on_title = False
         if work_on_title:
-           title = self.GetTitle()
-           if self._title_mdsjob_count != 0:
-               title = title[:-8]
-           title = title + txt
-           self.SetTitle(title)
+            title = self.GetTitle()
+            if self._title_mdsjob_count != 0:
+                title = title[:-8]
+            title = title + txt
+            self.SetTitle(title)
         self._title_mdsjob_count = self._mdsjob_count
         self.SetStatusText(txt, 0)
 
@@ -257,8 +277,8 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
         '''
         self.txt_shot.SetValue(str(number))
 
-    def LoadData(self, blocking = True, allshot = True, figaxes='all',
-                 do_apply = True, verbose = True):
+    def LoadData(self, blocking=True, allshot=True, figaxes='all',
+                 do_apply=True, verbose=True):
         '''
         LoadData() 
         LoadData(False) : no blocking mode
@@ -266,20 +286,19 @@ class MDSScopeNW(FakeBookViewerFrame,  ScopeEngine):
         o_printstatus = self._print_status
         self._print_status = verbose
         if blocking:
-           m =  Queue.Queue()
-           set_call_after_queue(m)
-        self._handle_apply_abort(allshot = allshot, 
-                                 figaxes = figaxes, 
-                                 do_apply = do_apply)
-        if not blocking: return
+            m = Queue.Queue()
+            set_call_after_queue(m)
+        self._handle_apply_abort(allshot=allshot,
+                                 figaxes=figaxes,
+                                 do_apply=do_apply)
+        if not blocking:
+            return
         while True:
             v = m.get(True)
             callable, args, kargs = v
             callable(*args, **kargs)
-            if callable == self.eval_mdsdata_done: break
+            if callable == self.eval_mdsdata_done:
+                break
         set_call_after_queue(None)
         self._print_status = o_printstatus
         return
-
-
-

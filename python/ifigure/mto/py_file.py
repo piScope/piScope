@@ -26,8 +26,8 @@
 #
 #          it also check time stamp of file for version
 #          control
-#       
-#          
+#
+#
 #
 #
 #  Author :
@@ -37,15 +37,23 @@
 #
 #
 #  History : 0.5 sometime around Apr. 2012
-#            0.6 stop() command  
-#            0.7 8/30/12 keyborad interupt 
+#            0.6 stop() command
+#            0.7 8/30/12 keyborad interupt
 #
-from  ifigure.mto.treedict import TreeDict
+from ifigure.mto.treedict import TreeDict
 import ifigure.utils.cbook as cbook
-import ifigure, ifigure.events
+import ifigure
+import ifigure.events
 import ifigure.widgets.dialog as dialog
 from ifigure.mto.fileholder import FileHolder
-import os, logging, wx, threading, types, shutil, multiprocessing
+import os
+import logging
+import wx
+import threading
+import types
+import shutil
+import multiprocessing
+
 
 class PyFile(TreeDict, FileHolder):
     def __init__(self, parent=None, script='', src=None):
@@ -59,35 +67,38 @@ class PyFile(TreeDict, FileHolder):
     @classmethod
     def get_namebase(self):
         return 'file'
-    @classmethod  
+
+    @classmethod
     def load_classimage(self):
-       from ifigure.ifigure_config import icondir as path
-       idx1=cbook.LoadImageFile(path, 'file.png')
-       return [idx1]
+        from ifigure.ifigure_config import icondir as path
+        idx1 = cbook.LoadImageFile(path, 'file.png')
+        return [idx1]
+
     @classmethod
     def can_have_child(self, child=None):
-        return False 
+        return False
 
     def tree_viewer_menu(self):
      # return MenuString, Handler, MenuImage
         app = self.get_root_parent().app
-        m =  [('+File', None, None),]
+        m = [('+File', None, None), ]
         if self.getvar('file_ext') in app.helper.setting['ext'].split(','):
             m.append(('Open', self.onOpenWithHelper, None))
         m = m + [
-               ('Set File...', self.onSetFile, None),
-               ('Import File...', self.onImportFile, None),
-               ('Export File...', self.onExportFile, None),
-               ('!', None, None),
-               ('---', None, None)] + \
-                super(PyFile, self).tree_viewer_menu() 
+            ('Set File...', self.onSetFile, None),
+            ('Import File...', self.onImportFile, None),
+            ('Export File...', self.onExportFile, None),
+            ('!', None, None),
+            ('---', None, None)] + \
+            super(PyFile, self).tree_viewer_menu()
         return m
 
 #    def onRename(self, evt):
 #        super(PyScript, self).onRename(evt)
     def onOpenWithHelper(self, e):
-        fpath=self.path2fullpath('file_pathmode', 'file_path')
-        if fpath == '': return
+        fpath = self.path2fullpath('file_pathmode', 'file_path')
+        if fpath == '':
+            return
         app = self.get_root_parent().app
         ext = self.getvar('file_ext')
 
@@ -97,7 +108,8 @@ class PyFile(TreeDict, FileHolder):
         com = com.replace('{bin}', bin)
 #        com = com.replace('{0}',   '"'+fpath+'"')
         com = com.replace('{0}',   fpath)
-        import subprocess, shlex
+        import subprocess
+        import shlex
         print(com)
         subprocess.Popen(com, shell=True)
 #        subprocess.Popen(shlex.split(com))
@@ -105,9 +117,10 @@ class PyFile(TreeDict, FileHolder):
 #        os.system(
 
     def onEdit(self, e):
-        fpath=self.path2fullpath('file_pathmode', 'file_path')
-        if fpath == '': return
-        ifigure.events.SendEditFileEvent(self, 
+        fpath = self.path2fullpath('file_pathmode', 'file_path')
+        if fpath == '':
+            return
+        ifigure.events.SendEditFileEvent(self,
                                          w=e.GetEventObject(),
                                          file=fpath)
 
@@ -117,38 +130,39 @@ class PyFile(TreeDict, FileHolder):
 
     def setfile(self, file):
         if (file != '' and
-            os.path.exists(file)): 
+                os.path.exists(file)):
             self.set_path_pathmode(file)
             self.store_mtime('file_mtime')
-            
+
     def onImportFile(self, e):
         '''
         import file from outside project directory
         pathmode will be set to 'owndir'
         '''
- 
+
         file = dialog.read(None, message="Select file")
-        if file == '': return
-        mode, path=self.fullpath2path(file)
+        if file == '':
+            return
+        mode, path = self.fullpath2path(file)
         if (mode == 'wdir' or mode == 'owndir'):
-           m = 'Import should import from somewhere outside project directory',
-           ret=dialog.message(None, message=m, 
-               title='Import error')
-           return
+            m = 'Import should import from somewhere outside project directory',
+            ret = dialog.message(None, message=m,
+                                 title='Import error')
+            return
         self.import_file(file)
-         
+
     def onExportFile(self, e):
-        opath=self.path2fullpath('file_pathmode', 'file_path')
+        opath = self.path2fullpath('file_pathmode', 'file_path')
 
         file = dialog.write(None, defaultfile=opath,
                             message="Enter file name")
         if file == '':
             return
-        mode, path=self.fullpath2path(file)
+        mode, path = self.fullpath2path(file)
         if (mode == 'wdir' or mode == 'owndir'):
             m = 'Export should export to somewhere outside project directory',
-            ret=dialog.message(None, message=m, 
-               title='Import error')
+            ret = dialog.message(None, message=m,
+                                 title='Import error')
             return
 
         shutil.copyfile(opath, file)
@@ -159,8 +173,8 @@ class PyFile(TreeDict, FileHolder):
         the destination should be outside
         of wdir
         '''
-        path=self.path2fullpath('file_pathmode', 'file_path')
-        mode, path0=self.fullpath2path(file)
+        path = self.path2fullpath('file_pathmode', 'file_path')
+        mode, path0 = self.fullpath2path(file)
         if mode == 'wdir':
             # do not write inside proj directory
             print('can not export to wdir')
@@ -178,8 +192,8 @@ class PyFile(TreeDict, FileHolder):
         the location of original file will be
         saved to "orgpath", "orgpathmode"
         '''
-        mode, path=self.fullpath2path(file)
-        base, ext =self.split_ext(path)
+        mode, path = self.fullpath2path(file)
+        base, ext = self.split_ext(path)
 
         if mode == 'wdir':
             # do nothing in this case
@@ -193,47 +207,47 @@ class PyFile(TreeDict, FileHolder):
         self.setvar("file_orgpath", str(path))
         self.setvar("file_orgpathmode", str(mode))
         self.setvar("file_ext", str(ext))
-        
+
         if not self.has_owndir():
             self.mk_owndir()
-        file2=os.path.join(self.owndir(), self.name+'.'+ext)
+        file2 = os.path.join(self.owndir(), self.name+'.'+ext)
         shutil.copyfile(file, file2)
 
         self.setvar("file_pathmode", 'owndir')
         self.setvar("file_path", self.name+'.'+ext)
         self.store_mtime('file_mtime')
-        
-    def rename(self, new, ignore_name_readonly = False):
-        path=self.getvar("file_path")
-        base, ext =self.split_ext(path)
-        ooname=self.path2fullpath('file_pathmode', 'file_path')
-        super(PyFile, self).rename(new, ignore_name_readonly = 
-                                   ignore_name_readonly)
 
-        oname=self.path2fullpath('file_pathmode', 'file_path')
+    def rename(self, new, ignore_name_readonly=False):
+        path = self.getvar("file_path")
+        base, ext = self.split_ext(path)
+        ooname = self.path2fullpath('file_pathmode', 'file_path')
+        super(PyFile, self).rename(
+            new, ignore_name_readonly=ignore_name_readonly)
+
+        oname = self.path2fullpath('file_pathmode', 'file_path')
         self.setvar("file_path", self.name+'.'+ext)
-        nname=self.path2fullpath('file_pathmode', 'file_path')
+        nname = self.path2fullpath('file_pathmode', 'file_path')
 
         if oname != nname:
             os.rename(oname, nname)
             self.set_path_pathmode(nname)
-            param = {"oldname":ooname, "newname":nname}
+            param = {"oldname": ooname, "newname": nname}
             op = 'rename'
-            ifigure.events.SendFileChangedEvent(self, operation=op, 
-                                                  param=param)
+            ifigure.events.SendFileChangedEvent(self, operation=op,
+                                                param=param)
 
 #           ifigure.events.SendChangedEvent(self)
 
-    ###  utility to convert fullpath to path
-    def set_path_pathmode(self, path, 
+    # utility to convert fullpath to path
+    def set_path_pathmode(self, path,
                           modename='file_pathmode',
                           pathname='file_path',
-                          extname = 'file_ext'):
+                          extname='file_ext'):
         ''' 
         this is to overwrite default var
         '''
-        return super(PyFile, self).set_path_pathmode(path, modename, 
-                                              pathname, extname)
+        return super(PyFile, self).set_path_pathmode(path, modename,
+                                                     pathname, extname)
 
     def store_mtime(self, name='file_mtime', modename='file_pathmode', pathname='file_path'):
         ''' 
@@ -242,13 +256,12 @@ class PyFile(TreeDict, FileHolder):
         return super(PyFile, self).store_mtime('file_mtime',
                                                'file_pathmode',
                                                'file_path')
+
     def path2fullpath(self, modename='pathmode', pathname='path'):
         ''' 
         this is to overwrite default var
         '''
         return super(PyFile, self).path2fullpath('file_pathmode', 'file_path')
-
-
 
     def init_after_load(self, olist, nlist):
         try:
@@ -259,17 +272,19 @@ class PyFile(TreeDict, FileHolder):
         except:
             self._status = '!! filenew check error'
 
+
 class PyText(PyFile):
-    @classmethod  
+    @classmethod
     def load_classimage(self):
-       from ifigure.ifigure_config import icondir as path
-       idx1=cbook.LoadImageFile(path, 'text.png')
-       return [idx1]
+        from ifigure.ifigure_config import icondir as path
+        idx1 = cbook.LoadImageFile(path, 'text.png')
+        return [idx1]
+
     @classmethod
     def get_namebase(self):
         return 'text'
 
-    def pv_kshortcut(self, key): 
+    def pv_kshortcut(self, key):
         '''
         define keyborad short cut on project viewer
         must return a method responding key
@@ -280,41 +295,28 @@ class PyText(PyFile):
 
     def tree_viewer_menu(self):
      # return MenuString, Handler, MenuImage
-       return [('+File', None, None),
-               ('Edit', self.onEdit, None),
-               ('Set File...', self.onSetFile, None),
-               ('Import File...', self.onImportFile, None),
-               ('Export File...', self.onExportFile, None),
-               ('Export Text to Shell',  self.onExportToShell, None),               
-               ('!', None, None),
-               ('---', None, None)] + \
-                super(PyFile, self).tree_viewer_menu() 
-
+        return [('+File', None, None),
+                ('Edit', self.onEdit, None),
+                ('Set File...', self.onSetFile, None),
+                ('Import File...', self.onImportFile, None),
+                ('Export File...', self.onExportFile, None),
+                ('Export Text to Shell',  self.onExportToShell, None),
+                ('!', None, None),
+                ('---', None, None)] + \
+            super(PyFile, self).tree_viewer_menu()
 
     def onExportToShell(self, evt):
-        fpath=self.path2fullpath('file_pathmode', 'file_path')
+        fpath = self.path2fullpath('file_pathmode', 'file_path')
         fid = open(fpath, 'r')
         lines = fid.readlines()
         fid.close()
 
-        id=evt.GetEventObject()
-        app=id.GetTopLevelParent()
-        ret, new_name=dialog.textentry(app,
-                      "Enter the name of new variable", 
-                      "Export Text File to Shell", "")
+        id = evt.GetEventObject()
+        app = id.GetTopLevelParent()
+        ret, new_name = dialog.textentry(app,
+                                         "Enter the name of new variable",
+                                         "Export Text File to Shell", "")
         if ret:
-            flag = self.write2shell(lines, new_name)            
+            flag = self.write2shell(lines, new_name)
             app.shell.SendShellEnterEvent()
-        e.Skip() ## call update project tree widget
-        
-
-
-
-
-
-
-
-
-
-
-      
+        e.Skip()  # call update project tree widget

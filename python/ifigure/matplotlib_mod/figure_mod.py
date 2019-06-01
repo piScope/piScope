@@ -5,22 +5,25 @@ from matplotlib.artist import Artist, allow_rasterization
 from matplotlib.figure import Figure
 
 from operator import itemgetter
-from ifigure.utils.cbook import EraseBitMap 
+from ifigure.utils.cbook import EraseBitMap
+
 
 class FigureMod(Figure):
-#    def __init__(self, *args, **kargs):
-#        self._frameDrown = False
-#        Figure.__init__(self,*args, **kargs)
+    #    def __init__(self, *args, **kargs):
+    #        self._frameDrown = False
+    #        Figure.__init__(self,*args, **kargs)
     @allow_rasterization
-    def draw_others(self, renderer, dsu = None):
-        
+    def draw_others(self, renderer, dsu=None):
+
         #if self.frameon: self.patch.draw(renderer)
         # a list of (zorder, func_to_call, list_of_args)
-        if dsu is None: dsu = []
+        if dsu is None:
+            dsu = []
         for a in self.patches + self.lines + self.artists:
             # skip if a is  frameart
-            if hasattr(a, '_is_frameart') and  a._is_frameart:continue
-            dsu.append( (a.get_zorder(), a.draw, [renderer]))
+            if hasattr(a, '_is_frameart') and a._is_frameart:
+                continue
+            dsu.append((a.get_zorder(), a.draw, [renderer]))
 
         # override the renderer default if self.suppressComposite
         # is not None
@@ -28,10 +31,10 @@ class FigureMod(Figure):
         if self.suppressComposite is not None:
             not_composite = self.suppressComposite
 
-        if len(self.images)<=1 or not_composite or \
+        if len(self.images) <= 1 or not_composite or \
                 not allequal([im.origin for im in self.images]):
             for a in self.images:
-                dsu.append( (a.get_zorder(), a.draw, [renderer]))
+                dsu.append((a.get_zorder(), a.draw, [renderer]))
         else:
             # make a composite image blending alpha
             # list of (_image.Image, ox, oy)
@@ -64,19 +67,19 @@ class FigureMod(Figure):
             tsize = self.figobj.getp('title_size')
             tinfo = self.figobj.getp('suptitle_labelinfo')
             title = self.figobj._title_artist
-            if tinfo[2]=='default':
+            if tinfo[2] == 'default':
                 title.set_family(tfont)
-            if tinfo[3]=='default':
+            if tinfo[3] == 'default':
                 title.set_weight(tweight)
-            if tinfo[4]=='default':
+            if tinfo[4] == 'default':
                 title.set_style(tstyle)
-            if tinfo[5]=='default':
+            if tinfo[5] == 'default':
                 title.set_size(tsize)
         for a in self.texts:
-            dsu.append( (a.get_zorder(), a.draw, [renderer]))
+            dsu.append((a.get_zorder(), a.draw, [renderer]))
 
         for a in self.legends:
-            dsu.append( (a.get_zorder(), a.draw, [renderer]))
+            dsu.append((a.get_zorder(), a.draw, [renderer]))
         dsu.sort(key=itemgetter(0))
         for zorder, func, args in dsu:
             func(*args)
@@ -84,13 +87,13 @@ class FigureMod(Figure):
     @allow_rasterization
     def draw_frame(self, renderer):
         # draw the figure bounding box, perhaps none for white figure
-#        self.patch.set_facecolor((0.75, 0.75, 0.75, 0.1))
+        #        self.patch.set_facecolor((0.75, 0.75, 0.75, 0.1))
         if self.frameon:
             self.patch.draw(renderer)
             dsu = []
             for a in self.patches + self.lines + self.artists:
-                if hasattr(a, '_is_frameart') and  a._is_frameart:
-                     dsu.append( (a.get_zorder(), a.draw, [renderer]))
+                if hasattr(a, '_is_frameart') and a._is_frameart:
+                    dsu.append((a.get_zorder(), a.draw, [renderer]))
             dsu.sort(key=itemgetter(0))
             for zorder, func, args in dsu:
                 func(*args)
@@ -98,12 +101,12 @@ class FigureMod(Figure):
     @allow_rasterization
     def draw_axes(self, renderer, axes, noframe=False):
         def walk_children(a):
-           yield a
-           for a2 in a.get_children():
-               for a3 in walk_children(a2):
-                   yield a3
+            yield a
+            for a2 in a.get_children():
+                for a3 in walk_children(a2):
+                    yield a3
 
-        if self.frameon and not noframe: 
+        if self.frameon and not noframe:
             self.patch.draw(renderer)
 
         #
@@ -111,41 +114,41 @@ class FigureMod(Figure):
         #
         alist = [a for a in walk_children(axes)
                  if hasattr(a, 'figobj') and a.figobj is not None]
-        normalz=[a.get_zorder() for a in alist 
-                 if not a.figobj._floating]
+        normalz = [a.get_zorder() for a in alist
+                   if not a.figobj._floating]
         if len(normalz) != 0:
-             z = max(normalz)
-             for a in alist:
-                 if (hasattr(a, 'nozsort') and
-                     a.get_zorder() < z):
-                     a.set_zorder(z+0.001)
+            z = max(normalz)
+            for a in alist:
+                if (hasattr(a, 'nozsort') and
+                        a.get_zorder() < z):
+                    a.set_zorder(z+0.001)
 
         dsize = self.figobj.getp('ticklabel_size')
-        dsize2= self.figobj.getp('axeslabel_size')
+        dsize2 = self.figobj.getp('axeslabel_size')
         tickfont = self.figobj.getp('tick_font')
         tickweight = self.figobj.getp('tick_weight')
         tickstyle = self.figobj.getp('tick_style')
 
         if not hasattr(axes, 'zaxis'):
-           var = ((axes.figobj.get_axis_param('x'), 
-                   axes.get_xaxis(), 
-                   'x'),
-                  (axes.figobj.get_axis_param('y'), 
-                   axes.get_yaxis(), 
-                   'y'))
+            var = ((axes.figobj.get_axis_param('x'),
+                    axes.get_xaxis(),
+                    'x'),
+                   (axes.figobj.get_axis_param('y'),
+                    axes.get_yaxis(),
+                    'y'))
         else:
-           var = ((axes.figobj.get_axis_param('x'), 
-                   axes.get_xaxis(), 
-                   'x'),
-                  (axes.figobj.get_axis_param('y'), 
-                   axes.get_yaxis(), 
-                   'y'),
-                  (axes.figobj.get_axis_param('z'), 
-                   axes.zaxis, 
-                   'z'))
+            var = ((axes.figobj.get_axis_param('x'),
+                    axes.get_xaxis(),
+                    'x'),
+                   (axes.figobj.get_axis_param('y'),
+                    axes.get_yaxis(),
+                    'y'),
+                   (axes.figobj.get_axis_param('z'),
+                    axes.zaxis,
+                    'z'))
 
-        xticks = axes.xaxis.get_major_ticks() +  axes.xaxis.get_minor_ticks()
-        yticks = axes.yaxis.get_major_ticks() +  axes.yaxis.get_minor_ticks()
+        xticks = axes.xaxis.get_major_ticks() + axes.xaxis.get_minor_ticks()
+        yticks = axes.yaxis.get_major_ticks() + axes.yaxis.get_minor_ticks()
         for tick in xticks+yticks:
             tick.label1.set_family(tickfont)
             tick.label1.set_style(tickstyle)
@@ -155,28 +158,28 @@ class FigureMod(Figure):
             tick.label2.set_weight(tickweight)
 
         for p, axis, name in var:
-            if p.lsize=='default':
-                axes.tick_params(axis=name, labelsize= dsize)
-            offsetText= axis.get_offset_text()
+            if p.lsize == 'default':
+                axes.tick_params(axis=name, labelsize=dsize)
+            offsetText = axis.get_offset_text()
 
-            if p.labelinfo[2]=='default':
+            if p.labelinfo[2] == 'default':
+                #                 print dsize2
+                axis.label.set_family(tickfont)
+            if p.labelinfo[3] == 'default':
+                axis.label.set_weight(tickweight)
 #                 print dsize2
-                 axis.label.set_family(tickfont)
-            if p.labelinfo[3]=='default':
-                 axis.label.set_weight(tickweight)
-#                 print dsize2
-            if p.labelinfo[4]=='default':
-#                 print dsize2
-                 axis.label.set_style(tickstyle)
-            if p.labelinfo[5]=='default':
-#                 print dsize2
-                 axis.label.set_size(dsize2)                
-            if p.otsize=='default':                
-                 offsetText.set_size(dsize)
+            if p.labelinfo[4] == 'default':
+                #                 print dsize2
+                axis.label.set_style(tickstyle)
+            if p.labelinfo[5] == 'default':
+                #                 print dsize2
+                axis.label.set_size(dsize2)
+            if p.otsize == 'default':
+                offsetText.set_size(dsize)
             offsetText.set_weight(tickweight)
             offsetText.set_family(tickfont)
             offsetText.set_style(tickstyle)
-                 
+
 #                func().label.set_size(dsize2)
         tfont = self.figobj.getp('title_font')
         tweight = self.figobj.getp('title_weight')
@@ -187,25 +190,26 @@ class FigureMod(Figure):
 #        if axes.figobj.getp('use_def_size')[0]:
 #
 #            title.set_size(dsize)
-        if tinfo[2]=='default':
+        if tinfo[2] == 'default':
             title.set_family(tfont)
-        if tinfo[3]=='default':
+        if tinfo[3] == 'default':
             title.set_weight(tweight)
-        if tinfo[4]=='default':
+        if tinfo[4] == 'default':
             title.set_style(tstyle)
-        if tinfo[5]=='default':
+        if tinfo[5] == 'default':
             title.set_size(tsize)
-            
+
         w = self.figobj.getp('axesbox_width')
         for s in axes.spines:
             axes.spines[s].set_linewidth(w)
         w = self.figobj.getp('axestick_width')
-        axes.tick_params(axis='both', width = float(w))
+        axes.tick_params(axis='both', width=float(w))
         axes.draw(renderer)
-        
+
     def draw_from_bitmap(self, renderer):
 
-        if not self.get_visible(): return
+        if not self.get_visible():
+            return
         renderer.open_group('figure')
         # do nothing
         renderer.close_group('figure')
@@ -220,5 +224,3 @@ class FigureMod(Figure):
 #        import traceback
 #        traceback.print_stack()
         return super(FigureMod, self).draw(renderer)
-
-

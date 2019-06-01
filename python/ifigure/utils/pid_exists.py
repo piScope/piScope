@@ -7,7 +7,10 @@
 
    however, if access is denied, it returns True. 
 '''
-import os, logging
+import os
+import logging
+
+
 def pid_exists(pid):
     """Check whether pid exists in the current process table."""
     if os.name == 'posix':
@@ -26,9 +29,10 @@ def pid_exists(pid):
         HANDLE = ctypes.c_void_p
         DWORD = ctypes.c_ulong
         LPDWORD = ctypes.POINTER(DWORD)
+
         class ExitCodeProcess(ctypes.Structure):
-             _fields_ = [ ('hProcess', HANDLE),
-                          ('lpExitCode', LPDWORD)]
+            _fields_ = [('hProcess', HANDLE),
+                        ('lpExitCode', LPDWORD)]
         SYNCHRONIZE = 0x100000
         process = kernel32.OpenProcess(SYNCHRONIZE, 0, pid)
 

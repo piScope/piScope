@@ -19,18 +19,29 @@
       
 '''
 
-import subprocess, shlex, time, cPickle, os
+import subprocess
+import shlex
+import time
+import cPickle
+import os
 import sys
 import threading
 import socket
 import threading
 import SocketServer
 import wx
-import ifigure.events, ifigure.interactive
+import ifigure.events
+import ifigure.interactive
 import binascii
-import logging, time
-import socket,subprocess,sys,shlex,cPickle
+import logging
+import time
+import socket
+import subprocess
+import sys
+import shlex
+import cPickle
 from ifigure.utils.cbook import pick_unused_port
+
 
 class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
@@ -45,9 +56,9 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 #        data = cPickle.loads(binascii.a2b_hex(data))
         ifig_app = wx.GetApp().TopWindow
         ifig_app.remote_lock.acquire()
-        
+
         wx.GetApp().TopWindow.remote_reply = ''
-        ifigure.events.SendRemoteCommandEvent(ifig_app.proj, 
+        ifigure.events.SendRemoteCommandEvent(ifig_app.proj,
                                               command=data)
         try:
             data = wx.GetApp().TopWindow.server_response_queue.get(True)
@@ -59,133 +70,135 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 
         ifig_app.remote_lock.release()
 
+
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
+
 class Server(object):
-   HOST  = ''
-   PORT  = None
-   server = None
-   rport = 0
-   rhost = ''
-   def start(self, host = None):
-      on, server, HOST, PORT = self.info()
-      if server is not None:
-          print(('server has already started', HOST, PORT, server))
-          return
-  
-      if host is None: 
-          HOST = 'localhost'
-      else:
-          HOST = host
-      PORT = pick_unused_port()
+    HOST = ''
+    PORT = None
+    server = None
+    rport = 0
+    rhost = ''
 
-      print(''.join(('starting server:', HOST,':', str(PORT))))
-      sys.stdout.flush()
-      server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-      server.request_queue_size = 1
-      ip, port = server.server_address
+    def start(self, host=None):
+        on, server, HOST, PORT = self.info()
+        if server is not None:
+            print(('server has already started', HOST, PORT, server))
+            return
 
-      # Start a thread with the server -- that thread will then start one
-      # more thread for each request
-      server_thread = threading.Thread(target=server.serve_forever)
-      # Exit the server thread when the main thread terminates
-      server_thread.daemon = True
-      server_thread.start()
+        if host is None:
+            HOST = 'localhost'
+        else:
+            HOST = host
+        PORT = pick_unused_port()
 
-      Server.server = server
-      Server.HOST = HOST
-      Server.PORT = PORT
+        print(''.join(('starting server:', HOST, ':', str(PORT))))
+        sys.stdout.flush()
+        server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
+        server.request_queue_size = 1
+        ip, port = server.server_address
 
-   def stop(self):
-      on, server, HOST, PORT = self.info()
-      server = Server.server
-      if server is not None:
-          print('shutting donw server')
-          server.shutdown()
-          server = None
-      else:
-          print('no server is running')
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        server_thread = threading.Thread(target=server.serve_forever)
+        # Exit the server thread when the main thread terminates
+        server_thread.daemon = True
+        server_thread.start()
 
-      Server.server = None
+        Server.server = server
+        Server.HOST = HOST
+        Server.PORT = PORT
 
-   def info(self):
-       server = Server.server
-       HOST   = Server.HOST
-       PORT   = Server.PORT
-       return server is not None, server, HOST, PORT
+    def stop(self):
+        on, server, HOST, PORT = self.info()
+        server = Server.server
+        if server is not None:
+            print('shutting donw server')
+            server.shutdown()
+            server = None
+        else:
+            print('no server is running')
 
-   def process(self, command):
-       logging.basicConfig(level=logging.DEBUG)
-       ctype = command[0]
-       shell = wx.GetApp().TopWindow.shell
-       if ctype == 'c':   # check connection
-           ret = 'ok'
-       elif ctype == 't': # execute text
-           shell.execute_text(data)
-           ret =  'ok'
-       elif ctype == 'f': # execute command
-           c = command[1]
-           args = command[2]
-           kargs = command[3]
+        Server.server = None
 
-           try:       
-              f = getattr(ifigure.interactive, c)
-              f(*args, **kargs)
-              ret =  'ok'
-           except:
-              logging.exception("error occured during processing remote commmand")
-              print(c)
-              print(args)
-              print(kargs)
-              ret = None
-       elif ctype == 'g': # execute command and return value
-           c = command[1]
-           args = command[2]
-           kargs = command[3]
+    def info(self):
+        server = Server.server
+        HOST = Server.HOST
+        PORT = Server.PORT
+        return server is not None, server, HOST, PORT
 
-           try:       
-              f = getattr(ifigure.interactive, c)
-              ret = f(*args, **kargs)
-           except:
-              logging.exception("error occured during processing remote commmand")
-              print(c)
-              print(args)
-              print(kargs)
-              ret = None
-       elif ctype == 'h': # execute text command and return value
-           c = command[1]
-           try:
-              ret = eval(c, globals(), shell.lvar)               
-           except:
-              logging.exception("error occured during processing remote commmand")
-              print(c)
-              print(args)
-              print(kargs)
-              ret = None
-       elif ctype == 'r': # set receiver port address
-           Server.rhost = command[1]
-           Server.rport = command[2]
-           print(('client :  ' + self.rhost +':' + str(self.rport)))
-           ret =  'ok'       
-       return ret
+    def process(self, command):
+        logging.basicConfig(level=logging.DEBUG)
+        ctype = command[0]
+        shell = wx.GetApp().TopWindow.shell
+        if ctype == 'c':   # check connection
+            ret = 'ok'
+        elif ctype == 't':  # execute text
+            shell.execute_text(data)
+            ret = 'ok'
+        elif ctype == 'f':  # execute command
+            c = command[1]
+            args = command[2]
+            kargs = command[3]
 
-   def export_data(self, data, data_type = 'data'):
-       if Server.rport == 0:
-           return
-       if Server.rhost == '':
-           return
+            try:
+                f = getattr(ifigure.interactive, c)
+                f(*args, **kargs)
+                ret = 'ok'
+            except:
+                logging.exception(
+                    "error occured during processing remote commmand")
+                print(c)
+                print(args)
+                print(kargs)
+                ret = None
+        elif ctype == 'g':  # execute command and return value
+            c = command[1]
+            args = command[2]
+            kargs = command[3]
 
-       sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-       sock.connect((self.rhost, self.rport))
-       data = binascii.b2a_hex(cPickle.dumps({'type':data_type, 'data':data}))
-       sock.sendall(data+'\n')
-       sock.close()
+            try:
+                f = getattr(ifigure.interactive, c)
+                ret = f(*args, **kargs)
+            except:
+                logging.exception(
+                    "error occured during processing remote commmand")
+                print(c)
+                print(args)
+                print(kargs)
+                ret = None
+        elif ctype == 'h':  # execute text command and return value
+            c = command[1]
+            try:
+                ret = eval(c, globals(), shell.lvar)
+            except:
+                logging.exception(
+                    "error occured during processing remote commmand")
+                print(c)
+                print(args)
+                print(kargs)
+                ret = None
+        elif ctype == 'r':  # set receiver port address
+            Server.rhost = command[1]
+            Server.rport = command[2]
+            print(('client :  ' + self.rhost + ':' + str(self.rport)))
+            ret = 'ok'
+        return ret
 
-   def export_message(self, data):
-       self.export_data(data, data_type = 'msg')
+    def export_data(self, data, data_type='data'):
+        if Server.rport == 0:
+            return
+        if Server.rhost == '':
+            return
 
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((self.rhost, self.rport))
+        data = binascii.b2a_hex(cPickle.dumps(
+            {'type': data_type, 'data': data}))
+        sock.sendall(data+'\n')
+        sock.close()
 
-
-
-
+    def export_message(self, data):
+        self.export_data(data, data_type='msg')

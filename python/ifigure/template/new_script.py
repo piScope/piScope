@@ -12,12 +12,9 @@
 #    model: target model to work on
 #    param : model param
 #    app : proj.app (ifigure application)
-#    exit() : exit from script 
+#    exit() : exit from script
 #    stop() : exit from script due to error
 #    print_lod(text) : write text to log
-#  
+#
 #    args : parameter arguments passed to Run method (default = ())
 #    kwagrs : keyward arguments passed to Run method (default = {})
-
-
-

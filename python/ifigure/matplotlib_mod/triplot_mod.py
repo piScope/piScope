@@ -1,12 +1,13 @@
-### triplot_mod
+# triplot_mod
 ###
-### modified to return artists
+# modified to return artists
 
 from matplotlib.cbook import ls_mapper
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 from matplotlib.tri.triangulation import Triangulation
 import numpy as np
+
 
 def _process_plot_format(fmt):
     """
@@ -172,7 +173,7 @@ def triplot(ax, *args, **kwargs):
     # Should avoid drawing markers for points that are not in any triangle?
     kwargs['linestyle'] = ''
 
-    # without hiding points explicitly, marker would expose hidden points. 
+    # without hiding points explicitly, marker would expose hidden points.
     idx = np.unique(edges.flatten())
     l = ax.plot(x[idx], y[idx], *args, **kwargs)
     a = l+a

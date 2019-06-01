@@ -5,30 +5,35 @@ from ifigure.utils.edit_list import TextCtrlCopyPasteGeneric as TextCtrl
 font_h = None
 font_w = None
 font = None
+
+
 def set_default_font():
     size = 12
-    globals()['font']= wx.Font(pointSize = size, family = wx.DEFAULT, 
-               style = wx.NORMAL,  weight = wx.NORMAL, 
-               faceName = 'Consolas')
-    globals()['font_label'] = wx.Font(pointSize = size, family = wx.DEFAULT, 
-               style = wx.NORMAL,  weight = wx.BOLD, 
-               faceName = 'Consolas')
+    globals()['font'] = wx.Font(pointSize=size, family=wx.DEFAULT,
+                                style=wx.NORMAL,  weight=wx.NORMAL,
+                                faceName='Consolas')
+    globals()['font_label'] = wx.Font(pointSize=size, family=wx.DEFAULT,
+                                      style=wx.NORMAL,  weight=wx.BOLD,
+                                      faceName='Consolas')
     dc = wx.ScreenDC()
     dc.SetFont(font)
     w, h = dc.GetTextExtent('A')
     globals()['font_h'] = h*1.5
     globals()['font_w'] = w
 
+
 def truncate_str(txt, l):
-    if len(txt) < l: return txt
+    if len(txt) < l:
+        return txt
     if l > 8:
-      return txt[:3]+'...'+txt[-(l-6):]
-    elif l > 3: 
-      return txt[:l-3]+'...'
+        return txt[:3]+'...'+txt[-(l-6):]
+    elif l > 3:
+        return txt[:l-3]+'...'
     elif l > 0:
-      return txt[:l]
+        return txt[:l]
     else:
-      return ''
+        return ''
+
 
 class TextCtrlTrunc(TextCtrl):
     def __init__(self, *args, **kargs):
@@ -56,20 +61,17 @@ class TextCtrlTrunc(TextCtrl):
 #        return self._data
 
     def onSetFocus(self, evt):
-#        print 'set focus'
+        #        print 'set focus'
         self.SetValue(self._data)
         evt.Skip()
 
     def onKillFocus(self, evt):
-#        print 'kill focus'
+        #        print 'kill focus'
         self._mode = 'trunc'
         evt.Skip()
         wx.CallAfter(self.SetValue, self._data)
 
     def onSize(self, evt):
-#        print 'kill focus'
+        #        print 'kill focus'
         self.SetValue(self._data)
         evt.Skip()
-
-
-

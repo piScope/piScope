@@ -20,10 +20,10 @@ from ifigure.interactive import figure
    args
    kwargs
 '''
-def func(x, y, keyword = True):
+
+
+def func(x, y, keyword=True):
     pass
 
+
 ans(func(*args, **kwargs))
-
-
-

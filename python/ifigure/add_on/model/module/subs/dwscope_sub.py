@@ -2,7 +2,10 @@
 from ifigure.utils.cbook import parseStr
 from ifigure.fig_objects.py_code import PyData
 from ifigure.fig_objects.py_code import PyCode
-import os, re, string, sys
+import os
+import re
+import string
+import sys
 from numpy import *
 from collections import OrderedDict
 
@@ -21,11 +24,11 @@ from collections import OrderedDict
 
 #      Py_Modules does not check the dependency of
 #      modules.
-#      If moduels used in Py_Modules depends on 
-#      each other by for example module variable, 
-#      it will cause complicate  module loading 
+#      If moduels used in Py_Modules depends on
+#      each other by for example module variable,
+#      it will cause complicate  module loading
 #      order-dependency problem.
-#      
+#
 #   name of module
 module_name = 'dwscope_subs'
 #   module_evt_handler
@@ -38,36 +41,38 @@ module_name = 'dwscope_subs'
 #   or True
 #   if it return False, ifigure stops exectuion at
 #   this module
-#  
-module_evt_handler=[("Load File", "onLoadFile", True)]
+#
+module_evt_handler = [("Load File", "onLoadFile", True)]
 #
 #   A function called when py_module is initialized
 #
-module_init= None
+module_init = None
 ######################################################
+
+
 def import_dwscope(file):
 
-    f=open(file, 'r')
+    f = open(file, 'r')
     while 1:
-       try:
-           line = f.readline()
-           print(line)
-       except Exception:
-           print(sys.exc_info())
+        try:
+            line = f.readline()
+            print(line)
+        except Exception:
+            print(sys.exc_info())
     f.close()
-    
+
+
 def onLoadFile(self_obj):
-    open_dlg = wx.FileDialog ( None, message="Select DWscope", 
-                                   wildcard='*.dat',style=wx.FD_OPEN)
+    open_dlg = wx.FileDialog(None, message="Select DWscope",
+                             wildcard='*.dat', style=wx.FD_OPEN)
     if open_dlg.ShowModal() != wx.ID_OK:
-         open_dlg.Destroy()    
-         return False
+        open_dlg.Destroy()
+        return False
 
     file = open_dlg.GetPath()
-    open_dlg.Destroy() 
+    open_dlg.Destroy()
     for name, child in self_obj.get_children():
         child.destroy()
     self_obj.setvar("filename", file)
 
     import_dwscope(file)
-

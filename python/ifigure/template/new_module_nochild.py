@@ -1,4 +1,4 @@
-import  numpy as np
+import numpy as np
 ######################################################
 #         Setting for module file for py_module
 #
@@ -11,14 +11,14 @@ import  numpy as np
 #      Strong recommendation : make module "independent".
 #      Py_Modules does not check the dependency of
 #      modules.
-#      If moduels used in Py_Modules depends on 
-#      each other by for example module variable, 
-#      it will cause complicate  module loading 
+#      If moduels used in Py_Modules depends on
+#      each other by for example module variable,
+#      it will cause complicate  module loading
 #      order-dependency problem.
-#      
+#
 #   name of module/class
 module_name = 'sample_module'
-class_name  = 'sample_module'
+class_name = 'sample_module'
 #   module_evt_handler
 #   functions which can be called from project tree
 #
@@ -29,7 +29,7 @@ class_name  = 'sample_module'
 #   or True
 #   if it return False, ifigure stops exectuion at
 #   this module
-#  
+#
 menu = [("MenuName", "onMenu", True)]
 method = ['test', 'onMenu']
 
@@ -39,12 +39,14 @@ can_have_child = False
 has_private_owndir = False
 nosave_var0 = False
 ######################################################
+
+
 def test(self):
     print(self)
     pass
+
 
 def onMenu(self, e):
     print(self)
     print(e)
     pass
-

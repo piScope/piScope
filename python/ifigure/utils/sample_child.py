@@ -1,5 +1,6 @@
 from ifigure.utils.pickled_pipe import PickledPipe
-import sys, time
+import sys
+import time
 
 ch = PickledPipe(sys.stdin, sys.stdout)
 

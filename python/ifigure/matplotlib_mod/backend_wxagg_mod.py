@@ -29,33 +29,37 @@
 
 """
 # uncomment the following to use wx rather than wxagg
+from ifigure.utils.wx3to4 import image_SetAlpha, wxEmptyImage
+from distutils.version import LooseVersion
 import matplotlib
-import wx, weakref, array
+import wx
+import weakref
+import array
 from matplotlib.backends.backend_wx import FigureCanvasWx as Canvas
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as CanvasAgg
 from matplotlib.backends.backend_wx import RendererWx
-from ifigure.utils.cbook import EraseBitMap 
+from ifigure.utils.cbook import EraseBitMap
 from operator import itemgetter
 
 try:
     from matplotlib._image import fromarray, frombyte
 except:
-    def frombyte(im, num): return im  #MPL2.0 accept numpy array directly
+    def frombyte(im, num): return im  # MPL2.0 accept numpy array directly
 import numpy as np
-import time, ctypes
+import time
+import ctypes
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigureCanvasWxAggMod')
 
-from distutils.version import LooseVersion
 isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
-from ifigure.utils.wx3to4 import image_SetAlpha, wxEmptyImage
 
 class FigureCanvasWxAggMod(CanvasAgg):
     '''
     CanvasMod provides modification to Wx and WxAgg
     '''
+
     def __init__(self, *args, **kargs):
         self._width = 0
         self._height = 0
@@ -63,10 +67,10 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._dsu_check = []
         self._auto_update_ax = []
         self._hl_color = (0, 0, 0,)
-        
+
         super(FigureCanvasWxAggMod, self).__init__(*args, **kargs)
 
-        #self.Unbind(wx.EVT_SIZE)
+        # self.Unbind(wx.EVT_SIZE)
         self.iframe = None
         self.iothers = None
         self.axes_image = None
@@ -78,78 +82,81 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
         self._wheel_cb = None
         self._pre_rot = 0
-        
+
     def onMouseWheel(self, evt):
         rot = evt.GetWheelRotation()
         if rot != 0 and self._pre_rot == 0:
-            # start wheel            
+            # start wheel
             event = {'guiEvent': evt, 'start': True,
-                     'end': False, 'direction': rot > 0 }
+                     'end': False, 'direction': rot > 0}
         elif rot == 0 and self._pre_rot != 0:
-            # end  wheel            
+            # end  wheel
             event = {'guiEvent': evt, 'start': False,
-                     'end': True, 'direction': rot > 0 }
+                     'end': True, 'direction': rot > 0}
         elif rot == 0:
             event = None
         else:
             event = {'guiEvent': evt, 'start': False,
-                     'end': False, 'direction': rot > 0 }
-        self._pre_rot = rot 
+                     'end': False, 'direction': rot > 0}
+        self._pre_rot = rot
         try:
-            if event is not None: self._wheel_cb(event)
+            if event is not None:
+                self._wheel_cb(event)
         except:
             import traceback
             traceback.print_exc()
         evt.Skip()
-        
+
     def set_wheel_cb(self, wheel_cb):
         self._wheel_cb = wheel_cb
-        
+
     def _onPaint(self, evt):
         def scale_bitmap(figure_image, bitmap):
-           h, w, d  = figure_image.shape
-           bitmapw, bitmaph = bitmap.GetSize()
-           image = wxEmptyImage(w, h)
-           image.SetData(figure_image[:,:,0:3].tostring())
-           image_SetAlpha(image, figure_image[:,:,3])
-           return image.Scale(csize[0], csize[1]).ConvertToBitmap()
+            h, w, d = figure_image.shape
+            bitmapw, bitmaph = bitmap.GetSize()
+            image = wxEmptyImage(w, h)
+            image.SetData(figure_image[:, :, 0:3].tostring())
+            image_SetAlpha(image, figure_image[:, :, 3])
+            return image.Scale(csize[0], csize[1]).ConvertToBitmap()
 
         csize = self.GetClientSize()
         if self.figure_image is not None:
-            h, w, d  = self.figure_image[0].shape
+            h, w, d = self.figure_image[0].shape
             if (csize[0] != w or
-                csize[1] != h) :
+                    csize[1] != h):
                 self.bitmap = scale_bitmap(self.figure_image[0], self.bitmap)
-                self._isDrawn=True
+                self._isDrawn = True
         else:
             self._isDrawn = False
 
         CanvasAgg._onPaint(self, evt)
 
     def _onSize(self, evt=None, nocheck=False):
-#        print '_onSize backend_wxagg_mod'
-        if self.figure is None: 
+        #        print '_onSize backend_wxagg_mod'
+        if self.figure is None:
             evt.Skip()
             return
         super(FigureCanvasWxAggMod, self)._onSize(evt)
         return
 
-    def draw(self, drawDC = None, nogui_reprint = False):
+    def draw(self, drawDC=None, nogui_reprint=False):
 
-        if self.figure is None: return
-        if self.figure.figobj is None: return
+        if self.figure is None:
+            return
+        if self.figure.figobj is None:
+            return
 
         for fig_axes in self._auto_update_ax:
             fig_axes.set_bmp_update(False)
-         
-        #st =time.time()       
+
+        #st =time.time()
         if not self.resize_happend:
             s = self.draw_by_bitmap()
             # this makes draw_event
             self.figure.draw_from_bitmap(self.renderer)
             self._isDrawn = True
             if not nogui_reprint:
-                #print 'draw calling gui_repaint'
+                # print 'draw calling gui_repaint'
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
@@ -161,7 +168,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.draw()
 
     def draw_mpl(self, drawDC=None):
-        ### call super call draw directly for debug
+        # call super call draw directly for debug
         super(FigureCanvasWxAggMod, self).draw(drawDC)
 
     def draw_artist(self, drawDC=None, alist=None):
@@ -169,25 +176,27 @@ class FigureCanvasWxAggMod(CanvasAgg):
         Render the figure using RendererWx instance renderer, or using a
         previously defined renderer if none is specified.
         """
-        if alist is None: return
+        if alist is None:
+            return
         if drawDC is None:
-           drawDC=wx.ClientDC(self)
+            drawDC = wx.ClientDC(self)
 
         if self.figure_image is None:
             s = self.draw_by_bitmap()
-            if not s: return 
+            if not s:
+                return
 
         self.renderer = self.get_renderer()
         gc = self.renderer.new_gc()
         self.renderer.clear()
         self.call_draw_image(gc,
-                      self.figure_image[1], self.figure_image[2], 
-                      self.figure_image[0])
+                             self.figure_image[1], self.figure_image[2],
+                             self.figure_image[0])
 
         for a in alist:
             a.draw(self.renderer)
         self._prepare_bitmap()
-        #print 'draw calling gui_repaint'        
+        # print 'draw calling gui_repaint'
         self.gui_repaint(drawDC=drawDC)
 
     def Copy_to_Clipboard_mod(self, event=None, bmp=None, pgbar=False):
@@ -197,24 +206,25 @@ class FigureCanvasWxAggMod(CanvasAgg):
          But, this add progress bar and option to paste
          arbitray bitmap object
         '''
-        #### some routine to change self.bitmap
-        #### should come here...
+        # some routine to change self.bitmap
+        # should come here...
         bmp_obj = wx.BitmapDataObject()
         if bmp is None:
-           bmp_obj.SetBitmap(self.bitmap)
+            bmp_obj.SetBitmap(self.bitmap)
         else:
-           bmp_obj.SetBitmap(bmp)
+            bmp_obj.SetBitmap(bmp)
 
         if pgbar:
-           dialog = wx.ProgressDialog (
-                                    'Progress...', 
-                                    'Coping bitmap image to System Clipboard.', 
-                                    maximum = 10, 
-                                    parent = self.GetTopLevelParent() )
-           for x in xrange (10):
-              wx.Sleep (0.05)
-              dialog.Update (x+1, 'Coping bitmap image to System Clipboard.('+str(x)+'/10')
-           dialog.Destroy()
+            dialog = wx.ProgressDialog(
+                'Progress...',
+                'Coping bitmap image to System Clipboard.',
+                maximum=10,
+                parent=self.GetTopLevelParent())
+            for x in xrange(10):
+                wx.Sleep(0.05)
+                dialog.Update(
+                    x+1, 'Coping bitmap image to System Clipboard.('+str(x)+'/10')
+            dialog.Destroy()
 
         wx.TheClipboard.Open()
         wx.TheClipboard.SetData(bmp_obj)
@@ -224,61 +234,66 @@ class FigureCanvasWxAggMod(CanvasAgg):
     def draw_by_bitmap(self):
         last_size = self.figure.figobj._last_draw_size
         if (self.GetClientSize()[0] != last_size[0] or
-            self.GetClientSize()[1] != last_size[1]):
+                self.GetClientSize()[1] != last_size[1]):
             self.figure.figobj.reset_axesbmp_update()
 
         self.figure.figobj._last_draw_size = self.GetClientSize()
-        self.renderer=self.get_renderer()
-        
+        self.renderer = self.get_renderer()
+
 #       psize = self.GetParent().GetSize()
 #        self.resize_happend = False
         gc = None
 
-        ### prepare axes image
+        # prepare axes image
         self.iframe = self.make_buffer_image(self.figure.draw_frame)
         dsu, axes_darty = self.make_axes_image()
 
         dsu2 = []
         for obj in self.figure.figobj.walk_tree():
-            if obj.get_figaxes() is None: continue
+            if obj.get_figaxes() is None:
+                continue
             if obj._floating and not obj.get_figaxes()._floating:
-                dsu2.extend([(a, a.draw, [self.renderer]) for a in obj._artists])
-        self.iothers =  self.make_buffer_image(self.figure.draw_others, dsu = dsu2)
+                dsu2.extend([(a, a.draw, [self.renderer])
+                             for a in obj._artists])
+        self.iothers = self.make_buffer_image(
+            self.figure.draw_others, dsu=dsu2)
 
-        ### compose axes image
+        # compose axes image
         gc = self.renderer.new_gc()
         self.renderer.clear()
 
         if len(dsu) == len(self._dsu_check):
-           tmp = [x[1] for x in dsu]
-           for x in self._dsu_check:
-               if not x() in tmp: axes_darty = True
-        else: axes_darty = True
+            tmp = [x[1] for x in dsu]
+            for x in self._dsu_check:
+                if not x() in tmp:
+                    axes_darty = True
+        else:
+            axes_darty = True
         if axes_darty or self.axes_image is None:
-           for zorder, a in dsu:
-               im, x, y = a.figobj.get_bmp()
-               self.call_draw_image(gc,x, y, im)
+            for zorder, a in dsu:
+                im, x, y = a.figobj.get_bmp()
+                self.call_draw_image(gc, x, y, im)
 
-           self.axes_image = self._bufferstring2image()
-           self._dsu_check = [weakref.ref(x[1]) for x in dsu]
+            self.axes_image = self._bufferstring2image()
+            self._dsu_check = [weakref.ref(x[1]) for x in dsu]
 
-        ### generate final image
+        # generate final image
         self.renderer.clear()
-        self.call_draw_image(gc, 
-               self.iframe[1], self.iframe[2], self.iframe[0])
-        self.call_draw_image(gc, 
-                           self.axes_image[1], self.axes_image[2],
-                           self.axes_image[0])
+        self.call_draw_image(gc,
+                             self.iframe[1], self.iframe[2], self.iframe[0])
+        self.call_draw_image(gc,
+                             self.axes_image[1], self.axes_image[2],
+                             self.axes_image[0])
         self._draw_floating_axes()
-        self.call_draw_image(gc, 
-                 self.iothers[1], self.iothers[2], self.iothers[0])
-        
+        self.call_draw_image(gc,
+                             self.iothers[1], self.iothers[2], self.iothers[0])
+
 ####    self.call_draw_image(gc, 0, 0, self.make_final_image())
 
         self._isDrawn = True
 
         self.figure_image = self._bufferstring2image()
-        self._prepare_bitmap()                
+        self._prepare_bitmap()
 
         return True
 
@@ -292,7 +307,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         dsu = self.sorted_axes_list()
         for zorder, a in dsu:
             bmplist.append(a.figobj.get_bmp())
-            #bmplist.append(a.figobj.get_bmp())
+            # bmplist.append(a.figobj.get_bmp())
         bmplist.append((self.others_bitmap, 0, 0))
         return bmplist
 
@@ -302,58 +317,59 @@ class FigureCanvasWxAggMod(CanvasAgg):
         '''
         self.renderer.clear()
         try:
-           func(self.renderer, **kargs)
+            func(self.renderer, **kargs)
         except:
-           dprint1("make_buffer_image faield")
-           #import traceback
-           #traceback.print_exc()
-        return  self._bufferstring2image()
+            dprint1("make_buffer_image faield")
+            #import traceback
+            # traceback.print_exc()
+        return self._bufferstring2image()
 
     def make_axes_image(self):
         w, h = self.renderer.get_canvas_width_height()
         dsu = self._sorted_axes_list()
         axes_darty = False
-        bg_color = self.iframe[0][0,0,0:3]
+        bg_color = self.iframe[0][0, 0, 0:3]
 #        print 'drawing ax', len([a for zorder, a in dsu if not a.figobj.get_bmp_update()])
 
         for zorder, a in dsu:
             if not a.figobj.get_bmp_update():
-               if hasattr(a, "isTwin"): 
-                   continue
-               self.renderer.clear()
-               draw_error = False
-               for num, aa in enumerate(a.figobj._artists):
-                   try:
-#                       self.figure.draw_axes(self.renderer, aa, 
-#                                          noframe = num != 0)
-                       self.figure.draw_axes(self.renderer, aa, 
-                                             noframe = True)
-                       
+                if hasattr(a, "isTwin"):
+                    continue
+                self.renderer.clear()
+                draw_error = False
+                for num, aa in enumerate(a.figobj._artists):
+                    try:
+                        #                       self.figure.draw_axes(self.renderer, aa,
+                        #                                          noframe = num != 0)
+                        self.figure.draw_axes(self.renderer, aa,
+                                              noframe=True)
 
-                   except:
-                       import traceback
-                       traceback.print_exc()
-                       dprint1('drawing axes failed: '+ str(a.figobj))
-                       draw_error = True
-                       break
-               if draw_error:continue
+                    except:
+                        import traceback
+                        traceback.print_exc()
+                        dprint1('drawing axes failed: ' + str(a.figobj))
+                        draw_error = True
+                        break
+                if draw_error:
+                    continue
 
-               box = a.figobj.get_axesartist_extent(w, h, 
-                                 renderer=self.renderer)
+                box = a.figobj.get_axesartist_extent(w, h,
+                                                     renderer=self.renderer)
 
-               image, x, y =  self._bufferstring2image(box=box)
-         
+                image, x, y = self._bufferstring2image(box=box)
+
 #               mask2 =  np.array((image[:,:,0] == bg_color[0]) &
 #                                 (image[:,:,1] == bg_color[1]) &
 #                                 (image[:,:,2] == bg_color[2]), np.uint8)
-               mask2 =  np.array((image[:,:,3] == 0.0), np.uint8)
-               mask = (mask2+255)/255
+                mask2 = np.array((image[:, :, 3] == 0.0), np.uint8)
+                mask = (mask2+255)/255
 
-               for k in range(3): image[:,:,k] = image[:,:,k]*mask + 255*mask2
-               image[:,:,3] = image[:,:,3]*mask
-               
-               a.figobj.set_bmp(image.copy(), x, y)
-               axes_darty = True
+                for k in range(3):
+                    image[:, :, k] = image[:, :, k]*mask + 255*mask2
+                image[:, :, 3] = image[:, :, 3]*mask
+
+                a.figobj.set_bmp(image.copy(), x, y)
+                axes_darty = True
         return dsu, axes_darty
 
     def _draw_floating_axes(self):
@@ -361,7 +377,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         for a in self.figure.axes:
             if (hasattr(a, 'figobj') and
                 a.figobj is not None and
-                a.figobj._floating):
+                    a.figobj._floating):
                 dsu.append((a.get_zorder(), a))
         dsu.sort(key=itemgetter(0))
         o = self.figure.frameon
@@ -369,7 +385,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         for zorder, a in dsu:
             self.figure.draw_axes(self.renderer, a)
             a.figobj._bmp_update = True
-            
+
         self.figure.frameon = o
 
     def _prepare_bitmap(self):
@@ -382,81 +398,84 @@ class FigureCanvasWxAggMod(CanvasAgg):
         for a in self.figure.axes:
             if (hasattr(a, 'figobj') and
                 a.figobj is not None and
-                not a.figobj._floating):
-                dsu.append( (a.get_zorder(), a))
+                    not a.figobj._floating):
+                dsu.append((a.get_zorder(), a))
         dsu.sort(key=itemgetter(0))
         return dsu
 
     def _byte2image(self, img):
         image = frombyte(np.flipud(img), 1)
-        #image.flipud_out()
+        # image.flipud_out()
         return image
 
     def _bufferstring2image(self, box=None):
-        #print 'enterig buffer strin'
+        # print 'enterig buffer strin'
         #st = time.time()
         w, h = self.renderer.get_canvas_width_height()
         if isMPL_before_1_2:
-           img = np.fromstring(self.renderer.buffer_rgba(0,0), np.uint8)
+            img = np.fromstring(self.renderer.buffer_rgba(0, 0), np.uint8)
         else:
-           img = np.fromstring(self.renderer.buffer_rgba(), np.uint8) 
+            img = np.fromstring(self.renderer.buffer_rgba(), np.uint8)
 
-        #print h, w
-        img = img.reshape((int(h),int(w),4))
+        # print h, w
+        img = img.reshape((int(h), int(w), 4))
         if box is not None:
-           a = int(max((np.floor(h-box[3]), 0)))
-           b = int(min((np.floor(h-box[1])+2, h-1)))
-           c = int(max((np.floor(box[0]), 0)))
-           d = int(min((np.floor(box[2])+2, w-1)))
+            a = int(max((np.floor(h-box[3]), 0)))
+            b = int(min((np.floor(h-box[1])+2, h-1)))
+            c = int(max((np.floor(box[0]), 0)))
+            d = int(min((np.floor(box[2])+2, w-1)))
 #           print w, h, a, b, c, d
 #           img = img[round(h-box[3]):round(h-box[2]),
 #                     round(box[0]):round(box[1]),:
-           img1 = img[a:b, c:d, :]
-           return img1, c, h-b
+            img1 = img[a:b, c:d, :]
+            return img1, c, h-b
         else:
-           return img, 0, 0
+            return img, 0, 0
 
 #    def _check_size(self, psize):
 #        wx.Yield()
 #        return self.resize_happend
 
     def make_final_image(self):
-        
+
         im = np.ndarray(shape=self.iframe[0].shape, dtype=np.uint8)
 
-        da = (self.iframe[0][:,:,3]).astype(np.float)/255.
-        sa = (self.axes_image[0][:,:,3]).astype(np.float)/255.
-        
-        dd  = (1-sa)
-        ss  = 1
-        out = ((self.iframe[0][:,:,3].astype(np.float)*(dd) + 
-                self.axes_image[0][:,:,3].astype(np.float)*(ss)))
-        for k in range(3):
-            im[:,:,k] = ((self.iframe[0][:,:,k].astype(np.float)*(da)*(dd) + 
-                          self.axes_image[0][:,:,k].astype(np.float)*(sa)*(ss))).astype(np.uint8)
+        da = (self.iframe[0][:, :, 3]).astype(np.float)/255.
+        sa = (self.axes_image[0][:, :, 3]).astype(np.float)/255.
 
-        im[:,:,3] = out.astype(np.uint8)
-       
+        dd = (1-sa)
+        ss = 1
+        out = ((self.iframe[0][:, :, 3].astype(np.float)*(dd) +
+                self.axes_image[0][:, :, 3].astype(np.float)*(ss)))
+        for k in range(3):
+            im[:, :, k] = ((self.iframe[0][:, :, k].astype(np.float)*(da)*(dd) +
+                            self.axes_image[0][:, :, k].astype(np.float)*(sa)*(ss))).astype(np.uint8)
+
+        im[:, :, 3] = out.astype(np.uint8)
+
         return im
-    
-    @property       
+
+    @property
     def hl_color(self):
         return self._hl_color
+
     @hl_color.setter
     def hl_color(self, value):
         self._hl_color = value
 
-    ### following code is added since when a user press right button 
-    ### while dragging a mouse, mouse is already captured and backend_wx
-    ### try to capture it again, which causes trouble on linux
+    # following code is added since when a user press right button
+    # while dragging a mouse, mouse is already captured and backend_wx
+    # try to capture it again, which causes trouble on linux
     def _onRightButtonDown(self, evt):
         if self.HasCapture():
             self.ReleaseMouse()
         return super(FigureCanvasWxAggMod, self)._onRightButtonDown(evt)
+
     def _onLeftButtonDown(self, evt):
         if self.HasCapture():
             self.ReleaseMouse()
         return super(FigureCanvasWxAggMod, self)._onLeftButtonDown(evt)
+
     def _onMiddleButtonDown(self, evt):
         if self.HasCapture():
             self.ReleaseMouse()
@@ -466,6 +485,5 @@ class FigureCanvasWxAggMod(CanvasAgg):
         super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)
         if hasattr(self.GetTopLevelParent(), "_playerbtn"):
             bp = self.GetTopLevelParent()._playerbtn
-            if bp is not None: bp.Refresh()
-
-        
+            if bp is not None:
+                bp.Refresh()

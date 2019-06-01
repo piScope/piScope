@@ -42,6 +42,7 @@
 import os
 from ifigure.utils.cbook import isiterable
 
+
 class SettingParser(object):
     def __init__(self, rule_mode=1):
         '''
@@ -55,7 +56,7 @@ class SettingParser(object):
         self.rule_nocheck = {}
         self.rule_usedefault = {}
 
-    def set_rule(self, name, rule, nocheck = False, usedefault=True):
+    def set_rule(self, name, rule, nocheck=False, usedefault=True):
         self.rule[name] = rule
         self.rule_nocheck[name] = nocheck
         self.rule_usedefault[name] = usedefault
@@ -63,22 +64,22 @@ class SettingParser(object):
 
     def omit_comment(self, line):
         if line.find('#') != -1:
-           line = line[0:line.find('#')]
+            line = line[0:line.find('#')]
         if line.find('!') != -1:
-           line = line[0:line.find('#')]
+            line = line[0:line.find('#')]
         return line
 
     def split_line(self, _line):
         _arr = _line.split('=')
         _name = _arr[0].strip()
         _value = '='.join(_arr[1:]).strip()
-        try: 
-           value = eval(_value)
+        try:
+            value = eval(_value)
         except:
-           value = _value
-        return  _name.lower(), value
+            value = _value
+        return _name.lower(), value
 
-    def read_set(self, lc, lines, name, nocheck = False, usedefault=True):
+    def read_set(self, lc, lines, name, nocheck=False, usedefault=True):
         if usedefault:
             rule = dict(self.rule[name])
         else:
@@ -86,10 +87,10 @@ class SettingParser(object):
         while lc < len(lines):
             line = lines[lc]
             line = self.omit_comment(line)
-            if line.upper().find('END') != -1: 
+            if line.upper().find('END') != -1:
                 lc = lc+1
                 break
-            if line.find('=') == -1: 
+            if line.find('=') == -1:
                 lc = lc+1
                 continue
 
@@ -101,8 +102,6 @@ class SettingParser(object):
             lc = lc+1
         return lc, rule
 
-
-
     def read_file(self, file='', data=None, lines=None):
         '''
         if lines is given, it analyze line, otherwise,
@@ -110,36 +109,37 @@ class SettingParser(object):
         '''
         if lines is None:
             try:
-               fid = open(file, 'r')
-               lines = fid.readlines()
-               fid.close()
+                fid = open(file, 'r')
+                lines = fid.readlines()
+                fid.close()
             except IOError:
-               return False, {}
+                return False, {}
         lines = [line.strip('\n\r') for line in lines]
 #        print lines
-        if data is None : 
-           data = {}
-           if self.rule_mode == 1:
-              for key in self.rule:data[key] = []
+        if data is None:
+            data = {}
+            if self.rule_mode == 1:
+                for key in self.rule:
+                    data[key] = []
         lc = 0
-        while lc < len(lines): #lc = line counter
+        while lc < len(lines):  # lc = line counter
             line = lines[lc]
             line = self.omit_comment(line)
-            if line.find('=') == -1: 
+            if line.find('=') == -1:
                 if line.strip() in self.rule:
-                   rname =  line.strip()
-                   lc = lc+1
-                   lc, value    = self.read_set(lc, lines, rname,
-                                  nocheck = self.rule_nocheck[rname], 
-                                  usedefault = self.rule_usedefault[rname]) 
-                   if rname in data: 
-                       data[rname].append(value)
-                   else:
-                       data[rname] = value
-                   continue
+                    rname = line.strip()
+                    lc = lc+1
+                    lc, value = self.read_set(lc, lines, rname,
+                                              nocheck=self.rule_nocheck[rname],
+                                              usedefault=self.rule_usedefault[rname])
+                    if rname in data:
+                        data[rname].append(value)
+                    else:
+                        data[rname] = value
+                    continue
                 else:
-                   lc = lc+1
-                   continue
+                    lc = lc+1
+                    continue
             name, value = self.split_line(line)
             data[name] = value
             lc = lc+1
@@ -148,35 +148,38 @@ class SettingParser(object):
     def write_subsection(self, lines, name, data):
         lines.append(name)
         for key in data:
-           if isinstance(data[key], str):
-               lines.append( key + ' = "'+ str(data[key])+'"')
-           else:
-               lines.append( key + ' = '+ str(data[key]))
+            if isinstance(data[key], str):
+                lines.append(key + ' = "' + str(data[key])+'"')
+            else:
+                lines.append(key + ' = ' + str(data[key]))
         lines.append('end')
         return lines
-    def write_file(self, data, file = None):
+
+    def write_file(self, data, file=None):
         lines = []
         for key in data:
-           if isinstance(data[key], dict):
-              lines = self.write_subsection(lines, key, data[key])
-           elif isinstance(data[key], list):
-              for item in data[key]:
-                  lines = self.write_subsection(lines, key, item)
-           elif isinstance(data[key], tuple):
-              for item in data[key]:
-                  lines = self.write_subsection(lines, key, item)
-           elif isinstance(data[key], str):
-               lines.append( key + ' = "'+ str(data[key])+'"')
-           else:
-               lines.append( key + ' = '+ str(data[key]))
-       
+            if isinstance(data[key], dict):
+                lines = self.write_subsection(lines, key, data[key])
+            elif isinstance(data[key], list):
+                for item in data[key]:
+                    lines = self.write_subsection(lines, key, item)
+            elif isinstance(data[key], tuple):
+                for item in data[key]:
+                    lines = self.write_subsection(lines, key, item)
+            elif isinstance(data[key], str):
+                lines.append(key + ' = "' + str(data[key])+'"')
+            else:
+                lines.append(key + ' = ' + str(data[key]))
+
         if file is None:
-            for l in lines: print(l)
+            for l in lines:
+                print(l)
             return
         fid = open(file, 'w')
         for l in lines:
             fid.write(l+'\n')
         fid.close()
+
 
 class iFigureSettingParser(SettingParser):
     def mname2file(self, mname):
@@ -190,12 +193,13 @@ class iFigureSettingParser(SettingParser):
     def mk_filepath_dir(self, filename):
         t = filename
         if os.path.exists(t):
-           return
+            return
         if not os.path.exists(os.path.dirname(t)):
-             self.mk_filepath_dir(os.path.dirname(t))
+            self.mk_filepath_dir(os.path.dirname(t))
         else:
-             print('making directory', t)
-             os.mkdir(t)
+            print('making directory', t)
+            os.mkdir(t)
+
     def read_setting(self, mname, fromDefault=False):
         def_file, user_file = self.mname2file(mname)
 #        print def_file
@@ -203,10 +207,10 @@ class iFigureSettingParser(SettingParser):
 
         flag, def_v = self.read_file(def_file)
         if (os.path.exists(user_file) and
-            not fromDefault):
+                not fromDefault):
             flag, user_v = self.read_file(user_file)
             try:
-#                print user_v['version'] , def_v['version']
+                #                print user_v['version'] , def_v['version']
                 if user_v['version'] < def_v['version']:
                     self.write_setting(mname, def_v)
                     return def_v
@@ -224,87 +228,83 @@ class iFigureSettingParser(SettingParser):
         self.mk_filepath_dir(os.path.dirname(user_file))
         self.write_file(data, user_file)
 
+
 if __name__ == '__main__':
 
+    lines = ['version = 1',
+             'port = 22',
+             'host = transport']
+    sp = SettingParser()
+    print(sp.read_file(lines=lines))
 
-   lines = ['version = 1',
-            'port = 22',
-            'host = transport']
-   sp = SettingParser()
-   print(sp.read_file(lines=lines))
+    lines = ['version = 1',
+             'student',
+             'name = "bob"',
+             'age = 17',
+             'end',
+             'student',
+             'name = "jones"',
+             'age = 14',
+             'end',
+             'student',
+             'name = "anne"',
+             'age = 15',
+             'end']
 
+    sp = SettingParser(rule_mode=1)
+    sp.set_rule('student', {'name': '', 'age': 16})
+    print(sp.read_file(lines=lines))
 
-   lines = ['version = 1',
-            'student',
-            'name = "bob"',
-            'age = 17',
-            'end',
-            'student',
-            'name = "jones"',
-            'age = 14',
-            'end',
-            'student',
-            'name = "anne"',
-            'age = 15',
-            'end']
+    lines = ['version = 1',
+             'type = "proxy"',
+             'connection',
+             "server = 'cmodws60.psfc.edu'",
+             "port = 10002",
+             "end",
+             "connection",
+             "server = 'cmodws59.psfc.mit.edu'",
+             "port = 10002",
+             "end"]
 
-   sp = SettingParser(rule_mode=1)
-   sp.set_rule('student', {'name':'', 'age':16})
-   print(sp.read_file(lines=lines))
+    sp = SettingParser(rule_mode=1)
+    sp.set_rule('connection', {}, nocheck=True)
+    flag, data = sp.read_file(lines=lines)
+    print(data)
+    sp.write_file(data)
 
-   lines = ['version = 1', 
-            'type = "proxy"',
-            'connection',
-            "server = 'cmodws60.psfc.edu'",
-            "port = 10002", 
-            "end",
-            "connection",
-            "server = 'cmodws59.psfc.mit.edu'",
-            "port = 10002",
-            "end"]
+    lines = ['house',
+             'rooms = 5',
+             'garage = 2',
+             'end',
+             'yard',
+             'type  = "lawn"',
+             'end',
+             'toy',
+             'name = "train"',
+             'end']
 
-   sp = SettingParser(rule_mode=1)
-   sp.set_rule('connection', {}, nocheck=True)
-   flag, data =sp.read_file(lines=lines)
-   print(data)
-   sp.write_file(data)
+    sp = SettingParser(rule_mode=2)
+    sp.set_rule('house', {})
+    sp.set_rule('yard', {})
+    sp.set_rule('toy', {})
+    print(sp.read_file(lines=lines))
 
-   lines = ['house',
-            'rooms = 5',
-            'garage = 2',
-            'end',
-            'yard',
-            'type  = "lawn"',
-            'end',
-            'toy',
-            'name = "train"',
-            'end']
+    lines = ['version = 1',
+             'house',
+             'rooms = 5',
+             'garage = 2',
+             'end',
+             'yard',
+             'type  = "lawn"',
+             'end',
+             'toy',
+             'NAME = "1,1,1,1"',
+             'end']
 
-   sp = SettingParser(rule_mode=2)
-   sp.set_rule('house', {})
-   sp.set_rule('yard', {})
-   sp.set_rule('toy', {})
-   print(sp.read_file(lines=lines))
-
-   lines = ['version = 1',
-            'house',
-            'rooms = 5',
-            'garage = 2',
-            'end',
-            'yard',
-            'type  = "lawn"',
-            'end',
-            'toy',
-            'NAME = "1,1,1,1"',
-            'end']
-
-   sp = SettingParser(rule_mode=2)
-   sp.set_rule('house', {}, nocheck = True)
-   sp.set_rule('yard', {}, nocheck = True)
-   sp.set_rule('toy', {}, nocheck = True)
-   flag, data =sp.read_file(lines=lines)
-   print(data)
-   sp.write_file(data)
-
-
-
+    sp = SettingParser(rule_mode=2)
+    sp.set_rule('house', {}, nocheck=True)
+    sp.set_rule('yard', {}, nocheck=True)
+    sp.set_rule('toy', {}, nocheck=True)
+    flag, data = sp.read_file(lines=lines)
+    print(data)
+    sp.write_file(data)

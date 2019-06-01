@@ -2,7 +2,11 @@
 from ifigure.utils.cbook import Write2Main
 from ifigure.mto.py_code import PyData
 from ifigure.mto.py_code import PyCode
-import wx, os, re, string, sys
+import wx
+import os
+import re
+import string
+import sys
 from numpy import *
 from collections import OrderedDict
 
@@ -21,11 +25,11 @@ from collections import OrderedDict
 
 #      Py_Modules does not check the dependency of
 #      modules.
-#      If moduels used in Py_Modules depends on 
-#      each other by for example module variable, 
-#      it will cause complicate  module loading 
+#      If moduels used in Py_Modules depends on
+#      each other by for example module variable,
+#      it will cause complicate  module loading
 #      order-dependency problem.
-#      
+#
 #   name of module
 module_name = 'dwscope_subs'
 #   module_evt_handler
@@ -38,70 +42,75 @@ module_name = 'dwscope_subs'
 #   or True
 #   if it return False, ifigure stops exectuion at
 #   this module
-#  
-module_evt_handler=[("Load File", "onLoadFile", True)]
+#
+module_evt_handler = [("Load File", "onLoadFile", True)]
 #
 #   A function called when py_module is initialized
 #
-module_init= None
+module_init = None
 ######################################################
+
+
 def import_dwscope(file):
 
-    f=open(file, 'r')
+    f = open(file, 'r')
 
-    d={}
+    d = {}
     while 1:
-       line = f.readline()
-       if not line: break
-       line = line.rstrip("\r\n")
+        line = f.readline()
+        if not line:
+            break
+        line = line.rstrip("\r\n")
 
-       pos = line.find(':')
-       command = line[:pos]
-       data = line[pos+1:]
-       print(line)
-       arr=command.split('.')
-       if len(arr)==3:
-          if not d.has_key(arr[1]):d[arr[1]]={}
-          d[arr[1]][arr[2]]=data
-       if len(arr)==2:
-          if not d.has_key(arr[1]):d[arr[1]]={}
-          d[arr[1]]=data
+        pos = line.find(':')
+        command = line[:pos]
+        data = line[pos+1:]
+        print(line)
+        arr = command.split('.')
+        if len(arr) == 3:
+            if not d.has_key(arr[1]):
+                d[arr[1]] = {}
+            d[arr[1]][arr[2]] = data
+        if len(arr) == 2:
+            if not d.has_key(arr[1]):
+                d[arr[1]] = {}
+            d[arr[1]] = data
 
     f.close()
 
-    num_c=long(d["columns"])
-    num_r=[0]*num_c
+    num_c = long(d["columns"])
+    num_r = [0]*num_c
     return d
     for i in range(num_c)+1:
-       key = 'rows_in_column_'+str(i)
-       num_r[i-1]=long(d[key])
+        key = 'rows_in_column_'+str(i)
+        num_r[i-1] = long(d[key])
 
-    d2={"num_c": num_c, 
-        "num_r": num_r}
+    d2 = {"num_c": num_c,
+          "num_r": num_r}
 
     for key in d.keys():
-      if key[:4]=='plot':
-          d2[key[5:]]=d[key]
-      if key[:6]=='global':
-          d2["global"]=d[key]
- 
-    d2["title"]=d["title"]
-    d2["title_event"]=d["title_event"]
+        if key[:4] == 'plot':
+            d2[key[5:]] = d[key]
+        if key[:6] == 'global':
+            d2["global"] = d[key]
+
+    d2["title"] = d["title"]
+    d2["title_event"] = d["title_event"]
     return d2
-    
+
+
 def onLoadFile(self_obj):
-    open_dlg = wx.FileDialog ( None, message="Select DWscope", 
-                                   wildcard='*.dat',style=wx.FD_OPEN)
+    open_dlg = wx.FileDialog(None, message="Select DWscope",
+                             wildcard='*.dat', style=wx.FD_OPEN)
     if open_dlg.ShowModal() != wx.ID_OK:
-         open_dlg.Destroy()    
-         return False
+        open_dlg.Destroy()
+        return False
 
     file = open_dlg.GetPath()
-    open_dlg.Destroy() 
+    open_dlg.Destroy()
     for name, child in self_obj.get_children():
         child.destroy()
     self_obj.setvar("filename", file)
 
-    value=import_dwscope(file)
+    value = import_dwscope(file)
     self_obj.setvar("value", value)
-

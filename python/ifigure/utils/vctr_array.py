@@ -16,15 +16,17 @@
    end
 '''
 import numpy as np
+
+
 def expand_vctr(x, y, n, l):
-    print x.shape, 
+    print x.shape,
     res_x = [np.hstack((x[k, :l[k]], np.nan)) for k in range(n)]
     res_y = [np.hstack((y[k, :l[k]], np.nan)) for k in range(n)]
 
     return np.hstack(res_x)[:-2], np.hstack(res_y)[:-2]
 
 
-def expand_vctr3d(xyz, n, l, list = False):
+def expand_vctr3d(xyz, n, l, list=False):
     if list:
         res_x = [np.hstack(xyz[k, :l[k], 0]) for k in range(n)]
         res_y = [np.hstack(xyz[k, :l[k], 1]) for k in range(n)]
@@ -41,8 +43,4 @@ def read_vtcr(file):
     from scipy.io.idl import readsav
     nm0 = readsav(file)
     return expand_vctr(nm0['xvctr'], nm0['yvctr'],
-                nm0['nvctr'], nm0['lvctr'])
-
-
-
-     
+                       nm0['nvctr'], nm0['lvctr'])

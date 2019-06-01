@@ -10,10 +10,10 @@ import time
 import weakref
 import traceback
 try:
-   #  for standalone testing (when running python hdf_export_window.py)
-   from ifigure.utils.hdf_data_export import build_data,  hdf_data_export, set_all_properties_all, select_unique_properties_all
+    #  for standalone testing (when running python hdf_export_window.py)
+    from ifigure.utils.hdf_data_export import build_data,  hdf_data_export, set_all_properties_all, select_unique_properties_all
 except:
-   pass
+    pass
 import ifigure.events
 
 from ifigure.utils.wx3to4 import PyDeadObjectError, menu_Append
@@ -24,13 +24,18 @@ from ifigure.utils.wx3to4 import PyDeadObjectError, menu_Append
                    page = <figpage objct>)
 '''
 debug = False
+
+
 class ObjectData(object):
     def __init__(self, data):
         self.data = data
+
     def GetData(self):
         return self.data
+
     def __repr__(self):
         return self.data.__repr__()
+
 
 class HDFDataModel(dv.PyDataViewModel):
     def __init__(self, **kwargs):
@@ -38,26 +43,27 @@ class HDFDataModel(dv.PyDataViewModel):
         self.dataset = kwargs.pop('dataset', None)
         self.metadata = kwargs.pop('metadata', OrderedDict())
         self.export_flag = kwargs.pop('export_flag')
-        #self.objmapper.UseWeakRefs(True)
+        # self.objmapper.UseWeakRefs(True)
         self.objs = []
         self.labels = {}
 
     def getobj(self, labels):
         if labels in self.labels:
-           return self.labels[labels], True
+            return self.labels[labels], True
         else:
-           obj = ObjectData(labels)
-           self.labels[labels] = obj
-           return obj, False
+            obj = ObjectData(labels)
+            self.labels[labels] = obj
+            return obj, False
 
     def GetChildren(self, parent, children):
-        if debug: print('GetChildren')
+        if debug:
+            print('GetChildren')
         if not parent:
-            num = 0            
+            num = 0
             for name in six.iterkeys(self.dataset):
-                labels =(name,)
+                labels = (name,)
                 obj, exist = self.getobj(labels)
-                #if not exist:
+                # if not exist:
                 children.append(self.ObjectToItem(obj))
                 if not labels in self.export_flag:
                     self.export_flag[labels] = True
@@ -74,8 +80,8 @@ class HDFDataModel(dv.PyDataViewModel):
                 x = list(labels)
                 x.append(newlabel)
                 labels2 = tuple(x)
-                obj, exist = self.getobj(labels2)                
-                #if not exist:
+                obj, exist = self.getobj(labels2)
+                # if not exist:
                 children.append(self.ObjectToItem(obj))
                 if not labels2 in self.export_flag:
                     self.export_flag[labels2] = self.export_flag[labels]
@@ -83,13 +89,14 @@ class HDFDataModel(dv.PyDataViewModel):
                 num = num + 1
             return num
         return 0
-    
+
     def GetParent(self, item):
-        if debug: print('GetParent')
+        if debug:
+            print('GetParent')
         if not item:
             return dv.NullDataViewItem
 
-        ret =  dv.NullDataViewItem
+        ret = dv.NullDataViewItem
         obj = self.ItemToObject(item)
         labels = obj.data
         if len(labels) == 1:
@@ -105,11 +112,11 @@ class HDFDataModel(dv.PyDataViewModel):
         return 5
 
     def GetColumnType(self, col):
-        mapper = { 0 : 'string',
-                   1 : 'bool',                   
-                   2 : 'string',
-                   3 : 'string',
-                   4 : 'string',}
+        mapper = {0: 'string',
+                  1: 'bool',
+                  2: 'string',
+                  3: 'string',
+                  4: 'string', }
         return mapper[col]
 
     def IsContainer(self, item):
@@ -121,17 +128,19 @@ class HDFDataModel(dv.PyDataViewModel):
         p = self.dataset
         for l in labels:
             p = p[l]
-        if isinstance(p, dict): return True        
+        if isinstance(p, dict):
+            return True
         # but everything else are not
-        return False            
+        return False
 
     def GetValue(self, item, col):
-        if debug: print('GetValue')
+        if debug:
+            print('GetValue')
         labels = self.ItemToObject(item).GetData()
         p = self.dataset
         for l in labels:
             p = p[l]
-            
+
         if col == 0:
             v = labels[-1]
             ret = v
@@ -142,7 +151,8 @@ class HDFDataModel(dv.PyDataViewModel):
                 ret = ''
             else:
                 ret = str(p)
-                if len(ret) > 50: ret = ret[:50] + '...'
+                if len(ret) > 50:
+                    ret = ret[:50] + '...'
         elif col == 3:
             if self.IsContainer(item):
                 ret = ''
@@ -158,83 +168,89 @@ class HDFDataModel(dv.PyDataViewModel):
                 d = d[labels[p]]
                 dd = OrderedDict()
                 for key in six.iterkeys(d):
-                   if not isinstance(d[key], dict):
-                       dd[key] = d[key]
+                    if not isinstance(d[key], dict):
+                        dd[key] = d[key]
                 ret = str(dd)
                 p = p+1
-                if len(labels) <= p: break
+                if len(labels) <= p:
+                    break
             else:
                 ret = ''
             if self.IsContainer(item) and len(labels) != 1:
                 ret = ''
             if ret.startswith('OrderedDict'):
-                ret = ret[13:-2]  ## tweak a visual ;D
+                ret = ret[13:-2]  # tweak a visual ;D
         else:
-             raise RuntimeError("unknown col")
+            raise RuntimeError("unknown col")
         return ret
 
     def GetAttr(self, item, col, attr):
         labels = self.ItemToObject(item).GetData()
         if col == 0:
-           attr.SetColour('blue')
-           return True
+            attr.SetColour('blue')
+            return True
         else:
-           return False
+            return False
 
     def SetValue(self, value, item, col):
-        if debug: print('SetValue')
+        if debug:
+            print('SetValue')
         labels = self.ItemToObject(item).GetData()
-        p = self.dataset        
+        p = self.dataset
         for l in labels:
             p = p[l]
         if col == 1:
             self.export_flag[labels] = value
-            
+
             if value:
                 for l2 in self.labels:
-                   if len(l2) >= len(labels): continue                   
-                   if l2 == labels[:len(l2)]:
-                       self.export_flag[l2] = value
-                       obj = self.labels[l2]
-                       item2 = self.ObjectToItem(obj)
-                       self.ValueChanged(item2, col)
+                    if len(l2) >= len(labels):
+                        continue
+                    if l2 == labels[:len(l2)]:
+                        self.export_flag[l2] = value
+                        obj = self.labels[l2]
+                        item2 = self.ObjectToItem(obj)
+                        self.ValueChanged(item2, col)
             if self.IsContainer(item):
                 labels = self.ItemToObject(item).GetData()
                 for l2 in self.labels:
-                   if len(l2) <= len(labels): continue
-                   if l2[:len(labels)] == labels:
-                       self.export_flag[l2] = value
-                       obj = self.labels[l2]
-                       item2 = self.ObjectToItem(obj)
-                       self.ValueChanged(item2, col)
-            
+                    if len(l2) <= len(labels):
+                        continue
+                    if l2[:len(labels)] == labels:
+                        self.export_flag[l2] = value
+                        obj = self.labels[l2]
+                        item2 = self.ObjectToItem(obj)
+                        self.ValueChanged(item2, col)
+
     def HasContainerColumns(self, item):
         return True
+
 
 class HdfExportWindow(wx.Frame):
     def __init__(self, *args, **kargs):
         page = kargs.pop('page', None)
         parent = kargs.pop('parent', None)
-        title  = kargs.pop('title', 'HDF export')
+        title = kargs.pop('title', 'HDF export')
         path = kargs.pop('path', os.path.join(os.getcwd(), 'data.hdf'))
         dataset = kargs.pop('dataset', None)
         metadata = kargs.pop('metadata', OrderedDict())
-        export_flag = kargs.pop('export_flag', {})        
+        export_flag = kargs.pop('export_flag', {})
         if dataset is None:
-            if page is None:  return
-            dataset, metadata, export_flag = build_data(page, 
-                                                        verbose = False,
-                                                        metadata = metadata,
-                                                        export_flag = export_flag)
-        style = (wx.CAPTION|wx.CLOSE_BOX|wx.MINIMIZE_BOX|
+            if page is None:
+                return
+            dataset, metadata, export_flag = build_data(page,
+                                                        verbose=False,
+                                                        metadata=metadata,
+                                                        export_flag=export_flag)
+        style = (wx.CAPTION | wx.CLOSE_BOX | wx.MINIMIZE_BOX |
                  wx.RESIZE_BORDER)
         if parent is not None:
             style = style | wx.FRAME_FLOAT_ON_PARENT
-                                
+
         wx.Frame.__init__(self, *args,
-                          style = style, 
-                          title = title, parent = parent,
-                          size = (400, 500))
+                          style=style,
+                          title=title, parent=parent,
+                          size=(400, 500))
 
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -244,44 +260,44 @@ class HdfExportWindow(wx.Frame):
 
         panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = panel.GetSizer()
-        sizer_h =wx.BoxSizer(wx.HORIZONTAL)
+        sizer_h = wx.BoxSizer(wx.HORIZONTAL)
 
         wildcard = "HDF(hdf)|*.hdf|Any|*.*"
         self.filepicker = wx.FilePickerCtrl(panel,
-                                            style=wx.FLP_SAVE|wx.FLP_USE_TEXTCTRL,
-                                            path = path,
-                                            wildcard = wildcard) 
-        self.sp = wx.SplitterWindow(panel, wx.ID_ANY, 
-              style=wx.SP_NOBORDER|wx.SP_LIVE_UPDATE|wx.SP_3DSASH)
+                                            style=wx.FLP_SAVE | wx.FLP_USE_TEXTCTRL,
+                                            path=path,
+                                            wildcard=wildcard)
+        self.sp = wx.SplitterWindow(panel, wx.ID_ANY,
+                                    style=wx.SP_NOBORDER | wx.SP_LIVE_UPDATE | wx.SP_3DSASH)
         self.dataviewCtrl = dv.DataViewCtrl(self.sp,
-                                            style = (wx.BORDER_THEME
-                                                     |dv.DV_ROW_LINES
-                                                     |dv.DV_VERT_RULES))
+                                            style=(wx.BORDER_THEME
+                                                   | dv.DV_ROW_LINES
+                                                   | dv.DV_VERT_RULES))
 
-        self.model = HDFDataModel(export_flag = export_flag,
-                                  dataset = dataset,
-                                  metadata = metadata)
+        self.model = HDFDataModel(export_flag=export_flag,
+                                  dataset=dataset,
+                                  metadata=metadata)
         self.dataviewCtrl.AssociateModel(self.model)
 
         self.tr = tr = dv.DataViewTextRenderer()
         c0 = dv.DataViewColumn("name",   # title
                                tr,        # renderer
                                0,         # data model column
-                              width=200)
+                               width=200)
         self.dataviewCtrl.AppendColumn(c0)
 
 #        self.dataviewCtrl.AppendTextColumn('name', 0,
 #                                           width = 150,
-#                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
+#                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         c1 = self.dataviewCtrl.AppendToggleColumn('export', 1,
-                                             width= 70,
-                                             mode=dv.DATAVIEW_CELL_ACTIVATABLE)
-        c2 = self.dataviewCtrl.AppendTextColumn('value', 2, width = 100,
-                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
+                                                  width=70,
+                                                  mode=dv.DATAVIEW_CELL_ACTIVATABLE)
+        c2 = self.dataviewCtrl.AppendTextColumn('value', 2, width=100,
+                                                mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         c3 = self.dataviewCtrl.AppendTextColumn('shape', 3,
-                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
+                                                mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         c4 = self.dataviewCtrl.AppendTextColumn('metadata', 4,
-                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)       
+                                                mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         for c in self.dataviewCtrl.Columns:
             c.Sortable = True
             c.Reorderable = True
@@ -292,50 +308,47 @@ class HdfExportWindow(wx.Frame):
         self.grid = pg.PropertyGrid(self.sp)
 
         #self.btn_load = wx.Button(self, label = 'Load')
-        self.choices = ['Options...', 'No Property', 
+        self.choices = ['Options...', 'No Property',
                         'Minimum properties',
                         'All properties']
-        self.cb  =  wx.ComboBox(panel, wx.ID_ANY, 
-                             style=wx.TE_PROCESS_ENTER|wx.CB_READONLY,
-                             choices = self.choices)
+        self.cb = wx.ComboBox(panel, wx.ID_ANY,
+                              style=wx.TE_PROCESS_ENTER | wx.CB_READONLY,
+                              choices=self.choices)
         self.cb.SetValue(self.choices[0])
-        self.btn_export = wx.Button(panel, label = 'Export...')
-        
-        sizer.Add(self.filepicker, 0, wx.EXPAND|wx.ALL, 1)        
-        sizer.Add(self.sp, 1, wx.EXPAND|wx.ALL, 5)
-        sizer.Add(sizer_h, 0, wx.EXPAND|wx.ALL|wx.ALIGN_RIGHT, 5)        
+        self.btn_export = wx.Button(panel, label='Export...')
 
+        sizer.Add(self.filepicker, 0, wx.EXPAND | wx.ALL, 1)
+        sizer.Add(self.sp, 1, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(sizer_h, 0, wx.EXPAND | wx.ALL | wx.ALIGN_RIGHT, 5)
 
         #sizer_h.Add(self.btn_load, 0,   wx.EXPAND|wx.ALL, 1)
-        sizer_h.Add(self.cb, 0,   wx.EXPAND|wx.ALL, 1)
-        sizer_h.AddStretchSpacer(prop = 1)
-        sizer_h.Add(self.btn_export, 0, wx.EXPAND|wx.ALL, 1)
-
-
+        sizer_h.Add(self.cb, 0,   wx.EXPAND | wx.ALL, 1)
+        sizer_h.AddStretchSpacer(prop=1)
+        sizer_h.Add(self.btn_export, 0, wx.EXPAND | wx.ALL, 1)
 
         self.Layout()
         self.Show()
-        
+
         self.sp.SetMinimumPaneSize(30)
         self.sp.SplitHorizontally(self.dataviewCtrl, self.grid)
-        self.sp.SetSashPosition(300)              
+        self.sp.SetSashPosition(300)
 #        self.Bind(dv.EVT_DATAVIEW_ITEM_VALUE_CHANGED,
 #                  self.onDataChanged, self.dataviewCtrl)
         self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                   self.onSelChanged, self.dataviewCtrl)
-        
-        #self.Bind(dv.EVT_DATAVIEW_ITEM_COLLAPSING,
+
+        # self.Bind(dv.EVT_DATAVIEW_ITEM_COLLAPSING,
         #          self.onCollapsing, self.dataviewCtrl)
-        
-        self.grid.Bind(pg.EVT_PG_CHANGED, 
-                  self.onPGChanged,  self.grid)
+
+        self.grid.Bind(pg.EVT_PG_CHANGED,
+                       self.onPGChanged,  self.grid)
         self.Bind(wx.EVT_BUTTON, self.onExport, self.btn_export)
-        self.Bind(wx.EVT_COMBOBOX, self.onCBHit, self.cb)      
+        self.Bind(wx.EVT_COMBOBOX, self.onCBHit, self.cb)
         self.Bind(wx.EVT_CLOSE, self.onWindowClose)
-        
+
         self.page = page
         wx.GetApp().TopWindow.hdf_export_window = self
-        
+
     def onCBHit(self, evt):
         flags = self.model.export_flag
         dataset = self.model.dataset
@@ -343,11 +356,11 @@ class HdfExportWindow(wx.Frame):
 
         self.cb.SetValue(self.choices[0])
         if idx == 1:
-           set_all_properties_all(flags, False)
+            set_all_properties_all(flags, False)
         elif idx == 2:
-           select_unique_properties_all(self.page, dataset, flags)
+            select_unique_properties_all(self.page, dataset, flags)
         elif idx == 3:
-           set_all_properties_all(flags, True)
+            set_all_properties_all(flags, True)
         else:
             pass
         self.Refresh()
@@ -355,64 +368,67 @@ class HdfExportWindow(wx.Frame):
 
     def onTD_Selection(self, evt):
         w = evt.GetEventObject()
-        if w is self: return
-        
+        if w is self:
+            return
+
         td = evt.GetTreeDict()
         name = self.page.name + '.' + '.'.join(self.page.get_td_path(td)[1:])
 
         item = self.dataviewCtrl.GetSelection()
         try:
-           clabels = self.model.ItemToObject(item).GetData()
+            clabels = self.model.ItemToObject(item).GetData()
         except:
-           clabels = (self.page.name, )
+            clabels = (self.page.name, )
 
-        if clabels[0] == name: return
+        if clabels[0] == name:
+            return
         if (name,) in self.model.labels:
             obj, flag = self.model.getobj((name,))
             item = self.model.ObjectToItem(obj)
             self.dataviewCtrl.Select(item)
-        
+
     def onSelChanged(self, evt):
-        #print('onSelChanged')
+        # print('onSelChanged')
         item = self.dataviewCtrl.GetSelection()
         try:
-           labels = self.model.ItemToObject(item).GetData()
+            labels = self.model.ItemToObject(item).GetData()
         except:
-           self.grid.Clear()           
-           self.dataviewCtrl.UnselectAll()
-           return
+            self.grid.Clear()
+            self.dataviewCtrl.UnselectAll()
+            return
         metadata = self.model.metadata
         self.grid_target = None
         p = 0
         d = metadata
         dd = OrderedDict()
         while labels[p] in d:
-           d = d[labels[p]]
-           dd = OrderedDict()   
-           for key in six.iterkeys(d):
-               if not isinstance(d[key], dict):
-                  dd[key] = d[key]
-           ret = dd, d
-           p = p+1
-           if len(labels) <= p: break
+            d = d[labels[p]]
+            dd = OrderedDict()
+            for key in six.iterkeys(d):
+                if not isinstance(d[key], dict):
+                    dd[key] = d[key]
+            ret = dd, d
+            p = p+1
+            if len(labels) <= p:
+                break
         else:
-           ret = None
+            ret = None
         if self.model.IsContainer(item) and len(labels) != 1:
-           ret = None
+            ret = None
         self.grid.Clear()
         for key in six.iterkeys(dd):
-            prop = pg.StringProperty(str(key), value = str(dd[key]))
+            prop = pg.StringProperty(str(key), value=str(dd[key]))
             self.grid.Append(prop)
         self.grid_target = d
 
         names = labels[0].split('.')
         if len(names) > 1:
-           figobj = self.page
-           for name in names[1:]:
-              figobj = figobj.get_child(name = name)
-           if len(figobj._artists) > 0:
-               sel = [weakref.ref(figobj._artists[0])]
-               ifigure.events.SendSelectionEvent(figobj, self, sel)        
+            figobj = self.page
+            for name in names[1:]:
+                figobj = figobj.get_child(name=name)
+            if len(figobj._artists) > 0:
+                sel = [weakref.ref(figobj._artists[0])]
+                ifigure.events.SendSelectionEvent(figobj, self, sel)
         evt.Skip()
 
     def onPGChanged(self, evt):
@@ -422,28 +438,28 @@ class HdfExportWindow(wx.Frame):
         evt.Skip()
 
     def onExport(self, evt):
-        import ifigure.widgets.dialog as dialog        
+        import ifigure.widgets.dialog as dialog
         flags = self.model.export_flag
         dataset = self.model.dataset
-        metadata = self.model.metadata        
-        path  = self.filepicker.GetPath()
+        metadata = self.model.metadata
+        path = self.filepicker.GetPath()
         try:
-            hdf_data_export(data = dataset,
-                        metadata = metadata, 
-                        export_flag = flags,
-                        filename = path,
-                        verbose = True)
+            hdf_data_export(data=dataset,
+                            metadata=metadata,
+                            export_flag=flags,
+                            filename=path,
+                            verbose=True)
             print('HDF export finished : '+path)
-        except:   
-            dialog.showtraceback(parent = self,
-                               txt='Failed to export HDF', 
-                               title='Error during HDF export',
-                               traceback=traceback.format_exc())
-        dialog.message(parent = self, style = 0,
-                       message = 'Export finished')
-        #self.Close()
+        except:
+            dialog.showtraceback(parent=self,
+                                 txt='Failed to export HDF',
+                                 title='Error during HDF export',
+                                 traceback=traceback.format_exc())
+        dialog.message(parent=self, style=0,
+                       message='Export finished')
+        # self.Close()
         evt.Skip()
-        
+
     def onWindowClose(self, evt):
         wx.GetApp().TopWindow.hdf_export_window = None
         evt.Skip()
@@ -453,7 +469,8 @@ if __name__ == '__main__':
     '''
     sample data for testing
     '''
-    import sys,os
+    import sys
+    import os
     dataset = OrderedDict()
     dataset['page1'] = {}
     dataset['page1']['property'] = {}
@@ -467,7 +484,7 @@ if __name__ == '__main__':
     dataset['page1.axes1.plot1']['data1']['xdata'] = np.arange(30)
     dataset['page1.axes1.plot1']['data1']['ydata'] = np.arange(30)
 
-    app = wx.App(redirect = False)
-    w = HdfExportWindow(dataset = dataset)
+    app = wx.App(redirect=False)
+    w = HdfExportWindow(dataset=dataset)
     w.Show()
-    app.MainLoop() 
+    app.MainLoop()
