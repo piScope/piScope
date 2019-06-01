@@ -19,10 +19,10 @@ from __future__ import print_function
 # *******************************************
 #     Copyright(c) 2012- PSFC, MIT
 # *******************************************
+import os
 import matplotlib
-from ifigure.widgets.axes_range_subs import AdjustableRangeHolderCbar
-from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
 import weakref
+import six
 import wx
 import numpy as np
 from matplotlib.lines import Line2D
@@ -31,17 +31,19 @@ import matplotlib.transforms as transforms
 from scipy.interpolate import griddata
 import matplotlib.ticker as mticker
 
+import ifigure
+
 from ifigure.mto.fig_obj import FigObj
 from ifigure.mto.fig_plot import FigPlot
 from ifigure.mto.fig_contour import FigContour
 from ifigure.mto.fig_image import FigImage
 from ifigure.mto.axis_param import AxisXParam, AxisYParam, AxisZParam, AxisCParam
+from ifigure.widgets.axes_range_subs import AdjustableRangeHolderCbar
+from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
 
-import ifigure
 from ifigure.widgets.canvas.file_structure import *
 import ifigure.widgets.canvas.custom_picker as cpicker
-import ifigure
-import os
+
 import ifigure.events
 from ifigure.utils.geom import scale_rect
 
@@ -1022,7 +1024,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         tstyle = figpage.getp('title_style')
         tsize = figpage.getp('title_size')
 
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             # Don't use this!
             # use viewer.title whenever possible.
             dprint1('set_title is called with string argument. not recommendad')

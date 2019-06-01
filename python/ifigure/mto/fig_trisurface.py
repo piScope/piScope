@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import cm
-from fig_surface import FigSurface
+from ifigure.mto.fig_surface import FigSurface
 from ifigure.utils.triangulation_wrapper import tri_args
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import ColorConverter

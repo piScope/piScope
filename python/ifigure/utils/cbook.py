@@ -5,6 +5,7 @@ from __future__ import print_function
 #   this could be widget toolkit dependent
 import scipy
 import sys
+import six
 import os
 import matplotlib.colors
 from ifigure.utils.wx3to4 import menu_Append, wxBitmapFromImage, wxCursorFromImage, menu_AppendItem
@@ -57,10 +58,16 @@ def text_repr(val):
         text = '**data**'
     elif hasattr(val, '__len__'):
         try:
-            if (len(val) > 10 and not isinstance(val, str) and not isinstance(val, unicode)):
-                text = '**data**'
+            if six.PY2:
+                if (len(val) > 10 and not isinstance(val, str) and not isinstance(val, unicode)):
+                    text = '**data**'
+                else:
+                    text = val.__repr__()
             else:
-                text = val.__repr__()
+                if (len(val) > 10 and not isinstance(val, str)):
+                    text = '**data**'
+                else:
+                    text = val.__repr__()
         except:
             try:
                 text = val.__repr__()
@@ -239,7 +246,7 @@ class ImageFiles(object):
             h, w = bm.GetSize()
             im = bm.ConvertToImage()
             array = np.fromstring(bytes(im.GetData()), dtype=np.uint8)
-            array = array.reshape(w, h, array.shape[0]/w/h)
+            array = array.reshape(w, h, -1)
             alpha = image_GetAlpha(im)
             if alpha is not None:
                 alpha = np.fromstring(bytes(image_GetAlpha(im)),
@@ -908,9 +915,11 @@ def isiterable_not_string(obj):
     return hasattr(obj, '__iter__') and not isinstance(obj, str)
     
 def isstringlike(x):
-    return (isinstance(x, str) or isinstance(x, unicode))
-
-
+    if six.PY2:
+        return (isinstance(x, str) or isinstance(x, unicode))
+    else:
+        return isinstance(x, str)
+    
 def nd_iter(x):
     if x.size:
         return x
@@ -931,7 +940,7 @@ def isnumber(obj):
     this may not catch all of strange classes....
     this also does not work with bool
     '''
-    attrs = ['__add__', '__sub__', '__mul__', '__div__', '__pow__']
+    attrs = ['__add__', '__sub__', '__mul__', '__truediv__', '__pow__']
     return all(hasattr(obj, attr) for attr in attrs) and not (isinstance(obj, np.ndarray) and obj.dtype.kind in 'OSU')
 
 
@@ -1060,8 +1069,13 @@ def tex_escape(text):
         '<': r'\textless',
         '>': r'\textgreater',
     }
-    regex = re.compile('|'.join(re.escape(unicode(key))
-                                for key in sorted(conv.keys(), key=lambda item: - len(item))))
+    if six.PY2:
+        regex = re.compile('|'.join(re.escape(unicode(key))
+                           for key in sorted(conv.keys(), key=lambda item: - len(item))))
+    else:
+        regex = re.compile('|'.join(re.escape(key)
+                           for key in sorted(conv.keys(), key=lambda item: - len(item))))
+
     return regex.sub(lambda match: conv[match.group()], text)
 
 

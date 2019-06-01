@@ -23,7 +23,7 @@ def make_bitmap_with_bluebox(bitmap):
                           dtype=np.uint8).reshape(w, h, -1)
     array = np.fromstring(bytes(image.GetData()),
                           dtype=np.uint8)
-    array = array.reshape(w, h, array.shape[0]/w/h)
+    array = array.reshape(w, h, -1)
     array[0,   1:-2, :1] = 0
     array[-1,  1:-2, :1] = 0
     array[1:-2,   0, :1] = 0

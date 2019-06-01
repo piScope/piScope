@@ -50,6 +50,7 @@ from __future__ import print_function
 #      flag is True if rule is successfully applied
 #
 from ifigure.utils.cbook import isiterable, isndarray, isdynamic, issequence, isnumber
+import six
 import numpy as np
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('ArgsParser')
@@ -199,9 +200,15 @@ class ArgsParser(object):
             elif cond == 'sequence':
                 return issequence(value)
             elif cond == 'str':
-                return isinstance(value, str) or isinstance(value, unicode)
+                if six.PY2:
+                    return isinstance(value, str) or isinstance(value, unicode)
+                else:
+                    return isinstance(value, str)
             elif cond == 'nonstr':
-                return not (isinstance(value, str) or isinstance(value, unicode))
+                if six.PY2:                
+                    return not (isinstance(value, str) or isinstance(value, unicode))
+                else:
+                    return not isinstance(value, str)
             elif cond == 'int':
                 return isinstance(value, int)
             elif cond == 'float':
@@ -251,6 +258,7 @@ class ArgsParser(object):
         value = {}
         flag = True
         cases = [bit(i, len(self.vars)) for i in range(2**len(self.vars))]
+        
         for case in cases:
             # check length of arguments
             if sum(case) != len(args):

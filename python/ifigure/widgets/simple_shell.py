@@ -278,9 +278,13 @@ class SimpleShell(ShellBase):
         try:
             f = open(file, 'r')
             self.history = pickle.load(f)
+            print(self.history)
             f.close
         except Exception:
-            print(sys.exc_info()[:2])
+            import traceback
+            traceback.print_exc()
+            print("Can not load command history file")
+            
         if self.history[-1] != '#end of history':
             self.history.append('#end of history')
 

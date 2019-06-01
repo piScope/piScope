@@ -304,7 +304,6 @@ class ifigure_app(BookViewerFrame):
         p1, p2 = self.gui_tree.add_splitter('v', 'h')
         p21, p22 = p2.add_splitter('h', 'h')
         p211, p212 = p21.add_splitter('v', 'h')
-
         # make all panels
         self.proj_tree_viewer = p1.add_panel(ProjTreeViewer,
                                              "Project", "Project", 0, 'l',
@@ -320,11 +319,13 @@ class ifigure_app(BookViewerFrame):
         self.panel2 = p211.add_panel(EditorPanel,
                                      "Editor", "Editor", 2, False,
                                      1, wx.ALL | wx.EXPAND, 0)
+
         self.panel2.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.make_attached_script_editor()
         self.panel1 = p212.add_panel(CanvasPanel,
                                      "Figure", "Figure", 3)
         p212.set_primary(self.panel1)
+
         self.property_editor = p212.add_panel(property_editor,
                                               "Property", "Property",
                                               4, 'r', 0, wx.ALL | wx.EXPAND, 0)

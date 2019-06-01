@@ -19,6 +19,7 @@ from wx import ScrolledWindow as SP
 from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 import ifigure.utils.debug as debug
 import wx
+import six
 import os
 import ifigure
 import wx.stc as stc
@@ -630,18 +631,21 @@ class BitmapButtons(wx.Panel):
                 self.gsizer.Add(txt, 0, wx.ALL, 0)
             dirname = os.path.dirname(ifigure.__file__)
             if imagearray is None:
+                ffname = b64encode(fname.encode('latin-1')).decode()
                 imageFile = os.path.join(icondir, 'image',
-                                         ftitle+'_'+b64encode(fname)+'.png')
+                                         ftitle+'_'+str(ffname)+'.png')
+
                 if not os.path.exists(imageFile):
+                    ffname = b64encode('other'.encode('latin-1')).decode()                                  
                     imageFile = os.path.join(icondir, 'image',
-                                             'color_'+b64encode('other')+'.png')
+                                             'color_' + ffname + '.png')
                     print('Cannot find bitmap for ' + ftitle + '=' + fname)
                 bitmap = wx.Bitmap(imageFile)
                 h, w = bitmap.GetSize()
 
                 image = bitmap.ConvertToImage()
                 array = np.fromstring(bytes(image.GetData()), dtype=np.uint8)
-                array = array.reshape(w, h, array.shape[0]/w/h)
+                array = array.reshape(w, h, -1)
             else:
                 array = imagearray[name]
             array[:2, :, 0] = 0
@@ -896,8 +900,9 @@ class ColorSelector(wx.BitmapButton):
         dirname = os.path.dirname(ifigure.__file__)
         self.imageFiles = {}
         for name in self.color_list:
+            nname = b64encode(name.encode('latin-1')).decode()                                  
             self.imageFiles[name] = os.path.join(icondir, 'image',
-                                                 'color_'+b64encode(name)+'.png')
+                                                 'color_' + nname +'.png')
         wx.BitmapButton.__init__(
             self, *args, bitmap=wx.Bitmap(self.imageFiles['blue']))
         self.value = 'blue'
@@ -1665,7 +1670,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self._wxval = None
 
         if self._use_escape:
-            return val.decode('string_escape')
+            if six.PY2:
+                return val.decode('string_escape')
+            else:
+                return val.decode('unicode_escape')                
         else:
             return val
 
@@ -1675,7 +1683,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         except UnicodeEncodeError:
             pass
         if self._use_escape:
-            wx.TextCtrl.SetValue(self, value.encode('string_escape'))
+            if six.PY2:
+                wx.TextCtrl.SetValue(self, value.encode('string_escape'))
+            else:
+                wx.TextCtrl.SetValue(self, value.encode('unicode_escape'))                
         else:
             wx.TextCtrl.SetValue(self, value)
 
@@ -2964,8 +2975,9 @@ class ArrowStyleCombobox(wxBitmapComboBox):
                                                  '', (-1, -1), (150, -1),  **kargs)
         for name, style in self.choice_list:
             dirname = os.path.dirname(ifigure.__file__)
+            nname = b64encode(name.encode('latin-1')).decode()                                              
             imageFile = os.path.join(icondir, 'image',
-                                     'arrow_'+b64encode(name)+'.png')
+                                     'arrow_'+ nname +'.png')
             bitmap = wx.Bitmap(imageFile)
             super(ArrowStyleCombobox, self).Append(name, bitmap, name)
         self.SetSelection(3)
@@ -3573,7 +3585,12 @@ class MDSSource(wx.Panel):
                 sessions = [child for name, child in ax.get_children()
                             if isinstance(child, FigMds)]
                 sessions[ichild].onDataSetting(evt)
-            ll = l.decode('string_escape')
+                
+            if six.PY2:
+                ll = l.decode('string_escape')
+            else:
+                ll = l.decode('unicode_escape')
+                
             l4.append([ll, None, 141, {"label": "Edit...",
                                        'func': handler,
                                        'noexpand': True,

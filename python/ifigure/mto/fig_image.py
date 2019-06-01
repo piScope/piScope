@@ -88,6 +88,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cmap', 'jet')
 
         v, kywds, d, flag = p.process(*args, **kywds)
+        
         if not flag:
             raise ValueError('Failed when processing argument')
 

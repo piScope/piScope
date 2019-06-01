@@ -51,7 +51,6 @@ class _PropertyGrid(wx.grid.Grid):
 #         colWindow.Bind(wx.EVT_PAINT, self.OnColPaint)
 
     def onSizeEvent(self, evt):
-        # print 'grid size event'
         evt.Skip()
         self.ForceRefresh()
 
@@ -67,6 +66,9 @@ class _PropertyGrid(wx.grid.Grid):
             return self.tableRef()
         else:
             return self.tableRef
+        
+    #def OnPaint(self, evt):
+    #    print("Here")
 
 
 class VarViewerGValue(object):
