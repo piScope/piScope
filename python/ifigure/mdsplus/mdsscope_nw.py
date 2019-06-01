@@ -32,7 +32,7 @@ import time
 import weakref
 import logging
 import threading
-import Queue
+from six.moves import queue as Queue
 import os
 import shutil
 import numpy

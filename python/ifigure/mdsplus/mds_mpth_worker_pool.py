@@ -8,7 +8,7 @@ import multiprocessing as mp
 import time
 import weakref
 import threading
-import Queue
+from six.moves import queue as Queue
 import ifigure.utils.debug as debug
 debug.debug_default_level = 1
 dprint1, dprint2, dprint3 = debug.init_dprints('MDSMPWorkerPool')

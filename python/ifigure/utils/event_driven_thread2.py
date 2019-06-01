@@ -2,7 +2,7 @@ from __future__ import print_function
 import time
 import weakref
 import threading
-import Queue
+from six.moves import queue as Queue
 
 
 lock = threading.Lock()

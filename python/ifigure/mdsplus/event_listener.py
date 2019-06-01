@@ -2,7 +2,7 @@ from .event_listener_proc_fake import EventListenerProc, use_event_listener
 from numpy import ndarray
 import multiprocessing as mp
 import threading
-import Queue
+from six.moves import queue as Queue
 import traceback
 import time
 import tempfile

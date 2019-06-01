@@ -28,7 +28,7 @@ import collections
 import weakref
 import sys
 import time
-import Queue
+from six.moves import queue as Queue
 import ifigure.events
 from ifigure.widgets.var_viewerg2 import VarViewerGValue
 from ifigure.utils.cbook import SetText2Clipboard

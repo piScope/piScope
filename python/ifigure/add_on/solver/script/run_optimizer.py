@@ -10,7 +10,7 @@ from __future__ import print_function
 import wx
 import weakref
 import threading
-import Queue
+from six.moves import queue as Queue
 import ifigure.events
 
 

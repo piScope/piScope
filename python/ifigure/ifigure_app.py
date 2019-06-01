@@ -2043,7 +2043,8 @@ class ifigure_app(BookViewerFrame):
         self.server_response_queue.put(response)
 
     def use_server(self):
-        import Queue
+        from six.moves import queue as Queue
+        
         self.server_response_queue = Queue.Queue()
         return self.server_response_queue
 

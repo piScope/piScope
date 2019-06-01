@@ -6,7 +6,7 @@ fake listner thread for debugging
 
 import multiprocessing as mp
 import threading
-import Queue
+from six.moves import queue as Queue
 import traceback
 import time
 from weakref import WeakKeyDictionary

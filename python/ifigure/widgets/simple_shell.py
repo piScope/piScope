@@ -28,10 +28,7 @@ except:
 dprint1, dprint2, dprint3 = debug.init_dprints('SimpleShell')
 
 
-try:
-    from Queue import Queue, Empty
-except ImportError:
-    from queue import Queue, Empty  # python 3.x
+from six.moves.queue import Queue, Empty
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 

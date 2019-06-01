@@ -8,7 +8,7 @@ from __future__ import print_function
 import time
 import ifigure
 import wx
-import Queue
+from six.moves import queue as Queue
 import threading
 from ifigure.utils.event_driven_thread2 import get_thread, send_event
 
