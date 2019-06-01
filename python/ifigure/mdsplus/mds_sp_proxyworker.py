@@ -7,7 +7,7 @@ import binascii
 import subprocess
 import time
 import tempfile
-import SocketServer
+from six.moves import socketserver
 import traceback
 from six.moves import cPickle as pickle
 from ifigure.utils.pickled_pipe import PickledPipe

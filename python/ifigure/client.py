@@ -35,11 +35,11 @@ from six.moves import cPickle
 import binascii
 import threading
 import os
-import SocketServer
+from six.moves import socketserver
 from ifigure.utils.cbook import pick_unused_port
 
 
-class ReceiverReqHandler(SocketServer.BaseRequestHandler):
+class ReceiverReqHandler(socketserver.BaseRequestHandler):
     def handle(self):
         rfile = self.request.makefile('r')
         response = rfile.readline().strip()
@@ -59,7 +59,7 @@ class ReceiverReqHandler(SocketServer.BaseRequestHandler):
             print((data['data']))
 
 
-class Receiver(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class Receiver(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 

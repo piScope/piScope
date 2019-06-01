@@ -3,7 +3,7 @@
 from __future__ import print_function
 import socket
 import threading
-import SocketServer
+from six.moves import socketserver
 import paramiko
 import os
 import MDSplus
@@ -12,7 +12,7 @@ import sys
 import cPickle as pickle
 
 
-class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     #
 
@@ -67,7 +67,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         self.request.sendall(response+'\n')
 
 
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 

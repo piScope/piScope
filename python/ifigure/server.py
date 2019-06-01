@@ -30,7 +30,7 @@ import sys
 import threading
 import socket
 import threading
-import SocketServer
+from six.moves import socketserver
 import wx
 import ifigure.events
 import ifigure.interactive
@@ -45,7 +45,7 @@ from six.moves import cPickle
 from ifigure.utils.cbook import pick_unused_port
 
 
-class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         import __main__
         while not __main__.process_server_request:
@@ -73,7 +73,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
         ifig_app.remote_lock.release()
 
 
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
