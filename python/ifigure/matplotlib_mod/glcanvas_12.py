@@ -1,5 +1,4 @@
 # uncomment the following to use wx rather than wxagg
-from canvas_common import *
 import numpy as np
 import time
 import wx
@@ -20,6 +19,7 @@ from operator import itemgetter
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
 
+from ifigure.matplotlib_mod.canvas_common import *
 
 attribList = [glcanvas.WX_GL_SAMPLES,
               glcanvas.WX_GL_SAMPLE_BUFFERS, ]

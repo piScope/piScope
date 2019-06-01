@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.Utils import COMMASPACE, formatdate
-from email import Encoders
 import os
 import sys
+import smtplib
+import six
+if six.PY2:
+    from email.Utils import formatdate
+    from email import Encoders    
+else:
+    from email.utils import formatdate
+    from email import encoders as Encoders        
+from six.moves.email_mime_multipart import MIMEMultipart
+from six.moves.email_mime_base import MIMEBase
+from six.moves.email_mime_text import MIMEText
 
+COMMASPACE = ', '
 
 def checkPasswd(server, ssl_port=465, ssl_username='', ssl_passwd=''):
     try:

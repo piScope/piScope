@@ -1,7 +1,6 @@
 from __future__ import print_function
 import wx.py.shell  # (wx4 removed this) wx.lib.shell
 from threading import Timer, Thread
-import thread
 import time
 from ifigure.utils.wx3to4 import isWX3
 from os.path import expanduser, abspath

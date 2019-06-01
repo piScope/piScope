@@ -55,7 +55,7 @@ something is broken.
 
 import sys
 import re
-import cStringIO
+from six.moves import cStringIO as StringIO
 import tokenize
 from optparse import OptionParser
 
@@ -98,7 +98,7 @@ def remove_comments_and_docstrings(source):
         def noop():
             pass
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     prev_toktype = tokenize.INDENT
     last_lineno = -1
@@ -169,7 +169,7 @@ def reduce_operators(source):
         def foo(foo,bar,blah):
             test="This is a %s"%foo
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     remove_columns = []
     out = ""
     out_line = ""
@@ -419,7 +419,7 @@ def dedent(source):
         def foo(bar):
          test = "This is a test"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     last_lineno = -1
     last_col = 0
@@ -518,7 +518,7 @@ def remove_blank_lines(source):
         test = "foo"
         test2 = "bar"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     source = [a for a in io_obj.readlines() if a.strip()]
     return "".join(source)
 

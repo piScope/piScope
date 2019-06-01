@@ -18,7 +18,7 @@ import os
 from ifigure.widgets.statusbar import StatusBarSimple
 import sys
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
-from syntax_styles import *
+from ifigure.widgets.syntax_styles import *
 from ifigure.widgets.debugger import check_debugger_instance
 from ifigure.widgets.debugger_core import add_breakpoint, rm_breakpoint, has_breakpoint, get_breakpoint
 from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append, isWX3
