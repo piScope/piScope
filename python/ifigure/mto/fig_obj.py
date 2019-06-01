@@ -1408,9 +1408,9 @@ class FigObj(TreeDict, MetadataHolder):
                      float(self._st_extent[1]-self._st_extent[0]))
                 dy = float(rec[1]-rec[0])*d
                 if ((loc & 4) != 0):
-                    rec[2] = long(rec[3]-dy)
+                    rec[2] = int(rec[3]-dy)
                 if ((loc & 8) != 0):
-                    rec[3] = long(rec[2]+dy)
+                    rec[3] = int(rec[2]+dy)
 
             self._drag_rec = rec
             scale = geom.calc_scale(rec, self._st_extent)

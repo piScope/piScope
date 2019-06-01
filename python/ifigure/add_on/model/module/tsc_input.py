@@ -119,9 +119,9 @@ def load_file(file):
         d = TSCInputFile()
         for x in od:
             print(x)
-            for i in range(long(x[1])):
+            for i in range(int(x[1])):
                 x = x + [0, 0, 0, 0, 0]  # safe gurad...
-                label = ('0000'+str(long(x[0]+i)))[-4:]
+                label = ('0000'+str(int(x[0]+i)))[-4:]
                 d[label] = x[2+i]
         d = TSCInputFile(sorted(d.items(), key=lambda t: t[0]))
         nm['11'] = d
@@ -193,7 +193,7 @@ def tree2txt(self, var0=None):
     def data2lines_11(key, data):
         lines = []
         for d in data:
-            l = str(long(key))
+            l = str(int(key))
             l = l + ' '*(10-len(l))
             for item in d:
                 if item is None:
@@ -217,7 +217,7 @@ def tree2txt(self, var0=None):
                 if key1 == 'format':
                     continue
                 txt.extend(data2lines_11(
-                    key0, [[long(key1), 1, var0[key0][key1]]]))
+                    key0, [[int(key1), 1, var0[key0][key1]]]))
         else:
             txt.extend(data2lines(key0, var0[key0]['data']))
 

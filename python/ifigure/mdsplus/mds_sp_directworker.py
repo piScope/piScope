@@ -92,7 +92,7 @@ class JobRunner(object):
             tree = job.params[0]
             shot = job.params[1]
             try:
-                self.connection.openTree(tree, long(shot))
+                self.connection.openTree(tree, int(shot))
                 return 'ok'
             except:
                 self.error = ['run error', traceback.format_exc()]
@@ -128,7 +128,7 @@ class JobRunner(object):
             tree = job.params[0]
             shot = job.params[1]
             try:
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 return 'ok'
             except:
                 self.error = ['run error', traceback.format_exc()]

@@ -192,7 +192,7 @@ def onOpenTree(self, ev=None,
     if tree is None:
         tree = this.getvar("tree")
     if shot is None:
-        shot = long(this.getvar("shot"))
+        shot = int(this.getvar("shot"))
 
     from ifigure.mdsplus.fig_mds import MDSsession
     from ifigure.mdsplus.mds_job import MDSjob

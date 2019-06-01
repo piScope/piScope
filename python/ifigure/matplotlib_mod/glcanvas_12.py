@@ -723,7 +723,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     m = getattr(self, 'draw_' + data[0])
                     m(xxx[k], *data[1], **data[2])
                 self.vbo[aa][a] = xxx
-                id_dict[long(current_id)] = weakref.ref(a)
+                id_dict[int(current_id)] = weakref.ref(a)
                 current_id = current_id + 1
         # glFinish()
         return id_dict, need_oit
@@ -2006,7 +2006,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         target = self.get_container(a)
         box = trans.transform([frame_range[0:2], frame_range[2:4]])
         d = box[1] - box[0]
-        w, h = long(d[0])*multisample, long(d[1])*multisample
+        w, h = int(d[0])*multisample, int(d[1])*multisample
         make_new = False
 
         if target in self.frame_list:

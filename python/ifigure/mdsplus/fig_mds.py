@@ -302,13 +302,13 @@ class FigMds(FigGrp):
         # this is an option to generate FigXXX
         plot_options = self.getvar('plot_options')
         if 'show_mode' in dwplot:
-            if long(dwplot['show_mode']) == 2:
+            if int(dwplot['show_mode']) == 2:
                 plot_options['timetrace'] = (('-o',),
                                              def_plot_options['timetrace'][1].copy())
                 plot_options['stepplot'] = (('-o',),
                                             def_plot_options['stepplot'][1].copy())
 
-            elif long(dwplot['show_mode']) == 1:
+            elif int(dwplot['show_mode']) == 1:
                 plot_options['timetrace'] = (('s',),
                                              def_plot_options['timetrace'][1].copy())
                 plot_options['stepplot'] = (('s',),

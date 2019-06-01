@@ -476,7 +476,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
     def set_contour_nlevel2(self, value, a=None):
         self._nouse_expression = not value[0]
 #        print value
-        self.setp('n', long(value[2][0]))
+        self.setp('n', int(value[2][0]))
         self.setp('v', value[1][0][1])
         self._expression = value[1][0][0]
         self.highlight_artist(False)
@@ -899,7 +899,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         self._clabel_param['inline'] = gui_param[1][2]
         self._clabel_param['inline_spacing'] = float(gui_param[1][3])
         self._clabel_param['fmt'] = str(gui_param[1][4])
-        self._clabel_param['skip'] = long(gui_param[1][5])
+        self._clabel_param['skip'] = int(gui_param[1][5])
 
     def _make_clabel_param(self):
         keys = ['fontsize', 'colors', 'inline', 'inline_spacing', 'fmt']
@@ -909,7 +909,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         if self._clabel_param['skip'] == 0:
             args = tuple()
         else:
-            k = long(self._clabel_param['skip'])
+            k = int(self._clabel_param['skip'])
             args = (self._mappable.levels[:(
                 self._mappable.levels.size/k)*k].reshape(-1, k)[:, 0],)
         kargs['use_clabeltext'] = True

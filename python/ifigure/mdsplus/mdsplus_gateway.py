@@ -144,7 +144,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
                 if tree != '':
                     self.write_log('opening tree :' +
                                    str(tree) + ':'+str(shot))
-                    self.connection.openTree(tree, long(shot))
+                    self.connection.openTree(tree, int(shot))
                 response = 'ok'
             except Exception:
                 self.error = ['run error', traceback.format_exc()]
@@ -177,7 +177,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
         elif com == 'w':  # dim_of (this is not used anymore)
             self.write_log('dim_of '+str(param))
             expr = param[1:]
-            dim = long(param[0])
+            dim = int(param[0])
             try:
                 #               response =MDSplus.Data.compile(param).evaluate().data()
                 response = self.connection.get(expr).dim_of(dim).data()
@@ -198,7 +198,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
             try:
                 if tree != '':
                     self.write_log('opening tree '+str(tree) + ' '+str(shot))
-                    self.t = MDSplus.Tree(tree, long(shot))
+                    self.t = MDSplus.Tree(tree, int(shot))
                     self.write_log('opening tree '+str(self.t))
                 response = 'ok'
             except Exception:
@@ -222,7 +222,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
             node = a[2]
             expr = ','.join(a[3:])
             try:
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 if node.strip() != '':
                     tn = self.t.getNode(node)
                     self.t.setDefault(tn)
@@ -248,7 +248,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
         elif com == 'w':  # dim_of (this is not used anymore)
             self.write_log('dim_of '+str(param))
             expr = param[1:]
-            dim = long(param[0])
+            dim = int(param[0])
             try:
                 #               response =MDSplus.Data.compile(param).evaluate().data()
                 response = MDSplus.Data.execute(expr).dim_of(dim).data()

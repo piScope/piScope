@@ -99,7 +99,7 @@ class MDSMPProxyWorker(mp.Process, ProxyWorkerBase):
         super(MDSMPProxyWorker, self).__init__(*args, **kargs)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        self.port = long(port)
+        self.port = int(port)
         self.host = host
 
     def run(self, *args, **kargs):
@@ -112,7 +112,7 @@ class MDSTHProxyWorker(threading.Thread, ProxyWorkerBase):
         super(MDSTHProxyWorker, self).__init__(*args, **kargs)
         self.task_queue = task_queue
         self.result_queue = result_queue
-        self.port = long(port)
+        self.port = int(port)
         self.host = host
         ProxyWorkerBase.use_compress = True
 

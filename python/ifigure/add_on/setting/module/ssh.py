@@ -63,9 +63,9 @@ def set_td_var(td, server=None, port=None,
     if server is not None:
         td.setvar("server", str(server))
     if port is not None:
-        td.setvar("port", long(port))
+        td.setvar("port", int(port))
     if rport is not None:
-        td.setvar("rport", long(rport))
+        td.setvar("rport", int(rport))
     if mode is not None:
         td.setvar("mode", str(mode))
     if rserver is not None:

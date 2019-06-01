@@ -3,7 +3,7 @@ def find_all_keys(d, key):
 
 
 def find_idx(keys):
-    return [long((x.split('(')[1]).strip()[:-1]) for x in keys]
+    return [int((x.split('(')[1]).strip()[:-1]) for x in keys]
 
 
 def key_exists(d, key):

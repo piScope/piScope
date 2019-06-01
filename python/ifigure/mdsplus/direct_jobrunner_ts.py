@@ -147,7 +147,7 @@ class JobRunner(object):
                 #                  print tree,
                 #                  print long(shot)
                 if tree != '':
-                    self.connection.openTree(tree, long(shot))
+                    self.connection.openTree(tree, int(shot))
             except:
                 self.error = ['run error', traceback.format_exc()]
                 return None
@@ -218,7 +218,7 @@ class JobRunner(object):
             shot = job.params[1]
             try:
                 if tree != '':
-                    self.t = MDSplus.Tree(tree, long(shot))
+                    self.t = MDSplus.Tree(tree, int(shot))
                 if shot != self._shot:
                     expr = 'reset_private();reset_public();1'
 #                      r =MDSplus.Data.compile(expr).evaluate().data()

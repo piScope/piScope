@@ -1583,7 +1583,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.sizer2.Add(self.canvas, 1, wx.EXPAND, 0)
         self.sizer2.Add(self.spacer2, 0)
 
-        rgba = [long(x*255) for x in self._figure.get_facecolor()]
+        rgba = [int(x*255) for x in self._figure.get_facecolor()]
         self.std_bg_color = self.TopLevelParent.GetBackgroundColour()
         self.TopLevelParent.SetBackgroundColour(rgba[0:3])
         self.spacer1.set_color(rgba[0:3])

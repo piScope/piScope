@@ -52,7 +52,7 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
             tree, shot, node = param.split(',')
             try:
                 print(('opening tree', tree, shot))
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 print(('opening tree', self.t))
                 if node.strip() != '':
                     tn = self.t.getNode(node)
@@ -82,7 +82,7 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
             node = a[2]
             expr = ','.join(a[3:])
             try:
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 if node.strip() != '':
                     tn = self.t.getNode(node)
                     self.t.setDefault(tn)

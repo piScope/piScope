@@ -432,7 +432,7 @@ try:
             repo.hg_push(url)
             repo2 = hgapi.Repo(url)
             latest = repo2.revisions(slice(-1, -1))[0].rev
-            repo2.hg_update(long(latest))
+            repo2.hg_update(int(latest))
         os.chdir(ocwd)
 
         #app = wx.GetApp().TopWindow
@@ -630,7 +630,7 @@ try:
                 if value[1][2] and not url.startswith('ssh'):
                     repo2 = hgapi.Repo(url)
                     latest = repo2.revisions(slice(-1, -1))[0].rev
-                    repo2.hg_update(long(latest))
+                    repo2.hg_update(int(latest))
             except:
                 dialog.showtraceback(parent=app,
                                      txt='Failed to push',
@@ -798,9 +798,9 @@ try:
             b = str(value[1][2])
             if b == '':
                 args = (str(a),)
-            elif long(a) != long(b):
+            elif int(a) != int(b):
                 args = (str(a), str(b),)
-            elif long(a) == long(b):
+            elif int(a) == int(b):
                 args = tuple()
             try:
                 res = repo.hg_diff(*args)
@@ -841,7 +841,7 @@ try:
 #                    self._status = '!'
                     return None
 
-            repo.hg_update(long(m))
+            repo.hg_update(int(m))
 
             parent = self.get_parent()
             owndir = self.owndir()
@@ -1024,14 +1024,14 @@ try:
             if repo is None:
                 repo = hgapi.Repo(self.owndir())
             lines = repo.hg_log().split('\n')
-            return [long(l.split(':')[1]) for l in lines if l.find('changeset') != -1]
+            return [int(l.split(':')[1]) for l in lines if l.find('changeset') != -1]
 
         def hg_incoming_outgoing_changesets_list(self, repo=None, url='default'):
             if repo is None:
                 repo = hgapi.Repo(self.owndir())
             try:
                 lines1 = repo.hg_command('incoming', url).split('\n')
-                incoming = [long(l.split(':')[1])
+                incoming = [int(l.split(':')[1])
                             for l in lines1 if l.find('changeset') != -1]
             except:
                 import traceback
@@ -1042,7 +1042,7 @@ try:
                     return [], []
             try:
                 lines2 = repo.hg_command('outgoing', url).split('\n')
-                outgoing = [long(l.split(':')[1])
+                outgoing = [int(l.split(':')[1])
                             for l in lines2 if l.find('changeset') != -1]
             except:
                 import traceback

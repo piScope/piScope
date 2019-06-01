@@ -586,8 +586,8 @@ class FigEPS(FigBox):
         ox = self._eps_bbox[2] - self._eps_bbox[0]
         oy = self._eps_bbox[3] - self._eps_bbox[1]
 
-        dx = long(ox*float(value[2])/100.)
-        dy = long(oy*float(value[3])/100.)
+        dx = int(ox*float(value[2])/100.)
+        dy = int(oy*float(value[3])/100.)
         x1d, y1d = self.get_gp(0).get_device_point()
         self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
         self.refresh_artist()
@@ -598,8 +598,8 @@ class FigEPS(FigBox):
         ix = self._image.shape[1]
         iy = self._image.shape[0]
 
-        dx = long(ox*float(self._image_scale_str[0])/100.)
-        dy = long(oy*float(self._image_scale_str[1])/100.)
+        dx = int(ox*float(self._image_scale_str[0])/100.)
+        dy = int(oy*float(self._image_scale_str[1])/100.)
         if (ix != dx or iy != dy):
             return (self._keep_aspect,
                     self._resize_mode,
@@ -636,7 +636,7 @@ class FigEPS(FigBox):
         else:
             new_size = (abs(x1d - x2d), abs(y1d-y2d))
 
-        new_size = [long(x) for x in new_size]
+        new_size = [int(x) for x in new_size]
         if (new_size[0] == self._image_size[0] and
             new_size[1] == self._image_size[1] and
                 self._image is not None):
@@ -647,8 +647,8 @@ class FigEPS(FigBox):
         src = os.path.join(wdir, self.getvar('epsfile'))
 
         params = []
-        params += ['-resize', str(long(new_size[0])) +
-                   'x'+str(long(new_size[1]))+'!']
+        params += ['-resize', str(int(new_size[0])) +
+                   'x'+str(int(new_size[1]))+'!']
         # print 'calling convert',  params
 
         app = self.get_root_parent().app

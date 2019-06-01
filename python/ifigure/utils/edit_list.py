@@ -519,7 +519,7 @@ class AxisRange(wx.Panel):
             import numpy as np
             if a != 0:
                 si = a/abs(a)
-                ex = long(np.log10(abs(a)))
+                ex = int(np.log10(abs(a)))
                 ai = (np.floor(a/(10.**ex)))*10.**ex
 #               if (a/(10.**ex) % 1)== 0. or a < 0:
 
@@ -529,7 +529,7 @@ class AxisRange(wx.Panel):
                 ai = 0.
             if b != 0:
                 si = b/abs(b)
-                ex = long(np.log10(abs(b)))
+                ex = int(np.log10(abs(b)))
                 if (b/(10.**ex) % 1) == 0.:
                     bi = (np.floor(b/(10.**ex)))*10.**ex
                 else:
@@ -621,7 +621,7 @@ class BitmapButtons(wx.Panel):
 
         import math
 
-        self.gsizer.SetRows(long(math.ceil(len(names)/5.)))
+        self.gsizer.SetRows(int(math.ceil(len(names)/5.)))
         for name, label, fname in zip(names, labels, filenames):
 
             if label is not None:
@@ -714,7 +714,7 @@ class BitmapButtons(wx.Panel):
 
 class Color(BitmapButtons):
     def _a2n(self, value):
-        value = [long(v*255) for v in value]
+        value = [int(v*255) for v in value]
         return value[3]*256*256*256 + value[2]*256*256 + value[1]*256 + value[0]
         # return 1*256*256*256 + value[2]*256*256 + value[1]*256 + value[0]
 
@@ -2154,7 +2154,7 @@ class CSliderWithCB(Panel):
         if self._use_float:
             return self.sl.GetValue()
         else:
-            return long(self.sl.GetValue())
+            return int(self.sl.GetValue())
 
     def SetValue(self, value):
         if value is None:
@@ -2162,10 +2162,10 @@ class CSliderWithCB(Panel):
             if self._use_float:
                 self.cb.SetValue(str(self.sl._range[1]))
             else:
-                self.cb.SetValue(str(long(self.sl._range[1])))
+                self.cb.SetValue(str(int(self.sl._range[1])))
         else:
             if not self._use_float:
-                v = long(value)
+                v = int(value)
             else:
                 v = float(value)
             self.sl.SetValue(v)

@@ -7,7 +7,7 @@ def read_ishotktime(f):
 
     a = line.split(' ')
     a = [x for x in a if len(x) != 0]
-    return long(a[0]), long(a[1])
+    return int(a[0]), int(a[1])
 
 
 def read1055(f):
@@ -37,7 +37,7 @@ def read1060(f):
     e = line[44:47]
     f = line[48:51]
     g = line[52:55]
-    return float(a), long(b), long(c), d, long(e), long(f), g
+    return float(a), int(b), int(c), d, int(e), int(f), g
 
 
 def read1040(f):

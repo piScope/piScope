@@ -750,8 +750,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             dia.Destroy()
             return
         dia.Destroy()
-        new_cx = long(value[-2])
-        new_cy = long(value[-1])
+        new_cx = int(value[-2])
+        new_cy = int(value[-1])
 
         self.Freeze()
         self.SetSize((new_cx+dx, new_cy+dy))
@@ -765,8 +765,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         dx = sx - cx
         dy = sy - cy
 
-        c1 = (cx, long(float(cx)*ratio))
-        c2 = (long(float(cy)/ratio), cy)
+        c1 = (cx, int(float(cx)*ratio))
+        c2 = (int(float(cy)/ratio), cy)
 
         if abs(c1[1] - cy) > abs(c2[0]-cx):
             new_cx, new_cy = c2
@@ -1997,16 +1997,16 @@ class BookViewer(BookViewerFrame):
             xc, yc = self.canvas.canvas.bitmap.GetSize()
             ratio = min([float(xd)/float(xc), float(yd)/float(yc)])
             for p in self.book.walk_page():
-                p.set_figure_dpi(long(p.getp('dpi')*ratio))
+                p.set_figure_dpi(int(p.getp('dpi')*ratio))
 
             w = xd
             h = yd
             if (xd - xc*ratio) > 4:
-                w = long((xd - xc*ratio)/2)
+                w = int((xd - xc*ratio)/2)
                 self.canvas.show_spacer(w=w, h=h,
                                         direction=wx.HORIZONTAL)
             elif (yd - yc*ratio) > 4:
-                h = long((yd - yc*ratio)/2)
+                h = int((yd - yc*ratio)/2)
                 self.canvas.show_spacer(w=w, h=h,
                                         direction=wx.VERTICAL)
             else:

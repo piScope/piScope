@@ -242,13 +242,13 @@ def load_file(file=None):
     tmp = string_split_ig(line[49:], ' |,')
 
     header = line[:48]
-    idum = long(tmp[0])
-    mw = long(tmp[1])
-    mh = long(tmp[2])
+    idum = int(tmp[0])
+    mw = int(tmp[1])
+    mh = int(tmp[2])
     mw2 = mw
     if len(tmp) == 4:
         try:
-            mw2 = long(tmp[3])
+            mw2 = int(tmp[3])
             if mw2 == 0:
                 mw2 = mw
         except:
@@ -270,8 +270,8 @@ def load_file(file=None):
     try:
         nbbbs, limitr = string_split_ig(readandstrip(f), ' |,')
     # print nbbbs, limitr
-        nbbbs = long(nbbbs)
-        limitr = long(limitr)
+        nbbbs = int(nbbbs)
+        limitr = int(limitr)
         if nbbbs is not 0:
             rzbbbs = load_matrix_form2020(f, nbbbs, 2)
 

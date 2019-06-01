@@ -601,7 +601,7 @@ class FigLegend(FigObjGPHolder):
         if tab == 'label1':
             idx = 0
         else:
-            idx = long(tab)-1
+            idx = int(tab)-1
         return idx
 
     def _get_texts(self):

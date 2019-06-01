@@ -397,7 +397,7 @@ class FigSpline(FigObj, XUser, YUser):
             return
 
         # _hit_artist = (artist index, mpl event)
-        idx = long(self._hit_seg/self._mesh)
+        idx = int(self._hit_seg/self._mesh)
         x = [p for p in self.getp("x")]
         y = [p for p in self.getp("y")]
         x.insert(idx, self._hit_artist[1].xdata)

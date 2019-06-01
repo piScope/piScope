@@ -8,9 +8,9 @@ class ProxyEfit(object):
     def filename(self, shot, time, prefix='k'):
         # time in [s]
         a = '0'*5
-        b = str(long(time*1000))
+        b = str(int(time*1000))
         c = a[:-len(b)]+b
-        return '.'.join([prefix+str(long(shot)), c])
+        return '.'.join([prefix+str(int(shot)), c])
 
     def run_minus_5(self, shot=1120710020,
                     time=1,
@@ -21,8 +21,8 @@ class ProxyEfit(object):
         p.stdin.write('-5\n')
         p.stdin.write('0\n')
         p.stdin.write('0\n')
-        p.stdin.write(str(shot)+', '+str(long(time*1000))+', ' +
-                      str(long(time*1000))+', ' + '1\n')
+        p.stdin.write(str(shot)+', '+str(int(time*1000))+', ' +
+                      str(int(time*1000))+', ' + '1\n')
 
         p.stdin.write(tree+'\n')
         p.stdin.write("\\" + tree + "::\n")

@@ -60,7 +60,7 @@ class VideoViewerMode(object):
                                parent=self,)
 
         if value[0] is True:
-            ipage = long(value[1][0])
+            ipage = int(value[1][0])
         else:
             return
         self.goto_frame(ipage)

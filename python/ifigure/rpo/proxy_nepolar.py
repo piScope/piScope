@@ -7,12 +7,12 @@ import Pyro4
 
 class ProxyNepolar(object):
     def fill_array(self, i, txt):
-        ndim = long(txt[i])
+        ndim = int(txt[i])
         i = i+1
         dim = [0]*ndim
         nel = 1
         for j in range(ndim):
-            dim[j] = long(txt[i])
+            dim[j] = int(txt[i])
             nel = nel*dim[j]
             i = i+1
         arr = np.zeros(nel)

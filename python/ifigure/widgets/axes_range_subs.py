@@ -382,7 +382,7 @@ class AdjustableRangeHolder(object):
             b = range0[1]
             if a != 0:
                 si = a/abs(a)
-                ex = long(np.log10(abs(a)))
+                ex = int(np.log10(abs(a)))
 #               if (a/(10.**ex) % 1)== 0.:
                 ai = (np.floor(a/(10.**ex)))*10.**ex
 #               else:
@@ -391,7 +391,7 @@ class AdjustableRangeHolder(object):
                 ai = 0.
             if b != 0:
                 si = b/abs(b)
-                ex = long(np.log10(abs(b)))
+                ex = int(np.log10(abs(b)))
                 if (b/(10.**ex) % 1) == 0.:
                     bi = (np.floor(b/(10.**ex)))*10.**ex
                 else:

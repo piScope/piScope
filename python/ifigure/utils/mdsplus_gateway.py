@@ -27,7 +27,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         if com == 'c':  # connection request
             tree, shot, node = param.split(',')
             try:
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 tn = self.t.getNode(node)
                 self.t.setDefault(tn)
                 response = 'ok'
@@ -41,7 +41,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             node = a[2]
             expr = ','.join(a[3:])
             try:
-                self.t = MDSplus.Tree(tree, long(shot))
+                self.t = MDSplus.Tree(tree, int(shot))
                 if node.strip() != '':
                     tn = self.t.getNode(node)
                     self.t.setDefault(tn)

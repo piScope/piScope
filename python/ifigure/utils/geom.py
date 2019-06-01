@@ -406,7 +406,7 @@ def s_path(path, idx=None):
     if idx is None:
         return cumsum
     else:
-        lidx = long(idx)
+        lidx = int(idx)
         didx = idx - lidx
         return cumsum[lidx] + norm_dpath[lidx] * didx
 

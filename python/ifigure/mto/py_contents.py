@@ -504,7 +504,7 @@ class MDSPlusTree(Namelist):
         ana = MDSsession()
         job0 = MDSjob('connection_mode', server)
         ana.add_job([job0], 'connection_mode', idx=0)
-        job1 = MDSjob('open', tree,  long(shot))
+        job1 = MDSjob('open', tree,  int(shot))
         ana.add_job([job1], 'connection')
         ana.add_job([MDSjob('value', expr)], 'value')
 

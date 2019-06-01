@@ -342,12 +342,12 @@ def GetNextName(keys, header):
         if key.startswith(header+'_'):
             a = key[len(header)+1:]
             if a.isdigit():
-                num.append(long(a))
+                num.append(int(a))
             continue
         if key.startswith(header):
             a = key[len(header):]
             if a.isdigit():
-                num.append(long(a))
+                num.append(int(a))
             continue
     if len(num) == 0:
         return header+'1'
@@ -846,7 +846,7 @@ def parseStr(x0):
     num = 1
     if x0.find('*') != -1:
         x = x0.split('*')[1]
-        num = long(x0.split('*')[0])
+        num = int(x0.split('*')[0])
     else:
         x = x0
 

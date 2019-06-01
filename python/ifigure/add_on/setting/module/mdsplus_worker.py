@@ -159,7 +159,7 @@ def onSetting(self, e=None):
     else:
         t = 'direct'
     onum = ifigure.mdsplus.mdsscope.mds_num_worker
-    ifigure.mdsplus.mdsscope.mds_num_worker = long(v[4])
+    ifigure.mdsplus.mdsscope.mds_num_worker = int(v[4])
     w = str(v[5])
 #    w = 'mp' ## always use mp worker
     port = str(v[3])
@@ -169,12 +169,12 @@ def onSetting(self, e=None):
         s['worker'] != w or
         onum != ifigure.mdsplus.mdsscope.mds_num_worker or
         s['connection'][0]['server'] != host or
-            long(s['connection'][0]['port']) != long(port)):
+            int(s['connection'][0]['port']) != int(port)):
         restart = True
     s['connection_type'] = t
     s['worker'] = w
     s['connection'][0]['server'] = host
-    s['connection'][0]['port'] = long(port)
+    s['connection'][0]['port'] = int(port)
     if restart:
         self.onReset()
         self.onStartWorker()

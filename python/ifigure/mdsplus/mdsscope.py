@@ -1756,7 +1756,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                 for y in ax._yaxis:
                     y.ticks = ps[iax]['y.grid_lines']
             if 'global_defaults' in ps[iax]:
-                bit = long(ps[iax]['global_defaults'])
+                bit = int(ps[iax]['global_defaults'])
                 if bit & 2**10 != 0:
                     figmds._var_mask.append('x')
                 if bit & 2**11 != 0:
@@ -2475,7 +2475,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
 #             w = None
 #             h = None
             for p in self.book.walk_page():
-                p.set_figure_dpi(long(p.getp('dpi')*ratio))
+                p.set_figure_dpi(int(p.getp('dpi')*ratio))
 #             self.canvas.show_spacer(w=0, h=0)
 #             self.canvas.full_screen(True)
             self.ShowFullScreen(True)

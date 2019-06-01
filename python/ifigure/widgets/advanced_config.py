@@ -40,7 +40,7 @@ class AdvancedConfig(PrefComponent):
         return list1, hint1
 
     def set_dialog_result(self, value):
-        self.setting["max_thread"] = long(value[0])
+        self.setting["max_thread"] = int(value[0])
         self.setting["keep_text_as_text"] = not value[1]
         self.setting["image_dpi"] = int(value[2])
         self.setting["hg_default_url"] = str(value[3])

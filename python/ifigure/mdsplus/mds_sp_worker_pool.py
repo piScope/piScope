@@ -104,7 +104,7 @@ class MDSSPWorkerPool(object):
                 ans_list.append((p, i))
         if len(ans_list) == 0:
             return None, -1
-        ret = ans_list[long(random.random()*len(ans_list))]
+        ret = ans_list[int(random.random()*len(ans_list))]
         return ret[0], ret[1]
 
     def get_num_worker(self):

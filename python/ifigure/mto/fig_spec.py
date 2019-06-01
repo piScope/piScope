@@ -151,11 +151,11 @@ class FigSpec(FigImage):
 #        super(FigSpec, self).refresh_artist_data()
 
     def set_spec_fftp(self, value, a):
-        self.setp('NFFT', long(value[0]))
+        self.setp('NFFT', int(value[0]))
         if value[1] == 'none':
             self.setp('pad_to', None)
         else:
-            self.setp('pad_to', long(value[1]))
+            self.setp('pad_to', int(value[1]))
         self._rebuild_artist()
 
     def get_spec_fftp(self, a):
@@ -166,7 +166,7 @@ class FigSpec(FigImage):
         return str(self.getp('NFFT')), pad_to
 
     def set_spec_noverlap(self, value, a):
-        self.setp('noverlap', long(value))
+        self.setp('noverlap', int(value))
         self._rebuild_artist()
 
     def get_spec_noverlap(self,  a):

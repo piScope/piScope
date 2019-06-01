@@ -92,7 +92,7 @@ def import_dw(file=''):
         elif coms[1] == 'columns':
             plots = [[] for k in range(int(var))]
         elif coms[1][:8] == 'geometry':
-            geom = [long(x) for x in var.split('+')[0].split('x')]
+            geom = [int(x) for x in var.split('+')[0].split('x')]
         else:
             setting[coms[-1]] = var
         wx.GetApp().Yield(True)

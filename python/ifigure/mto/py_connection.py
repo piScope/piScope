@@ -49,7 +49,7 @@ class PyConnection(TreeDict):
     def setSetting(self, value):
         self.setvar('use_ssh', value[1][0])
         self.setvar('server', str(value[1][1][0]))
-        self.setvar('port', long(value[1][1][1]))
+        self.setvar('port', int(value[1][1][1]))
         self.setvar('user', str(value[1][1][2]))
         self.setvar('queue_type', str(value[2]))
 
