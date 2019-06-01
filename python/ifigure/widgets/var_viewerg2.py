@@ -670,7 +670,7 @@ class VarViewerG(wx.Panel):
 
     def onButton(self, evt, mode):
         from ifigure.ifigure_config import vv_scratch
-        import cPickle as pickle
+        from six.moves import cPickle as pickle
 
         idx = self.grid.GetSelectedRows()
         if len(idx) == 0 and mode != 'paste':

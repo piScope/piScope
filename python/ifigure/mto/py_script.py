@@ -26,7 +26,7 @@ import shutil
 import multiprocessing
 import sys
 import traceback
-import cPickle as pickle
+from six.moves import cPickle as pickle
 from ifigure.mto.py_code import PyCode
 import ifigure.utils.cbook as cbook
 import ifigure

@@ -6,7 +6,7 @@ import sys
 import weakref
 import logging
 import threading
-import cPickle as pickle
+from six.moves import cPickle as pickle
 from ifigure.mto.treedict import TopTreeDict, TreeDict
 from ifigure.mto.py_code import PyParam, AbsModuleContainer, AbsScriptContainer, AbsFileContainer
 from ifigure.mto.py_code import PyModel

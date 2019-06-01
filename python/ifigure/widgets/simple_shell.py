@@ -9,7 +9,7 @@ import wx
 import ifigure
 import os
 import sys
-import cPickle as pickle
+from six.moves import cPickle as pickle
 import ifigure.server
 import numpy as np
 

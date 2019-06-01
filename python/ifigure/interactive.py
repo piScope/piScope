@@ -1624,7 +1624,7 @@ def importv(dest=None, path=''):
     import variables which was saved as pickled file
 
     '''
-    import cPickle as pickle
+    from six.moves import cPickle as pickle
     from ifigure.mto.py_code import PyData
     if dest is None:
         from __main__ import ifig_app

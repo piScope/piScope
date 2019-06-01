@@ -28,7 +28,7 @@ import os
 import time
 import webbrowser
 import weakref
-import cPickle as pickle
+from six.moves import cPickle as pickle
 import wx.aui as aui
 import ifigure
 import ifigure.events

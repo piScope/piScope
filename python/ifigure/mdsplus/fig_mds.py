@@ -27,7 +27,7 @@ import weakref
 import time
 import threading
 import ifigure.utils.cbook as cbook
-import cPickle as pickle
+from six.moves import cPickle as pickle
 
 from ifigure.mto.treedict import TreeDict
 from ifigure.mto.fig_obj import FigObj

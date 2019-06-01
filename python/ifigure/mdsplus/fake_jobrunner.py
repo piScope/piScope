@@ -9,7 +9,7 @@ import time
 import tempfile
 import SocketServer
 import traceback
-import cPickle as pickle
+from six.moves import cPickle as pickle
 from ifigure.utils.pickled_pipe import PickledPipe
 l = 3000000
 

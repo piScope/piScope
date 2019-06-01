@@ -30,7 +30,7 @@ import shutil
 import tarfile
 import time
 import wx
-import cPickle as pickle
+from six.moves import cPickle as pickle
 import ifigure
 from ifigure.utils.debug import dprint
 import ifigure.ifigure_config as ifigure_config

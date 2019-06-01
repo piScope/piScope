@@ -45,7 +45,7 @@ import os
 import ifigure.events
 from ifigure.utils.geom import scale_rect
 
-import cPickle as pickle
+from six.moves import cPickle as pickle
 import ifigure.utils.cbook as cbook
 from ifigure.widgets.undo_redo_history import GlobalHistory
 from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty

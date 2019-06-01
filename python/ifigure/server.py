@@ -25,7 +25,6 @@ from __future__ import print_function
 import subprocess
 import shlex
 import time
-import cPickle
 import os
 import sys
 import threading
@@ -42,7 +41,7 @@ import socket
 import subprocess
 import sys
 import shlex
-import cPickle
+from six.moves import cPickle
 from ifigure.utils.cbook import pick_unused_port
 
 

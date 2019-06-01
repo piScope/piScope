@@ -24,7 +24,7 @@ import logging
 import weakref
 import shutil
 import threading
-import cPickle as pickle
+from six.moves import cPickle as pickle
 import ifigure
 import ifigure.utils.cbook as cbook
 import ifigure.widgets.dialog as dialog

@@ -63,7 +63,7 @@ import tarfile
 import collections
 import logging
 import threading
-import cPickle as pickle
+from six.moves import cPickle as pickle
 
 from numpy import arange, sin, pi
 import ifigure

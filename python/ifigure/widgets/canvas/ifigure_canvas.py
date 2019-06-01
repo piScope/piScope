@@ -67,7 +67,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, PathPatch
 import matplotlib.path
 import weakref
-import cPickle as pickle
+from six.moves import cPickle as pickle
 from ifigure.ifigure_config import *
 from ifigure.utils import geom as geom_util
 from ifigure.utils.geom import transform_point
