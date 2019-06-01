@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import socket
 import threading
 import os
@@ -8,10 +9,10 @@ import sys
 import time
 import logging
 import traceback
-import SocketServer
+from six.moves import socketserver
 #import paramiko
 import binascii
-import pickle as pickle
+from six.move import cPickle as pickle
 #import cPickle as pickle
 from ifigure.utils.daemon import Daemon
 import MDSplus
@@ -29,7 +30,7 @@ def parse_server_string(txt):
     return s, p, t
 
 
-class ForkingTCPRequestHandler(SocketServer.StreamRequestHandler):
+class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
     #
     def __init__(self, *args, **kargs):
         name = '/tmp/mdsplus_gateway_'+str(os.getpid()) + '.log'
@@ -41,7 +42,7 @@ class ForkingTCPRequestHandler(SocketServer.StreamRequestHandler):
             self.fid = open(name, 'w')
         else:
             self.fid = None
-        SocketServer.StreamRequestHandler.__init__(self, *args, **kargs)
+        socketserver.StreamRequestHandler.__init__(self, *args, **kargs)
 
     def write_log(self, txt):
         if self.fid is not None:
@@ -62,7 +63,7 @@ class ForkingTCPRequestHandler(SocketServer.StreamRequestHandler):
 #        logging.basicConfig(level = logging.DEBUG)
         try:
             data = pickle.loads(asmessage)
-        except ValueError, EOFError:
+        except ValueError as EOFError:
             if self.fid is not None:
                 self.fid.write('picke error \n')
                 self.fid.flush()
@@ -257,9 +258,7 @@ class ForkingTCPRequestHandler(SocketServer.StreamRequestHandler):
         return response
 
 
-# class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-#    pass
-class ForkingTCPServer(SocketServer.ForkingMixIn, SocketServer.TCPServer):
+class ForkingTCPServer(socketserver.ForkingMixIn, socketserver.TCPServer):
     pass
 
 
@@ -274,7 +273,7 @@ class MDSDaemon(Daemon):
         self.server = ForkingTCPServer((self.host, self.port),
                                        ForkingTCPRequestHandler)
 
-        print('Starting MDSplus Gateway', self.host, self.port)
+        print(('Starting MDSplus Gateway', self.host, self.port))
         print(sys.stdout)
         self.ip, self.port = self.server.server_address
         sys.stdout.flush()
@@ -296,7 +295,7 @@ class MDSDaemon(Daemon):
             sys.stderr.flush()
 
     def signal_handler(self, signal, frame):
-        print('Received singal', signal)
+        print(('Received singal', signal))
         self.server.shutdown()
         sys.exit(0)
 

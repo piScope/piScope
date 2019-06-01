@@ -1,23 +1,24 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import socket
 import threading
 import os
 import signal
 import sys
 import time
-import SocketServer
+from six.moves import socketserver
 import paramiko
 import binascii
-import cPickle as pickle
+from six.moves import cPickle as pickle
 from ifigure.utils.daemon import Daemon
 import MDSplus
 
 
-class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
+class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
     #
     def __init__(self, *args, **kargs):
-        SocketServer.BaseRequestHandler.__init__(self, *args, **kargs)
+        socketserver.BaseRequestHandler.__init__(self, *args, **kargs)
         name = '/tmp/mdspluse_gateway_thread'+str(os.getpid()) + '.log'
 #        self.fid = open(name, 'w')
 
@@ -26,7 +27,7 @@ class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
 
         data = pickle.loads(binascii.a2b_hex(message))
         #cur_thread = threading.current_thread()
-        print("Request ", data)
+        print(("Request ", data))
 
         r = {}
         for name, commands in data:
@@ -35,43 +36,43 @@ class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
                 param = command[1:]
                 r[name] = self._handle(com, param)
 
-        print('return variables', r.keys())
+        print(('return variables', r.keys()))
 
         sr = pickle.dumps(r)
         response = binascii.b2a_hex(sr)
-        print("sending data (length)", len(response))
+        print(("sending data (length)", len(response)))
         self.request.sendall(response+'\n')
 #        self.fid.flush()
 
     def _handle(self, com, param):
         response = ''
 
-        print(com, param)
+        print((com, param))
         if com == 'c':  # connection request
             tree, shot, node = param.split(',')
             try:
-                print('opening tree', tree, shot)
+                print(('opening tree', tree, shot))
                 self.t = MDSplus.Tree(tree, long(shot))
-                print('opening tree', self.t)
+                print(('opening tree', self.t))
                 if node.strip() != '':
                     tn = self.t.getNode(node)
                     self.t.setDefault(tn)
                 response = 'ok'
             except Exception:
-                print('Error', str(sys.exc_info()[
-                      1])+','+str(sys.exc_info()[2]))
+                print(('Error', str(sys.exc_info()[
+                      1])+','+str(sys.exc_info()[2])))
                 response = ''
         if com == 'd':
             node = param
-            print('setting def node', node)
+            print(('setting def node', node))
             try:
                 if node.strip() != '':
                     tn = self.t.getNode(node)
                     self.t.setDefault(tn)
                 response = 'ok'
             except Exception:
-                print('Error', str(sys.exc_info()[
-                      1])+','+str(sys.exc_info()[2]))
+                print(('Error', str(sys.exc_info()[
+                      1])+','+str(sys.exc_info()[2])))
                 response = ''
 
         if com == 'f':  # connection request
@@ -88,28 +89,24 @@ class ThreadingTCPRequestHandler(SocketServer.BaseRequestHandler):
                 response = MDSplus.Data.compile(expr).evaluate().data()
 #              print "sending data (length)", len(response)
             except Exception:
-                print('Error', str(sys.exc_info()[
-                      1])+','+str(sys.exc_info()[2]))
+                print(('Error', str(sys.exc_info()[
+                      1])+','+str(sys.exc_info()[2])))
                 response = ''
 
         if com == 'v':  # mdsvalue
-            print('mdsvalue', param)
+            print(('mdsvalue', param))
             try:
                 response = MDSplus.Data.compile(param).evaluate().data()
             except Exception:
-                print('Error', str(sys.exc_info()[
-                      1])+','+str(sys.exc_info()[2]))
+                print(('Error', str(sys.exc_info()[
+                      1])+','+str(sys.exc_info()[2])))
                 response = ''
 
 #           print "sending data (length)", len(response), 'original :', type(sr)
 
         return response
 
-# class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-#    pass
-
-
-class ThreadingTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
@@ -124,7 +121,7 @@ class MDSDaemon(Daemon):
         self.server = ThreadingTCPServer((self.host, self.port),
                                          ThreadingTCPRequestHandler)
 
-        print('Starting MDSGateway', self.host, self.port)
+        print(('Starting MDSGateway', self.host, self.port))
         print(sys.stdout)
         self.ip, self.port = self.server.server_address
         sys.stdout.flush()
@@ -145,7 +142,7 @@ class MDSDaemon(Daemon):
             sys.stderr.flush()
 
     def signal_handler(self, signal, frame):
-        print('Received singal', signal)
+        print(('Received singal', signal))
         self.server.shutdown()
         sys.exit(0)
 
