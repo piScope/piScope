@@ -51,7 +51,7 @@ class DebuggerInterpreter(IP):
 
         """
         try:
-            exec code in self._l_dict, self._g_dict
+            exec(code, self._l_dict, self._g_dict)
         except SystemExit:
             raise
         except:
@@ -156,7 +156,7 @@ class DebuggerPanel(wx.Panel):
                 try:
                     #                   print(eval(txt, self.frame.f_globals,
                     #                                 self.frame.f_locals))
-                    exec compile(txt, 'text', 'exec') in self.frame.f_globals, self.frame.f_locals
+                    exec(compile(txt, 'text', 'exec'), self.frame.f_globals, self.frame.f_locals)
                 except:
                     print('evaluation failed')
 

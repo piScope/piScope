@@ -80,7 +80,7 @@ class JobRunner(object):
             code = compile(expr, '<string>', 'exec')
             g = {}
             l = {}
-            exec code in self.g, self.r
+            exec(code, self.g, self.r)
             return 'ok'
         except:
             self.error = ['Scrip Error', expr, sys.exc_info()[0]]

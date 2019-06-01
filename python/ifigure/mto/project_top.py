@@ -275,7 +275,7 @@ class ProjectTop(TopTreeDict, AbsScriptContainer, AbsFileContainer):
         logging.basicConfig(level=logging.DEBUG)
 
         root = self.get_root_parent()
-        exec root._name + ' = root'
+        exec(root._name + ' = root')
         if len(value[1]) != 0:
             try:
                 b = eval(value[1])

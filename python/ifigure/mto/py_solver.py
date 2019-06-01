@@ -68,7 +68,7 @@ def setSetting(solver, value):
     app = solver.get_app()
     try:
         root = solver.get_root_parent()
-        exec root._name + ' = root'
+        exec(root._name + ' = root')
         if len(value[1].split()) != 0:
             a = eval(value[1])
             if isinstance(a, PyModel):

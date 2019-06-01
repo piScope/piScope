@@ -1242,7 +1242,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         dc = {}
         dg = {}
         from ifigure.mdsplus.fig_mds import read_scriptfile
-        exec read_scriptfile(self.startup_script) in dg, dc
+        exec(read_scriptfile(self.startup_script), dg, dc)
         self.startup_values = dc
 
         self._start_mds_threads()  # start session runner and event listener

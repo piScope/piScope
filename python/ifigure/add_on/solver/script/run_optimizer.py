@@ -33,7 +33,7 @@ def locate_cost_script():
     else:
         txt = solver._cost
     root = solver.get_root_parent()
-    exec root._name + ' = root'
+    exec(root._name + ' = root')
     return eval(txt)
 
 

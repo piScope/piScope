@@ -733,8 +733,8 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
             # expression is stored as it is
             try:
                 root = self.get_root_parent()
-                exec root.name + '= self.get_root_parent()'
-                exec 'ret'+txt
+                exec(root.name + '= self.get_root_parent()')
+                exec('ret'+txt)
             except:
                 ret = None
         else:
@@ -742,8 +742,8 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
                 txt = self.get_full_path()+txt
             try:
                 root = self.get_root_parent()
-                exec root.name + '= self.get_root_parent()'
-                exec  'ret='+txt
+                exec(root.name + '= self.get_root_parent()')
+                exec('ret='+txt)
             except:
                 ret = None
         return ret

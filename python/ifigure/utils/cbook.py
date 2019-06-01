@@ -29,7 +29,7 @@ except ImportError:
 
 def is_safename(txt):
     try:
-        exec txt + '= 3' in {}, {}
+        exec(txt + '= 3', {}, {})
     except:
         return False
     return True
@@ -318,7 +318,7 @@ def LoadImageFile(path, fname):
 def Write2Main(val, name):
     import __main__
     print("writing variable "+name+" to __main__")
-    exec '__main__.'+name+'=val'
+    exec('__main__.'+name+'=val')
 
 
 def ReadFromMain(name):

@@ -729,7 +729,7 @@ class FigMds(FigGrp):
                     if self.getvar('posvars') is not None:
                         a = {}
                         b = {}
-                        exec self.getvar('posvars') in a, b
+                        exec(self.getvar('posvars'), a, b)
                         for key in b:
                             ana.result[key] = b[key]
                     filepath = os.path.join(self.owndir(), script_file_name)
@@ -748,7 +748,7 @@ class FigMds(FigGrp):
                         else:
                             se.RunSED(code, viewer.g, ana.result, filepath)
                     else:
-                        exec code in viewer.g, ana.result
+                        exec(code, viewer.g, ana.result)
                 except:
                     dprint1('error occured when processing data by script')
                     print('error occured when processing data by following script')
@@ -1211,7 +1211,7 @@ class FigMds(FigGrp):
 
         lc = {'c': current, 'p': prevshot, 'm': -1}
         if self.getvar("posvars") is not None:
-            exec self.getvar("posvars") in {}, lc
+            exec(self.getvar("posvars"), {}, lc)
         if txt.strip() == '':
             return 0, prevshot
         try:

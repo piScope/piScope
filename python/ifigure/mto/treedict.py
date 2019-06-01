@@ -47,7 +47,7 @@ td_name_space = {}
 def fill_td_name_space(filename):
     try:
         file, co, mtime = cbook.LoadScriptFile(filename)
-        exec co in {}, td_name_space
+        exec(co, {}, td_name_space)
     except:
         print('Failed to build script name space')
         print(traceback.format_exc())

@@ -346,7 +346,7 @@ class SimpleShell(ShellBase):
                 txt = 'if isinstance(command, TreeDict): _tmp_=' + \
                     command+'get_children()'
                 code = compile(txt, '<string>', 'exec')
-                exec code in globals(), self.lvar
+                exec(code, globals(), self.lvar)
             except:
                 pass
 
@@ -391,7 +391,7 @@ class SimpleShell(ShellBase):
         txt = '_tmp_='+name
         try:
             code = compile(txt, '<string>', 'exec')
-            exec code in globals(), self.lvar
+            exec(code, globals(), self.lvar)
         except:
             #           dprint1(txt)
             pass

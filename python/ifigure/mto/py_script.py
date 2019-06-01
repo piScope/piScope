@@ -159,7 +159,7 @@ class AbsScript(object):
             self._debug = 0  # make sure that next time will run in normal mode
             try:
                 if debug == 0:
-                    exec self._script_co in lc, lc
+                    exec(self._script_co, lc, lc)
                 elif debug == 1:
                     import pdb
                     pdb.run(self._script_co, lc, lc)

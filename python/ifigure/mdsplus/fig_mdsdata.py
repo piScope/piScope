@@ -54,7 +54,7 @@ class FigMdsData(FigMds):
                     code = compile(txt, '<string>', 'exec')
                     g = {}
                     l = {}
-                    exec code in viewer.g, ana.result
+                    exec(code, viewer.g, ana.result)
                 except:
                     dprint1('error occured when processing data by script')
                     print('error occured when processing data by following script')
