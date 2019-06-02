@@ -82,7 +82,7 @@ class EventDrivenThread(threading.Thread):
 
 #                       print self.events
                 time.sleep(0.1)
-            if len(self.events.keys()) == 0:
+            if len(self.events) == 0:
                 self.flag = False
         remove_queue(self.queue)
         send_event(self.finish_event)

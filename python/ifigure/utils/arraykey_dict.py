@@ -1,5 +1,5 @@
 def find_all_keys(d, key):
-    return [x for x in d.keys() if x.startswith(key+'(')]
+    return [x for x in list(d) if x.startswith(key+'(')]
 
 
 def find_idx(keys):

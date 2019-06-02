@@ -309,7 +309,7 @@ class Axes3DMod(Axes3D):
 
         arr = self._gl_mask_artist.get_array()
 
-        for k in id_dict.keys():
+        for k in id_dict:
             if (id_dict[k]() == artist):
                 if hit_id is not None:
                     if len(hit_id) > 0:

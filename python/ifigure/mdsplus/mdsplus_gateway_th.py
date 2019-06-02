@@ -36,7 +36,7 @@ class ThreadingTCPRequestHandler(socketserver.BaseRequestHandler):
                 param = command[1:]
                 r[name] = self._handle(com, param)
 
-        print(('return variables', r.keys()))
+        print(('return variables', list(r.keys())))
 
         sr = pickle.dumps(r)
         response = binascii.b2a_hex(sr)

@@ -89,7 +89,7 @@ def import_dwscope(file):
     d2 = {"num_c": num_c,
           "num_r": num_r}
 
-    for key in d.keys():
+    for key in d:
         if key[:4] == 'plot':
             d2[key[5:]] = d[key]
         if key[:6] == 'global':

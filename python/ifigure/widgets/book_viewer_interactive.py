@@ -119,7 +119,7 @@ def pop_metadata(kargs):
             meta['long_description'] = meta0
 
         names = []
-        for k in kargs.keys():
+        for k in kargs:
             if k.endswith('metadata'):
                 names.append(k)
                 header = k[:-8]
@@ -1448,7 +1448,7 @@ class BookViewerInteractive(object):
             return
         ax = fig_axes._artists[0]
         l = ax.get_lighting()
-        if len(kargs.keys()) == 0:
+        if len(kargs) == 0:
             return l
         for k in kargs:
             if not k in l:
@@ -1466,7 +1466,7 @@ class BookViewerInteractive(object):
         if not fig_axes.get_3d():
             return
         ax = fig_axes._artists[0]
-        if len(args) == 0 and len(kargs.keys()) == 0:
+        if len(args) == 0 and len(kargs) == 0:
             return ax.elev, ax.azim
         elif len(args) == 2:
             ax.elev = args[0]

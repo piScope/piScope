@@ -119,7 +119,7 @@ class ForkingTCPRequestHandler(socketserver.StreamRequestHandler):
                             self.fid.write(str(self.error))
                             self.fid.flush()
         if self.fid is not None:
-            self.fid.write('return variables  \n' + str(r.keys()) + '\n')
+            self.fid.write('return variables  \n' + str(list(r.keys())) + '\n')
             self.fid.flush()
 
         sr = pickle.dumps(r)

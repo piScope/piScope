@@ -32,7 +32,7 @@ class ButtonPanel(wx.Panel):
 
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add((20, 30))
-        keys = buttonDefs.keys()
+        keys = list(buttonDefs.keys())
         keys.sort()
         for k in keys:
             text = buttonDefs[k][1]

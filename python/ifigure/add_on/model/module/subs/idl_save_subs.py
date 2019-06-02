@@ -66,7 +66,7 @@ def expand_recarray(top, var):
 def read_sav_file(this):
     file = this.getvar("filename")
     s = idlsave.read(file)
-    for key in s.keys():
+    for key in s:
         if isinstance(s[key], numpy.recarray):
             child = PyData()
             this.add_child(key, child)

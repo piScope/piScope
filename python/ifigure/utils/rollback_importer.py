@@ -16,7 +16,7 @@ class RollbackImporter:
         return result
 
     def uninstall(self):
-        for modname in self.newModules.keys():
+        for modname in self.newModules:
             if modname not in self.previousModules:
                 # Force reload when modname next imported
                 del(sys.modules[modname])

@@ -86,7 +86,7 @@ class FigSpline(FigObj, XUser, YUser):
 
         if v["x"] is None:
             v["x"] = np.arange(v["y"].shape[-1])
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj

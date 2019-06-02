@@ -54,7 +54,7 @@ def select_unique_properties(parent, dataset, flags):
         props = [dataset[name]['property'] for name in names]
         pp = tuple()
         for p in props:
-            pp = pp + tuple(p.keys())
+            pp = pp + tuple(p)
         for x in set(pp):
             value = not (len(set([p.get(x, None) for p in props])) == 1)
             if value:
@@ -77,13 +77,14 @@ def select_unique_properties_all(page, dataset, flags):
 
 
 def set_all_properties_all(flags, value):
-    keys = flags.keys()
+    keys = list(flags)
     for labels in keys:
         if len(labels) < 2:
             continue
         if labels[1] == 'property':
             flags[labels] = value
-    keys = flags.keys()
+            
+    keys = list(flags)
     for labels in keys:
         if not (labels[0], 'property') in flags:
             flags[(labels[0], 'property')] = value
@@ -161,7 +162,7 @@ def build_data(page, export_flag=None,
             obj.assign_default_metadata()
             obj.update_data_metadata()
             if verbose:
-                txt = ['member ' + str(i) + ' exprot ' + ','.join(d.keys())
+                txt = ['member ' + str(i) + ' exprot ' + ','.join(list(d))
                        for i, d in enumerate(dd)]
                 print(name + ' : ' + ','.join(txt))
         try:
@@ -209,12 +210,12 @@ def hdf_data_export(page=None,
     #rootgrp = Dataset(filename, "w", format="NETCDF4")
 
     import time
-    meta = metadata[metadata.keys()[0]]
+    meta = metadata[list(metadata)[0]]
     meta['description'] = "Figure data exported from piScope"
     meta['date'] = time.ctime(time.time())
     for key in six.iterkeys(meta):
         rootgrp.attrs[key] = str(meta[key])
-    metadata[metadata.keys()[0]] = {}
+    metadata[list(metadata)[0]] = {}
 
     for key in six.iterkeys(data):
         labels = (key, )
@@ -223,7 +224,7 @@ def hdf_data_export(page=None,
             continue
         key_grp = rootgrp.create_group(key)
 
-        data_keys = [k for k in data[key].keys() if k.startswith('data')]
+        data_keys = [k for k in data[key] if k.startswith('data')]
         for i, k in enumerate(data_keys):
             if len(data_keys) > 1:
                 data_grp = key_grp.create_group(k)

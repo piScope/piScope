@@ -31,7 +31,7 @@ Reference for content:   Adobe PDF reference, sixth edition, version 1.7
 from pdfrw.objects import PdfDict, PdfArray, PdfName
 from pdfrw.pdfreader import PdfReader
 from pdfrw.errors import log
-
+from six import iteritems
 
 class ViewInfo(object):
     ''' Instantiate ViewInfo with a uri, and it will parse out
@@ -64,7 +64,7 @@ class ViewInfo(object):
                 setattr(self, key, [float(x) for x in value])
             else:
                 log.error('Unknown option: %s', key)
-        for key, value in kw.iteritems():
+        for key, value in iteritems(kw):
             assert hasattr(self, key), key
             setattr(self, key, value)
 
@@ -202,7 +202,7 @@ def pagexobj(page, viewinfo=ViewInfo(), allow_compressed=True):
     # All the filters must have been executed
     assert int(contents.Length) == len(contents.stream)
     if not allow_compressed:
-        assert len([x for x in contents.iteritems()]) == 1
+        assert len([x for x in contents.items()]) == 1
     return _cache_xobj(contents, resources, mbox, bbox, rotation)
 
 

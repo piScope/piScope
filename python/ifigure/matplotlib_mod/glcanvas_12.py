@@ -77,13 +77,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._merge_check = 1
 
     def gc_artist_data(self):
-        keys = self.artists_data.keys()
+        keys = list(self.artists_data.keys())
         for aa in keys:
             if aa.figobj is None:
                 del self.artists_data[aa]
                 del self.vbo[aa]
             else:
-                keys2 = self.artists_data[aa].keys()
+                keys2 = list(self.artists_data[aa].keys())
                 for a in keys2:
                     if hasattr(a, 'figobj') and a.figobj is None:
                         del self.artists_data[aa][a]

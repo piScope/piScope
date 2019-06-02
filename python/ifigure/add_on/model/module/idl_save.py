@@ -82,7 +82,7 @@ def load_matfile(obj):
 
     def idl2dict(dd, cls=collections.OrderedDict):
         r = cls()
-        for name in dd.keys():
+        for name in dd:
             print(name)
             print(isinstance(dd[name], np.recarray))
             if isinstance(dd[name], np.recarray):

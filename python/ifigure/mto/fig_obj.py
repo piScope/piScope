@@ -426,7 +426,7 @@ class FigObj(TreeDict, MetadataHolder):
             self._drag_hl.figure.lines.remove(self._drag_hl)
             self._drag_hl = None
         self.del_artist(delall=True)
-        for key in self._attr.keys():
+        for key in self._attr:
             self._attr[key] = None
         # calles super class which kills children first
         super(FigObj, self).destroy(clean_owndir=clean_owndir)
@@ -1178,7 +1178,7 @@ class FigObj(TreeDict, MetadataHolder):
 
     def onShowAtt(self, e):
         from matplotlib.artist import getp
-        for key in self._attr.keys():
+        for key in self._attr:
             print((key, type(self._attr[key])))
         for a in self._artists:
             print(getp(a))
@@ -1632,7 +1632,7 @@ class FigObj(TreeDict, MetadataHolder):
         return vals
 
     def set_artist_property(self, a, vals):
-        for key in vals.keys():
+        for key in vals:
             #          if isMPL2 and key == 'axis_bgcolor': key = 'facecolor'
             if hasattr(a, 'set_'+key):
                 (getattr(a, 'set_'+key))(vals[key])

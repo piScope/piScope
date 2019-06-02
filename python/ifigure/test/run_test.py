@@ -27,7 +27,7 @@ def check_prop_read(obj):
 
 def check_prop_write(obj, data):
     print('write property test :' + str(obj))
-    for prop in data.keys():
+    for prop in data:
         try:
             print(str(prop) + ' : ' + str(data[prop]))
             property(obj, prop, data[prop])

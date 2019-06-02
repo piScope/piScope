@@ -57,8 +57,8 @@ class NamelistVVV(VarViewerGValue):
         return text
 
     def OnCompareItems(self, t1, t2):
-        return (t1[0]._var0.keys().index(t1[1][0]) -
-                t2[0]._var0.keys().index(t2[1][0]))
+        return (list(t1[0]._var0.keys()).index(t1[1][0]) -
+                list(t2[0]._var0.keys()).index(t2[1][0]))
 
 
 class Namelist(PyContents):
@@ -94,7 +94,7 @@ class Namelist(PyContents):
         if keylist is None:
             keylist = []
         pitem = item
-        for key in base.keys():
+        for key in base:
             tree.SetItemHasChildren(pitem)
             pitem2 = tree.AppendItem(pitem, key, img)
             vv_val = self.get_varviewer_value(td, key)
@@ -128,7 +128,7 @@ class MatfileVVV(NamelistVVV):
 
 class MatData(dict):
     def __repr__(self):
-        dataname = ['  ' + x for x in self.keys() if not x.startswith('__')]
+        dataname = ['  ' + x for x in self if not x.startswith('__')]
         return "Matlab (.mat) data (derived from dict class). \n" + '\n'.join(dataname)
 
 
@@ -159,7 +159,7 @@ class IDLfileVVV(NamelistVVV):
 
 class IDLData(PyContents):
     def __repr__(self):
-        dataname = ['  ' + x for x in self.keys() if not x.startswith('__')]
+        dataname = ['  ' + x for x in self if not x.startswith('__')]
         return "IDL (.sav) data (derived from dict class). \n" + '\n'.join(dataname)
 
 
@@ -206,7 +206,7 @@ class IDLfile(Namelist):
                              keylist=None):
         if keylist is None:
             keylist = []
-        for key in d.keys():
+        for key in list(d.keys()):
             tree.SetItemHasChildren(pitem)
             pitem2 = tree.AppendItem(pitem, key, img)
             vv_val = self.get_varviewer_value(td, keylist+[key])
@@ -229,7 +229,7 @@ class IDLfile(Namelist):
         for k in keylist:
             p = p[k]
 
-        var = {x: p[x] for x in p.keys() if not isinstance(p[x], IDLfile)}
+        var = {x: p[x] for x in list(p.keys()) if not isinstance(p[x], IDLfile)}
 
         note = {}
         val = IDLfileVVV(p._var0, note)
@@ -311,8 +311,8 @@ class MDSPlusTreeVVV(NamelistVVV):
         for key in klist[:-1]:
             p2 = p2[key]
 
-        return (p1.keys().index(t1[1][0][-1]) -
-                p2.keys().index(t2[1][0][-1]))
+        return (list(p1.keys()).index(t1[1][0][-1]) -
+                list(p2.keys()).index(t2[1][0][-1]))
 
     def tree_viewer_menu(self):
         if self.hasvar('mds_path'):
@@ -425,7 +425,7 @@ class MDSPlusTree(Namelist):
                              keylist=None):
         if keylist is None:
             keylist = []
-        for key in d.keys():
+        for key in list(d.keys()):
             tree.SetItemHasChildren(pitem)
             pitem2 = tree.AppendItem(pitem, key, img)
             vv_val = self.get_varviewer_value(td, keylist+[key])
@@ -556,8 +556,8 @@ class NETCDFfileVVV(NamelistVVV):
         for key in klist[:-1]:
             p2 = p2[key]
 
-        return (p1.keys().index(t1[1][0][-1]) -
-                p2.keys().index(t2[1][0][-1]))
+        return (list(p1.keys()).index(t1[1][0][-1]) -
+                list(p2.keys()).index(t2[1][0][-1]))
 
     def tree_viewer_menu(self):
         if self._content()._data_loaded:
@@ -678,7 +678,7 @@ class NETCDFfile(Namelist):
                              keylist=None):
         if keylist is None:
             keylist = []
-        for key in self.keys():
+        for key in list(self.keys()):
             tree.SetItemHasChildren(pitem)
             pitem2 = tree.AppendItem(pitem, key, img)
             vv_val = self[key].get_varviewer_value(td, keylist+[key])
@@ -753,7 +753,7 @@ class TSCInputFile(Namelist):
         if keylist is None:
             keylist = []
         pitem = item
-        for key in base.keys():
+        for key in list(base.keys()):
             tree.SetItemHasChildren(pitem)
             if 'name' in self[key]:
                 extra = '('+self[key]['name']+')'

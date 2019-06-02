@@ -1257,7 +1257,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self.make_event_dict()
         self.use_book_scope_param()
 
-        if len(bitmaps.keys()) == 0:
+        if len(bitmaps) == 0:
             for icon in bitmap_names:
                 from ifigure.ifigure_config import icondir as path
                 path = os.path.join(path, '16x16', icon)

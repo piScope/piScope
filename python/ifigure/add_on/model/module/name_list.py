@@ -334,12 +334,12 @@ def tree2txt(self):
     td = self.td
     var0 = td[:]
     txt = []
-    for key0 in var0.keys():
+    for key0 in var0:
 
         txt.append(' &'+key0+'\n')
         var = var0[key0]
 
-        for key in var.keys():
+        for key in var:
             line = ' '+key+' = '
 
             for el in var[key]:
@@ -470,7 +470,7 @@ def onRmSec(self, e):
     ret, name = dialog.textselect(parent,
                                   "Select section name",
                                   "Remove Section...",
-                                  choices=var0.keys())
+                                  choices=list(var0.keys()))
     if not ret:
         return
 
@@ -486,7 +486,7 @@ def onRenameSec(self, e):
     ret, name = dialog.textselect(parent,
                                   "Select section name",
                                   "Rename Section...",
-                                  choices=var0.keys())
+                                  choices=list(var0.keys()))
     if not ret:
         return
     ret, name1 = dialog.textentry(parent,

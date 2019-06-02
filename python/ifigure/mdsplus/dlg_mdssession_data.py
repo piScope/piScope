@@ -210,14 +210,14 @@ class DlgMdsSessionData(DialogWithWindowList):
             #            self.Freeze()
             new_name = str(dlg.GetValue())
             data, script = self.pages2data()
-            if new_name in data.keys():
+            if new_name in data:
                 return
 #            len(data.keys())
             for i in range(self.nb.GetPageCount()):
                 self.nb.GetPage(i).set_syntax('none')
 
             p = self._new_stc(self.nb, '', syntax='none')
-            self.nb.InsertPage(len(data.keys()), p, new_name, True)
+            self.nb.InsertPage(len(data), p, new_name, True)
             self.Bind(wx.stc.EVT_STC_MODIFIED, self.onModified, p)
 #            data[new_name] = ''
 #            self.data2pages(data)

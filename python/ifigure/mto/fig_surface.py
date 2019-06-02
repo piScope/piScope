@@ -93,7 +93,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
             kywds['cmap'] = v['cmap']
             del v['cmap']
 
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj
@@ -660,7 +660,7 @@ class FigRevolve(FigSurface):
             kywds['cmap'] = v['cmap']
             del v['cmap']
 
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj

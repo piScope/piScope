@@ -123,10 +123,10 @@ def load_file(file):
                 x = x + [0, 0, 0, 0, 0]  # safe gurad...
                 label = ('0000'+str(int(x[0]+i)))[-4:]
                 d[label] = x[2+i]
-        d = TSCInputFile(sorted(d.items(), key=lambda t: t[0]))
+        d = TSCInputFile(sorted(list(d.items()), key=lambda t: t[0]))
         nm['11'] = d
 
-    nm = TSCInputFile(sorted(nm.items(), key=lambda t: t[0]))
+    nm = TSCInputFile(sorted(list(nm.items()), key=lambda t: t[0]))
     nm = add_help(nm)
     return nm
 
@@ -209,7 +209,7 @@ def tree2txt(self, var0=None):
         var0 = self.td.getvar0()
     txt = ['c ... title card\n', 'c produced by piscope input generator\n', 'c\n']
 
-    for key0 in var0.keys():
+    for key0 in list(var0.keys()):
         if key0 == '11':
             for key1 in var0[key0]:
                 if key1 == 'name':

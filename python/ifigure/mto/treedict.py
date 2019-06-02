@@ -263,7 +263,7 @@ class TreeDict(object):
             self._parent._del_child(self)
 
         # clean var
-        for key in self._var.keys():
+        for key in self._var:
             self._var[key] = None
 
     def __getattr__(self, attr):
@@ -350,7 +350,9 @@ class TreeDict(object):
         # easy to read string representation of data
         # print "generating string"
         rl = []
-        for k, v in self._getLeaves().items():
+        
+        from six import iteritems        
+        for k, v in iteritems(self._getLeaves()):
             rl.append("%s = %s" % (k, v.__repr__()))
    #        return "\n".join(rl)
         return rl
@@ -1006,7 +1008,7 @@ class TreeDict(object):
     def getvar_copy(self):
         var = self.getvar()
         d = collections.OrderedDict()
-        for key in var.keys():
+        for key in var:
             d[key] = var[key]
         return d
 

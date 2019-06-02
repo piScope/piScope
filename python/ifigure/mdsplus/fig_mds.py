@@ -1291,7 +1291,7 @@ class FigMds(FigGrp):
             opt[mode][1][name] = v
         if 'FigMds' in data:
             val = data['FigMds'][1]
-            for key in val.keys():
+            for key in val:
                 self.setp(key, val[key])
             if len(data['FigMds']) > 2:
                 param = data['FigMds'][2]

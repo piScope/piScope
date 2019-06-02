@@ -1012,12 +1012,12 @@ class PyParam(PyCode):
             if path:
                 return d
             else:
-                return d.keys()
+                return list(d.keys())
 
         for item in self.get_parent().walk_tree_up():
             for name, child in item.get_children():
                 if isinstance(child, PyParam):
-                    for key in (child.getvar()).keys():
+                    for key in child.getvar():
                         if key not in d:
                             d[key] = [(child.get_full_path(), child)]
                         else:
@@ -1029,22 +1029,22 @@ class PyParam(PyCode):
                 if path:
                     return d
                 else:
-                    return d.keys()
+                    return list(d.keys())
 
         except:
             if path:
                 return d
             else:
-                return d.keys()
+                return list(d.keys())
 
-        for key in item.getvar().keys():
+        for key in item.getvar():
             if key not in d:
                 d[key] = (item.get_full_path(), item)
             else:
                 d[key].append((item.get_full_path(), item))
         if path:
             return d
-        return d.keys()
+        return list(d.keys())
 
     def set(self, name, var):
         d = self.eval_all_keys(path=True)

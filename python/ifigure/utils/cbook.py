@@ -49,9 +49,9 @@ def text_repr(val):
         else:
             text = val.__repr__()
     elif isinstance(val, dict):
-        if len(val.keys()) > 5:
+        if len(val) > 5:
             text = ({key: val[key]
-                     for key in val.keys()[0:5]}.__repr__())[:-1]+'...'
+                     for key in list(val.keys())[0:5]}.__repr__())[:-1]+'...'
         else:
             text = val.__repr__()
     elif isinstance(val, np.ndarray):
@@ -1071,10 +1071,10 @@ def tex_escape(text):
     }
     if six.PY2:
         regex = re.compile('|'.join(re.escape(unicode(key))
-                           for key in sorted(conv.keys(), key=lambda item: - len(item))))
+                           for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
     else:
         regex = re.compile('|'.join(re.escape(key)
-                           for key in sorted(conv.keys(), key=lambda item: - len(item))))
+                           for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
 
     return regex.sub(lambda match: conv[match.group()], text)
 
@@ -1126,7 +1126,7 @@ def walk_OD_tree(od, basekey=''):
     walk OrdereDictionary tree
     '''
     import collections
-    for key in od.keys():
+    for key in list(od.keys()):
         if isinstance(od[key], collections.OrderedDict):
             if basekey == '':
                 basekey2 = key

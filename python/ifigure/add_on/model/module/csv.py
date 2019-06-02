@@ -108,7 +108,7 @@ def load_csv_file(obj):
 def export_csvfile(obj, filename):
     import csv
     var = obj.data.getvar()
-    names = var.keys()
+    names = list(var.keys())
     with open(filename, 'wb') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=' ',)
 #                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -173,7 +173,7 @@ def init_after_load(self, olist, nlist):
 def ask_field(self, dest):
     vars = self.td.data.getvar()
     list6 = [["", "Select field to convert", 2],
-             [None, None, 36, {'col': 4, 'labels': vars.keys()}], ]
+             [None, None, 36, {'col': 4, 'labels': list(vars.keys())}], ]
     value = DialogEditList(list6, modal=True,
                            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
                            tip=None,

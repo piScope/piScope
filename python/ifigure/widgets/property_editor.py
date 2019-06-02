@@ -85,7 +85,7 @@ class property_editor(wx.Panel):
             # print 'cp2'
             self.GetSizer().Replace(self.sizer_olditem, self.CP2)
             self.sizer_olditem = self.CP2
-            for p in self.CP2.panels.keys():
+            for p in self.CP2.panels:
                 self.CP2.switch_panel(p)
                 self.Layout()
                 self.CP2.GetSizer().Layout()
@@ -98,7 +98,7 @@ class property_editor(wx.Panel):
             # print 'cp1'
             self.GetSizer().Replace(self.sizer_olditem, self.CP1)
             self.sizer_olditem = self.CP1
-            for p in self.CP1.panels.keys():
+            for p in self.CP1.panels:
                 self.CP1.switch_panel(p)
                 self.Layout()
                 self.CP1.GetSizer().Layout()

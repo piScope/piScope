@@ -1159,7 +1159,7 @@ def view(*args, **kwargs):
           view('ortho')
           view('updown')
     '''
-    if len(args) == 0 and len(kwargs.keys()) == 0:
+    if len(args) == 0 and len(kwargs) == 0:
         v = aviewer
         return v.view()
     else:

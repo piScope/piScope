@@ -94,7 +94,7 @@ class FigText(FigObjGPHolder):
         obj = FigObjGPHolder.__new__(cls, *args, **kywds)
         obj = set_hidden_vars(obj)
 
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
 

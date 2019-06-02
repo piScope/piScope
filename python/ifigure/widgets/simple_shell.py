@@ -472,14 +472,11 @@ class SimpleShell(ShellBase):
         import types
 
         llist = []
-        #        tlist = [(getattr(types, name),
-        #                  str(getattr(types, name)).split("'")[1])
-        #                  for name in dir(types) if not name.startswith('_')]
-        tlist = {getattr(types, name):
-                 str(getattr(types, name)).split("'")[1]
-                 for name in dir(types) if not name.startswith('_')}
+        #tlist = {getattr(types, name):
+        #         str(getattr(types, name)).split("'")[1]
+        #         for name in dir(types) if not name.startswith('_')}
 
-        for key in self.lvar.keys():
+        for key in self.lvar:
             if not key.startswith('_'):
                 val = self.lvar[key]
                 t0 = type(val).__name__

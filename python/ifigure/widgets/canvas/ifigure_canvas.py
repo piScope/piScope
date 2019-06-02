@@ -1504,7 +1504,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         #self.Bind(wx.EVT_SIZE, self.HandleResize)
 
         from ifigure.ifigure_config import icondir
-        if len(bitmaps.keys()) == 0:
+        if len(bitmaps) == 0:
             for icon in bitmap_names:
                 path = os.path.join(icondir, '16x16', icon)
                 if icon[-3:] == 'png':

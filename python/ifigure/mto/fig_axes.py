@@ -1340,7 +1340,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
     def load_data(self, fid=None):
         #        print "loading  fig_axes data"
         val = pickle.load(fid)
-        for key in val.keys():
+        for key in val:
             self.setp(key, val[key])
         # print "loading  fig_axes data", val
         super(FigAxes, self).load_data(fid)
@@ -1361,7 +1361,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
                     # print self.getp('title_labelinfo')
                     if 'title_labelinfo' in data['FigObj'][2]:
                         del data['FigObj'][2]['title_labelinfo']
-            for key in val.keys():
+            for key in val:
                 self.setp(key, val[key])
             if len(data['FigAxes']) > 2:
                 param = data['FigAxes'][2]

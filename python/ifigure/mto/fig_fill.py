@@ -100,7 +100,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         obj._mpl_cmd = mpl_cmd
         if v["x"] is None:
             v["x"] = np.arange(v["y"].shape[-1])
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj

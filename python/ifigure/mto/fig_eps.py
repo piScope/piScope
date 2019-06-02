@@ -44,6 +44,7 @@ import ifigure
 import os
 import sys
 import shutil
+from six import itervalues, iteritems
 import subprocess as sp
 import numpy as np
 import ifigure.utils.cbook as cbook
@@ -106,17 +107,17 @@ class PdfFile_plus(PdfFile):
         self.writeFonts()
         self.writeObject(self.alphaStateObject,
                          dict([(val[0], val[1])
-                               for val in self.alphaStates.itervalues()]))
+                               for val in itervalues(self.alphaStates)]))
         self.writeHatches()
         self.writeGouraudTriangles()
-        xobjects = dict(self.images.itervalues())
-        for tup in self.markers.itervalues():
+        xobjects = dict(iter(itervalues(self.images)))
+        for tup in itervalues(self.markers):
             xobjects[tup[0]] = tup[1]
-        for name, value in self.multi_byte_charprocs.iteritems():
+        for name, value in iteritems(self.multi_byte_charprocs):
             xobjects[name] = value
         for name, path, trans, ob, join, cap, padding, filled, stroked in self.paths:
             xobjects[name] = ob
-        for tup in self.pdfs.itervalues():
+        for tup in itervalues(self.pdfs):
             xobjects[tup[0]] = tup[1]
         self.writeObject(self.XObjectObject, xobjects)
         self.writeImages()

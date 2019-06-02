@@ -61,7 +61,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
         obj = set_hidden_vars(obj)
         if (v["x"] is None and not isdynamic(v["y"])):
             v["x"] = np.arange(v["y"].shape[-1])
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         obj.setvar("tri", tri)

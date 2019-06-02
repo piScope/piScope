@@ -89,7 +89,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                 v['cmap'] = v['cmap'].name
             kywds['cmap'] = v['cmap']
             del v['cmap']
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj
@@ -911,7 +911,7 @@ class StepPlot(FigPlot):
         obj._mpl_cmd = mpl_cmd
         if (v["x"] is None and not isdynamic(v["y"])):
             v["x"] = np.arange(v["y"].shape[-1])
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj
@@ -996,7 +996,7 @@ class TimeTrace(FigPlot):
         obj._mpl_cmd = mpl_cmd
         if (v["x"] is None and not isdynamic(v["y"])):
             v["x"] = np.arange(v["y"].shape[-1])
-        for name in v.keys():
+        for name in v:
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
         return obj

@@ -3138,7 +3138,7 @@ class ComboBoxPrefList(ComboBox):
         del kargs['setting']['keyname']
         del kargs['setting']['dialog']
         del kargs['setting']['def_value']
-        if len(kargs['setting'].keys()) == 0:
+        if len(kargs['setting']) == 0:
             del kargs['setting']
         kargs['style'] = wx.CB_DROPDOWN
         kargs['choices'] = ['']
@@ -3401,7 +3401,7 @@ class MDSSource0(wx.Panel):
                'default_node': v[1],
                'title': v[2], }
 
-        sigs = self.pages2data().keys()
+        sigs = list(self.pages2data())
         for i, name in enumerate(sigs):
             p = self.nb.GetPage(i)
             name = ''.join(name.split('*'))
@@ -3428,7 +3428,7 @@ class MDSSource0(wx.Panel):
         self.elp.SetValue([value['experiment'],
                            value['default_node'],
                            value['title']])
-        sigs = value.keys()
+        sigs = list(value)
         for key in ['experiment', 'default_node', 'title', 'event', '_flag']:
             if key in sigs:
                 sigs.remove(key)
@@ -3504,7 +3504,7 @@ class MDSSource0(wx.Panel):
             #            self.Freeze()
             new_name = str(dlg.GetValue())
             data = self.pages2data()
-            if new_name in data.keys():
+            if new_name in data:
                 dlg.Destroy()
                 return
 #            len(data.keys())
