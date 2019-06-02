@@ -990,7 +990,7 @@ class ifigure_app(BookViewerFrame):
 
         path = self.proj.getvar("wdir")
         fpath = os.path.join(path, '.gui_setting')
-        fid = open(fpath, 'w')
+        fid = open(fpath, 'wb')
         pickle.dump(data, fid)
         fid.close()
 
@@ -1003,7 +1003,7 @@ class ifigure_app(BookViewerFrame):
                  'isPropShown': v.isPropShown()}
                 for v in self.viewers]
         fpath = os.path.join(path, '.opened_books')
-        fid = open(fpath, 'w')
+        fid = open(fpath, 'wb')
         pickle.dump(data, fid)
         fid.close()
 
@@ -1017,13 +1017,13 @@ class ifigure_app(BookViewerFrame):
         path = self.proj.getvar("wdir")
         fpath = os.path.join(path, '.gui_setting')
         if os.path.exists(fpath):
-            fid = open(fpath, 'r')
+            fid = open(fpath, 'rb')
             gui_setting_data = pickle.load(fid)
             fid.close()
 
         fpath = os.path.join(path, '.opened_books')
         if os.path.exists(fpath):
-            fid = open(fpath, 'r')
+            fid = open(fpath, 'rb')
             opend_book_data = pickle.load(fid)
             fid.close()
             flag = False
@@ -1411,7 +1411,7 @@ class ifigure_app(BookViewerFrame):
     def read_geom_file(self):
         from ifigure.ifigure_config import geom_file
         if os.path.exists(geom_file):
-            fid = open(geom_file, 'r')
+            fid = open(geom_file, 'rb')
             val = pickle.load(fid)
             fid.close()
             return val
@@ -1433,7 +1433,7 @@ class ifigure_app(BookViewerFrame):
         val['RECENT_FILE'] = RECENT_FILE
 
         from ifigure.ifigure_config import geom_file
-        fid = open(geom_file, 'w')
+        fid = open(geom_file, 'wb')
         pickle.dump(val, fid)
         fid.flush()
         fid.close()

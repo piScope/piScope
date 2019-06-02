@@ -1598,6 +1598,7 @@ class TreeDict(object):
         except:
             import traceback
             traceback.print_exc()
+            traceback.print_stack()
             return None, olist, nlist
 
         c = olist.count(h2["id"])
@@ -2130,7 +2131,7 @@ class TopTreeDict(TreeDict):
         self.setvar("filename", filename)
 #         if old_wdir != d:
 #              self._delete_tempdir(old_wdir)
-        open(os.path.join(d, '.filename'), 'wb').write(filename)
+        open(os.path.join(d, '.filename'), 'w').write(filename)
         print("done....(save)")
 
         from ifigure.utils.mp_tarzip import MPTarzip
@@ -2216,7 +2217,9 @@ class TopTreeDict(TreeDict):
         real_top.setvar("wdir", str(tar_xpath2))
         real_top._app = self._app
         os.mkdir(os.path.join(tar_xpath2, '.trash'))
-        open(os.path.join(tar_xpath2, '.filename'), 'wb').write(filename)
+        fid = open(os.path.join(tar_xpath2, '.filename'), 'w')
+        fid.write(filename)
+        fid.close()
 
         if sb is not None:
             sb.SetStatusText("initializing model :"+filename, 0)

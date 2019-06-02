@@ -278,7 +278,6 @@ class SimpleShell(ShellBase):
         try:
             f = open(file, 'rb')
             self.history = pickle.load(f)
-            print(self.history)
             f.close
         except Exception:
             import traceback
