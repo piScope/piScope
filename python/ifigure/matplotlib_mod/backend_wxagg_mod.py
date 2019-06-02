@@ -415,8 +415,12 @@ class FigureCanvasWxAggMod(CanvasAgg):
         if isMPL_before_1_2:
             img = np.fromstring(self.renderer.buffer_rgba(0, 0), np.uint8)
         else:
-            img = np.fromstring(self.renderer.buffer_rgba(), np.uint8)
-
+            obj = self.renderer.buffer_rgba()
+            if isinstance(obj, memoryview):
+                img = np.asarray(obj, np.uint8).copy()
+            else:
+                img = np.fromstring(obj, np.uint8)
+                
         # print h, w
         img = img.reshape((int(h), int(w), 4))
         if box is not None:

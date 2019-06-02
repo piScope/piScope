@@ -63,7 +63,7 @@ import tarfile
 import collections
 import logging
 import threading
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 
 from numpy import arange, sin, pi
 import ifigure
@@ -1401,8 +1401,9 @@ class ifigure_app(BookViewerFrame):
         val = {"version": 0, "size": size, "sh": sh, "pos": pos,
                'editor_detached': not self.isEditorAttached(),
                'RECENT_FILE': RECENT_FILE}
+        
         from ifigure.ifigure_config import geom_file
-        fid = open(geom_file, 'w')
+        fid = open(geom_file, 'wb')
         pickle.dump(val, fid)
         fid.flush()
         fid.close()

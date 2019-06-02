@@ -8,7 +8,7 @@ import wx
 import ifigure
 import os
 import sys
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import ifigure.server
 import numpy as np
 
@@ -241,7 +241,7 @@ class FakeSimpleShell(wx.Panel):
         # save last 300 command history
         from ifigure.ifigure_config import rcdir
         file = os.path.join(rcdir, "command_history")
-        f = open(file, 'w')
+        f = open(file, 'wb')
         f.close()
 
 
@@ -276,7 +276,7 @@ class SimpleShell(ShellBase):
         from ifigure.ifigure_config import rcdir
         file = os.path.join(rcdir, "command_history")
         try:
-            f = open(file, 'r')
+            f = open(file, 'rb')
             self.history = pickle.load(f)
             print(self.history)
             f.close
@@ -319,7 +319,7 @@ class SimpleShell(ShellBase):
         # save last 300 command history
         from ifigure.ifigure_config import rcdir
         file = os.path.join(rcdir, "command_history")
-        f = open(file, 'w')
+        f = open(file, 'wb')
         h = self.history[0:1000]
         h.append(self.history[-1])
         pickle.dump(h, f)

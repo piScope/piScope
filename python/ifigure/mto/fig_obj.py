@@ -31,7 +31,7 @@ import ifigure.events
 import logging
 import weakref
 import traceback
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 from matplotlib.lines import Line2D
 from ifigure.utils.cbook import isiterable
 import numpy as np

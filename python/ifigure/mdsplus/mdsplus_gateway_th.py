@@ -10,7 +10,7 @@ import time
 from six.moves import socketserver
 import paramiko
 import binascii
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 from ifigure.utils.daemon import Daemon
 import MDSplus
 

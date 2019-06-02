@@ -41,7 +41,7 @@ import socket
 import subprocess
 import sys
 import shlex
-from six.moves import cPickle
+import ifigure.utils.pickle_wrapper
 from ifigure.utils.cbook import pick_unused_port
 
 

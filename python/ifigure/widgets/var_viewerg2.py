@@ -83,7 +83,7 @@ class VarViewerGValue(object):
         self._allow_eval = False
 
     def get_varlist(self):
-        return self._var.keys()
+        return list(self._var)
 
     def hasvar(self, name):
         return name in self._var
@@ -672,7 +672,7 @@ class VarViewerG(wx.Panel):
 
     def onButton(self, evt, mode):
         from ifigure.ifigure_config import vv_scratch
-        from six.moves import cPickle as pickle
+        import ifigure.utils.pickle_wrapper as pickle
 
         idx = self.grid.GetSelectedRows()
         if len(idx) == 0 and mode != 'paste':

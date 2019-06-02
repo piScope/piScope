@@ -1,4 +1,4 @@
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import select
 import time
 

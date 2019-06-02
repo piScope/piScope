@@ -30,7 +30,7 @@ import shutil
 import tarfile
 import time
 import wx
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import ifigure
 from ifigure.utils.debug import dprint
 import ifigure.ifigure_config as ifigure_config
@@ -817,7 +817,7 @@ class TreeDict(object):
    #
 
     def get_varlist(self):
-        return self._var.keys()
+        return list(self._var)
 
     def hasvar(self, name):
         return name in self._var

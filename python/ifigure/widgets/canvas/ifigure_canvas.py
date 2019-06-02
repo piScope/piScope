@@ -67,7 +67,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, PathPatch
 import matplotlib.path
 import weakref
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 from ifigure.ifigure_config import *
 from ifigure.utils import geom as geom_util
 from ifigure.utils.geom import transform_point
@@ -2690,9 +2690,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         try:
             self.canvas.draw(nogui_reprint=False)
         except:
-            dprint1('canvas draw failed')
             import traceback
             traceback.print_exc()
+            dprint1('canvas draw failed')
 
         self._last_update = time.time()
         self._drawing = False

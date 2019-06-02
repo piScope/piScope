@@ -4,7 +4,7 @@ from ifigure.mto.fig_axes import FigAxes
 from ifigure.widgets.canvas.custom_picker import linehit_test, abs_d
 from ifigure.widgets.undo_redo_history import GlobalHistory, UndoRedoArtistProperty, UndoRedoFigobjProperty, UndoRedoFigobjMethod
 import weakref
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import numpy as np
 
 '''

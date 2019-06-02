@@ -28,7 +28,7 @@ import os
 import time
 import webbrowser
 import weakref
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import wx.aui as aui
 import ifigure
 import ifigure.events
@@ -910,6 +910,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         from ifigure.ifigure_config import scratch as cs
         areas = self.canvas._figure.figobj.get_area()
         data = {"mode": 'area', "areas": areas}
+        
         fid = open(cs+'_area', 'wb')
         pickle.dump(data, fid)
         fid.close()

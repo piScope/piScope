@@ -31,7 +31,7 @@ import socket
 import subprocess
 import sys
 import shlex
-from six.moves import cPickle
+import ifigure.utils.pickle_wrapper as cPickle
 import binascii
 import threading
 import os

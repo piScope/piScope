@@ -63,7 +63,7 @@ import logging
 import weakref
 import shutil
 import wx
-from six.moves import cPickle as pickle
+import ifigure.utils.pickle_wrapper as pickle
 import ifigure.utils.cbook as cbook
 import ifigure.events
 from ifigure.utils.edit_list import DialogEditList
