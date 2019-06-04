@@ -1,5 +1,16 @@
 from __future__ import print_function
+
+import wx
+import sys
+import six
+import os
+import weakref
+import threading
+import time
+import traceback
+
 from ifigure.utils.wx3to4 import tree_InsertItemBefore, wxNamedColour, tree_GetItemData, tree_SetItemData
+
 import ifigure.utils.debug as debug
 from ifigure.widgets.command_history import CommandHistory
 from ifigure.widgets.textctrl_trunc import TextCtrlTrunc
@@ -17,13 +28,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from ifigure.widgets.shellvar_viewer import ShellVarViewer, ShellVarViewerDropTarget
 from ifigure.widgets.var_viewerg2 import VarViewerG, VarViewerGDropTarget
 from ifigure.utils.cbook import ImageFiles, Write2Main, BuildPopUpMenu
-import wx
-import sys
-import os
-import weakref
-import threading
-import time
-import traceback
+
 use_agw = False
 if use_agw:
     import wx.lib.agw.aui as aui
@@ -1046,7 +1051,9 @@ class ProjTreeViewer(wx.Panel):
             data.SetText(t)
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Close()
-        text = unicode(t)
+            
+        text = t if six.PY3 else unicode(t)
+
         self._changed_flag = False
         tdo = wx.TextDataObject(text)
         tdo._source = self

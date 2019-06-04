@@ -23,6 +23,7 @@ def set_default_font():
 
 
 def truncate_str(txt, l):
+    l = int(l)
     if len(txt) < l:
         return txt
     if l > 8:

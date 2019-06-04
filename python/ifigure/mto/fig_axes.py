@@ -1134,8 +1134,9 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 
     # tick color
     def set_axtcolor(self, param, a):
+        from ifigure.utils.cbook import isstringlike
         p = self.get_axis_param(param[0])
-        if isinstance(param[1], unicode):
+        if isstringlike(param[1]):
             p.tcolor = str(param[1])
         else:
             p.tcolor = param[1]
@@ -1149,8 +1150,9 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 
     # tick/label color
     def set_axtlcolor(self, param, a):
+        from ifigure.utils.cbook import isstringlike
         p = self.get_axis_param(param[0])
-        if isinstance(param[1], unicode):
+        if isstringlike(param[1]):
             p.tcolor = str(param[1][0])
         else:
             p.tcolor = param[1][0]

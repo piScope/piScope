@@ -724,9 +724,9 @@ class Color(BitmapButtons):
 
     def _n2a(self, value):
         x = ((value % 256),
-             (value % (256*256)) / 256,
-             (value % (256*256*256)) / 256 / 256,
-             value / (256*256*256))
+             (value % (256*256)) // 256,
+             (value % (256*256*256)) // 256**2,
+             (value // 256**3), )
         return (x[0]/255., x[1]/255., x[2]/255., x[3]/255.)
 
     def __init__(self, *args, **kargs):
@@ -779,7 +779,7 @@ class Color(BitmapButtons):
             val = [0, 0, 0, 0]
         elif isinstance(val, str):
             val = CC().to_rgba(val)
-        elif isinstance(val, unicode):
+        elif six.PY2 and isinstance(val, unicode):
             val = CC().to_rgba(val)
         else:
             if not isinstance(val, str) and len(val) == 3:
@@ -790,7 +790,6 @@ class Color(BitmapButtons):
 #               val = 'none'
 
         self.val = self._a2n(val)
-
         BitmapButtons.SetValue(self, self.val)
 
 
@@ -920,7 +919,7 @@ class ColorSelector(wx.BitmapButton):
         else:
             if isinstance(value, str):
                 bitmap = colorbutton_bitmap(CC().to_rgba(value))
-            elif isinstance(value, unicode):
+            elif six.PY2 and isinstance(value, unicode):
                 bitmap = colorbutton_bitmap(CC().to_rgba(value))
             else:
                 bitmap = colorbutton_bitmap(value)
@@ -1650,10 +1649,17 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         e.Skip()
 
     def GetValue(self):
-        punctuation = {
-            ord(u'\u2018'): unicode("'"),
-            ord(u'\u2019'): unicode("'"),
-        }
+        if six.PY2:
+            punctuation = {
+                ord(u'\u2018'): unicode("'"),
+                ord(u'\u2019'): unicode("'"),
+            }
+        else:
+            punctuation = {
+                ord(u'\u2018'): "'",
+                ord(u'\u2019'): "'",
+            }
+            
         try:
             wxval = wx.TextCtrl.GetValue(self)
             val = str(wxval)
@@ -3483,7 +3489,10 @@ class MDSSource0(wx.Panel):
             p.SetText(txt)
 #            if not mod: p.SetSavePoint()
         except UnicodeDecodeError:
-            p.SetText(unicode(txt, errors='ignore'))
+            if six.PY2:
+                 p.SetText(unicode(txt, errors='ignore'))
+            else:
+                 assert False, "_set_stc_txt got unicode error"
 #            if not mod: p.SetSavePoint()
 
     def onHitAlways(self, evt):
