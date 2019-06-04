@@ -1,23 +1,32 @@
 from __future__ import print_function
-from ifigure.widgets.script_editor import Notebook
-from ifigure.utils.wx3to4 import TextEntryDialog, GridSizer
-from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
-from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
-from ifigure.widgets.book_viewer import FrameWithWindowList
-from collections import OrderedDict
-from ifigure.widgets.script_editor import PythonSTC
-import ifigure.widgets.dialog as dialog
-import wx.stc as stc
-import wx
+
 import os
 import weakref
-import ifigure
+from collections import OrderedDict
+import six
+if six.PY2:
+    unicode = unicode
+else:
+    unicode = str    
+
+import wx
+import wx.stc as stc
 #import  wx.aui as aui
 use_agw = False
 if use_agw:
     import wx.lib.agw.aui as aui
 else:
     import wx.aui as aui
+
+import ifigure
+
+from ifigure.widgets.script_editor import Notebook
+from ifigure.utils.wx3to4 import TextEntryDialog, GridSizer
+from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
+from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
+from ifigure.widgets.book_viewer import FrameWithWindowList
+from ifigure.widgets.script_editor import PythonSTC
+import ifigure.widgets.dialog as dialog
 
 bitmaps = None
 

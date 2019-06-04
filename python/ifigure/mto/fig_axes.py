@@ -1120,9 +1120,6 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
     # axis label color
     def set_axlcolor(self, param, a):
         p = self.get_axis_param(param[0])
-
-#        if isinstance(param[1], unicode):
-#             p.lcolor = str(param[1])
         p.lcolor = param[1][0]
         p.otcolor = param[1][1]
         p.set_tickparam(self.get_axes_artist_by_name(param[0])[0], self)

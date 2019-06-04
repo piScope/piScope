@@ -895,8 +895,9 @@ class VarViewerG(wx.Panel):
         name = gt.get_row_name(row)
         val = obj.getvar(name)
         txt = str(val)
-        if ((isinstance(val, str) or isinstance(val, unicode)) and
-                not val.startswith('=')):
+
+        from ifigure.utils.cbook import isstringlike
+        if (isstringlike(val) and not val.startswith('=')):
             txt = '"'+txt+'"'
 
         if txt.startswith('='):

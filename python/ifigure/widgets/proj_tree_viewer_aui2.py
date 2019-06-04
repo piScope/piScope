@@ -394,7 +394,7 @@ class ProjTreeViewer(wx.Panel):
 #        self.dragItem = e.GetItem()
         app = self.tree.GetTopLevelParent()
         app._text_clip = dictobj.get_full_path()
-        text = unicode(dictobj.get_full_path())
+        text = dictobj.get_full_path() if six.PY3 else unicode(dictobj.get_full_path())
         tdo = wx.TextDataObject(text)
         tds = wx.DropSource(self.tree)
         tds.SetData(tdo)

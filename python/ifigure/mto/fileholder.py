@@ -206,11 +206,12 @@ class FileHolder(object):
         else:
             base = '/'
 #        print mode, path
+
+        from ifigure.utils.cbook import isstringlike
         if (self.hasvar(pathname)):
             # this check is to recovery from a bug
             # once introduced before.
-            if (not isinstance(self.getvar(pathname), str) and
-                    not isinstance(self.getvar(pathname), unicode)):
+            if not isstringlike(self.getvar(pathname)):
                 self.delvar(pathname)
                 return ''
             return os.path.join(base, self.getvar(pathname))

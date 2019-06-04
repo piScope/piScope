@@ -1,16 +1,14 @@
-from ifigure.utils.wx3to4 import TextEntryDialog
-from ifigure.widgets.script_editor import Notebook
-from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
-from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
-from ifigure.widgets.book_viewer import FrameWithWindowList
-from collections import OrderedDict
-from ifigure.widgets.script_editor import PythonSTC
-import ifigure.widgets.dialog as dialog
-import wx.stc as stc
-import wx
 import os
 import weakref
-import ifigure
+import six
+if six.PY2:
+    unicode = unicode
+else:
+    unicode = str
+from collections import OrderedDict
+
+import wx
+import wx.stc as stc
 #import  wx.aui as aui
 use_agw = False  # for agw, onClosePage does not work....
 if use_agw:
@@ -18,9 +16,17 @@ if use_agw:
 else:
     import wx.aui as aui
 
+import ifigure
+from ifigure.utils.wx3to4 import TextEntryDialog
+from ifigure.widgets.script_editor import Notebook
+from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
+from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
+from ifigure.widgets.book_viewer import FrameWithWindowList
+
+from ifigure.widgets.script_editor import PythonSTC
+import ifigure.widgets.dialog as dialog
 
 bitmaps = None
-
 
 class DlgMdsSessionData(DialogWithWindowList):
     # class DlgMdsSessionData(FrameWithWindowList):
