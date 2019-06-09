@@ -83,15 +83,15 @@ extname = 'gfile_ext'
 
 
 def string_split_ig(s, sep):
-    t = re.split(sep, s)
-    id = range(len(t))
-    id.reverse()
-    for i in id:
+    return [x for x in re.split(sep, s) if x != '']
+
+    '''
+    print("here", s, sep, t)
+    for i in reversed(range(len(t))):
         if t[i] == '':
             del t[i]
     return t
-
-
+    '''
 def eval_form2020(s):
     #form2020= '(5e16.9)'
     d = 16
@@ -228,12 +228,14 @@ def add_extra_data(val):
 
 def load_file(file=None):
     def is_ascii(s):
+        return all([ord(c) < 128 for c in s])
+        '''
         try:
             s.decode('ascii')
         except:
             return False
         return True
-#       return all([ord(c) < 128 for c in s])
+        '''
 #   file='/home/shiraiwa/g1101019014.01340'
     f = open(file, 'r')
 
@@ -350,9 +352,9 @@ def load_file(file=None):
     # namelist section
     sec = None
     end_flag = False
+
     while 1:
         line0 = f.readline()
-
         if not is_ascii(line0):
             continue
         if not line0:

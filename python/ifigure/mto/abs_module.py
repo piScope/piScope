@@ -88,7 +88,8 @@ class AbsModule(object):
 #               object.__setattr__(self, mname,
 #                     m.__get__(self, self.__class__))
                     object.__setattr__(self, mname,
-                                       MethodType(m, self, self.__class__))
+#                                       MethodType(m, self, self.__class__))
+                                       MethodType(m, self))
                     self._module_method.append(mname)
 #               print "adding method:", mname
 
