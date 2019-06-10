@@ -1,6 +1,11 @@
 from __future__ import print_function
+import six
 import wx
 import collections
+
+import ifigure.utils.debug as debug
+dprint1, dprint2, dprint3 = debug.init_dprints('iFigureCanvas')
+
 from ifigure.utils.edit_list import TextDropTarget
 
 color_map = {'g': 'green',
@@ -48,19 +53,26 @@ class ShotNumberCtrl(wx.stc.StyledTextCtrl):
 
     def set_style_bits(self):
         txt = str(self.GetValue())
+
         pos = self.GetCurrentPos()
         sel1, sel2 = self.GetSelection()
         arr = [x.split(',') for x in txt.split(';')]
+        
         if txt.startswith('='):
             sarr = [['\x10'*len(xx) for k, xx in enumerate(x)] for x in arr]
         else:
             sarr = [[chr(k % self._len_order)*len(xx)
                      for k, xx in enumerate(x)] for x in arr]
-        sarr = '\x10'.join(['\x10'.join(x) for x in sarr])
-        bbb = ''.join([''.join(x) for x in zip(txt, sarr)])
-        self.ClearAll()
-        bbb.__repr__()
 
+        sarr = '\x10'.join(['\x10'.join(x) for x in sarr])
+        bbb =''.join([''.join(x) for x in zip(txt, sarr)])
+        
+        self.ClearAll()
+        
+        #dprint1("bbb=", bbb.__repr__())
+
+        if six.PY3:
+            bbb = memoryview(bbb.encode('latin-1'))
         self.AddStyledText(bbb)
         self.SetCurrentPos(pos)
         self.SetSelection(sel1, sel2)
@@ -77,7 +89,12 @@ class ShotNumberCtrl(wx.stc.StyledTextCtrl):
 
     def onContentChanged(self, evt):
         self.Unbind(wx.stc.EVT_STC_CHANGE)
-        self.set_style_bits()
+        try:
+            self.set_style_bits()
+        except:
+            import traceback
+            traceback.print_exc()
+            pass
         self.Bind(wx.stc.EVT_STC_CHANGE, self.onContentChanged)
 
     def onKeyPressed(self, event):
