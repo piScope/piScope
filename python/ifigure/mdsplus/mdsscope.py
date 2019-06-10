@@ -1300,7 +1300,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self._rebuild_ifigure_canvas()
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
-        from mdsscope_canvas import MDSScopeCanvas
+        from ifigure.mdsplus.mdsscope_canvas import MDSScopeCanvas
         self.canvas.__class__ = MDSScopeCanvas
 
         self.shot_field_panel.SetSizer(wx.BoxSizer(wx.HORIZONTAL), 1)
