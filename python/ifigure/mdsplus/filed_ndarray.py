@@ -94,9 +94,9 @@ class FiledNDArray(object):
     def _decimate(self, x):
         #        print x.shape
         chunksize = 4000
-        numchunks = x.size/chunksize
-        if x.size/numchunks > chunksize:
-            chunksize = x.size/numchunks
+        numchunks = x.size//chunksize
+        if x.size//numchunks > chunksize:
+            chunksize = x.size//numchunks
 #        if numchunks < 100:
 #        numchunks = 2000
 #        chunksize = x.size/numchunks

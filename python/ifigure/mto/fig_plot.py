@@ -574,7 +574,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         if any(np.isnan(x)):
             self._use_decimate = False
             return False
-        skip = x.size/10
+        skip = x.size//10
         ix = range(10)
         t = [x[ix*skip] - x[(ix+1)*skip] for ix in range(9)]
         # print t
@@ -843,14 +843,14 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         x2 = x[idx]
         y2 = y[idx]
 
-        chunksize = self._decimate_limit/2
-        numchunks = y2.size / chunksize
+        chunksize = self._decimate_limit//2
+        numchunks = y2.size // chunksize
         if numchunks == 0:
             # when size of y2 is too small..
             return x2, y2
 
-        if y2.size/numchunks > chunksize:
-            chunksize = y2.size/numchunks
+        if y2.size//numchunks > chunksize:
+            chunksize = y2.size//numchunks
 
         ychunks_f = y2[:chunksize*numchunks].reshape((-1, numchunks))
         xchunks_f = x2[:chunksize*numchunks].reshape((-1, numchunks))
