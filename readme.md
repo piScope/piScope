@@ -17,15 +17,15 @@ and for the above purposes, &pi;Scope is equipped with
      
 Requirements
 *  python 2.7
-*  wxPython 4.0.1
-*  matplotlib > 1.5
+*  wxPython 4
+*  matplotlib 
 *  PyOpenGL
 *  ... and others.
 
 Typical pip command list...
 
 ```
- pip install wxPython-4.0.1
+ pip install wxPython
  pip install matplotlib
  pip install Pillow
  pip install scipy
