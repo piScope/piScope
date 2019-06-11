@@ -839,7 +839,6 @@ class Axes3DMod(Axes3D):
         cstride = kwargs.pop('cstride', 10)
         idxset3d = []
 
-        from builtins import range
         r = list(range(0, rows, rstride))
         c = list(range(0, cols, cstride))
 
