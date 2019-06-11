@@ -838,8 +838,10 @@ class Axes3DMod(Axes3D):
         rstride = kwargs.pop('rstride', 10)
         cstride = kwargs.pop('cstride', 10)
         idxset3d = []
-        r = list(xrange(0, rows, rstride))
-        c = list(xrange(0, cols, cstride))
+
+        from builtins import range
+        r = list(range(0, rows, rstride))
+        c = list(range(0, cols, cstride))
 
         X3D = X[r, :][:, c].flatten()
         Y3D = Y[r, :][:, c].flatten()

@@ -1078,7 +1078,7 @@ class BookViewerInteractive(object):
 
             if len(w) != nx:
                 raise ValueError('weights should have the same shape as x')
-            for i in xrange(nx):
+            for i in range(nx):
                 if len(w[i]) != len(x[i]):
                     raise ValueError(
                         'weights should have the same shape as x')

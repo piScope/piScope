@@ -212,7 +212,16 @@ class ArtGL(object):
         self._gl_hl = True
         return []
 
-
+    
+    def __gt__(self, other):
+        return False
+    def __ge__(self, other):
+         return False
+    def __le__(self, other):
+        return False
+    def __lt__(self, other):
+        return False
+    
 class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
         self._invalidz = False
@@ -742,8 +751,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     def do_3d_projection(self, renderer):
         #        if not hasattr(renderer, 'use_gl'):
         if hasattr(renderer, '_gl_renderer'):
-            return
-        Poly3DCollection.do_3d_projection(self, renderer)
+            return 1
+        return Poly3DCollection.do_3d_projection(self, renderer)
 
     def set_cmap(self, *args, **kwargs):
         super(Poly3DCollectionGL, self).set_cmap(*args, **kwargs)
@@ -1005,7 +1014,8 @@ class Polygon3DGL(ArtGL, Polygon):
         self._invalidz = True
 
     def do_3d_projection(self, renderer):
-        pass
+        # I am not sure what I should return...
+        return 1
 
     @draw_wrap
     def draw(self, renderer):

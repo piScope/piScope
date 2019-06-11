@@ -29,7 +29,7 @@ def get_color_cycle_list(axes):
     else:
         import six
         color = [six.next(get_color_cycle(axes))
-                 for i in xrange(nx)]
+                 for i in range(nx)]
 
 
 def call_savefig_method(ifigure_canvas, name, *args, **kargs):

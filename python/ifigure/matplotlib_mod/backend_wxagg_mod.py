@@ -220,7 +220,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
                 'Coping bitmap image to System Clipboard.',
                 maximum=10,
                 parent=self.GetTopLevelParent())
-            for x in xrange(10):
+            for x in range(10):
                 wx.Sleep(0.05)
                 dialog.Update(
                     x+1, 'Coping bitmap image to System Clipboard.('+str(x)+'/10')

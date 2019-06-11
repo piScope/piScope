@@ -375,7 +375,7 @@ def MoveItemInList(l, i1, i2):
 
 def ClassNameToFile(s):
     pos = [i for i, e in enumerate(s+'A') if e.isupper()]
-    parts = [s[pos[j]:pos[j+1]] for j in xrange(len(pos)-1)]
+    parts = [s[pos[j]:pos[j+1]] for j in range(len(pos)-1)]
     return '_'.join(parts).lower()
 
 
