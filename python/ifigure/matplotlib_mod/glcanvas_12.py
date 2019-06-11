@@ -2002,7 +2002,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 globals()['multisample'] = 2
             else:
                 globals()['multisample'] = 1
-        from art3d_gl import frame_range
+                
+        from .art3d_gl import frame_range
+        
         target = self.get_container(a)
         box = trans.transform([frame_range[0:2], frame_range[2:4]])
         d = box[1] - box[0]

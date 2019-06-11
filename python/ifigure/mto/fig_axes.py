@@ -1848,13 +1848,13 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         self._set_3d_pane_color(self.get_3d_pane_colorcode())
 
     def get_3d_pane_colorname(self):
-        return zip(*self._3d_pane_color)[0]
+        return list(zip(*self._3d_pane_color))[0]
 
     def get_3d_pane_coloralpha(self):
-        return zip(*self._3d_pane_color)[1]
+        return list(zip(*self._3d_pane_color))[1]
 
     def get_3d_pane_colorcode(self):
-        return zip(*self._3d_pane_color)[2]
+        return list(zip(*self._3d_pane_color))[2]
 
     def _set_3d_pane_color(self, code):
         from ifigure.matplotlib_mod.axes_mod import AxesMod

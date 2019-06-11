@@ -32,10 +32,10 @@ conv_kernel = conv_kernel/np.sum(conv_kernel)
 
 
 def convert_to_gl(obj, zs=0, zdir='z'):
-    from art3d_gl import polygon_2d_to_gl
-    from art3d_gl import line_3d_to_gl
-    from art3d_gl import poly_collection_3d_to_gl
-    from art3d_gl import line_collection_3d_to_gl
+    from .art3d_gl import polygon_2d_to_gl
+    from .art3d_gl import line_3d_to_gl
+    from .art3d_gl import poly_collection_3d_to_gl
+    from .art3d_gl import line_collection_3d_to_gl
     from matplotlib.patches import Polygon
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3D, \
         poly_collection_2d_to_3d, Line3DCollection
@@ -549,7 +549,7 @@ class Axes3DMod(Axes3D):
 
     @use_gl_switch
     def plot(self, *args, **kwargs):
-        from art3d_gl import line_3d_to_gl
+        from .art3d_gl import line_3d_to_gl
         fc = kwargs.pop('facecolor', None)
         gl_offset = kwargs.pop('gl_offset', (0, 0, 0))
         array_idx = kwargs.pop('array_idx', None)
@@ -562,7 +562,7 @@ class Axes3DMod(Axes3D):
         return lines
 
     def fill(self, *args, **kwargs):
-        from art3d_gl import polygon_2d_to_gl
+        from .art3d_gl import polygon_2d_to_gl
         zs = kwargs.pop('zs', 0)
         zdir = kwargs.pop('zdir', 'z')
         a = Axes3D.fill(self, *args, **kwargs)
@@ -572,7 +572,7 @@ class Axes3DMod(Axes3D):
         return a
 
     def fill_between(self, *args, **kwargs):
-        from art3d_gl import polygon_2d_to_gl
+        from .art3d_gl import polygon_2d_to_gl
         zs = kwargs.pop('zs', 0)
         zdir = kwargs.pop('zdir', 'z')
         a = Axes3D.fill_between(self, *args, **kwargs)
@@ -581,7 +581,7 @@ class Axes3DMod(Axes3D):
         return a
 
     def fill_betweenx(self, *args, **kwargs):
-        from art3d_gl import polygon_2d_to_gl
+        from .art3d_gl import polygon_2d_to_gl
         zs = kwargs.pop('zs', 0)
         zdir = kwargs.pop('zdir', 'z')
         a = Axes3D.fill_betweenx(self, *args, **kwargs)
@@ -600,7 +600,7 @@ class Axes3DMod(Axes3D):
         return a
 
     def contour(self, *args, **kwargs):
-        from art3d_gl import poly_collection_3d_to_gl
+        from .art3d_gl import poly_collection_3d_to_gl
         offset = kwargs['offset'] if 'offset' in kwargs else None
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contour(self, *args, **kwargs)
@@ -621,14 +621,14 @@ class Axes3DMod(Axes3D):
         im_center = kwargs.pop('im_center', (0, 0))
         im_axes = kwargs.pop('im_axes', [(1, 0, 0), (0, 1, 0)])
 
-        from art3d_gl import image_to_gl
+        from .art3d_gl import image_to_gl
         im = Axes3D.imshow(self, *args, **kwargs)
         image_to_gl(im)
         im.set_3dpath(im_center, im_axes)
         return im
 
     def contourf(self, *args, **kwargs):
-        from art3d_gl import poly_collection_3d_to_gl
+        from .art3d_gl import poly_collection_3d_to_gl
         offset = kwargs['offset'] if 'offset' in kwargs else None
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contourf(self, *args, **kwargs)
@@ -896,7 +896,7 @@ class Axes3DMod(Axes3D):
 
 
         '''
-        from art3d_gl import poly_collection_3d_to_gl
+        from .art3d_gl import poly_collection_3d_to_gl
         from matplotlib.tri.triangulation import Triangulation
 
         cz = kwargs.pop('cz', False)
@@ -1074,7 +1074,7 @@ class Axes3DMod(Axes3D):
                                v[..., 2].flatten(),
                                norms,  idxset]
 
-        from art3d_gl import Poly3DCollectionGL
+        from .art3d_gl import Poly3DCollectionGL
         if len(args) == 1:
             a = Poly3DCollectionGL(v[:2, ...], **kwargs)
         else:
@@ -1276,7 +1276,7 @@ class Axes3DMod(Axes3D):
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
 
             gl_len = len(gl_obj)
-            if gl_obj > 0:
+            if gl_len > 0:
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
                         glcanvas.init):
