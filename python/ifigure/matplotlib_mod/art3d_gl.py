@@ -212,7 +212,7 @@ class ArtGL(object):
         self._gl_hl = True
         return []
 
-    
+    ## we need a comparision operator defined for PY3
     def __gt__(self, other):
         return False
     def __ge__(self, other):
