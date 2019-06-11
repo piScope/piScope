@@ -16,6 +16,7 @@ and for the above purposes, &pi;Scope is equipped with
  * draw 3D (OpenGL) in matplotlib canvas.
      
 Requirements
+*  Python2.7 or 3.6
 *  wxPython 4
 *  matplotlib 
 *  PyOpenGL
