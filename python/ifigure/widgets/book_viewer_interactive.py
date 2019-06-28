@@ -1618,7 +1618,6 @@ class BookViewerInteractive(object):
     @allow_interactive_call2
     def property(self, obj, *args, **kargs):
         from ifigure.widgets.artist_widgets import listparam, call_getter
-        from types import StringTypes
         ret = obj.property_for_shell()
         tags = None
         if isinstance(ret, tuple):
@@ -1677,8 +1676,7 @@ class BookViewerInteractive(object):
             if len(obj._artists) == 1:
                 vv = (vv,)
             from ifigure.utils.cbook import isiterable
-            # if isinstance(vv, StringTypes) or not isiterable(vv) :
-            #   vv = [vv]*len(obj._artists)
+
             for a, v in zip(obj._artists, vv):
                 name = ll[4]
                 sw = ll[5]

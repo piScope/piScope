@@ -221,6 +221,9 @@ class ArtGL(object):
         return False
     def __lt__(self, other):
         return False
+    def get_alpha_float(self):
+        if self.get_alpha() is None: return 1
+        return self.get_alpha()
     
 class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
@@ -334,7 +337,10 @@ class LineGL(ArtGL, Line3D):
 
             self._invalidz = False
             gc = renderer.new_gc()
-            ln_color_rgba = self._get_rgba_ln_color()
+
+            from matplotlib.colors import to_rgba            
+            ln_color_rgba = to_rgba(self._color, self._alpha)
+
             gc.set_foreground(ln_color_rgba, isRGBA=True)
             gc.set_linewidth(self._linewidth)
 
