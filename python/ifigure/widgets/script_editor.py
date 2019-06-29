@@ -1561,7 +1561,7 @@ class ScriptEditor(wx.Panel):
                 except Exception:
                     logging.exception("File Open Error"+file)
                     continue
-                if not reload:
+                if not do_reload:
                     continue
                 idx = self.file_list.index(file)
                 ipage = self.nb.GetPageIndex(self.page_list[idx])

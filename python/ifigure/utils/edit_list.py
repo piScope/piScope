@@ -1679,6 +1679,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             if six.PY2:
                 return val.decode('string_escape')
             else:
+                if isinstance(val, str): val = val.encode()
                 return val.decode('unicode_escape')                
         else:
             return val
@@ -3598,6 +3599,7 @@ class MDSSource(wx.Panel):
             if six.PY2:
                 ll = l.decode('string_escape')
             else:
+                if isinstance(l, str): l = l.encode()                
                 ll = l.decode('unicode_escape')
                 
             l4.append([ll, None, 141, {"label": "Edit...",

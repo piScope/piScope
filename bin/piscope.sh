@@ -5,6 +5,7 @@
 ###    start up script for piescope
 ###    usage : piscope -e {exec} {file}
 INTERPRETER=`which python`
+
 COM='""'
 #
 #

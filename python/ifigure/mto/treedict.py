@@ -1648,6 +1648,7 @@ class TreeDict(object):
                 traceback.print_exc()
                 #print('File broken !!!!!')
                 break
+
             if child is not None:
                 obj.add_child(child, keep_zorder=keep_zorder)
 #            if child._name == 'book7': break
