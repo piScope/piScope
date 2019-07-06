@@ -74,8 +74,8 @@ def axes_picker(artist, evt, canvas=None):
     alist = reversed(
         sorted(
             [(a.zorder, a) for a in aaa
-                if (hasattr(a, "figobj") and a in a.figobj.get_artists_for_pick())]
-        )
+                if (hasattr(a, "figobj") and a in a.figobj.get_artists_for_pick())],
+             key = lambda x: x[0])
     )
 
     # print [x[1].figobj for x in alist]
@@ -179,8 +179,8 @@ def fig_picker(artist, evt):
     alist = reversed(
         sorted(
             [(a.zorder, a) for a in artist.get_children()
-             if (hasattr(a, "figobj") and a in a.figobj.get_artists_for_pick())]
-        )
+             if (hasattr(a, "figobj") and a in a.figobj.get_artists_for_pick())],
+             key = lambda x: x[0])
     )
     for z, a in alist:
         flag = True

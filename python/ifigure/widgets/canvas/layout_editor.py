@@ -1096,7 +1096,7 @@ class layout_editor(object):
         # adjusting area
         w = sum([a1[2] for a1 in areas])
         w = w/len(areas)
-        tmp = sorted([(a1[0], a1) for a1 in areas])
+        tmp = sorted([(a1[0], a1) for a1 in areas],  key=lambda x:x[0])
         x0 = tmp[0][0]
         i = 0
         for void, a1 in tmp:
@@ -1114,7 +1114,7 @@ class layout_editor(object):
         # adjusting area
         h = sum([a1[3] for a1 in areas])
         h = h/len(areas)
-        tmp = sorted([(a1[1], a1) for a1 in areas])
+        tmp = sorted([(a1[1], a1) for a1 in areas],  key=lambda x:x[0])
         y0 = tmp[0][0]
         i = 0
         for void, a1 in tmp:
@@ -1134,7 +1134,7 @@ class layout_editor(object):
         areas = self._search_connecting_area(area_hit, True)
 
         areas = [b[1] for b in
-                 sorted([(a[0], a) for a in areas])]
+                 sorted([(a[0], a) for a in areas],  key=lambda x:x[0])]
 
         f_axes_arr, ac = self._checkup_edge_only_leftbottom(areas, 0)
         new_len = self._calc_axis_edge_only_newlen_bottomleft(
@@ -1163,7 +1163,7 @@ class layout_editor(object):
 
         # sort area
         areas = [b[1] for b in
-                 sorted([(a[1], a) for a in areas])]
+                 sorted([(a[1], a) for a in areas],  key=lambda x:x[0])]
 
         # set _edge_only
         f_axes_arr, ac = self._checkup_edge_only_leftbottom(areas, 1)
@@ -1242,7 +1242,7 @@ class layout_editor(object):
                                                    'edge_only', edge_only))
                 f_axes_arr.append(f_axes)
         f_axes_arr = [b[1] for b in
-                      sorted([(a.getp("area")[idx], a) for a in f_axes_arr])]
+                      sorted([(a.getp("area")[idx], a) for a in f_axes_arr], key=lambda x:x[0])]
         return f_axes_arr, ac
 
     def _finish_up_area_edit(self, request=None, ac=None, name='area'):

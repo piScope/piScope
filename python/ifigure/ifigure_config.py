@@ -1,4 +1,12 @@
 from __future__ import print_function
+
+import matplotlib
+try:
+    # matplotlib3 has this option
+    matplotlib.set_loglevel("error")
+except:
+    pass
+
 import ifigure
 import matplotlib.cm
 import weakref

@@ -1686,7 +1686,7 @@ def quit():
     from __main__ import ifig_app
     ifig_app.onQuit()
 
-
+    
 def glinfo():
     '''
     show OpenGL information

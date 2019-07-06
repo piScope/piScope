@@ -2072,7 +2072,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         # reordering floating axes if necessary
         #
         floating_axes = [x for x in sorted([(axes.figobj.getp('zorder'), axes) for axes
-                                            in self._figure.axes if axes.figobj._floating])]
+                                            in self._figure.axes if axes.figobj._floating],
+                                            key = lambda x:x[0])]
 
         if len(floating_axes) != 0:
             fixed_axes_zordermax = max([axes.figobj.getp('zorder') for axes
@@ -2086,7 +2087,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         alist = [a for a in
                  reversed(sorted([(o.getp('zorder'), o)
-                                  for o in figax_list]))]
+                                  for o in figax_list], key = lambda x:x[0]))]
 
         if len(alist) == 0:
             return

@@ -775,8 +775,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if not aa in self.vbo:
                 self.vbo[aa] = weakref.WeakKeyDictionary()
             # aa:axes, a: aritsit
-            artists = [(a.get_alpha_float(), a)for a in self.artists_data[aa]]
-            artists = list(reversed(sorted(artists)))            
+            artists = [(a.get_alpha_float(), a) for a in self.artists_data[aa]]
+            artists = list(reversed(sorted(artists, key=lambda x:x[0])))            
             artists = ([(alpha, a) for alpha, a in artists if not a._gl_isLast] +
                        [(alpha, a) for alpha, a in artists if a._gl_isLast])
             for alpha, a in artists:
