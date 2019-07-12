@@ -424,10 +424,10 @@ class VarViewerGridTable(GridTableBase):
                     return "expression"
             except:
                 pass
-            typstr = str(type(val))
-            txt = typstr[5:]
-            txt = txt[:-1]
-            return txt
+            #typstr = str(type(val))
+            #txt = typstr[5:]
+            #txt = txt[:-1]
+            return type(val).__name__
         if col == 2:
             val = obj.getvar(name)
             if hasattr(val, 'shape'):

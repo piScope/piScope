@@ -577,6 +577,9 @@ class TreeDict(object):
             bname = name
             i = 0
             conflict = False
+            if bname == '__pycache__':
+                #print('skipping ' + bname)
+                return
             flag, bname1, do_rename = name_check(bname, warning)
             if not flag:
                 print('can not add '+name)
