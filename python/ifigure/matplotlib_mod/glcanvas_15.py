@@ -797,7 +797,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     continue
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
-                           (int(current_id)/256 % 256)/255.,
+                           (int(current_id)//256 % 256)/255.,
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
@@ -1026,8 +1026,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if multisample > 1:
             frame2 = frames[1]
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT1)
@@ -1115,8 +1115,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
         if multisample > 1:
             frame2 = frames[1]
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT0)
@@ -2157,7 +2157,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 col = np.hstack(col).astype(np.float32)
             elif len(facecolor) == len(paths[4]):
                 # non index array/flat
-                c = len(paths[0])/len(paths[4])
+                c = len(paths[0])//len(paths[4])
                 col = np.array(facecolor, copy=False).astype(
                     np.float32, copy=False)
                 col = np.hstack([col]*c)
@@ -2189,7 +2189,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['ec'].need_update = False
         if vbos['vertex_id'] is None or vbos['vertex_id'].need_update:
             counts = vbos['counts']
-            l = nindex/counts   # number of faces
+            l = nindex//counts   # number of faces
             nverts = len(paths[0])
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()

@@ -372,8 +372,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         bufs = [buf, dbuf]
 
         if multisample > 1:
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             frame2 = glGenFramebuffers(1)
             glBindFramebuffer(GL_FRAMEBUFFER, frame2)
@@ -701,7 +701,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     continue
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
-                           (int(current_id)/256 % 256)/255.,
+                           (int(current_id)//256 % 256)/255.,
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
                     self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
@@ -939,8 +939,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if multisample > 1:
             frame2 = frames[1]
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT1)
@@ -1028,8 +1028,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
         if multisample > 1:
             frame2 = frames[1]
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT0)
