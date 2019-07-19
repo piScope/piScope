@@ -734,18 +734,26 @@ class PyModel(PyCode, AbsModuleContainer, AbsScriptContainer,
             # expression is stored as it is
             try:
                 root = self.get_root_parent()
-                exec(root.name + '= self.get_root_parent()')
-                exec('ret'+txt)
+                ldict = locals().copy()              
+                exec(root.name + '= self.get_root_parent()', globals(),ldict)
+                exec('ret'+txt, globals(),ldict)
+                ret = ldict['ret']                
             except:
+                import traceback
+                traceback.print_exc()
                 ret = None
         else:
             if txt.startswith('.'):
                 txt = self.get_full_path()+txt
             try:
                 root = self.get_root_parent()
-                exec(root.name + '= self.get_root_parent()')
-                exec('ret='+txt)
+                ldict = locals().copy()
+                exec(root.name + '= self.get_root_parent()', globals(),ldict)
+                exec('ret='+txt, globals(),ldict)
+                ret = ldict['ret']
             except:
+                import traceback
+                traceback.print_exc()
                 ret = None
         return ret
 

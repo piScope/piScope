@@ -74,6 +74,7 @@ from ifigure.interactive import glinfo
 
 if six.PY3:
     from importlib import reload
+    from ifigure.interactive import futurize
 else:
     from builtins import reload
 

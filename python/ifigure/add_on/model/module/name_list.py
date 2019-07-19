@@ -174,7 +174,7 @@ def interpret_line(line):
 def string_split_ig(s, sep):
     t = re.split(sep, s)
     id = range(len(t))
-    id.reverse()
+    id = reversed(id)
     for i in id:
         if t[i] == '':
             del t[i]
