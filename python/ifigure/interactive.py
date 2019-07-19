@@ -1481,7 +1481,47 @@ def video(*args, **kargs):
 
     return v
 
+def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, stage2=True, help=False):
+    '''
+    futurize : an interface to PY2->PY3 conversion utility.
+       
+       it uses futurizer in future module. Default actin is to perform
+       both stage1 and stage2 conversion. 
 
+       See more detail in 
+       https://python-future.org/futurize.html#forwards-conversion
+
+       obj : either None, Folder, Script
+           None: convert all scripts in project
+           Folder: convert all scripts in folder
+           Script: convert one script
+
+       dryrun: does not save the conveted script.
+       stage1: perform stage 1 conversion
+       stage2: perform stage 2 conversion
+    '''
+    
+    from ifigure.utils.future import futurizer as ft
+    futurizer = ft()
+    if help == True:
+        futurizer.process_proj(dryrun=False, verbose=False, unicode=True, stage1=True, stage2=True,
+                               help=True)
+        return
+    if obj is None:
+        futurizer.process_proj(dryrun=dryrun, verbose=verbose, unicode=unicode,
+                              stage1=stage1, stage2=stage2, help=False)
+    from ifigure.mto.py_script import PyScript
+    from ifigure.mto.py_code import PyFolder
+    if isinstance(obj, PyScript):
+        futurizer.process_script(obj, dryrun=dryrun, verbose=verbose, unicode=unicode,
+                                 stage1=stage1, stage2=stage2, help=False)
+    elif isinstance(obj, PyFolder):
+        futurizer.process_folder(obj, dryrun=dryrun, verbose=verbose, unicode=unicode,
+                                 stage1=stage1, stage2=stage2, help=False)
+    else:
+        pass
+
+        
 def scopenw(book):
     from ifigure.mdsplus.mdsscope_nw import MDSScopeNW
     return MDSScopeNW(book=book)
