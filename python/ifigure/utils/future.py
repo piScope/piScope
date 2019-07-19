@@ -78,6 +78,7 @@ class futurizer():
                 self.process_script(obj,  dryrun=dryrun, verbose=verbose, unicode=unicode,
                       stage1=stage1, stage2=stage2, help=False)
                 
+                
     def process_proj(self, dryrun=False, verbose=False, unicode=True,
                      stage1=True, stage2=False, help=False):
         import wx
