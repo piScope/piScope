@@ -5,12 +5,27 @@
 import sys
 import os
 import subprocess as sp
+import ifigure
+futurize = None
 
+##
+futurize1 = os.path.join(os.path.dirname(os.path.realpath(sys.executable)), 'futurize')
+if os.path.exists(futurize1):
+    futurize = futurize1
 
-futurize = os.path.join(os.path.dirname(os.path.realpath(sys.executable)), 'futurize')
-if not os.path.exists(futurize):
-    futurize = None
-
+##    
+futurize2 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.__file__))), 'bin', 'futurize')
+if os.path.exists(futurize2):
+    futurize = futurize2
+    
+## if piScope is installed using the same prefix as futurize, this one find it
+futurize3 = os.path.join(os.path.dirname(
+                         os.path.dirname(
+                         os.path.dirname(
+                         os.path.dirname(                             
+                         os.path.dirname(ifigure.__file__))))), 'bin', 'futurize')
+if os.path.exists(futurize3):
+    futurize = futurize3
     
 def call_futurize(file=None, dryrun=False, verbose=False, unicode=True,
                   stage1=True, stage2=False, help=False):
@@ -84,7 +99,7 @@ class futurizer():
         import wx
         proj = wx.GetApp().TopWindow.proj
         self.process_tree(proj,  dryrun=dryrun, verbose=verbose, unicode=unicode,
-                          stage1=stage1, stage2=stage2, help=False)
+                          stage1=stage1, stage2=stage2, help=help)
         
     process_folder = process_tree
                      
