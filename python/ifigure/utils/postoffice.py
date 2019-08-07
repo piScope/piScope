@@ -17,6 +17,7 @@ from ifigure.widgets.dlg_preference import PrefComponent
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('PostOffice')
 
+coding = 'utf-8'
 
 class PostOffice(PrefComponent):
     def __init__(self):
@@ -49,7 +50,7 @@ class PostOffice(PrefComponent):
                            ssl_username=p_dlg.result[0],
                            ssl_passwd=p_dlg.result[1]):
                 self.username = p_dlg.result[0]
-                self.passwd = binascii.b2a_hex(p_dlg.result[1])
+                self.passwd = binascii.b2a_hex(p_dlg.result[1].encode(coding))
             else:
                 print('Wrong username/password')
         p_dlg.Destroy()
@@ -152,7 +153,8 @@ class PostOffice(PrefComponent):
         else:
             return
 
-        passwd = binascii.a2b_hex(self.passwd)
+        passwd = binascii.a2b_hex(self.passwd).decode(coding)
+        
         sendMail([to], subject, message, files=[file],
                  server=self.setting["server"],
                  ssl=(self.setting["use_ssl"] == "on"),
