@@ -82,31 +82,35 @@ class FrameWithWindowList(wx.Frame):
             wx.GetApp().process_child_focus(self)
 
             from ifigure.utils.cbook import get_current_display_size
-            x0, y0, xd, yd = get_current_display_size(self)
-
-            #
-            #  Make sure that window is "visible".
-            #
+            
             w, h = self.GetPosition()
+            w1 = w
+            h1 = h
             sw, sh = self.GetSize()
-            xm = 10
-            ym = 25
-            do_set = False
-            if w + sw <= xm:
-                w = -sw + xm
-                do_set = True
-            elif w > xd - xm:
-                w = xd - xm
-                do_set = True
-            if h <= 0:
-                h = ym
-                do_set = True
-            elif h > yd - ym:
-                h = yd - ym
-                do_set = True
-            if do_set:
+            #print("window", w, h, sw, sh)
+            check = [False, False, False, False]
+            for i in range(wx.Display.GetCount()):
+                x0, y0, xd, yd = wx.Display(i).GetGeometry()
+                #print("display", x0, y0, xd, yd)
+                #
+                #  Make sure that window is "visible".
+                #
+                xm = 10
+                ym = 25
+                do_set = False
+                if w > x0 + xm and w <= x0 + xd -xm and h > y0 + ym and h < y0 + yd - ym:
+                    check[0] = True
+                if w + sw> x0 + xm and w +sw <= x0 + xd -xm and h > y0 + ym and h < y0 + yd - ym:
+                    check[1] = True
+                if w > x0 + xm and w <= x0 + xd -xm and h + sh> y0 + ym and h + sh < y0 + yd - ym:
+                    check[2] = True
+                if w + sw > x0 + xm and w + sw <= x0 + xd -xm and h + sh> y0 + ym and h + sh < y0 + yd - ym:
+                    check[3] = True
+
+            if not any(check):
                 dprint2("adjusting window position", (w, h))
-                self.SetPosition((w, h))
+                #self.SetPosition((w1, h1))
+                self.SetPosition((10, 10))
         evt.Skip()
 
     def onChildFocus(self, evt):
