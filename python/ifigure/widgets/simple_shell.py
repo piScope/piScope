@@ -89,7 +89,7 @@ def sx(strin=''):
         txt = os.getcwd()
     else:
         import subprocess as sp
-        p = sp.Popen(strin, shell=True, stdout=sp.PIPE, stderr=sp.STDOUT)
+        p = sp.Popen(strin, shell=True, stdout=sp.PIPE, stderr=sp.STDOUT, universal_newlines=True)
         t = Thread(target=run_in_thread, args=(p,))
         t.daemon = True  # thread dies with the program
         t.start()
