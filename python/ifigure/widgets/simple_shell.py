@@ -89,7 +89,8 @@ def sx(strin=''):
         txt = os.getcwd()
     else:
         import subprocess as sp
-        p = sp.Popen(strin, shell=True, stdout=sp.PIPE, stderr=sp.STDOUT)
+        p = sp.Popen(strin, shell=True, stdout=sp.PIPE,
+                     stderr=sp.STDOUT, universal_newlines=True)
         t = Thread(target=run_in_thread, args=(p,))
         t.daemon = True  # thread dies with the program
         t.start()
@@ -480,7 +481,14 @@ class SimpleShell(ShellBase):
                 val = self.lvar[key]
                 t0 = type(val).__name__
                 text = text_repr(val)
-                if hasattr(val, 'shape'):
+                try:
+                    hasshape = hasattr(val, 'shape')
+                except:
+                    import traceback
+                    traceback.print_exc()
+                    hasshape = False
+                
+                if hasshape:
                     llist.append((key, t0, text, str(val.shape)))
                 else:
                     llist.append((key, t0, text, ''))

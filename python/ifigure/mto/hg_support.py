@@ -993,7 +993,7 @@ try:
             return self._hg_rev_str
 
         def hg_set_projtreeviewer_status(self, repo=None, flag=''):
-
+            print("checking HG", self.owndir())
             if repo is None:
                 repo = hgapi.Repo(self.owndir())
             l = self.hg_changesets_list(repo=repo)

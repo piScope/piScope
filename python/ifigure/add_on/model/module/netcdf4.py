@@ -211,7 +211,7 @@ def load_netcdf_file(obj):
 def onWriteNCFile(self, e=None):
     open_dlg = wx.FileDialog(wx.GetApp().TopWindow,
                              message='Enter New NC file',
-                             style=wx.SAVE,
+                             style=wx.FD_SAVE,
                              wildcard='NETCDF3_CLASSIC|*.nc|NETCDF3_64Bit|*.nc|NETCDF4(HDF5 with CDF4API)|*.hdf|NETCDF4_CLASIC(only CDF3)|*.hdf')
     if open_dlg.ShowModal() != wx.ID_OK:
         open_dlg.Destroy()
@@ -271,7 +271,7 @@ def onExportFile(self, evt=None):
                              defaultDir=dir,
                              defaultFile=os.path.basename(file),
                              wildcard='Any|*',
-                             style=wx.SAVE)
+                             style=wx.FD_SAVE)
     if open_dlg.ShowModal() != wx.ID_OK:
         open_dlg.Destroy()
         return

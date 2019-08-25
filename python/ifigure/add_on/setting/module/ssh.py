@@ -151,7 +151,7 @@ def onSend(self, file=None, rdir=None, rfile=None):
     if file is None:
         open_dlg = wx.FileDialog(None,
                                  message="Select file to send",
-                                 style=wx.SAVE)
+                                 style=wx.FD_SAVE)
         if open_dlg.ShowModal() != wx.ID_OK:
             open_dlg.Destroy()
             return
