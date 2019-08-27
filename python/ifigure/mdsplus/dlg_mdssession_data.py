@@ -102,7 +102,8 @@ class DlgMdsSessionData(DialogWithWindowList):
         # big_panel
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self.GetSizer().Add(panel1, 1, wx.EXPAND)
-        bsizer = wx.GridSizer(1, 5)
+        from ifigure.utils.wx3to4 import GridSizer
+        bsizer = GridSizer(1, 5)
         bsizer.AddStretchSpacer()
         self.GetSizer().Add(bsizer, 0, wx.EXPAND | wx.ALL, 1)
         bsizer.Add(bt_save, 1, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL, 3)
@@ -139,7 +140,8 @@ class DlgMdsSessionData(DialogWithWindowList):
         # self.set_accelerator_table()
         self.nb.SetSelection(0)
         wx.GetApp().add_palette(self)
-
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+        
     def onClose(self, evt):
         wx.GetApp().rm_palette(self)
         self.Destroy()

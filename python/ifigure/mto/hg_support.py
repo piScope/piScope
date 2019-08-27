@@ -105,7 +105,8 @@ try:
                 os.chdir(obj.owndir())
                 p = subprocess.Popen(shlex.split('hg verify'),
                                      stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
+                                     stderr=subprocess.STDOUT,
+                                     universal_newlines = True)
                 aaa = p.stdout.readlines()
                 for a in aaa:
                     if a.find('damaged') != -1:

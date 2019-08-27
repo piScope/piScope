@@ -594,7 +594,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         else:
             x, y, z, s, c, xerr, yerr = self._eval_xy()  # this handles "use_var"
         if x is None:
-            return
+            return xrange
         if scale == 'log':
             x = mask_negative(x)
         return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])

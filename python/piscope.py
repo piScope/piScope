@@ -10,6 +10,7 @@ if __name__ == '__main__':
     import wx
     import weakref
     import matplotlib
+    import shutil
     matplotlib.use('WXAGG')
 
     '''
