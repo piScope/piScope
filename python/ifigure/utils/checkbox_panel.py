@@ -40,6 +40,7 @@ class CheckBoxs(wx.Panel):
 #           print r, c
             sizer.Add(p, 1, wx.EXPAND)
             p.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
+            p.Bind(wx.EVT_CHECKBOX, self.onHitCheck)
         self.Layout()
         self.labels = labels
         self._init = False
@@ -63,6 +64,12 @@ class CheckBoxs(wx.Panel):
     def ResetChecks(self, evt=None):
         self.SetValue(self._init_values)
 
+    def onHitCheck(self, evt):
+        evt.SetEventObject(self)
+        print(self)
+        if hasattr(self.GetParent(), "send_event"):
+            self.GetParent().send_event(self, evt)
+        
     def onRightUp(self, evt):
         l = [('Select all',   self.SelAll, None),
              ('Clear all',    self.UnselAll, None), ]
