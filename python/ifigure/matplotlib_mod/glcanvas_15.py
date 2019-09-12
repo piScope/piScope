@@ -407,13 +407,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def OnPaint(self, event):
         # print  self._do_draw_mpl_artists
-        dc = wx.PaintDC(self)
+        #dc = wx.PaintDC(self)
         self.SetCurrent(MyGLCanvas.context)
 #        fbo = glGenRenderbuffers(1)
         if not self.init:
             self.InitGL()
             self.init = True
-        self.OnDraw()
+        event.Skip()
+        #self.OnDraw()
 
     def OnSize(self, event):
         if MyGLCanvas.offscreen and self.GetSize()[0] > 2:
