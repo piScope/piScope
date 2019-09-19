@@ -1329,6 +1329,13 @@ class ifigure_app(BookViewerFrame):
                 self, 'Save job is running. Application will close after \ndata is saved.', 'Please wait', 0)
             lc.acquire()
         lc.release()
+
+        import multiprocessing
+        children = multiprocessing.active_children()
+        if len(children) > 0:
+            dprint1("terminating active children : " + str(len(children)))
+            for x in children: x.terminate()
+        
         dprint1("ending program...(window close)")
         from ifigure.widgets.debugger import is_waiting
         if is_waiting():
