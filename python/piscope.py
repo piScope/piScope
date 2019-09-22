@@ -1,4 +1,5 @@
 from __future__ import print_function
+import multiprocessing as mp
 #import sys, os, wx, weakref
 #sys.path = [os.path.dirname(os.path.dirname(__file__)),] + sys.path
 
@@ -11,6 +12,8 @@ if __name__ == '__main__':
     import weakref
     import matplotlib
     import shutil
+    if 'forkserver' in mp.get_all_start_methods():
+       mp.set_start_method('forkserver')
     matplotlib.use('WXAGG')
 
     '''
