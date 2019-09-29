@@ -33,6 +33,8 @@ Var0Changed = wx.NewEventType()
 TD_EVT_VAR0CHANGED = wx.PyEventBinder(Var0Changed, 1)
 ArtistSelection = wx.NewEventType()
 TD_EVT_ARTIST_SELECTION = wx.PyEventBinder(ArtistSelection, 1)
+ArtistDragSelection = wx.NewEventType()
+TD_EVT_ARTIST_DRAGSELECTION = wx.PyEventBinder(ArtistDragSelection, 1)
 ArtistReplace = wx.NewEventType()
 TD_EVT_ARTIST_REPLACE = wx.PyEventBinder(ArtistReplace, 1)
 ThreadStart = wx.NewEventType()
@@ -191,6 +193,28 @@ def SendSelectionEvent(td, w=None, selections=[], mode='replace', useProcessEven
     post_process_event(evt, handler, useProcessEvent)
 #    handler.ProcessEvent(evt)
 
+def SendDragSelectionEvent(td, w=None, selections=[], axes = None, useProcessEvent=True,
+                           selected_index = None):
+    # events sent when figobj is selected
+    # selections can be self.selection or self.axes_selection
+    if td is None:
+        return
+    if td.get_root_parent().app is None:
+        return
+    
+    viewer = w.GetTopLevelParent()
+    if viewer is None: return
+    
+    evt = TreeDictEvent(ArtistDragSelection, wx.ID_ANY)
+    evt.selections = selections
+    evt.SetTreeDict(td)
+    evt.SetEventObject(deref_proxy(w))
+    evt.event_name = 'multiselection'
+    evt.mode = 'multi'
+    evt.selected_index = selected_index
+
+    handler = viewer.GetEventHandler()    
+    post_process_event(evt, handler, useProcessEvent)
 
 def SendReplaceEvent(td, w=None, a1=None, a2=None,
                      hl=False, a1all=None, a2all=None):

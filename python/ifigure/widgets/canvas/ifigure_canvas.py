@@ -236,6 +236,7 @@ class draghandler_rb_d(object):
 
     def dragdone(self, evt):
         self.unbind_mpl()
+        
         if self.rb is not None:
             self.panel._figure.lines.remove(self.rb)
             self.rb = None
@@ -267,7 +268,6 @@ class draghandler_rb_d(object):
         self._x = x
         self._y = y
         return x, y
-
 
 class draghandler_line_d(object):
     '''
@@ -703,6 +703,33 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
             GlobalHistory().get_history(window).make_entry(actions,
                                                            menu_name='3D view')
 
+
+class ifigure_canvas_draghandler_3d_sel(draghandler_base2,
+                                        draghandler_rb_d):
+    def dragdone(self, evt):
+        draghandler_rb_d.dragdone(self, evt)
+        x1 = min(self._x);x2 = max(self._x)
+        y1 = min(self._y);y2 = max(self._y)
+        rect = [x1, y1, (x2-x1), (y2-y1)]
+
+        self._rect = rect
+        self._shiftdown = evt.guiEvent.ShiftDown()
+
+    def _calc_xy(self, evt):
+        dx = evt.x - self.st_event.x
+        dy = evt.y - self.st_event.y
+        x0 = self.st_event.x
+        x1 = self.st_event.x+dx
+        y0 = self.st_event.y
+        y1 = self.st_event.y+dy
+
+        x = [x0, x1, x1, x0, x0]
+        y = [y0, y0, y1, y1, y0]
+        self._x = x
+        self._y = y
+        return x, y
+
+        
 
 class ifigure_canvas_draghandler_none(draghandler_base2,
                                       draghandler_none):
@@ -1476,6 +1503,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                              ifigure_canvas_draghandler_curve(self),
                              ifigure_canvas_draghandler_cursor(self),
                              ifigure_canvas_draghandler_3d(self),
+                             ifigure_canvas_draghandler_3d_sel(self), 
                              ]
         self.draghandler = self.draghandlers[0]
         self.canvas.set_wheel_cb(self.on_mouse_wheel)
@@ -2296,6 +2324,12 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 self.draghandler.bind_mpl(event)
             return
 
+        if (event.button == 1 and  self.toolbar.mode == '' and
+            ax is not None and ax.figobj.get_3d()):
+            self.draghandler = self.draghandlers[11]
+            self.draghandler.bind_mpl(event)
+            return
+        
 #      if event.button == 1 and event.key == 'd':
 #         self.draghandler = self.draghandlers[2]
 #         self.draghandler.bind_mpl(event)
@@ -2421,13 +2455,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                     if len(self.selection) == 0:
                         self.toolbar.ptype = 'pmode'
                 else:
-                    if self.draghandler in self.draghandlers[1:]:
+                    if self.draghandler in self.draghandlers[1:11]:
                         axes = self.axes_selection()
                         if axes is not None:
                             ifigure.events.SendSelectionEvent(
                                 axes.figobj, self, self.selection)
                         if len(self.selection) == 0:
                             self.draw_later()  # no draw until next idle
+                    elif self.draghandler is self.draghandlers[11]:
+                        self.handle_dragselection()
+                        self.draw_later()  # no draw until next idl e                       
                     else:
                         alist = self.draghandler.get_artist()
                         self.unselect_all()
@@ -2505,6 +2542,68 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         # somehow I need to call it twice to set button highlight correctly
         # ...!?!?
 
+    def handle_dragselection(self):
+        ax = self.axes_selection()
+        if ax is None: return
+
+        selected = [item().figobj for item in self.selection if item() is not None ]
+        selected = [f for f in selected if f.isCompound()]
+        selected = [f for f in selected if len(f._artists) > 0 and f._artists[0]._gl_pickable]
+        rect = self.draghandler._rect
+        shiftdown = self.draghandler._shiftdown
+        
+        alist = []
+        selevent = False
+
+        figobj = [f for f in ax.figobj.walk_tree() if f.isCompound()]
+        figobj = [f for f in figobj if len(f._artists) > 0 and f._artists[0]._gl_pickable]
+
+
+        selection_idx = []
+        if len(selected) == 0 and len(figobj) > 1:
+            for f in figobj:
+               selevent = True                            
+               hit, a, all_covered, selected_idx = f.rect_contains(rect)
+               if hit and all_covered:
+                    alist.append(a)
+               td = f
+        else:
+            if len(selected) == 0:
+                selected = figobj
+                selevent = True
+            for f in selected:
+               hit, a, all_covered, selected_idx = f.rect_contains(rect)
+               #print(hit, a, all_covered, selected_idx)
+               if hit:
+                   alist.append(a)
+                   if shiftdown:
+                       f.addSelectedIndex(selected_idx)
+                   else:
+                       f.setSelectedIndex(selected_idx)
+                   selection_idx.append((f, f.getSelectedIndex()))
+                   td = f                       
+               else:
+                   f.setSelectedIndex([])
+                   selected_idx = []
+                   selevent = True
+                   td = f
+        event_sent = False
+        if selevent:
+            self.unselect_all()
+            # unselect_all erase the component selection. so put it back
+            for f, idx in selection_idx:
+                f.setSelectedIndex(idx)
+            for a in alist:
+                self.add_selection(a)
+                td = a.figobj
+            if len(alist) > 0:
+                ifigure.events.SendSelectionEvent(td, self, self.selection)
+                event_sent = True
+        if not event_sent:
+            ifigure.events.SendDragSelectionEvent(td, self,
+                                                  self.selection,
+                                                  selected_index=selected_idx)
+        
     def handle_double_click_mpltext(self, event):
         target_artist = self._mpl_artist_click[0]
         current_txt = target_artist().get_text()

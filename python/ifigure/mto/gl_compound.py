@@ -97,10 +97,15 @@ class GLCompound(object):
         mask = np.isin(array_idx, np.array(ll, copy=False))
         array_idx[mask] *= -1
         for a in self._artists:
-            a._gl_hit_array_id = ll
+            a._gl_hit_array_id = list(ll)
             a._gl_array_idx = array_idx
             a._update_a = True
-
+            
+    def addSelectedIndex(self, ll):
+        ll = list(ll) + self.getSelectedIndex()
+        ll = list(np.unique(ll))
+        self.setSelectedIndex(ll)
+        
     def set_pickmask(self, value):
         '''
         mask = True :: not pickable 
@@ -164,3 +169,11 @@ class GLCompound(object):
 
     def canvas_unselected(self):
         self._artists[0]._gl_hit_array_id = []
+
+    def rect_contains(self, rect):
+        ax = self.get_figaxes()._artists[0]
+        a = self._artists[0]
+        hit, all_covered, selected_idx = ax.gl_hit_test_rect(rect, a)
+        return hit, a, all_covered, selected_idx
+        
+

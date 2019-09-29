@@ -1243,6 +1243,8 @@ class FigObj(TreeDict, MetadataHolder):
 
     def drag_rm_hl(self, a):
         pass
+
+
 # Hit test (annotation mode)
     @property
     def ispickable_a(self):

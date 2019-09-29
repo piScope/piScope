@@ -1019,8 +1019,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #                         np.rint(idmap2)[::ms, ::ms],
         #                         depth[::ms, ::ms])
         # else:
-        self._hit_map_data = (np.rint(idmap0),
-                              np.rint(idmap2),
+        self._hit_map_data = (np.rint(idmap0).astype(int),
+                              np.rint(idmap2).astype(int),
                               depth)
 
     def read_data(self, a):

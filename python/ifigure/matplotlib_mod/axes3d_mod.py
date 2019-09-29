@@ -235,14 +235,10 @@ class Axes3DMod(Axes3D):
 
         x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         x, x0,  y, y0 = int(x), int(x0),  int(y), int(y0)
-        d = np.rint((im[y-y0-radius:y-y0+radius,
-                        x-x0-radius:x-x0+radius]).flatten())
-        '''
-        print(im2[y-y0-radius:y-y0+radius,
-                  x-x0-radius:x-x0+radius])
-        print(imd[y-y0-radius:y-y0+radius,
-                  x-x0-radius:x-x0+radius])
-        '''
+
+        d = (im[y-y0-radius:y-y0+radius,
+               x-x0-radius:x-x0+radius]).flatten()
+
         dd = (im2[y-y0-radius:y-y0+radius,
                   x-x0-radius:x-x0+radius]).flatten()
         dd_extra = (imd[y-y0-radius:y-y0+radius,
@@ -264,6 +260,49 @@ class Axes3DMod(Axes3D):
                     return True, check2
 
         return False, None
+
+    def gl_hit_test_rect(self, rect, artist):
+        # 
+        #     if artist_id is found within raidus from (x, y)
+        #     and
+        #     if it is the closet artist in the area of checking
+        #     then return True
+        if self._gl_id_data is None:
+            return False, False, None
+        if not artist._gl_pickable:
+            return False, False, None
+        
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
+        
+        x, x0,  y, y0 = int(rect[0]), int(x0),  int(rect[1]), int(y0)
+        dx = rect[2]
+        dy = rect[3]
+
+        d = (im[y-y0:y-y0+dy, x-x0:x-x0+dx]).flatten()
+        dd_extra = (imd[y-y0:y-y0+dy, x-x0:x-x0+dx]).flatten()
+
+        if len(d) == 0:
+            return False, False, None
+
+        xxx = -1
+        for key in id_dict:
+            if id_dict[key]() is None: continue
+            if id_dict[key]() == artist:
+                xxx = key
+                break
+            
+        mask = (d == key)
+        num_all = (im == key)
+        all_covered = (np.sum(mask) == np.sum(num_all))            
+        
+        if not any(mask):
+            return False, False, None
+        
+        dd_extra = dd_extra[mask]
+        selected_idx = np.unique(dd_extra)        
+
+        return True, all_covered, selected_idx
+    
 
     def make_gl_hl_artist(self):
         if self._gl_id_data is None:

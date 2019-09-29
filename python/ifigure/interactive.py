@@ -1618,7 +1618,7 @@ def profile_stop(pr, sortby='cumulative'):
              'ncalls', pcalls', 'line', 'name',
              'nfl', stdname', 'time', 'tottime'
     '''
-    import StringIO
+    from six import StringIO
     import pstats
     pr.disable()
     # print 'stopped profiler'
@@ -1631,7 +1631,7 @@ def profile_stop(pr, sortby='cumulative'):
         print(lsortby)
         return
 
-    s = StringIO.StringIO()
+    s = StringIO()
     sortby = sortby
     ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
     ps.print_stats()
