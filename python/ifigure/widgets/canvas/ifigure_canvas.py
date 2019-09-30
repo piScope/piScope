@@ -2553,7 +2553,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         selected = [f for f in selected if len(f._artists) > 0 and f._artists[0]._gl_pickable]
         rect = self.draghandler._rect
         shiftdown = self.draghandler._shiftdown
-        alttdown = self.draghandler._altdown
+        altdown = self.draghandler._altdown
         controldown = self.draghandler._controldown        
         
         alist = []
@@ -2577,7 +2577,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 selevent = True
             for f in selected:
                hit, a, all_covered, selected_idx = f.rect_contains(rect,
-                                                                   check_selected_all_covered=controldown)
+                                                                   check_selected_all_covered=altdown)
                #print(hit, a, all_covered, selected_idx)
                if hit:
                    alist.append(a)
