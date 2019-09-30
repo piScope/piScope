@@ -2564,7 +2564,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
 
         selection_idx = []
-        if len(selected) == 0 and len(figobj) > 1:
+
+        if len(selected) == 0 and len(figobj) == 0:
+            return
+        elif len(selected) == 0 and len(figobj) > 1:
             for f in figobj:
                selevent = True                            
                hit, a, all_covered, selected_idx = f.rect_contains(rect)
