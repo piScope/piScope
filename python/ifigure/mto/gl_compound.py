@@ -170,10 +170,11 @@ class GLCompound(object):
     def canvas_unselected(self):
         self._artists[0]._gl_hit_array_id = []
 
-    def rect_contains(self, rect):
+    def rect_contains(self, rect, check_selected_all_covered=False):
         ax = self.get_figaxes()._artists[0]
         a = self._artists[0]
-        hit, all_covered, selected_idx = ax.gl_hit_test_rect(rect, a)
+        hit, all_covered, selected_idx = ax.gl_hit_test_rect(rect, a,
+                                                             check_selected_all_covered=check_selected_all_covered)
         return hit, a, all_covered, selected_idx
         
 

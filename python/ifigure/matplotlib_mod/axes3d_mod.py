@@ -261,7 +261,7 @@ class Axes3DMod(Axes3D):
 
         return False, None
 
-    def gl_hit_test_rect(self, rect, artist):
+    def gl_hit_test_rect(self, rect, artist, check_selected_all_covered=False):
         # 
         #     if artist_id is found within raidus from (x, y)
         #     and
@@ -292,14 +292,23 @@ class Axes3DMod(Axes3D):
                 break
             
         mask = (d == key)
-        num_all = (im == key)
-        all_covered = (np.sum(mask) == np.sum(num_all))            
+        mask_all = (im == key)
+        all_covered = (np.sum(mask) == np.sum(mask_all))            
         
         if not any(mask):
             return False, False, None
         
-        dd_extra = dd_extra[mask]
-        selected_idx = np.unique(dd_extra)        
+        dd_extra1 = dd_extra[mask]
+        dd_extra2 = imd[mask_all]
+        
+        selected_idx = np.unique(dd_extra1)
+
+        if check_selected_all_covered:
+            all_covered_selected_idx = []
+            for i in selected_idx:
+                if np.sum(dd_extra1 == i) == np.sum(dd_extra2 == i):
+                    all_covered_selected_idx.append(i)
+            selected_idx = all_covered_selected_idx
 
         return True, all_covered, selected_idx
     

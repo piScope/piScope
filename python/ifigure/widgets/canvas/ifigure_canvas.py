@@ -714,6 +714,8 @@ class ifigure_canvas_draghandler_3d_sel(draghandler_base2,
 
         self._rect = rect
         self._shiftdown = evt.guiEvent.ShiftDown()
+        self._controldown = evt.guiEvent.ControlDown()
+        self._altdown = evt.guiEvent.AltDown()        
 
     def _calc_xy(self, evt):
         dx = evt.x - self.st_event.x
@@ -2551,6 +2553,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         selected = [f for f in selected if len(f._artists) > 0 and f._artists[0]._gl_pickable]
         rect = self.draghandler._rect
         shiftdown = self.draghandler._shiftdown
+        alttdown = self.draghandler._altdown
+        controldown = self.draghandler._controldown        
         
         alist = []
         selevent = False
@@ -2572,7 +2576,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 selected = figobj
                 selevent = True
             for f in selected:
-               hit, a, all_covered, selected_idx = f.rect_contains(rect)
+               hit, a, all_covered, selected_idx = f.rect_contains(rect,
+                                                                   check_selected_all_covered=controldown)
                #print(hit, a, all_covered, selected_idx)
                if hit:
                    alist.append(a)
