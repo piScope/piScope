@@ -119,7 +119,37 @@ bitmaps = {}
 popup_style_default = 0
 popup_skip_2d = 1
 
+# double click interval in two unit ;D
+dcinterval_ms = 200.
+dcinterval = 0.2
 
+class guiEventCopy(object):
+    def __init__(self, guiEvent):
+        object.__init__(self)
+        methods=['ShiftDown',
+                 'LeftUp',
+                 'GetEventObject',
+                 'AltDown',
+                 'ControlDown']
+        for name in methods:
+            m = getattr(guiEvent, name)
+            setattr(self, '_'+name, m())
+
+    def ShiftDown(self):
+        return self._ShiftDown
+
+    def LeftUp(self):        
+        return self._LeftUp
+    
+    def GetEventObject(self):
+        return self._GetEventObject
+
+    def ControlDown(self):
+        return self._ControlDown
+        
+    def AltDown(self):
+        return self._AltDown        
+    
 class ifigure_DropTarget(wx.TextDropTarget):
     def __init__(self, canvas):
         self._canvas = weakref.ref(canvas)
@@ -565,6 +595,7 @@ class ifigure_canvas_draghandler(draghandler_base):
         self.st_event = None
         redraw = False
         scale = None
+
         for a in self.a:
             if not a.figobj.isDraggable():
                 continue
@@ -1939,27 +1970,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.GetTopLevelParent().set_status_text('cut')
         self.cut_selection()
         self.draw_later()
-#       self.GetTopLevelParent().SetStatusText('')
-        #ifigure.events.SendChangedEvent(self._figure.figobj, self)
 
     def Copy(self):
         self.GetTopLevelParent().set_status_text('copy')
-#       if len(self.selection) == 0:
-#           if self.axes_selection() is None: return
-#           self.copy_selection(obj = [self.axes_selection().figobj])
-#      else:
         self.copy_selection()
-#       self.draw()
-#       self.GetTopLevelParent().SetStatusText('')
-        #ifigure.events.SendChangedEvent(self._figure.figobj, self)
 
     def Paste(self):
         self.GetTopLevelParent().set_status_text('paste')
         ret = self.paste_selection()
         self.draw_later()
-#       self.GetTopLevelParent().SetStatusText('')
         return ret
-        #ifigure.events.SendChangedEvent(self._figure.figobj, self)
 
     def _mpl_artist_gone(self, obj):
         self._mpl_artist_click = None
@@ -2133,8 +2153,43 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             if hit:
                 break
         return
+    '''
+    Double click descrimator.
 
+    Basically, I want to handle double clike as a one event, not a sequence
+    of events
+
+       mouse_down -> mouse_up (1) -> mouse_down (can be dobule click) -> mouse_up (2)
+
+       using timer, we skip mouse_up(1) if it is double click.
+       mouse_down (2) is also skipped if it is double click
+       
+       note: guiEvent loses background wxWidget objects when called with
+             wxCallLater. We copyed the guiEvent to our own object to use
+             it in the buttonrelease0.
+    '''
     def buttonpress(self, event):
+        self._previous_lclick = time.time()
+        self.dblclick_occured = event.dblclick
+        if self.dblclick_occured:
+            pass
+        else:
+            self.buttonpress0(event)
+        
+    def buttonrelease(self, event):
+        #print("button release", event.guiEvent)
+        evt = guiEventCopy(event.guiEvent)   
+        event.guiEvent = evt
+        wx.CallLater(dcinterval_ms, self.run_buttonrelease0, event)
+
+    def run_buttonrelease0(self, event):
+        if self.dblclick_occured:
+            self.dblclick_occured = False
+            self._previous_lclick = time.time()             
+        else:
+            self.buttonrelease0(event)
+            
+    def buttonpress0(self, event):
         self._alt_shift_hit = False
         if self.toolbar.mode == '':
             hit = 0
@@ -2345,17 +2400,19 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler = self.draghandlers[k]
         self.draghandler.bind_mpl(event)
         self.draghandler.d_mode = 'a'
-
-    def buttonrelease(self, event):
-        # check double click
+        
+    def buttonrelease0(self, event):
+        #print("button release0")
         self._alt_shift_hit = False
         double_click = False
+
+        # check double click        
         if event.guiEvent.LeftUp():
-            if ((time.time()-self._previous_lclick) < 0.3 and
+            #print(time.time()-self._previous_lclick)
+            if ((time.time()-self._previous_lclick) < dcinterval and
                     not self.draghandler.dragging):
                 double_click = True
-            self._previous_lclick = time.time()
-
+            
         drag_happend = False
         set_pmode = False
         if self.draghandler.dragging:
@@ -2370,7 +2427,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         self.draghandler.unbind_mpl()
         if self._insert_mode:
-            dprint1('toolbar mode ' + self.toolbar.mode)
+            dprint2('toolbar mode ' + self.toolbar.mode)
             self.insert_figobj(event)
             return
 
@@ -2399,16 +2456,22 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                 figobj._picker_a_mode == 0 and not figobj.isCompound()):
                             already_selected = True
                 if already_selected and not double_click:
-                    dprint2('already_select')
+                    dprint1('already_select')
                     if event.guiEvent.ShiftDown():
                         #                 if event.key == 'shift':
                         self.unselect(self._pevent.artist)
                     else:
                         self.unselect_all()
+                #elif double_click:
+                #    pass
                 else:
-                    if not event.guiEvent.ShiftDown():
-                        self.unselect_all()
                     figobj = self._pevent.artist.figobj
+                    if figobj.isCompound() and not double_click:
+                        figobj._artists[0].mask_array_idx()
+                    
+                    if not event.guiEvent.ShiftDown() and not double_click:
+                        self.unselect_all()
+
                     if figobj is not None:
                         if figobj.isSelected():
                             self.add_selection(self._pevent.artist)
@@ -2432,10 +2495,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 else:
                     self.refresh_hl()
             else:
-                if not drag_happend:
+                if double_click:
+                    pass
+                elif not drag_happend:
                     if len(self.selection):
-                        if (any([s().figobj.isCompound() for s in self.selection if s() is not None]) and
-                                event.guiEvent.ShiftDown()):
+                        if (any([s().figobj.isCompound() for s in self.selection if s() is not None]) and  event.guiEvent.ShiftDown()):
                             #
                             pass
                         else:
@@ -2555,7 +2619,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         shiftdown = self.draghandler._shiftdown
         altdown = self.draghandler._altdown
         controldown = self.draghandler._controldown        
-        
         alist = []
         selevent = False
 

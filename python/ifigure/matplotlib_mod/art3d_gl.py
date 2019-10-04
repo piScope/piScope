@@ -153,11 +153,12 @@ class ArtGL(object):
         check, array_id = c.gl_hit_test(evt.x, evt.y,
                                         self, radius=3)
         if check:
+            self._gl_hit_array_id_new = self._gl_hit_array_id.copy()
             if int(array_id) in self._gl_hit_array_id:
-                self._gl_hit_array_id.remove(int(array_id))
+                self._gl_hit_array_id_new.remove(int(array_id))
             else:
-                self._gl_hit_array_id.append(int(array_id))
-            self.mask_array_idx()
+                self._gl_hit_array_id_new.append(int(array_id))
+            #self.mask_array_idx()
             return True, {'child_artist': self}
         return False, {}
 
@@ -165,14 +166,16 @@ class ArtGL(object):
         self._gl_hl = False
         if len(self._gl_hit_array_id) > 0:
             self._gl_hit_array_id = []
+            self._gl_hit_array_id_new = []            
             self.mask_array_idx()
 
     def mask_array_idx(self):
         if self._gl_array_idx is not None:
             array_idx = np.abs(self._gl_array_idx)
-            mask = np.isin(array_idx, self._gl_hit_array_id)
+            mask = np.isin(array_idx, self._gl_hit_array_id_new)
             array_idx[mask] *= -1
             self._gl_array_idx = array_idx
+            self._gl_hit_array_id = self._gl_hit_array_id_new
         self._update_a = True
         self.axes.figobj._bmp_update = False  # ugly...!?
 
