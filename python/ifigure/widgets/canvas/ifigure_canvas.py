@@ -741,7 +741,7 @@ class ifigure_canvas_draghandler_3d_sel(draghandler_base2,
         draghandler_rb_d.dragdone(self, evt)
         x1 = min(self._x);x2 = max(self._x)
         y1 = min(self._y);y2 = max(self._y)
-        rect = [x1, y1, (x2-x1), (y2-y1)]
+        rect = [int(x1), int(y1), int(x2-x1), int(y2-y1)]
 
         self._rect = rect
         self._shiftdown = evt.guiEvent.ShiftDown()
