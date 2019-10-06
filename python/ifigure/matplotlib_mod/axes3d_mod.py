@@ -441,56 +441,80 @@ class Axes3DMod(Axes3D):
         get_glcanvas()._hittest_map_update = True
 
     def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata):
+        # this is to debug this method...
+        #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
+        #return test(self, xdata, ydata, sxdata, sydata)
         from ifigure.utils.geom import transform_point
 
-        x0, y0 = transform_point(
-            self.transAxes, 0.5, 0.5)
-        x0, y0 = transform_point(
-            self.transData.inverted(), x0, y0)
-
-        dx = x0 - (xdata + sxdata)/2.0
-        dy = y0 - (ydata + sydata)/2.0
+        def norm2sc(x1, x2):
+            x0, y0 = transform_point(
+                     self.transAxes, x1, x2)
+            x0, y0 = transform_point(
+                     self.transData.inverted(), x0, y0)
+            return x0, y0
+            
+        dx =  - (xdata + sxdata)/2.0
+        dy =  - (ydata + sydata)/2.0
 
         w = self._pseudo_w
         h = self._pseudo_h
 
-        dx = dx/w
-        dy = dy/h
+        #dx = dx/w
+        #dy = dy/h
+
+        # dx, dy : normalized screen coordinate of center of zoom
         df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
 
+        # 3D axes range 
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
 
         midx = (minx+maxx)/2.
         midy = (miny+maxy)/2.
         midz = (minz+maxz)/2.
+
         M = self.get_proj()
-        dp = -np.array([dx, dy])
+        #M = self.figobj.get_figbook().find_bookviewer().canvas.canvas.glcanvas.draw_M
+        dp = np.array([dx, dy])
 
-        xx = (np.dot(M, (1, midy, midz, 1)) -
-              np.dot(M, (0, midy, midz, 1)))[:2]
-        dx1 = np.sum(xx * dp)/np.sum(xx *
-                                     xx) if np.sum(xx * xx) > 0.01 else 0.0
-        yy = (np.dot(M, (midx, 1, midz, 1)) -
-              np.dot(M, (midx, 0, midz, 1)))[:2]
-        dy1 = np.sum(yy * dp)/np.sum(yy *
-                                     yy) if np.sum(yy * yy) > 0.01 else 0.0
-        zz = (np.dot(M, (midx, midy, 1, 1)) -
-              np.dot(M, (midx, midy, 0, 1)))[:2]
-        dz1 = np.sum(zz * dp)/np.sum(zz *
-                                     zz) if np.sum(zz * zz) > 0.01 else 0.0
+        xx = (np.dot(M, (maxx, midy, midz, 1)) -
+              np.dot(M, (miny, midy, midz, 1)))[:2]
+        yy = (np.dot(M, (midx, maxy, midz, 1)) -
+              np.dot(M, (midx, miny, midz, 1)))[:2]
+        zz = (np.dot(M, (midx, midy, maxz, 1)) -
+              np.dot(M, (midx, midy, minz, 1)))[:2]
 
-        minx, maxx = minx + dx1, maxx + dx1
-        miny, maxy = miny + dy1, maxy + dy1
-        minz, maxz = minz + dz1, maxz + dz1
+        from scipy.optimize import nnls
+        from scipy.linalg import null_space
+        A = np.vstack((xx, yy, zz)).transpose()
 
-        dx = (maxx-minx)*df/2.
-        dy = (maxy-miny)*df/2.
-        dz = (maxz-minz)*df/2.
-        x0 = (maxx+minx)/2.0
-        y0 = (maxy+miny)/2.0
-        z0 = (maxz+minz)/2.0
+        x = (null_space(A)).flatten()
 
-        return ((x0 - dx, x0 + dx), (y0 - dy, y0 + dy), (z0 - dz, z0 + dz))
+        v1 = np.cross(x, [1, 0, 0])
+        if np.sum(v1**2) == 0:
+            v1 = np.cross(x, [0, 1, 0])
+            if np.sum(v1**2) == 0:
+                v1 = np.cross(x, [0, 0, 1])
+
+        v2 = np.cross(x, v1)
+        v1 = v1/np.sqrt(np.sum(v1**2))
+        v2 = v2/np.sqrt(np.sum(v2**2))
+
+        tmp = np.dot(M, (midx, midy, midz, 1))
+        d1 = (np.dot(M, (midx+v1[0], midy+v1[1], midz+v1[2], 1)) - tmp)[:2]/tmp[2]
+        d2 = (np.dot(M, (midx+v2[0], midy+v2[1], midz+v2[2], 1)) - tmp)[:2]/tmp[2]
+
+        A = np.vstack((d1, d2)).transpose()
+        sol = np.dot(np.linalg.inv(A), dp)
+        center_move = (v1*sol[0]+ v2*sol[1])
+
+        minp = np.array([minx, miny, minz])
+        maxp = np.array([maxx, maxy, maxz])
+
+        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2.0 + center_move
+        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2.0 + center_move        
+
+        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2])
+        
 
     def _on_move_mod(self, event):
         """
@@ -572,6 +596,7 @@ class Axes3DMod(Axes3D):
         elif self.button_pressed in self._zoom_btn:
             # zoom view
             # hmmm..this needs some help from clipping....
+            # this section not used..?
             minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
             df = 1-((h - dy)/h)
             dx = (maxx-minx)*df
