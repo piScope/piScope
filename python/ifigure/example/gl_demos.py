@@ -26,13 +26,14 @@ def surf_demo(**kwargs):
 
     figure()
     threed('on')
+    scale = kwargs.pop("scale", 1.0)
 #   X = np.arange(-5, 5, 0.25)
 #   Y = np.arange(-5, 5, 0.25)
     X = np.linspace(-5, 5, 40)
     Y = np.linspace(-5, 5, 40)
     X, Y = np.meshgrid(X, Y)
     R = np.sqrt(X**2 + Y**2)
-    Z = np.sin(R)
+    Z = np.sin(R)*scale
 
     lighting(light=0.5, ambient=0.7)
     surf(X, Y, Z, cmap='coolwarm', shade='linear', **kwargs)

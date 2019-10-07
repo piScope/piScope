@@ -741,7 +741,7 @@ class ifigure_canvas_draghandler_3d_sel(draghandler_base2,
         draghandler_rb_d.dragdone(self, evt)
         x1 = min(self._x);x2 = max(self._x)
         y1 = min(self._y);y2 = max(self._y)
-        rect = [x1, y1, (x2-x1), (y2-y1)]
+        rect = [int(x1), int(y1), int(x2-x1), int(y2-y1)]
 
         self._rect = rect
         self._shiftdown = evt.guiEvent.ShiftDown()
@@ -876,6 +876,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
                 a.transData.inverted(),
                 st_event.x, st_event.y)
             if figaxes.get_3d():
+                print("event_point", evt.x, evt.y,   st_event.x, st_event.y)
                 val = a.calc_range_change_by_pan(xdata, ydata, sxdata, sydata)
                 range_data[a]['x'] = val[0]
                 range_data[a]['y'] = val[1]
@@ -2381,7 +2382,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 self.draghandler.bind_mpl(event)
             return
 
+        annote_selected = (len(self.selection) > 0 and
+                           self.selection[0]().figobj.get_figaxes() is None)
         if (event.button == 1 and  self.toolbar.mode == '' and
+            not annote_selected  and
             ax is not None and ax.figobj.get_3d()):
             self.draghandler = self.draghandlers[11]
             self.draghandler.bind_mpl(event)

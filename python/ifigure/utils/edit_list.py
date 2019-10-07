@@ -3884,7 +3884,8 @@ class EditListCore(object):
                 else:
                     setting = {"values": ["on", "off"]}
                 w = RadioButtons(self, wx.ID_ANY, val[1], setting)
-                w.SetValue(val[1])
+                if val[1] is not None:
+                    w.SetValue(val[1])
                 p = w
             elif val[2] == 2:
                 w = StaticText(self, wx.ID_ANY, val[1])
