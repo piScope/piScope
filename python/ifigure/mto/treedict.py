@@ -408,13 +408,17 @@ class TreeDict(object):
                 return -1
             return keys.index(name)
         if obj is not None:
-            c = self._d.count(obj)
-            if c == 0:
+            #c = self._d.count(obj)
+            #if c == 0:
+            #    return -1
+            try:
+                idx = self._d.index(obj)
+                return idx
+            except ValueError:
                 return -1
-            idx = self._d.index(obj)
-            return idx
+            #return idx
         return -1
-
+    
     def get_child(self, idx=None, name=None):
         if idx is not None:
             if len(self._d) > idx > -1:
