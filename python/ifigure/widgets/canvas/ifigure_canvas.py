@@ -2631,21 +2631,22 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
 
         selection_idx = []
-
+        #print("figobj", figobj, selected)
         if len(selected) == 0 and len(figobj) == 0:
             return
-        elif len(selected) == 0 and len(figobj) > 1:
-            for f in figobj:
-               selevent = True                            
-               hit, a, all_covered, selected_idx = f.rect_contains(rect)
-               if hit and all_covered:
-                    alist.append(a)
-               td = f
+        #elif len(selected) == 0 and len(figobj) > 1:
+        #    for f in figobj:
+        #       selevent = True                            
+        #       hit, a, all_covered, selected_idx = f.rect_contains(rect)
+        #       if hit and all_covered:
+        #            alist.append(a)
+        #       td = f
         else:
             if len(selected) == 0:
                 selected = figobj
                 selevent = True
-            for f in selected:
+            #for f in selected:
+            for f in figobj:
                hit, a, all_covered, selected_idx = f.rect_contains(rect,
                                                                    check_selected_all_covered=altdown)
                #print(hit, a, all_covered, selected_idx)
