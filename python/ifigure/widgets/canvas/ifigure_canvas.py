@@ -250,6 +250,10 @@ class draghandler_rb_d(object):
             self.rb.figure.lines.remove(self.rb)
         if evt is None:
             return
+
+        self._figure_image = self.panel.canvas.copy_figure_image()
+        self._figure_image[0] = self.panel.canvas.capture_screen_rgba()
+
         x, y = self._calc_xy(evt)
         self._show_box(x, y)
         self.dragging = True
@@ -276,8 +280,12 @@ class draghandler_rb_d(object):
                          linestyle='-', color='red', alpha=0.5,
                          markerfacecolor='None')
         self.panel._figure.lines.extend([self.rb])
-        self.panel.refresh_hl([self.rb])
+        
+        figure_image = self.panel.canvas.swap_figure_image(self._figure_image)        
+        self.panel.refresh_hl_fast([self.rb])
         self.panel._figure.lines.remove(self.rb)
+        self.panel.canvas.swap_figure_image(figure_image)
+
         self.rb = None
 
     def _calc_xy(self, evt):
@@ -1496,6 +1504,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._frameart_mode = False
         self._alt_shift_hit = False
         self._full_screen_mode = False
+        self._skip_blur_hl = False # on during drag
 
         self.selection = []
         self.axes_selection = cbook.WeakNone()
@@ -2075,6 +2084,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def mousedrag_panzoom(self, event):
         #       print 'mousedrag_panzoom'
+        self._skip_blur_hl = True
         if not self.draghandler.dragging:
             self._picked = False
             self.draghandler.dragstart(event)
@@ -2408,6 +2418,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def buttonrelease0(self, event):
         #print("button release0")
         self._alt_shift_hit = False
+        self._skip_blur_hl = False        
         double_click = False
 
         # check double click        
@@ -2734,6 +2745,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                     request=requests[ax.figobj])
                 self.send_range_action(requests, 'range')
 
+    def refresh_hl_fast(self, alist=None):
+        self.draw_artist(alist=alist)
+        
     def refresh_hl(self, alist=None):
         #       import traceback
         #       traceback.print_stack()
@@ -2748,7 +2762,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 if item().axes is not None:
                     if hasattr(item().axes, '_gl_mask_artist'):
                         if not item().axes in checklist:
-                            alist.extend(item().axes.make_gl_hl_artist())
+                            hls = item().axes.make_gl_hl_artist()
+                            alist.extend(hls)
                             checklist.append(item().axes)
                             axes_gl.append(item().axes)
             del checklist
@@ -2761,7 +2776,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 figobj.highlight_artist(False, artist=[item()])
                 figobj.highlight_artist(True,  artist=[item()])
 
-        if turn_on_gl:
+        if turn_on_gl and not self._skip_blur_hl:
             for a in axes_gl:
                 a.blur_gl_hl_mask()
 

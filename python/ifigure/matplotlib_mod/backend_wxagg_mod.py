@@ -198,7 +198,28 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._prepare_bitmap()
         # print 'draw calling gui_repaint'
         self.gui_repaint(drawDC=drawDC)
+        
+    def capture_screen_rgba(self):
+        img = self.bitmap.ConvertToImage()
+        w, h = self.bitmap.GetSize()
+        rgb = np.asarray(img.GetDataBuffer()).reshape(h, w, -1)
+        a = np.asarray(img.GetAlphaBuffer()).reshape(h, w, -1)
+        rgba = np.dstack((rgb, a)) 
+        return rgba
 
+    def copy_figure_image(self):
+        return [self.figure_image[0].copy(), self.figure_image[1], self.figure_image[2]]
+
+    def swap_figure_image(self, figure_image):
+        b = self.figure_image
+        self.figure_image = figure_image
+        return b
+    
+    def swap_bitmap(self, bitmap):
+        b = self.bitmap
+        self.bitmap = bitmap
+        return b
+        
     def Copy_to_Clipboard_mod(self, event=None, bmp=None, pgbar=False):
         '''
          It does the same thing as Copy_to_Clipboard.

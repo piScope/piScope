@@ -379,7 +379,9 @@ class Axes3DMod(Axes3D):
             return
         arr = self._gl_mask_artist.get_array()
         #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
-        b = fftconvolve(arr[:, :, 3], conv_kernel, mode='same') + arr[:, :, 3]
+        #b = fftconvolve(arr[:, :, 3], conv_kernel, mode='same') + arr[:, :, 3]
+        from scipy.ndimage import gaussian_filter
+        b = gaussian_filter(arr[:,:,3], sigma=1) + arr[:, :, 3]
         #b = np.sqrt(b)
         b[b > amask] = amask
 
