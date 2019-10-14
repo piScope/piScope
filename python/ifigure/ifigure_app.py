@@ -1209,17 +1209,20 @@ class ifigure_app(BookViewerFrame):
         except:
             info = wx.adv.AboutDialogInfo()
             use_adv = True
+
         info.SetIcon(wx.Icon(icon_path, wx.BITMAP_TYPE_PNG))
         info.SetName('piScope')
-        info.SetVersion('beta ')
+        from ifigure import __version__
+        info.SetVersion(__version__)
         info.SetDescription(
             'Python scripting workbench for \n   - browing MDSplus Data.\n   - analysing experiemntal data.\n   - running simulation codes.\n        ...\n')
-        info.SetCopyright('(C) 2012 - 2018 S. Shirawa')
+        info.SetCopyright('(C) 2012 - 2019 S. Shirawa')
         info.SetWebSite('http://piscope.psfc.mit.edu/')
+
         if use_adv:
-            wx.adv.AboutBox(info)
+            wx.adv.GenericAboutBox(info, self)
         else:
-            wx.AboutBox(info)
+            wx.AboutBox(info, self)
 
     def onClearCommandHistory(self, e):
         self.proj_tree_viewer.ch.clear_text()
