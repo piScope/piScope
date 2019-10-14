@@ -1,5 +1,6 @@
 import weakref
 
+
 class WeakCallback (object):
     """A Weak Callback object that will keep a reference to
     the connecting object with weakref semantics.
@@ -12,16 +13,17 @@ class WeakCallback (object):
     Changes: added methode deref, so that it can be used as
              weakreference to object method
     """
+
     def __init__(self, mcallback):
         """Create a new Weak Callback calling the method @mcallback"""
-        obj = mcallback.im_self
-        attr = mcallback.im_func.__name__
+        obj = mcallback.__self__
+        attr = mcallback.__func__.__name__
         self.wref = weakref.ref(obj, self.object_deleted)
         self.callback_attr = attr
         self.token = None
 
     def __call__(self, *args, **kwargs):
-#        print 'WeakCallback is called'
+        #        print 'WeakCallback is called'
         obj = self.wref()
         if obj:
             attr = getattr(obj, self.callback_attr)
@@ -35,7 +37,7 @@ class WeakCallback (object):
             attr = getattr(obj, self.callback_attr)
             return attr
         else:
-            raise TypeError, 'Method called on dead object'
+            raise TypeError('Method called on dead object')
 
     def default_callback(self, *args, **kwargs):
         """Called instead of callback when expired"""
@@ -44,4 +46,3 @@ class WeakCallback (object):
     def object_deleted(self, wref):
         """Called when callback expires"""
         pass
-

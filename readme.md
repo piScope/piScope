@@ -16,16 +16,16 @@ and for the above purposes, &pi;Scope is equipped with
  * draw 3D (OpenGL) in matplotlib canvas.
      
 Requirements
-*  python 2.7
-*  wxPython 4.0.1
-*  matplotlib > 1.5
+*  Python2.7 or 3.6
+*  wxPython 4
+*  matplotlib 
 *  PyOpenGL
 *  ... and others.
 
 Typical pip command list...
 
 ```
- pip install wxPython-4.0.1
+ pip install wxPython
  pip install matplotlib
  pip install Pillow
  pip install scipy

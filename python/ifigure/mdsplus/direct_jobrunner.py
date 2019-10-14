@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 '''
 MDSplus job runner
 
@@ -8,23 +10,29 @@ There is two modes:
      This mode is for multiprocessing worker
 '''
 
-
-import sys, time, tempfile, traceback, threading
+import sys
+import time
+import tempfile
+import traceback
+import threading
 from ifigure.utils.pickled_pipe import PickledPipe
 from .utils import parse_server_string
 debug_runner = False
 try:
-   import MDSplus
-   from MDSplus import Connection
-   class MyConnection(Connection):
-       '''
-       a class for debuging
-       '''
-       def get(self, expr, *args, **kwargs):
-           print 'expression'+expr
-           return Connection.get(self, expr, *args, **kwargs)
+    import MDSplus
+    from MDSplus import Connection
+
+    class MyConnection(Connection):
+        '''
+        a class for debuging
+        '''
+
+        def get(self, expr, *args, **kwargs):
+            print('expression'+expr)
+            return Connection.get(self, expr, *args, **kwargs)
 except:
-   traceback.print_exc()
+    traceback.print_exc()
+
 
 class JobRunner(object):
     def __init__(self):
@@ -36,24 +44,25 @@ class JobRunner(object):
         self.gjob = None   # global tdi (executed when shot number changed)
         self._tree = ''
         self._defnode = ''
+
     def __del__(self):
-        if self.connection is not None:       
+        if self.connection is not None:
             del self.connection
+
     def run(self, jobset, skip_init):
-#        def _evaluate_sig(res, sig_names, dim_names):
-#            for name in dim_names:
-#                try:
-#                   src, dim = res[name][0:3].split(',')
-#                   res[name] = res[src].dim_of(long(dim)).data()
-#                except:
-#                   pass
-#            for name in sig_names:
-#                try:
-#                   res[name] = res[name].data()
-#                except:
-#                   pass
-#            return res
- 
+        #        def _evaluate_sig(res, sig_names, dim_names):
+        #            for name in dim_names:
+        #                try:
+        #                   src, dim = res[name][0:3].split(',')
+        #                   res[name] = res[src].dim_of(long(dim)).data()
+        #                except:
+        #                   pass
+        #            for name in sig_names:
+        #                try:
+        #                   res[name] = res[name].data()
+        #                except:
+        #                   pass
+        #            return res
 
         self.error = []
         jobs, names = jobset
@@ -61,71 +70,73 @@ class JobRunner(object):
         sig_names = []
         dim_names = []
         try:
-           for k, job in enumerate(jobs):
-              for j in job:
-#                print j
-                if j.command == 'connection_mode':
-#                   print 'connection_mode param', self.connection_str, j.params, self.connection
-#                   if self.connection is not None:
-#                        del self.connection
-#                        self.connection = None
+            for k, job in enumerate(jobs):
+                for j in job:
+                    #                print j
+                    if j.command == 'connection_mode':
+                        #                   print 'connection_mode param', self.connection_str, j.params, self.connection
+                        #                   if self.connection is not None:
+                        #                        del self.connection
+                        #                        self.connection = None
 
-                   if self.connection_str != j.params[0]:
-#                   if True:
-                       server, port, tree = parse_server_string(j.params[0])
-                       self.use_mdsconnect = (False if server.upper() == 
-                                              'DIRECT' else True)
+                        if self.connection_str != j.params[0]:
+                            #                   if True:
+                            server, port, tree = parse_server_string(
+                                j.params[0])
+                            self.use_mdsconnect = (False if server.upper() ==
+                                                   'DIRECT' else True)
 
-                       if self.use_mdsconnect:
-                           if self.connection is not None:
-                               del self.connection
-                               self.connection = None
-                           try:
-                               if port != '': server = server + ':' + port
-                               self.connection = Connection(server)
-                               self.connection_str = j.params[0]
-                               res = 'ok'                      
-                           except:
-                               self.r['error message'] = ['connection error' + 
-                                      traceback.format_exc()]
-                               self.r[names[k]] = None
-                               return self.r
-                       else:
-                           if self.connection is not None:
-                               del self.connection
-                               self.connection = None
-                           res = 'ok'        
-                   else:         
-                       res = 'ok'    
-                   self._connection_flag = True    
-                else:
-                   if j.command == 'init':
-                       if skip_init:
-                           continue
-                       else:
-                           j.command = 'value'
-                   if self.use_mdsconnect:
-#                       res = self._run_job_mdsconnect(j, sig_names, dim_names, names[k])
-                       #ttt = time.time()
-                       res = self._run_job_mdsconnect(j)
-                       #print time.time() - ttt, j
-                       if len(self.error) != 0:
-                           self.r['error message'] = self.error[:]
-                           self.r[names[k]] = res
-                           return self.r
+                            if self.use_mdsconnect:
+                                if self.connection is not None:
+                                    del self.connection
+                                    self.connection = None
+                                try:
+                                    if port != '':
+                                        server = server + ':' + port
+                                    self.connection = Connection(server)
+                                    self.connection_str = j.params[0]
+                                    res = 'ok'
+                                except:
+                                    self.r['error message'] = ['connection error' +
+                                                               traceback.format_exc()]
+                                    self.r[names[k]] = None
+                                    return self.r
+                            else:
+                                if self.connection is not None:
+                                    del self.connection
+                                    self.connection = None
+                                res = 'ok'
+                        else:
+                            res = 'ok'
+                        self._connection_flag = True
+                    else:
+                        if j.command == 'init':
+                            if skip_init:
+                                continue
+                            else:
+                                j.command = 'value'
+                        if self.use_mdsconnect:
+                            #                       res = self._run_job_mdsconnect(j, sig_names, dim_names, names[k])
+                            #ttt = time.time()
+                            res = self._run_job_mdsconnect(j)
+                            # print time.time() - ttt, j
+                            if len(self.error) != 0:
+                                self.r['error message'] = self.error[:]
+                                self.r[names[k]] = res
+                                return self.r
 #                           return _evaluate_sig(self.r, sig_names, dim_names)
-                   else:
-                       res = self._run_job(j)
-                       if len(self.error) != 0:
-                           self.r['error message'] = self.error[:]
-                           self.r[names[k]] = res
-                           return self.r
+                        else:
+                            res = self._run_job(j)
+                            if len(self.error) != 0:
+                                self.r['error message'] = self.error[:]
+                                self.r[names[k]] = res
+                                return self.r
 #                           return _evaluate_sig(self.r, sig_names, dim_names)
-                   self._connection_flag = False    
+                        self._connection_flag = False
 
-              self.r[names[k]] = res
+                self.r[names[k]] = res
         except:
-           self.error = ['run error', traceback.format_exc()]
+            self.error = ['run error', traceback.format_exc()]
 
 #        self.r =  _evaluate_sig(self.r, sig_names, dim_names)
         self.r['error message'] = self.error
@@ -139,159 +150,160 @@ class JobRunner(object):
             del self.connection
         self.connection = None
 
-
     def _run_script_txt(self, job):
-         expr = job.params[0]
-         try:
+        expr = job.params[0]
+        try:
             code = compile(expr, '<string>', 'exec')
             g = {}
             l = {}
-            exec code in self.g, self.r
+            exec(code, self.g, self.r)
             return 'ok'
-         except:
+        except:
             self.error = ['Scrip Error', expr, sys.exc_info()[0]]
-         return None
+        return None
 
 #    def _run_job_mdsconnect(self, job, sig_names,dim_names, name):
     def _run_job_mdsconnect(self, job):
-           com = job.command
-           if com == 'novalue': return ''
-           if debug_runner: print(job)
-           #print threading.current_thread().name, com, job.params
-           if com == 'open':           
-               tree = job.params[0]
-               shot = job.params[1]
-               if self._tree != tree or self._shot != shot: 
-                  try:
-                     #print tree, 
-                     #print long(shot)
-                     if tree != '':
-                         self.connection.openTree(tree, long(shot))
-                  except:
-                     self.error = ['run error', traceback.format_exc()]
-                     return None
-               try:
-                  t = tree.split(',')[0].strip()
-                  node = '\\'+ t +'::TOP'
-                  if node != self._defnode:
-                     self.connection.setDefault(node)
-                     self._defnode = node
-               except:
-                  pass 
-               try:
-                  if shot != self._shot:
-                      expr = 'reset_private();reset_public();1'
-                      r =self.connection.get(expr).data()
-                  if self._connection_flag:
-                      if self.gjob is not None:
-                         expr = self.gjob.params[0]
-                         #print 'performing global tdi', expr
-                         r =self.connection.get(expr).data()
-                  self._connection_flag = False
-                  self._shot = shot
-                  self._tree = tree
-                  return 'ok'
-               except:
-                  self.error = ['run error', traceback.format_exc()]
-                  return None
-           elif com == 'defnode':
-               node  = job.params[0]
-               try:
-                  if node.strip() != '':
-                     if node != self._defnode:
+        com = job.command
+        if com == 'novalue':
+            return ''
+        if debug_runner:
+            print(job)
+        # print threading.current_thread().name, com, job.params
+        if com == 'open':
+            tree = job.params[0]
+            shot = job.params[1]
+            if self._tree != tree or self._shot != shot:
+                try:
+                    # print tree,
+                    # print long(shot)
+                    if tree != '':
+                        self.connection.openTree(tree, int(shot))
+                except:
+                    self.error = ['run error', traceback.format_exc()]
+                    return None
+            try:
+                t = tree.split(',')[0].strip()
+                node = '\\' + t + '::TOP'
+                if node != self._defnode:
+                    self.connection.setDefault(node)
+                    self._defnode = node
+            except:
+                pass
+            try:
+                if shot != self._shot:
+                    expr = 'reset_private();reset_public();1'
+                    r = self.connection.get(expr).data()
+                if self._connection_flag:
+                    if self.gjob is not None:
+                        expr = self.gjob.params[0]
+                        # print 'performing global tdi', expr
+                        r = self.connection.get(expr).data()
+                self._connection_flag = False
+                self._shot = shot
+                self._tree = tree
+                return 'ok'
+            except:
+                self.error = ['run error', traceback.format_exc()]
+                return None
+        elif com == 'defnode':
+            node = job.params[0]
+            try:
+                if node.strip() != '':
+                    if node != self._defnode:
                         self.connection.setDefault(node)
                         self._defnode = node
-                  return 'ok'
-               except:
-                  print(node)
-                  self.error = ['run error', traceback.format_exc()]
-                  return None
-           elif com == 'value':
-               try:
-                   expr = job.params[0]
-                   r =self.connection.get(expr).data()
-                   return r
-               except:
-                   self.error = ['run error', expr,traceback.format_exc()]
-                   return None
-           elif com == 'valuesig':
-               try:
-                   expr = job.params[0]
-                   r =self.connection.get('_piscopevar=execute($)', expr).data()
-                   return r
-               except:
-                   self.error = ['run error', expr,traceback.format_exc()]
-                   return None
+                return 'ok'
+            except:
+                print(node)
+                self.error = ['run error', traceback.format_exc()]
+                return None
+        elif com == 'value':
+            try:
+                expr = job.params[0]
+                r = self.connection.get(expr).data()
+                return r
+            except:
+                self.error = ['run error', expr, traceback.format_exc()]
+                return None
+        elif com == 'valuesig':
+            try:
+                expr = job.params[0]
+                r = self.connection.get('_piscopevar=execute($)', expr).data()
+                return r
+            except:
+                self.error = ['run error', expr, traceback.format_exc()]
+                return None
 #           elif com == 'dim_of':# this is not used anymore
 #               expr = job.params[0]
 #               dim_names.append(name)
 #               return expr
-           elif com == 'script_txt':
-               return self._run_script_txt(job)
+        elif com == 'script_txt':
+            return self._run_script_txt(job)
 
 #    def _run_job(self, job, sig_names, dim_names, name):
     def _run_job(self, job):
-           import MDSplus
-           from MDSplus import Connection
+        import MDSplus
+        from MDSplus import Connection
 
-           com = job.command
-           if com == 'novalue': return ''
-           if com == 'open':           
-               tree = job.params[0]
-               shot = job.params[1]
-               try:
-                  if tree != '':
-                      self.t = MDSplus.Tree(tree, long(shot))
-                  if shot != self._shot:
-                      expr = 'reset_private();reset_public();1'
+        com = job.command
+        if com == 'novalue':
+            return ''
+        if com == 'open':
+            tree = job.params[0]
+            shot = job.params[1]
+            try:
+                if tree != '':
+                    self.t = MDSplus.Tree(tree, int(shot))
+                if shot != self._shot:
+                    expr = 'reset_private();reset_public();1'
 #                      r =MDSplus.Data.compile(expr).evaluate().data()
-                      r =MDSplus.Data.execute(expr).data()
-                  if self._connection_flag:
-                      if self.gjob is not None:
-                         expr = self.gjob.params[0]
-                         r =MDSplus.Data.execute(expr).data()
-                  self._connection_flag = False
-                  self._shot = shot
-                  return 'ok'
-               except:
-#                  print traceback.format_exc()
-                  self.error = ['run error', traceback.format_exc()]
-                  return None
-           elif com == 'defnode':
-               node  = job.params[0]
-               try:
-                  if node.strip() != '':
-                     tn = self.t.getNode(node)
-                     self.t.setDefault(tn)
-                  return 'ok'
-               except:
-                  self.error = ['run error', traceback.format_exc()]
-                  return None
-           elif com == 'value':
-               try:
-                  expr = job.params[0]
-                  r =MDSplus.Data.execute(expr).data()
+                    r = MDSplus.Data.execute(expr).data()
+                if self._connection_flag:
+                    if self.gjob is not None:
+                        expr = self.gjob.params[0]
+                        r = MDSplus.Data.execute(expr).data()
+                self._connection_flag = False
+                self._shot = shot
+                return 'ok'
+            except:
+                #                  print traceback.format_exc()
+                self.error = ['run error', traceback.format_exc()]
+                return None
+        elif com == 'defnode':
+            node = job.params[0]
+            try:
+                if node.strip() != '':
+                    tn = self.t.getNode(node)
+                    self.t.setDefault(tn)
+                return 'ok'
+            except:
+                self.error = ['run error', traceback.format_exc()]
+                return None
+        elif com == 'value':
+            try:
+                expr = job.params[0]
+                r = MDSplus.Data.execute(expr).data()
 #                  r =MDSplus.Data.execute(expr).data()
 #                 sig_names.append(name)
-                  return r
-               except:
-                  self.error = ['run error', expr, traceback.format_exc()]
-                  return None
-           elif com == 'valuesig':
-               try:
-                  expr = job.params[0]
-                  r =MDSplus.Data.execute('_piscopevar=execute($)', expr).data()
+                return r
+            except:
+                self.error = ['run error', expr, traceback.format_exc()]
+                return None
+        elif com == 'valuesig':
+            try:
+                expr = job.params[0]
+                r = MDSplus.Data.execute('_piscopevar=execute($)', expr).data()
 #                  r =MDSplus.Data.execute(expr).data()
 #                 sig_names.append(name)
-                  return r
-               except:
-                  self.error = ['run error', expr, traceback.format_exc()]
-                  return None
+                return r
+            except:
+                self.error = ['run error', expr, traceback.format_exc()]
+                return None
 
 #           elif com == 'dim_of':     # this is not used anymore
 #               expr = job.params[0]  ### expr should be y, 0 (= dim_of(y, 0))
 #               dim_names.append(name)
 #               return expr
-           elif com == 'script_txt':
-               return self._run_script_txt(job)
-
+        elif com == 'script_txt':
+            return self._run_script_txt(job)

@@ -1,14 +1,22 @@
+from __future__ import print_function
 #
 #   Threaded worker
 #      A utility class to support thread-based parallelism
 #      in model execution.
 #
 
-import time, ifigure, wx, Queue, threading
+import time
+import ifigure
+import wx
+from six.moves import queue as Queue
+import threading
 from ifigure.utils.event_driven_thread2 import get_thread, send_event
+
+
 def c_thread():
     import threading
     return threading.current_thread()
+
 
 class ThreadedWorker(object):
     def __init__(self):
@@ -24,7 +32,7 @@ class ThreadedWorker(object):
     def get_background(self):
         return self._background
 
-    def set_background(self, value = True):
+    def set_background(self, value=True):
         self._background = value
         return self
 
@@ -34,28 +42,29 @@ class ThreadedWorker(object):
         self._restart = False
 
         for c in self.walk_model():
-           c._initialize_waitlist()
+            c._initialize_waitlist()
 
-    def Run(self, event = None, wait = None, return_queue=None):
+    def Run(self, event=None, wait=None, return_queue=None):
         '''
         setup thread
         event combination
         '''
         self._initialize_waitlist()
 
-        if wait is not None: return_queue = Queue.Queue()   
+        if wait is not None:
+            return_queue = Queue.Queue()
         t, queue = get_thread(return_queue)
         t._verbose = self._run_verbose
         trigger = t.bind_init(self, self._doJob1)
         t_list = self.set_background(False)._setup_jobchain(t, [t])
 
-        if event is not None: 
-             w = event.GetEventObject()
+        if event is not None:
+            w = event.GetEventObject()
         else:
-             w = self.get_app()
+            w = self.get_app()
         for t in t_list:
             ifigure.events.SendThreadStartEvent(self, w=w, thread=t)
-        #print 'thread list', t_list
+        # print 'thread list', t_list
 
         send_event(trigger)
 
@@ -66,7 +75,8 @@ class ThreadedWorker(object):
                     wx.Yield()
             else:
                 return_queue.get()
-        if return_queue is not None: return [t.name for t in t_list]
+        if return_queue is not None:
+            return [t.name for t in t_list]
 #            if hasattr(wait, 'put'): wait.put(self)
 
     def _setup_jobchain(self, current_thread, thread_list):
@@ -75,7 +85,8 @@ class ThreadedWorker(object):
         for name in self._run_after.split(','):
             if isinstance(self._parent, PyModel):
                 work = self._parent.eval_setting_str(name.strip())
-                if work is not None: self._add_waittostart(work)
+                if work is not None:
+                    self._add_waittostart(work)
 
         name = self.get_full_path()
         if self._background:
@@ -86,34 +97,37 @@ class ThreadedWorker(object):
             thread_list.append(t)
             if not self._run_mode:
                 for c in self.walk_model():
-                   if c.is_suppress(): continue
-                   c._add_waittostart(self, 'job1_done')
-                   thread_list = c._setup_jobchain(t, thread_list)
-                   self._add_waittofinish(c)
+                    if c.is_suppress():
+                        continue
+                    c._add_waittostart(self, 'job1_done')
+                    thread_list = c._setup_jobchain(t, thread_list)
+                    self._add_waittofinish(c)
             self._bind_waitlist2(t)
         else:
             current_thread.bind(name+'.job1_done', self._doJob2)
             self._bind_waitlist1(current_thread)
             if not self._run_mode:
                 for c in self.walk_model():
-                   if c.is_suppress(): continue
-                   c._add_waittostart(self, 'job1_done')
-                   thread_list = c._setup_jobchain(current_thread, thread_list)
-                   self._add_waittofinish(c)
+                    if c.is_suppress():
+                        continue
+                    c._add_waittostart(self, 'job1_done')
+                    thread_list = c._setup_jobchain(
+                        current_thread, thread_list)
+                    self._add_waittofinish(c)
             self._bind_waitlist2(current_thread)
         return thread_list
-    
+
     def _bind_waitlist2(self, t):
         for e in self._waitlist2:
-            t.bind(e, self._doJob2)    
+            t.bind(e, self._doJob2)
 
     def _bind_waitlist1(self, t):
         for e in self._waitlist1:
-            t.bind(e, self._doJob1)    
+            t.bind(e, self._doJob1)
 
-    def _add_waittostart(self, work, m = 'job2_done'):
+    def _add_waittostart(self, work, m='job2_done'):
         name = work.get_full_path()
-        self._waitlist1[name + '.'+ m] = False
+        self._waitlist1[name + '.' + m] = False
 
     def _add_waittofinish(self, work):
         name = work.get_full_path()
@@ -122,10 +136,12 @@ class ThreadedWorker(object):
     def _doJob1(self, event):
         # check conditions
         if event in self._waitlist1:
-           self._waitlist1[event] = True
-        v = True 
-        for key in self._waitlist1: v = v and self._waitlist1[key]
-        if not v: return False
+            self._waitlist1[event] = True
+        v = True
+        for key in self._waitlist1:
+            v = v and self._waitlist1[key]
+        if not v:
+            return False
 
         name = self.get_full_path()
         if self._run_verbose:
@@ -143,11 +159,13 @@ class ThreadedWorker(object):
 
     def _doJob2(self, event):
         if event in self._waitlist2:
-           self._waitlist2[event] = True
-        v = True 
-        for key in self._waitlist2: v = v and self._waitlist2[key]
+            self._waitlist2[event] = True
+        v = True
+        for key in self._waitlist2:
+            v = v and self._waitlist2[key]
 
-        if not v: return False
+        if not v:
+            return False
 
         name = self.get_full_path()
         if self._run_verbose:

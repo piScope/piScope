@@ -12,12 +12,12 @@ import numpy as np
 
 from matplotlib import verbose, rcParams
 from matplotlib.backend_bases import RendererBase,\
-     FigureManagerBase, FigureCanvasBase
+    FigureManagerBase, FigureCanvasBase
 from matplotlib.cbook import is_string_like, maxdict, restrict_dict
 from matplotlib.figure import Figure
 from matplotlib.font_manager import findfont
 from matplotlib.ft2font import FT2Font, LOAD_FORCE_AUTOHINT, LOAD_NO_HINTING, \
-     LOAD_DEFAULT, LOAD_NO_AUTOHINT
+    LOAD_DEFAULT, LOAD_NO_AUTOHINT
 from matplotlib.mathtext import MathTextParser
 from matplotlib.path import Path
 from matplotlib.transforms import Bbox, BboxBase
@@ -33,6 +33,7 @@ except ImportError:
 
 backend_version = 'v2.2'
 
+
 def get_hinting_flag():
     mapping = {
         True: LOAD_FORCE_AUTOHINT,
@@ -41,20 +42,21 @@ def get_hinting_flag():
         'native': LOAD_NO_AUTOHINT,
         'auto': LOAD_FORCE_AUTOHINT,
         'none': LOAD_NO_HINTING
-        }
+    }
     return mapping[rcParams['text.hinting']]
 
+
 class RendererGLCore(object):
-    def __init__(self, width, height, dpi, debug = False):
+    def __init__(self, width, height, dpi, debug=False):
         self.dpi = dpi
         self.width = width
         self.height = height
         self.debug = debug
-        self.buf =  np.zeros((width, height, 4), dtype = np.uint8)
+        self.buf = np.zeros((width, height, 4), dtype=np.uint8)
 
     def __getattr__(self, attr):
-       print("RendercoreGL "+attr+ " is called")
-       return self.method
+        print("RendercoreGL "+attr + " is called")
+        return self.method
 
     def method(self, *args, **kwargs):
         pass
@@ -62,12 +64,13 @@ class RendererGLCore(object):
     def buffer_rgba(self):
         return self.buf.tostring()
 
+
 class RendererGL(RendererBase):
     """
     The renderer handles all the drawing primitives using a graphics
     context instance that controls the colors/styles
     """
-    debug=1
+    debug = 1
 
     # we want to cache the fonts at the class level so that when
     # multiple figures are created we can reuse them.  This helps with
@@ -82,27 +85,34 @@ class RendererGL(RendererBase):
 
     lock = threading.RLock()
     _fontd = maxdict(50)
+
     def __init__(self, width, height, dpi):
-        if __debug__: verbose.report('RendererAgg.__init__', 'debug-annoying')
+        if __debug__:
+            verbose.report('RendererAgg.__init__', 'debug-annoying')
         RendererBase.__init__(self)
         self.texd = maxdict(50)  # a cache of tex image rasters
 
         self.dpi = dpi
         self.width = width
         self.height = height
-        if __debug__: verbose.report('RendererAgg.__init__ width=%s, height=%s'%(width, height), 'debug-annoying')
-        self._renderer = RendererGLCore(int(width), int(height), dpi, debug=False)
+        if __debug__:
+            verbose.report('RendererAgg.__init__ width=%s, height=%s' %
+                           (width, height), 'debug-annoying')
+        self._renderer = RendererGLCore(
+            int(width), int(height), dpi, debug=False)
         self._filter_renderers = []
 
-        if __debug__: verbose.report('RendererAgg.__init__ _RendererAgg done',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererAgg.__init__ _RendererAgg done',
+                           'debug-annoying')
 
         self._update_methods()
         self.mathtext_parser = MathTextParser('Agg')
 
         self.bbox = Bbox.from_bounds(0, 0, self.width, self.height)
-        if __debug__: verbose.report('RendererGL.__init__ done',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.__init__ done',
+                           'debug-annoying')
 
     def __getstate__(self):
         # We only want to preserve the init keywords of the Renderer.
@@ -127,7 +137,7 @@ class RendererGL(RendererBase):
         return self._renderer.draw_path_collection(*kl, **kw)
 
     def _update_methods(self):
-        #self.draw_path = self._renderer.draw_path  # see below
+        # self.draw_path = self._renderer.draw_path  # see below
         #self.draw_markers = self._renderer.draw_markers
         #self.draw_path_collection = self._renderer.draw_path_collection
         self.draw_quad_mesh = self._renderer.draw_quad_mesh
@@ -141,7 +151,7 @@ class RendererGL(RendererBase):
         """
         Draw the path
         """
-        nmax = rcParams['agg.path.chunksize'] # here at least for testing
+        nmax = rcParams['agg.path.chunksize']  # here at least for testing
         npts = path.vertices.shape[0]
         if (nmax > 100 and npts > nmax and path.should_simplify and
                 rgbFace is None and gc.get_hatch() is None):
@@ -152,11 +162,11 @@ class RendererGL(RendererBase):
             i1[:-1] = i0[1:] - 1
             i1[-1] = npts
             for ii0, ii1 in zip(i0, i1):
-                v = path.vertices[ii0:ii1,:]
+                v = path.vertices[ii0:ii1, :]
                 c = path.codes
                 if c is not None:
                     c = c[ii0:ii1]
-                    c[0] = Path.MOVETO # move to end of last chunk
+                    c[0] = Path.MOVETO  # move to end of last chunk
                 p = Path(v, c)
                 self._renderer.draw_path(gc, p, transform, rgbFace)
         else:
@@ -166,8 +176,9 @@ class RendererGL(RendererBase):
         """
         Draw the math text using matplotlib.mathtext
         """
-        if __debug__: verbose.report('RendererGL.draw_mathtext',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.draw_mathtext',
+                           'debug-annoying')
         ox, oy, width, height, descent, font_image, used_characters = \
             self.mathtext_parser.parse(s, self.dpi, prop)
 
@@ -181,14 +192,16 @@ class RendererGL(RendererBase):
         """
         Render the text
         """
-        if __debug__: verbose.report('RendererGL.draw_text', 'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.draw_text', 'debug-annoying')
 
         if ismath:
             return self.draw_mathtext(gc, x, y, s, prop, angle)
 
         flags = get_hinting_flag()
         font = self._get_agg_font(prop)
-        if font is None: return None
+        if font is None:
+            return None
         if len(s) == 1 and ord(s) > 127:
             font.load_char(ord(s), flags=flags)
         else:
@@ -201,7 +214,7 @@ class RendererGL(RendererBase):
         xd = -d * np.sin(np.deg2rad(angle))
         yd = d * np.cos(np.deg2rad(angle))
 
-        #print x, y, int(x), int(y), s
+        # print x, y, int(x), int(y), s
         self._renderer.draw_text_image(
             font.get_image(), np.round(x - xd), np.round(y + yd) + 1, angle, gc)
 
@@ -231,14 +244,14 @@ class RendererGL(RendererBase):
 
         flags = get_hinting_flag()
         font = self._get_agg_font(prop)
-        font.set_text(s, 0.0, flags=flags)  # the width and height of unrotated string
+        # the width and height of unrotated string
+        font.set_text(s, 0.0, flags=flags)
         w, h = font.get_width_height()
         d = font.get_descent()
         w /= 64.0  # convert from subpixels
         h /= 64.0
         d /= 64.0
         return w, h, d
-
 
     def draw_tex(self, gc, x, y, s, prop, angle, ismath='TeX!', mtext=None):
         # todo, handle props, angle, origins
@@ -267,8 +280,9 @@ class RendererGL(RendererBase):
         """
         Get the font for text instance t, cacheing for efficiency
         """
-        if __debug__: verbose.report('RendererGL._get_agg_font',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL._get_agg_font',
+                           'debug-annoying')
         return None
 
         key = hash(prop)
@@ -295,23 +309,27 @@ class RendererGL(RendererBase):
         convert point measures to pixes using dpi and the pixels per
         inch of the display
         """
-        if __debug__: verbose.report('RendererGL.points_to_pixels',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.points_to_pixels',
+                           'debug-annoying')
         return points*self.dpi/72.0
 
     def tostring_rgb(self):
-        if __debug__: verbose.report('RendererGL.tostring_rgb',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.tostring_rgb',
+                           'debug-annoying')
         return self._renderer.tostring_rgb()
 
     def tostring_argb(self):
-        if __debug__: verbose.report('RendererGL.tostring_argb',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.tostring_argb',
+                           'debug-annoying')
         return self._renderer.tostring_argb()
 
     def buffer_rgba(self):
-        if __debug__: verbose.report('RendererGL.buffer_rgba',
-                                     'debug-annoying')
+        if __debug__:
+            verbose.report('RendererGL.buffer_rgba',
+                           'debug-annoying')
         return self._renderer.buffer_rgba()
 
     def clear(self):
@@ -403,7 +421,6 @@ class RendererGL(RendererBase):
 
         l, b, w, h = bounds
 
-
         self._renderer = self._filter_renderers.pop()
         self._update_methods()
 
@@ -416,5 +433,5 @@ class RendererGL(RendererBase):
 
             gc = self.new_gc()
             self._renderer.draw_image(gc,
-                                      l+ox, height - b - h +oy,
+                                      l+ox, height - b - h + oy,
                                       image)

@@ -1,5 +1,15 @@
 #!/opt/local/bin/python2.7
 
+import tempfile
+import weakref
+from six.moves import queue as Queue
+import subprocess
+import time
+import sys
+import threading
+from ifigure.utils.wx3to4 import wxTaskBarIcon, TBI_DOCK, EVT_TASKBAR_LEFT_DCLICK, IconFromBitmap
+import os
+import wx.aui as aui
 import wx
 
 from wx.lib.embeddedimage import PyEmbeddedImage
@@ -535,91 +545,92 @@ app_logo = PyEmbeddedImage(
     "YA72pbSLgMh1B4hXYN8vtevu+xdtA2AONthgg72iDTrMwQYbbLBXtAEwBxtssMFe0f4/U4pA"
     "UwOVBpYAAAAASUVORK5CYII=")
 
-import os, threading, subprocess, Queue, weakref, tempfile
-import wx, sys, time
-import wx.aui as aui
 
-
-class RedirectOutput(object): 
+class RedirectOutput(object):
     def __init__(self, stdout):
-        ### store normal stdout
+        # store normal stdout
         self.stdout = stdout
-        self.redirect_list=[]
+        self.redirect_list = []
         self.sys_stdout = sys.stdout
         self.sys_stderr = sys.stderr
-    def write(self, string): 
+
+    def write(self, string):
         t = threading.current_thread()
         for x in self.redirect_list:
             if x[0] == t:
-                   ##Do not put a print statement here!!## 
-                wx.CallAfter(x[1], string) 
+                   ##Do not put a print statement here!!##
+                wx.CallAfter(x[1], string)
                 if t.name == 'MainThread':
                     try:
                         self.stdout.write(string)
-                    except IOError: ### may fail to write to stdout on macapplet
+                    except IOError:  # may fail to write to stdout on macapplet
                         pass
                 return
-                   #if string != "\n": 
-                        #wx.MessageBox(string, "Error!") 
+                # if string != "\n":
+                #wx.MessageBox(string, "Error!")
         if t.name == 'MainThread':
             try:
-               self.stdout.write(string)
-            except IOError: ### may fail to write to stdout on macapplet
-               pass
+                self.stdout.write(string)
+            except IOError:  # may fail to write to stdout on macapplet
+                pass
         else:
             if string == '\n':
                 wx.CallAfter(self.stdout.write, string)
             else:
-                wx.CallAfter(self.stdout.write, 'Thread ('+t.name+ '):'+string)
+                wx.CallAfter(self.stdout.write,
+                             'Thread ('+t.name + '):'+string)
 
     def add(self, t, method):
         self.redirect_list.append((t, method))
-  
+
     def rm(self, t):
-        self.redirect_list = [x for x 
-            in self.redirect_list if x[0] != t]
+        self.redirect_list = [x for x
+                              in self.redirect_list if x[0] != t]
+
     def flush(self):
         if hasattr(self.stdout, 'flush'):
-             self.stdout.flush()
+            self.stdout.flush()
 
 
 filepath = os.path.realpath(__file__)
-pp = os.path.dirname(os.path.realpath(os.path.join(os.path.dirname(filepath), 'ifigure')))
+pp = os.path.dirname(os.path.realpath(
+    os.path.join(os.path.dirname(filepath), 'ifigure')))
 piscope_path = os.path.join(pp, 'piscope.py')
 
+
 class JobMonitor(threading.Thread):
-#    tempfile = os.path.join(tempfile.gettempdir(), 'piscopemac_'+os.getenv('USER')+'_'+str(os.getpid()))
-#    os.mkdir(tempfile)
+    #    tempfile = os.path.join(tempfile.gettempdir(), 'piscopemac_'+os.getenv('USER')+'_'+str(os.getpid()))
+    #    os.mkdir(tempfile)
 
     def __init__(self, task_queue, stdout,  *args, **kargs):
         super(JobMonitor, self).__init__(*args, **kargs)
         self.task_queue = task_queue
         self.stdout = stdout
+
     def run(self, *args, **kargs):
-#        self.p = subprocess.Popen(['/opt/local/bin/python2.7', '-E', piscope_path, 
-#                                   '-l',  tempfile ],
-#                                   stdout = subprocess.PIPE,
-#                                   stderr = subprocess.STDOUT,
-#                                   universal_newlines = True )
+        #        self.p = subprocess.Popen(['/opt/local/bin/python2.7', '-E', piscope_path,
+        #                                   '-l',  tempfile ],
+        #                                   stdout = subprocess.PIPE,
+        #                                   stderr = subprocess.STDOUT,
+        #                                   universal_newlines = True )
 
         environ = os.environ.copy()
         del environ['PYTHONHOME']
         del environ['PYTHONPATH']
-        self.p = subprocess.Popen(['/Users/shiraiwa/piscope_dev4/mac/applet/dist/piScope.app/Contents/MacOS/piScope', '-l',  tempfile ],
-                                   stdout = subprocess.PIPE,
-                                   stderr = subprocess.STDOUT,
-                                   universal_newlines = True,
-                                   env = environ )
+        self.p = subprocess.Popen(['/Users/shiraiwa/piscope_dev4/mac/applet/dist/piScope.app/Contents/MacOS/piScope', '-l',  tempfile],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT,
+                                  universal_newlines=True,
+                                  env=environ)
 
         for line in self.p.stdout.readlines():
-             self.stdout.write(line)
+            self.stdout.write(line)
 
-from ifigure.utils.wx3to4 import wxTaskBarIcon, TBI_DOCK, EVT_TASKBAR_LEFT_DCLICK, IconFromBitmap
 
 class TaskBarIcon(wxTaskBarIcon):
     TBMENU_OPENNEW = wx.NewId()
-    TBMENU_OPENED  = wx.NewId()
-    TBMENU_CLOSE  = wx.NewId()
+    TBMENU_OPENED = wx.NewId()
+    TBMENU_CLOSE = wx.NewId()
 
     def __init__(self, frame):
         wxTaskBarIcon.__init__(self, TBI_DOCK)
@@ -646,7 +657,7 @@ class TaskBarIcon(wxTaskBarIcon):
         names = []
         if self.frame.IsShown():
             wname = self.frame.proj.getvar('filename')
-            if wname is None: 
+            if wname is None:
                 wname = 'untitled'
             else:
                 wname = os.path.basename(wname)
@@ -654,15 +665,16 @@ class TaskBarIcon(wxTaskBarIcon):
             names.append('Main Window:'+wname)
         for v in self.frame.viewers:
             if v is not self.frame:
-                 names.append(v.GetTitle())
+                names.append(v.GetTitle())
 
         for name in names:
             f1 = menu.Append(wx.ID_ANY, name)
+
             def func(evt, name1=name):
                 self.OnRaiseOpened(evt, name1)
             self.Bind(wx.EVT_MENU, func, f1)
         if (len(names) != 1 and self.frame.IsShown() or
-            len(names) != 0 and not self.frame.IsShown()):
+                len(names) != 0 and not self.frame.IsShown()):
             menu.AppendSeparator()
             menu.Append(self.TBMENU_CLOSE,   "Close All Figures")
         return menu
@@ -674,7 +686,7 @@ class TaskBarIcon(wxTaskBarIcon):
         for v in self.frame.viewers:
             if v.GetTitle() == name1:
                 v.Raise()
-        
+
     def MakeIcon(self, img):
         """
         The various platforms have different requirements for the
@@ -687,7 +699,7 @@ class TaskBarIcon(wxTaskBarIcon):
         elif "wxMac" in wx.PlatformInfo:
             img = img.Scale(128, 128)
         # wxMac can be any size upto 128x128, so leave the source img alone....
-        icon = IconFromBitmap(img.ConvertToBitmap() )
+        icon = IconFromBitmap(img.ConvertToBitmap())
         return icon
 
     def OnTaskBarActivate(self, evt):
@@ -700,7 +712,8 @@ class TaskBarIcon(wxTaskBarIcon):
     def OnTaskBarClose(self, evt):
         for v in self.frame.viewers:
             if v is not self.frame:
-                 wx.CallAfter(v.Close)
+                wx.CallAfter(v.Close)
+
 
 class MainFrame(wx.Frame):
     def __init__(self, parent):
@@ -712,8 +725,8 @@ class MainFrame(wx.Frame):
     def OnOpenNew(self, evt):
         self.queues.append(Queue.Queue())
         thread = JobMonitor(self.queues[-1], self.redirector)
-        log = wx.TextCtrl(self.nb, -1, 
-                style=wx.TE_MULTILINE|wx.TE_READONLY) 
+        log = wx.TextCtrl(self.nb, -1,
+                          style=wx.TE_MULTILINE | wx.TE_READONLY)
         log.AppendText(filepath+'\n')
         for key in os.environ:
             log.AppendText(key + ':' + os.environ[key]+'\n')
@@ -722,4 +735,3 @@ class MainFrame(wx.Frame):
 
         self.threads.append(thread)
         thread.start()
-

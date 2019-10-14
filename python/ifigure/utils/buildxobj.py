@@ -31,6 +31,7 @@ Reference for content:   Adobe PDF reference, sixth edition, version 1.7
 from pdfrw.objects import PdfDict, PdfArray, PdfName
 from pdfrw.pdfreader import PdfReader
 from pdfrw.errors import log
+from six import iteritems
 
 class ViewInfo(object):
     ''' Instantiate ViewInfo with a uri, and it will parse out
@@ -43,7 +44,7 @@ class ViewInfo(object):
     rotate = None
 
     def __init__(self, pageinfo='', **kw):
-        pageinfo=pageinfo.split('#',1)
+        pageinfo = pageinfo.split('#', 1)
         if len(pageinfo) == 2:
             pageinfo[1:] = pageinfo[1].replace('&', '#').split('#')
         for key in 'page viewrect'.split():
@@ -63,9 +64,10 @@ class ViewInfo(object):
                 setattr(self, key, [float(x) for x in value])
             else:
                 log.error('Unknown option: %s', key)
-        for key, value in kw.iteritems():
+        for key, value in iteritems(kw):
             assert hasattr(self, key), key
             setattr(self, key, value)
+
 
 def get_rotation(rotate):
     ''' Return clockwise rotation code:
@@ -82,6 +84,7 @@ def get_rotation(rotate):
         return 0
     return rotate / 90
 
+
 def rotate_point(point, rotation):
     ''' Rotate an (x,y) coordinate clockwise by a 
         rotation code specifying a multiple of 90 degrees.
@@ -92,6 +95,7 @@ def rotate_point(point, rotation):
         point = -point[0], -point[1]
     return point
 
+
 def rotate_rect(rect, rotation):
     ''' Rotate both points within the rectangle, then normalize
         the rectangle by returning the new lower left, then new
@@ -100,6 +104,7 @@ def rotate_rect(rect, rotation):
     rect = rotate_point(rect[:2], rotation) + rotate_point(rect[2:], rotation)
     return (min(rect[0], rect[2]), min(rect[1], rect[3]),
             max(rect[0], rect[2]), max(rect[1], rect[3]))
+
 
 def getrects(inheritable, pageinfo, rotation):
     ''' Given the inheritable attributes of a page and
@@ -119,7 +124,8 @@ def getrects(inheritable, pageinfo, rotation):
         ctop = mtop - y
         cright = cleft + w
         cbot = ctop - h
-        cbox = max(mleft, cleft), max(mbot, cbot), min(mright, cright), min(mtop, ctop)
+        cbox = max(mleft, cleft), max(mbot, cbot), min(
+            mright, cright), min(mtop, ctop)
         cbox = rotate_rect(cbox, -rotation)
     return mbox, cbox
 
@@ -137,14 +143,15 @@ def _cache_xobj(contents, resources, mbox, bbox, rotation):
         func = (_get_fullpage, _get_subpage)[mbox != bbox]
         result = PdfDict(
             func(contents, resources, mbox, bbox, rotation),
-            Type = PdfName.XObject,
-            Subtype = PdfName.Form,
-            FormType = 1,
-            BBox = PdfArray(bbox),
+            Type=PdfName.XObject,
+            Subtype=PdfName.Form,
+            FormType=1,
+            BBox=PdfArray(bbox),
         )
         rect = bbox
         if rotation:
-            matrix = rotate_point((1, 0), rotation) + rotate_point((0, 1), rotation)
+            matrix = rotate_point((1, 0), rotation) + \
+                rotate_point((0, 1), rotation)
             result.Matrix = PdfArray(matrix + (0, 0))
             rect = rotate_rect(rect, rotation)
 
@@ -155,12 +162,14 @@ def _cache_xobj(contents, resources, mbox, bbox, rotation):
         cachedict[cachekey] = result
     return result
 
+
 def _get_fullpage(contents, resources, mbox, bbox, rotation):
     ''' fullpage is easy.  Just copy the contents,
         set up the resources, and let _cache_xobj handle the
         rest.
     '''
     return PdfDict(contents, Resources=resources)
+
 
 def _get_subpage(contents, resources, mbox, bbox, rotation):
     ''' subpages *could* be as easy as full pages, but we
@@ -170,13 +179,14 @@ def _get_subpage(contents, resources, mbox, bbox, rotation):
         items from the page.
     '''
     return PdfDict(
-        stream = '/FullPage Do\n',
-        Resources = PdfDict(
-            XObject = PdfDict(
-                FullPage = _cache_xobj(contents, resources, mbox, mbox, 0)
+        stream='/FullPage Do\n',
+        Resources=PdfDict(
+            XObject=PdfDict(
+                FullPage=_cache_xobj(contents, resources, mbox, mbox, 0)
             )
         )
     )
+
 
 def pagexobj(page, viewinfo=ViewInfo(), allow_compressed=True):
     ''' pagexobj creates and returns a Form XObject for
@@ -192,9 +202,8 @@ def pagexobj(page, viewinfo=ViewInfo(), allow_compressed=True):
     # All the filters must have been executed
     assert int(contents.Length) == len(contents.stream)
     if not allow_compressed:
-        assert len([x for x in contents.iteritems()]) == 1
+        assert len([x for x in contents.items()]) == 1
     return _cache_xobj(contents, resources, mbox, bbox, rotation)
-
 
 
 def docxobj(pageinfo, doc=None, allow_compressed=True):
@@ -215,7 +224,8 @@ def docxobj(pageinfo, doc=None, allow_compressed=True):
     elif pageinfo.doc is not None:
         doc = pageinfo.doc
     else:
-        doc = pageinfo.doc = PdfReader(pageinfo.docname, decompress = not allow_compressed)
+        doc = pageinfo.doc = PdfReader(
+            pageinfo.docname, decompress=not allow_compressed)
     assert isinstance(doc, PdfReader)
 
     sourcepage = doc.pages[(pageinfo.page or 1) - 1]
@@ -228,6 +238,7 @@ class CacheXObj(object):
         bigger than it ought to be by replicating
         unnecessary object copies.
     '''
+
     def __init__(self, decompress=False):
         ''' Set decompress true if you need
             the Form XObjects to be decompressed.

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 #
 #  this is a start-up script loaded in
@@ -6,6 +7,8 @@
 #  help function
 #
 #
+import six
+import numpy as np
 from ifigure.interactive import aviewer
 from ifigure.interactive import plot, timetrace, oplot, plotc, loglog, semilogx, semilogy
 from ifigure.interactive import errorbar, errorbarc, oerrorbar
@@ -41,14 +44,14 @@ from ifigure.interactive import isection
 from ifigure.interactive import isec
 from ifigure.interactive import showpage
 from ifigure.interactive import title, suptitle
-from ifigure.interactive import xlabel, ylabel, zlabel, clabel 
+from ifigure.interactive import xlabel, ylabel, zlabel, clabel
 from ifigure.interactive import xtitle, ytitle, ztitle, ctitle
 from ifigure.interactive import update
 from ifigure.interactive import draw
 from ifigure.interactive import server
 from ifigure.interactive import clear
 from ifigure.interactive import debug
-from ifigure.interactive import profile,profile_start,profile_stop
+from ifigure.interactive import profile, profile_start, profile_stop
 from ifigure.interactive import threed, lighting
 #from ifigure.interactive import newcz
 from ifigure.interactive import ipage
@@ -69,11 +72,16 @@ from ifigure.interactive import property
 from ifigure.interactive import view
 from ifigure.interactive import glinfo
 
+if six.PY3:
+    from importlib import reload
+    from ifigure.interactive import futurize
+else:
+    from builtins import reload
+
 from ifigure.interactive import has_petra
 if has_petra:
     from ifigure.interactive import petram
 
-import numpy as np
 
 def help(*args):
     '''
@@ -87,38 +95,40 @@ def help(*args):
     '''
 
     if len(args) == 0:
-       import types
-       lvar = locals()
-       gvar = globals()
-       lnames = [key for key in lvar if type(lvar[key]) == types.FunctionType]
-       gnames = [key for key in gvar if type(gvar[key]) == types.FunctionType]
-       print('Availabe functions')
+        import types
+        lvar = locals()
+        gvar = globals()
+        lnames = [key for key in lvar if type(lvar[key]) == types.FunctionType]
+        gnames = [key for key in gvar if type(gvar[key]) == types.FunctionType]
+        print('Availabe functions')
 #       print lnames
 #       print gnames
-       txt = ['    ']
-       gnames = sorted(gnames)
-       #gnames = [name for name in gnames if not name in _internal_func]
-       flen = max([len(name) for name in gnames])+3
-       f = '{:'+str(flen)+'}'
-       gnames = [f.format(name) for name in gnames]
+        txt = ['    ']
+        gnames = sorted(gnames)
+        #gnames = [name for name in gnames if not name in _internal_func]
+        flen = max([len(name) for name in gnames])+3
+        f = '{:'+str(flen)+'}'
+        gnames = [f.format(name) for name in gnames]
 
-       ### this is not to show some functions in list
-       for name in gnames:
-          if name.startswith('_'): continue
+        # this is not to show some functions in list
+        for name in gnames:
+            if name.startswith('_'):
+                continue
 
-          if len(txt[-1])+len(name) > 80:
-#              txt[-1] = txt[-1]
-              txt.append('    ')
-          txt[-1] = '\t'.join([txt[-1], name])
-       txt.append('! execute shell command (note: do not call interactive command such as python/bash from this)')
-       print(('\n'.join(txt)))
+            if len(txt[-1])+len(name) > 80:
+                #              txt[-1] = txt[-1]
+                txt.append('    ')
+            txt[-1] = '\t'.join([txt[-1], name])
+        txt.append(
+            '! execute shell command (note: do not call interactive command such as python/bash from this)')
+        print(('\n'.join(txt)))
 
     else:
-       f = args[0]
-       if hasattr(f, '__doc__'):
-           if f.__doc__ is not None:
+        f = args[0]
+        if hasattr(f, '__doc__'):
+            if f.__doc__ is not None:
                 print((f.__doc__))
-           else:
+            else:
                 print('help is not available for ' + f.__repr__())
-       else:
-           print(('help is not available for ', f))
+        else:
+            print(('help is not available for ', f))

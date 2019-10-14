@@ -11,22 +11,23 @@ import wx
 exp = 'xtomo'
 node = '.BRIGHTNESSES.ARRAY_3:CHORD_23'
 
+
 class MDSScopeExtraMenuGUI(MDSScope):
     def __init__(self, *args, **kargs):
         MDSScope.__init__(self, *args, **kargs)
-        extra_menu = wx.Menu()  
-        self.menuBar.Insert(self.menuBar.GetMenuCount()-1, 
-                        extra_menu,"ExtraMenu")
-        self.add_menu(extra_menu, wx.ID_ANY, 
-                      "Plot Spectra...", 
+        extra_menu = wx.Menu()
+        self.menuBar.Insert(self.menuBar.GetMenuCount()-1,
+                            extra_menu, "ExtraMenu")
+        self.add_menu(extra_menu, wx.ID_ANY,
+                      "Plot Spectra...",
                       "plot spectra of panel #1",
                       self.onPlotSpectra)
         self.nsec(2)
         self.cls()
 
-        self.data = self.AddSignalScript(experiment = exp, 
-                                         signals = {'y': node}, 
-                                         kind = 'plot')
+        self.data = self.AddSignalScript(experiment=exp,
+                                         signals={'y': node},
+                                         kind='plot')
 
     def onPlotSpectra(self, evt):
         try:
@@ -39,6 +40,7 @@ class MDSScopeExtraMenuGUI(MDSScope):
             import traceback
             traceback.print_exc()
         evt.Skip()
+
 
 if not obj.get_parent().has_child('mdsscope_extramenu_book'):
     v = figure()

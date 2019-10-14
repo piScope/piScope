@@ -1,10 +1,11 @@
-#!/bin/bash -l
+#!/bin/bash
 ###
 ###  piscope 
 ###
 ###    start up script for piescope
 ###    usage : piscope -e {exec} {file}
 INTERPRETER=`which python`
+
 COM='""'
 #
 #
@@ -62,7 +63,7 @@ done
 #echo ${@:1:$((OPTIND-1))}
 shift `expr ${OPTIND} - 1`
 
-ME=`python -c "import os,sys;print os.path.realpath('$0')"`
+ME=`python -c "import os,sys;print(os.path.realpath('$0'))"`
 #ME=$(`python -c 'import os,sys;print os.path.realpath(sys.argv[1])' $0`)
 echo $ME
 #echo $DYLD_LIBRARY_PATH ## On MacOS El Capitan, this is not carried if

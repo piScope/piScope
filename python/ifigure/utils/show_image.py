@@ -1,6 +1,8 @@
 import wx
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+
+
 class ShowImageFrame(wx.Frame):
     def __init__(self, parent=None, bitmap=None):
         wx.Frame.__init__(self, parent, -1)
@@ -23,5 +25,3 @@ class ShowImageFrame(wx.Frame):
         dc.Clear()
         dc.DrawBitmap(self.bitmap,  0, 0, True)
         dc.EndDrawing()
- 
-

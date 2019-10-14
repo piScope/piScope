@@ -1,8 +1,12 @@
+from __future__ import print_function
 import weakref
+
+
 class NdArrayCache(object):
     cache = weakref.WeakKeyDictionary({})
     i = 0
-    def __init__(self,*args, **kywds):
+
+    def __init__(self, *args, **kywds):
         pass
 
     def show(self):
@@ -14,7 +18,7 @@ class NdArrayCache(object):
             return self.get_id(t)
         data = []
         if t.base is not None:
-            #chick if t.base is stored
+            # chick if t.base is stored
             if not self.check(t.base):
                 tbase_id = self.store(t.base)
             else:
@@ -23,9 +27,9 @@ class NdArrayCache(object):
             tbase_id = None
 
         NdArrayCache.i = NdArrayCache.i + 1
-        data.append((NdArrayCache.i, tbase_id, 
+        data.append((NdArrayCache.i, tbase_id,
                      t.shape, t.strides))
-             
+
         return NdArrayCache.i
 
     def get_id(self, obj):
@@ -33,5 +37,3 @@ class NdArrayCache(object):
             return NdArrayCache.cache[obj][0]
         except ReferenceError:
             return None
-
-        

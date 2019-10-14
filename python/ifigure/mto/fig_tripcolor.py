@@ -6,15 +6,17 @@ from matplotlib.tri import Triangulation
 import numpy as np
 import ifigure.events
 
+
 class FigTripcolor(FigImage, TrianglePlots):
     '''
     tripcolor(x, y, z)
     tripcolor(tri, x, y, z)
     '''
     default_rasterized = True
+
     def __new__(self, *args, **kywds):
         if len(args) == 4:
-            tri =  args[0]            
+            tri = args[0]
             args = args[1:]
         else:
             tri = None
@@ -22,53 +24,56 @@ class FigTripcolor(FigImage, TrianglePlots):
         shading = kywds.pop('shading', "flat")
         mask = kywds.pop('mask', None)
         obj = FigImage.__new__(self, *args, **kywds)
-        obj.setp('shading', shading)        
-        obj.setp('mask', mask)        
-        obj.setvar('shading', shading)        
+        obj.setp('shading', shading)
+        obj.setp('mask', mask)
+        obj.setvar('shading', shading)
         obj.setvar('mask', mask)
-        obj.setvar("tri", tri) 
+        obj.setvar("tri", tri)
         return obj
-    
+
     def __init__(self, *args,  **kywds):
         if len(args) == 4:
-            tri = args[0]            
+            tri = args[0]
             args = args[1:]
         else:
             tri = None
         FigImage.__init__(self, *args, **kywds)
         TrianglePlots.__init__(self)
         self._tri = tri
-        
+
     @classmethod
     def isTripColor(self):
         return True
-    
+
     @classmethod
     def get_namebase(self):
         return 'tripcolor'
+
     @classmethod
     def attr_in_file(self):
-        return  (["alpha", "shading", "mask"] + 
+        return (["alpha", "shading", "mask"] +
                 super(FigImage, self).attr_in_file())
-    @classmethod  
+
+    @classmethod
     def property_in_palette(self):
-        return ["cmap","tripcolor_shading", "alpha_2"]
+        return ["cmap", "tripcolor_shading", "alpha_2"]
 #    def set_shading(self, value, a):
 #        self.setp('shading', value)
 #        a.set_shading(value)
 #    def get_shading(self, a):
 #        return self.getp('interp')
+
     def onResize(self, evt):
         self.set_bmp_update(False)
-        
-        #self.del_artist(delall=True)
-        #self.delp('loaded_property')
-        #self.setp('use_var', False)
-        #if hasattr(self, "_data_extent"):
-        #   self._data_extent = None
-        #self.generate_artist()
 
-    def handle_axes_change(self,evt=None):
+        # self.del_artist(delall=True)
+        # self.delp('loaded_property')
+        #self.setp('use_var', False)
+        # if hasattr(self, "_data_extent"):
+        #   self._data_extent = None
+        # self.generate_artist()
+
+    def handle_axes_change(self, evt=None):
         return super(FigImage, self).handle_axes_change(evt)
 
     def set_alpha(self, value, a):
@@ -77,24 +82,24 @@ class FigTripcolor(FigImage, TrianglePlots):
         cax.set_crangeparam_to_artist(a)
         self.setp('alpha', value)
         self.set_bmp_update(False)
-        
-    def get_alpha(self, a):        
+
+    def get_alpha(self, a):
         return a.get_alpha()
 
-
-    def get_crange(self, crange=[None,None], 
-                         xrange=[None,None], 
-                         yrange=[None,None], 
-                         scale='linear'):
+    def get_crange(self, crange=[None, None],
+                   xrange=[None, None],
+                   yrange=[None, None],
+                   scale='linear'):
         if len(self._artists) == 0:
-            return  FigImage.get_crange(self, crange = crange,
-                             xrange = xrange, yrange = yrange,
-                             scale = scale)
+            return FigImage.get_crange(self, crange=crange,
+                                       xrange=xrange, yrange=yrange,
+                                       scale=scale)
         else:
             zt = self._artists[0].get_array()
-            if scale == 'log': zt = mask_negative(zt)
-            crange = self._update_range(crange, 
-                                       (min(zt), max(zt)))
+            if scale == 'log':
+                zt = mask_negative(zt)
+            crange = self._update_range(crange,
+                                        (min(zt), max(zt)))
         return crange
 
     def _eval_xyz(self):
@@ -113,10 +118,9 @@ class FigTripcolor(FigImage, TrianglePlots):
         ptx = np.vstack((x.flatten(), y.flatten()))
         t = self._artists[0].axes.transData
         ptx = t.transform(ptx.transpose())
-        dist = np.sqrt((ptx[:,0] - evt.x)** 2 + (ptx[:,1] -  evt.y)**2)
+        dist = np.sqrt((ptx[:, 0] - evt.x) ** 2 + (ptx[:, 1] - evt.y)**2)
         if np.min(dist) < 5:
-            self._pick_pos = [evt.xdata, evt.ydata]                    
-            return True,  {'child_artist':artist}
+            self._pick_pos = [evt.xdata, evt.ydata]
+            return True,  {'child_artist': artist}
         else:
             return False, {}
-        

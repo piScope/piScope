@@ -1,59 +1,65 @@
 
-import  os, time, ifigure, threading, sys
-import  wx, weakref
-import  numpy as np
-from  wx.lib.statbmp import GenStaticBitmap
+import os
+import time
+import ifigure
+import threading
+import sys
+import wx
+import weakref
+import numpy as np
+from wx.lib.statbmp import GenStaticBitmap
 import ifigure
 import ifigure.utils.cbook as cbook
 try:
-   import resource
-   has_resource_module = True
+    import resource
+    has_resource_module = True
 except ImportError:
-   has_resource_module = False
+    has_resource_module = False
 
-#num_field=2
+# num_field=2
+
 
 def memory_usage():
     if has_resource_module:
-        mem=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         if sys.platform == 'darwin':
-             return mem/1024 #maxos
+            return mem/1024  # maxos
         else:
-             return mem/1024 #linux
+            return mem/1024  # linux
     else:
         if sys.platform == 'win32':
-             from ifigure.utils.get_memory_usage_win import get_memory_usage
-             return get_memory_usage()/1024/1024
+            from ifigure.utils.get_memory_usage_win import get_memory_usage
+            return get_memory_usage()/1024/1024
 
-    
-#---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
 class StatusBarPopup(wx.Menu):
     def __init__(self, parent):
         self.parent = parent
 
         super(StatusBarPopup, self).__init__()
-        m=[["Use e", self.onFormatE, None],
-          ["Use f", self.onFormatF, None],
-          ("+Digits", None, None),
-          ["*2", self.on2, None],
-          ["*4", self.on4, None],
-          ["*6", self.on6, None],
-          ["*8", self.on8, None],
-          ("!", None, None),
-          ["Copy Text", self.onCopyText, None] ]
-        #print(ifigure._cursor_config["format"][3])
+        m = [["Use e", self.onFormatE, None],
+             ["Use f", self.onFormatF, None],
+             ("+Digits", None, None),
+             ["*2", self.on2, None],
+             ["*4", self.on4, None],
+             ["*6", self.on6, None],
+             ["*8", self.on8, None],
+             ("!", None, None),
+             ["Copy Text", self.onCopyText, None]]
+        # print(ifigure._cursor_config["format"][3])
         if ifigure._cursor_config["format"][-2] == 'e':
-             m[0][0] = '^Use e'
+            m[0][0] = '^Use e'
         else:
-             m[1][0] = '^Use f'
+            m[1][0] = '^Use f'
         if ifigure._cursor_config["format"][3] == '2':
-             m[3][0] = '^2'
+            m[3][0] = '^2'
         elif ifigure._cursor_config["format"][3] == '4':
-             m[4][0] = '^4'
+            m[4][0] = '^4'
         elif ifigure._cursor_config["format"][3] == '6':
-             m[5][0] = '^6'
+            m[5][0] = '^6'
         elif ifigure._cursor_config["format"][3] == '8':
-             m[6][0] = '^8'
+            m[6][0] = '^8'
         cbook.BuildPopUpMenu(self, m)
 
     def onFormatE(self, evt):
@@ -89,11 +95,13 @@ class StatusBarPopup(wx.Menu):
         ef = txt[-2]
         ifigure._cursor_config["format"] = '{:.8'+ef+'}'
         self.parent.refresh_cursor_string()
-        
+
     def onCopyText(self, evt):
         if wx.TheClipboard.Open():
-             wx.TheClipboard.SetData(wx.TextDataObject(self.parent.GetStatusText()))
-             wx.TheClipboard.Close()    
+            wx.TheClipboard.SetData(
+                wx.TextDataObject(self.parent.GetStatusText()))
+            wx.TheClipboard.Close()
+
 
 class StatusBarWithXY(wx.StatusBar):
     def __init__(self, parent, id, *args, **kargs):
@@ -123,33 +131,37 @@ class StatusBarWithXY(wx.StatusBar):
         for k, d in enumerate(data):
             if len(d) == 3:
                 s.append('x:'+col[k]+f.format(np.float64(d[0])) +
-                        ' y:'+col[k]+f.format(np.float64(d[1])) + 
-                        ' z:'+col[k]+f.format(np.float64(d[2])))
+                         ' y:'+col[k]+f.format(np.float64(d[1])) +
+                         ' z:'+col[k]+f.format(np.float64(d[2])))
             if len(d) == 2:
                 s.append('x:'+col[k]+f.format(np.float64(d[0])) +
-                        ' y:'+col[k]+f.format(np.float64(d[1])))
+                         ' y:'+col[k]+f.format(np.float64(d[1])))
         try:
-           dx = f.format(data[1][0]-data[0][0])
-           dy = f.format(data[1][1]-data[0][1])
-           txt_delta = 'dx: ' + dx + ' dy: '+dy
-           s.append(txt_delta)           
+            dx = f.format(data[1][0]-data[0][0])
+            dy = f.format(data[1][1]-data[0][1])
+            txt_delta = 'dx: ' + dx + ' dy: '+dy
+            s.append(txt_delta)
         except:
-           pass
+            pass
         self.SetStatusText(', '.join(s), 0)
         self._owner_bk = weakref.ref(owner)
 
     def refresh_cursor_string(self):
-        if self._owner_bk is None: return
-        if self._owner_bk() is None: return
+        if self._owner_bk is None:
+            return
+        if self._owner_bk() is None:
+            return
         self.show_cursor_string(self._owner_bk())
         self.Refresh()
+
     def OnRightUp(self, evt):
-        if self.GetTopLevelParent().book is None: return
+        if self.GetTopLevelParent().book is None:
+            return
         self.popup = StatusBarPopup(self)
-        self.PopupMenu(self.popup, 
+        self.PopupMenu(self.popup,
                        [evt.GetX(), evt.GetY()])
         self.popup.Destroy()
-        
+
     def OnToggleProp(self, event):
         top = self.GetTopLevelParent()
         top.toggle_property()
@@ -177,7 +189,7 @@ class StatusBar(StatusBarWithXY):
         self.mem = 0
         self.icon = []
         self.nproc = 0
-        
+
         super(StatusBar, self).__init__(parent, -1)
 
         # This status bar has three fields
@@ -192,9 +204,9 @@ class StatusBar(StatusBarWithXY):
         self.icon = [None]*num_icon
         from ifigure.ifigure_config import icondir
         for i in range(num_icon):
-            path=os.path.join(icondir, '16x16', icons[i])
-            self.icon[i] = GenStaticBitmap(self, wx.ID_ANY, 
-                                    bitmap=wx.Bitmap(path))
+            path = os.path.join(icondir, '16x16', icons[i])
+            self.icon[i] = GenStaticBitmap(self, wx.ID_ANY,
+                                           bitmap=wx.Bitmap(path))
             self.icon[i].Bind(wx.EVT_LEFT_DOWN, handler[i])
 #            hint does not work for staticbitmap??
 #            self.icon[i].SetToolTip(wx.ToolTip(icons[i][:-4]))
@@ -207,29 +219,29 @@ class StatusBar(StatusBarWithXY):
         self.timer = wx.PyTimer(self.notify)
         self.timer.Start(2000)
         self.notify()
-        
+
     def _get_params(self):
-        num_icon = 2  
-        icons =  ('log.png', 'help.png') #form.png
-        handler = (self.OnToggleLog, self.OnToggleTip) #self.OnToggleProp
+        num_icon = 2
+        icons = ('log.png', 'help.png')  # form.png
+        handler = (self.OnToggleLog, self.OnToggleTip)  # self.OnToggleProp
         return num_icon, icons, handler
 
     # Handles events from the timer we started in __init__().
     # We're using it to drive a 'clock' in field 2 (the third field).
     def notify(self):
         if self:
-            mem=memory_usage()
+            mem = memory_usage()
             if sys.platform == 'darwin':
-                self.mem = mem/1024 #maxos
+                self.mem = mem/1024  # maxos
             else:
-                self.mem = mem/1024 #linux
+                self.mem = mem/1024  # linux
             self.nproc = threading.activeCount()
             self.SetStatusText(self.make_txt(), len(self.icon)+1)
         else:
             self.timer.Stop()
-            
+
     def make_txt(self):
-        return (str(self.nproc)+ ' proc / '+ 
+        return (str(self.nproc) + ' proc / ' +
                 str(self.mem) + ' MB ')
 #                str(self.disk) + ' MB')
 
@@ -238,19 +250,19 @@ class StatusBar(StatusBarWithXY):
         top = self.GetTopLevelParent()
         logw = top.logw
         if logw.IsShown():
-           logw.Hide()
+            logw.Hide()
         else:
-           logw.Show()
-           logw.Raise()
+            logw.Show()
+            logw.Raise()
 
     def OnToggleTip(self, event):
         top = self.GetTopLevelParent()
         tipw = top.tipw
         if tipw.IsShown():
-           tipw.Hide()
+            tipw.Hide()
         else:
-           tipw.Show()
-           tipw.Raise()
+            tipw.Show()
+            tipw.Raise()
 
 #    def OnSize(self, evt):
 #        self.Reposition()  # for normal size events
@@ -259,8 +271,8 @@ class StatusBar(StatusBarWithXY):
 #        if self.sizeChanged:
 #            self.Reposition()
 
-
     # reposition the checkbox
+
     def Reposition(self):
         for i in range(len(self.icon)):
             rect = self.GetFieldRect(1+i)
@@ -272,7 +284,8 @@ class StatusBar(StatusBarWithXY):
 class StatusBarSimple(StatusBarWithXY):
     def notify(self):
         pass
-    def __init__(self, parent): 
+
+    def __init__(self, parent):
         super(StatusBarSimple, self).__init__(parent, -1)
 
         # This status bar has three fields
@@ -282,12 +295,6 @@ class StatusBarSimple(StatusBarWithXY):
 
         # Field 0 ... just text
         self.SetStatusText("welcome...", 0)
-        
+
     def Reposition(self):
         self.sizeChanged = False
-        
-
-
-     
-
-

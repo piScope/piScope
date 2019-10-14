@@ -11,41 +11,48 @@
                     if work is done at different machines.
 
 '''
-import os, wx, shutil, tempfile
+import os
+import wx
+import shutil
+import tempfile
 import ifigure.events
 from ifigure.utils.edit_list import DialogEditList
+
 
 def onOpenOrg(td):
     import ifigure.events
 
-    file = td.path2fullpath('ofile_pathmode', 
+    file = td.path2fullpath('ofile_pathmode',
                             'ofile_path')
-    if file is '': return
+    if file is '':
+        return
     ifigure.events.SendEditFileEvent(td, None, file, readonly=True)
 
-def onWriteFile(td, filename = '', dir='', txt = '', 
+
+def onWriteFile(td, filename='', dir='', txt='',
                 message='Select File to Save',
-                wildcard = 'Any|*'):
+                wildcard='Any|*'):
     if filename is '':
-       open_dlg = wx.FileDialog ( None, 
-                     message=message, 
-                     defaultDir=dir,
-                     style=wx.FD_SAVE, 
-                     wildcard=wildcard )
-       if open_dlg.ShowModal() != wx.ID_OK:
-          open_dlg.Destroy()    
-          return
-       else:
-          filename = str(open_dlg.GetPath())
-          open_dlg.Destroy()    
+        open_dlg = wx.FileDialog(None,
+                                 message=message,
+                                 defaultDir=dir,
+                                 style=wx.FD_SAVE,
+                                 wildcard=wildcard)
+        if open_dlg.ShowModal() != wx.ID_OK:
+            open_dlg.Destroy()
+            return
+        else:
+            filename = str(open_dlg.GetPath())
+            open_dlg.Destroy()
 
     with tempfile.NamedTemporaryFile(
-             'w', dir = os.path.dirname(filename), delete=False) as tf:
+            'w', dir=os.path.dirname(filename), delete=False) as tf:
         tf.write(txt)
         tempname = tf.name
     if not os.path.isabs(filename):
         filename = os.path.join(td.owndir(), filename)
-    if os.path.exists(filename): os.remove(filename)
+    if os.path.exists(filename):
+        os.remove(filename)
     shutil.move(tempname, filename)
 #    fid = open(filename, 'w')
 #    print "writing contents to ", filename
@@ -53,22 +60,22 @@ def onWriteFile(td, filename = '', dir='', txt = '',
 #    fid.close()
 
 
-
-def onOpenCurrent(td, modename = 'addon_pathmode',
-                        pathname = 'addon_path'):
+def onOpenCurrent(td, modename='addon_pathmode',
+                  pathname='addon_path'):
 
     import ifigure.events
-    file =  td.path2fullpath(modename, pathname)
+    file = td.path2fullpath(modename, pathname)
     ifigure.events.SendEditFileEvent(td, None, file, readonly=False)
 
+
 def onLoadFile(td, message="Select File",
-                  modename = 'addon_pathmode',
-                  pathname = 'addon_path',
-                  extname  = 'addon_ext',
-                  wildcard = 'Any|*',
-                  ask_org_copy = True,
-                  file = None, 
-                  reject_loc = None):
+               modename='addon_pathmode',
+               pathname='addon_path',
+               extname='addon_ext',
+               wildcard='Any|*',
+               ask_org_copy=True,
+               file=None,
+               reject_loc=None):
     '''
     onLoadFile ask user an file to read.
     copy it to its own directory as filename.
@@ -80,41 +87,42 @@ def onLoadFile(td, message="Select File",
     useful when the file size is small
     '''
     if td.getvar("original file") is not None:
-       dir=os.path.dirname(td.getvar("original file"))
+        dir = os.path.dirname(td.getvar("original file"))
     else:
-       dir='.'
-    if not os.path.exists(dir): dir = ''
+        dir = '.'
+    if not os.path.exists(dir):
+        dir = ''
 
     if file is None:
-       open_dlg = wx.FileDialog ( None, 
-                     message=message, 
-                     defaultDir=dir, 
-                     style=wx.FD_OPEN, wildcard=wildcard)
-       if open_dlg.ShowModal() != wx.ID_OK:
-          open_dlg.Destroy()    
-          return False
-       file = open_dlg.GetPath()
-       open_dlg.Destroy() 
+        open_dlg = wx.FileDialog(None,
+                                 message=message,
+                                 defaultDir=dir,
+                                 style=wx.FD_OPEN, wildcard=wildcard)
+        if open_dlg.ShowModal() != wx.ID_OK:
+            open_dlg.Destroy()
+            return False
+        file = open_dlg.GetPath()
+        open_dlg.Destroy()
 
     if reject_loc is not None:
         rmode, rpath = td.fullpath2path(td, file)
         if rmode in reject_loc:
-           m = 'Improper import source location'
-           ret=dialog.message(None, message=m, 
-               title='Import error')
-           return
+            m = 'Improper import source location'
+            ret = dialog.message(None, message=m,
+                                 title='Import error')
+            return
 
     try:
-       # this may fail if owndir does not exist
-       #print(os.path.dirname(file), td.owndir())
-       samefile = os.path.samefile(os.path.dirname(file), td.owndir())
-       #print(samefile)
-    except: 
-       samefile = False
+        # this may fail if owndir does not exist
+        #print(os.path.dirname(file), td.owndir())
+        samefile = os.path.samefile(os.path.dirname(file), td.owndir())
+        # print(samefile)
+    except:
+        samefile = False
     if ask_org_copy and not samefile:
         from ifigure.widgets.dlg_fileimportmode import DlgFileimportmode
         copy_file, pathmodes, ret = DlgFileimportmode(td,
-                                                      ask_copyorg = True)
+                                                      ask_copyorg=True)
 
         '''
         choices = ["auto", "abs", "home", "proj"]
@@ -146,40 +154,39 @@ def onLoadFile(td, message="Select File",
     for name, child in td.get_children():
         child.destroy()
     if not td.has_owndir():
-       td.mk_owndir()
+        td.mk_owndir()
     od = td.owndir()
 
     if ret:
-         new_ofile =  os.path.join(od, os.path.basename(file)+'.org')
-         shutil.copyfile(file, new_ofile)
-         td.setvar('ofile_pathmode', 'owndir')
-         td.setvar('ofile_path', os.path.basename(new_ofile))
-         if not 'ofile_path' in td._items: td._items.append('ofile_path')
+        new_ofile = os.path.join(od, os.path.basename(file)+'.org')
+        shutil.copyfile(file, new_ofile)
+        td.setvar('ofile_pathmode', 'owndir')
+        td.setvar('ofile_path', os.path.basename(new_ofile))
+        if not 'ofile_path' in td._items:
+            td._items.append('ofile_path')
 #         td._items.append('ofile_path')
     else:
-         new_ofile = file
-         td.setvar('ofile_pathmode', 'abs')
-         td.setvar('ofile_path', file)
-         if 'ofile_path' in td._items: 
-             td.remove_ownitem(items = ['ofile_path'])
-             td._items.remove('ofile_path')         
-    
-    ### nl_file is the file to be edited
+        new_ofile = file
+        td.setvar('ofile_pathmode', 'abs')
+        td.setvar('ofile_path', file)
+        if 'ofile_path' in td._items:
+            td.remove_ownitem(items=['ofile_path'])
+            td._items.remove('ofile_path')
+
+    # nl_file is the file to be edited
     if copy_file:
-        nl_file =  os.path.join(od, os.path.basename(file))
+        nl_file = os.path.join(od, os.path.basename(file))
         try:
-           # this may fail if owndir does not exist
-           samefile = os.path.samefile(file, nl_file)
-        except: 
-           samefile = False
-        if not samefile: 
-            td.remove_ownitem(items = [pathname])
+            # this may fail if owndir does not exist
+            samefile = os.path.samefile(file, nl_file)
+        except:
+            samefile = False
+        if not samefile:
+            td.remove_ownitem(items=[pathname])
             shutil.copyfile(file, nl_file)
         td.set_path_pathmode(nl_file,  modename, pathname, extname)
     else:
-        td.remove_ownitem(items = [pathname])
-        td.set_path_pathmode(file,  modename, pathname, extname, checklist = pathmodes)
+        td.remove_ownitem(items=[pathname])
+        td.set_path_pathmode(file,  modename, pathname,
+                             extname, checklist=pathmodes)
     return True
-
-
-

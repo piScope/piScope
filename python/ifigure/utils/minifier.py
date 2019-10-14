@@ -1,4 +1,5 @@
-## {{{ http://code.activestate.com/recipes/576704/ (r16)
+from __future__ import print_function
+# {{{ http://code.activestate.com/recipes/576704/ (r16)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
@@ -52,7 +53,10 @@ If you get an error executing minified_pyminifier.py or
 something is broken.
 """
 
-import sys, re, cStringIO, tokenize
+import sys
+import re
+from six.moves import cStringIO as StringIO
+import tokenize
 from optparse import OptionParser
 
 # Compile our regular expressions for speed
@@ -69,6 +73,7 @@ double_quoted_string = re.compile(r'((?<!\\)".*?(?<!\\)")')
 single_quoted_string = re.compile(r"((?<!\\)'.*?(?<!\\)')")
 single_line_single_quoted_string = re.compile(r"((?<!\\)'''.*?(?<!\\)''')")
 single_line_double_quoted_string = re.compile(r"((?<!\\)'''.*?(?<!\\)''')")
+
 
 def remove_comments_and_docstrings(source):
     """
@@ -93,7 +98,7 @@ def remove_comments_and_docstrings(source):
         def noop():
             pass
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     prev_toktype = tokenize.INDENT
     last_lineno = -1
@@ -118,7 +123,7 @@ def remove_comments_and_docstrings(source):
         # This series of conditionals removes docstrings:
         elif token_type == tokenize.STRING:
             if prev_toktype != tokenize.INDENT:
-        # This is likely a docstring; double-check we're not inside an operator:
+                # This is likely a docstring; double-check we're not inside an operator:
                 if prev_toktype != tokenize.NEWLINE:
                     # Note regarding NEWLINE vs NL: The tokenize module
                     # differentiates between newlines that start a new statement
@@ -145,6 +150,7 @@ def remove_comments_and_docstrings(source):
         last_lineno = end_line
     return out
 
+
 def reduce_operators(source):
     """
     Remove spaces between operators in 'source' and returns the result.
@@ -163,7 +169,7 @@ def reduce_operators(source):
         def foo(foo,bar,blah):
             test="This is a %s"%foo
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     remove_columns = []
     out = ""
     out_line = ""
@@ -185,25 +191,25 @@ def reduce_operators(source):
         if token_type == tokenize.OP:
             # Operators that begin a line such as @ or open parens should be
             # left alone
-            start_of_line_types = [ # These indicate we're starting a new line
+            start_of_line_types = [  # These indicate we're starting a new line
                 tokenize.NEWLINE, tokenize.DEDENT, tokenize.INDENT]
             if prev_toktype not in start_of_line_types:
                 # This is just a regular operator; remove spaces
-                remove_columns.append(start_col) # Before OP
-                remove_columns.append(end_col+1) # After OP
+                remove_columns.append(start_col)  # Before OP
+                remove_columns.append(end_col+1)  # After OP
         if token_string.endswith('\n'):
             out_line += token_string
             if remove_columns:
                 for col in remove_columns:
                     col = col - lshift
                     try:
-            # This was really handy for debugging (looks nice, worth saving):
-                        #print out_line + (" " * col) + "^"
+                        # This was really handy for debugging (looks nice, worth saving):
+                        # print out_line + (" " * col) + "^"
                         # The above points to the character we're looking at
-                        if out_line[col] == " ": # Only if it is a space
+                        if out_line[col] == " ":  # Only if it is a space
                             out_line = out_line[:col] + out_line[col+1:]
-                            lshift += 1 # To re-align future changes on this line
-                    except IndexError: # Reached and end of line, no biggie
+                            lshift += 1  # To re-align future changes on this line
+                    except IndexError:  # Reached and end of line, no biggie
                         pass
             out += out_line
             remove_columns = []
@@ -224,6 +230,8 @@ def reduce_operators(source):
 # searches the internet looking for a way to remove similarly-styled end-of-line
 # comments from non-python code.  It also acts as an edge case of sorts with
 # that raw triple quoted string inside the "quoted_string" assignment.
+
+
 def remove_comment(single_line):
     """
     Removes the comment at the end of the line (if any) and returns the result.
@@ -241,14 +249,15 @@ def remove_comment(single_line):
         if section.startswith("'") or section.startswith('"'):
             # This is a quoted string; leave it alone
             out_line += section
-        elif '#' in section: # A '#' not in quotes?  There's a comment here!
+        elif '#' in section:  # A '#' not in quotes?  There's a comment here!
             # Get rid of everything after the # including the # itself:
             out_line += section.split('#')[0]
-            break # No reason to bother the rest--it's all comments
+            break  # No reason to bother the rest--it's all comments
         else:
             # This isn't a quoted string OR a comment; leave it as-is
             out_line += section
-    return out_line.rstrip() # Strip trailing whitespace before returning
+    return out_line.rstrip()  # Strip trailing whitespace before returning
+
 
 def join_multiline_pairs(text, pair="()"):
     """
@@ -391,6 +400,7 @@ def join_multiline_pairs(text, pair="()"):
 
     return output
 
+
 def dedent(source):
     """
     Minimizes indentation to save precious bytes
@@ -409,14 +419,14 @@ def dedent(source):
         def foo(bar):
          test = "This is a test"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     out = ""
     last_lineno = -1
     last_col = 0
     prev_start_line = 0
     indentation = ""
     indentation_level = 0
-    for i,tok in enumerate(tokenize.generate_tokens(io_obj.readline)):
+    for i, tok in enumerate(tokenize.generate_tokens(io_obj.readline)):
         token_type = tok[0]
         token_string = tok[1]
         start_line, start_col = tok[2]
@@ -440,6 +450,7 @@ def dedent(source):
         last_col = end_col
         last_lineno = end_line
     return out
+
 
 def fix_empty_methods(source):
     """
@@ -467,7 +478,7 @@ def fix_empty_methods(source):
     previous_line = None
     method = re.compile(r'^\s*def\s*.*\(.*\):.*$')
     for line in source.split('\n'):
-        if len(line.strip()) > 0: # Don't look at blank lines
+        if len(line.strip()) > 0:  # Don't look at blank lines
             if just_matched == True:
                 this_indentation_level = len(line.rstrip()) - len(line.strip())
                 if def_indentation_level == this_indentation_level:
@@ -477,14 +488,16 @@ def fix_empty_methods(source):
                     output += "%s\n%s\n" % (previous_line, line)
                 just_matched = False
             elif method.match(line):
-                def_indentation_level = len(line) - len(line.strip()) # A commment
+                def_indentation_level = len(
+                    line) - len(line.strip())  # A commment
                 just_matched = True
                 previous_line = line
             else:
-                output += "%s\n" % line # Another self-test
+                output += "%s\n" % line  # Another self-test
         else:
             output += "\n"
     return output
+
 
 def remove_blank_lines(source):
     """
@@ -505,9 +518,10 @@ def remove_blank_lines(source):
         test = "foo"
         test2 = "bar"
     """
-    io_obj = cStringIO.StringIO(source)
+    io_obj = StringIO(source)
     source = [a for a in io_obj.readlines() if a.strip()]
     return "".join(source)
+
 
 def minify(source):
     """
@@ -521,7 +535,7 @@ def minify(source):
     for line in source.split('\n')[0:2]:
         # Save the first comment line if it starts with a shebang
         # (e.g. '#!/usr/bin/env python') <--also a self test!
-        if shebang.match(line): # Must be first line
+        if shebang.match(line):  # Must be first line
             preserved_shebang = line
             continue
         # Save the encoding string (must be first or second line in file)
@@ -555,13 +569,15 @@ def minify(source):
         source = preserved_shebang + "\n" + source
 
     # Remove blank lines
-    source = remove_blank_lines(source).rstrip('\n') # Stubborn last newline
+    source = remove_blank_lines(source).rstrip('\n')  # Stubborn last newline
 
     return source
 
+
 def bz2_pack(source):
     "Returns 'source' as a bzip2-compressed, self-extracting python script."
-    import bz2, base64
+    import bz2
+    import base64
     out = ""
     compressed_source = bz2.compress(source)
     out += 'import bz2, base64\n'
@@ -570,9 +586,11 @@ def bz2_pack(source):
     out += "'))\n"
     return out
 
+
 def gz_pack(source):
     "Returns 'source' as a gzip-compressed, self-extracting python script."
-    import zlib, base64
+    import zlib
+    import base64
     out = ""
     compressed_source = zlib.compress(source)
     out += 'import zlib, base64\n'
@@ -582,20 +600,25 @@ def gz_pack(source):
     return out
 
 # The test.+() functions below are for testing pyminifer...
+
+
 def test_decorator(f):
     """Decorator that does nothing"""
     return f
 
+
 def test_reduce_operators():
     """Test the case where an operator such as an open paren starts a line"""
-    (a, b) = 1, 2 # The indentation level should be preserved
+    (a, b) = 1, 2  # The indentation level should be preserved
     pass
+
 
 def test_empty_functions():
     """
     This is a test method.
     This should be replaced with 'def empty_method: pass'
     """
+
 
 class test_class(object):
     "Testing indented decorators"
@@ -604,13 +627,14 @@ class test_class(object):
     def foo(self):
         pass
 
+
 def test_function():
     """
     This function encapsulates the edge cases to prevent them from invading the
     global namespace.
     """
-    foo = ("The # character in this string should " # This comment
-           "not result in a syntax error") # ...and this one should go away
+    foo = ("The # character in this string should "  # This comment
+           "not result in a syntax error")  # ...and this one should go away
     test_multi_line_list = [
         'item1',
         'item2',
@@ -624,12 +648,13 @@ def test_function():
     # It may seem strange but the code below tests our docstring removal code.
     test_string_inside_operators = imaginary_function(
         "This string was indented but the tokenizer won't see it that way."
-    ) # To understand how this could mess up docstring removal code see the
-      # remove_comments_and_docstrings() function starting at this line:
-      #     "elif token_type == tokenize.STRING:"
+    )  # To understand how this could mess up docstring removal code see the
+    # remove_comments_and_docstrings() function starting at this line:
+    #     "elif token_type == tokenize.STRING:"
     # This tests remove_extraneous_spaces():
-    this_line_has_leading_indentation    = '''<--That extraneous space should be
-                                              removed''' # But not these spaces
+    this_line_has_leading_indentation = '''<--That extraneous space should be
+                                              removed'''  # But not these spaces
+
 
 def main():
     usage = '%prog [options] "<input file>"'
@@ -659,7 +684,7 @@ def main():
     options, args = parser.parse_args()
     try:
         source = open(args[0]).read()
-    except Exception, e:
+    except Exception as e:
         print(e)
         parser.print_help()
         sys.exit(2)
@@ -678,6 +703,7 @@ def main():
     else:
         print(result)
 
+
 if __name__ == "__main__":
     main()
-## end of http://code.activestate.com/recipes/576704/ }}}
+# end of http://code.activestate.com/recipes/576704/ }}}

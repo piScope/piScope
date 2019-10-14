@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """ MODULE images2gif
 
 Provides a function (writeGif) to write animated gif from a series
@@ -22,11 +24,12 @@ if PIL is None:
         from PIL.GifImagePlugin import getheader, getdata
     except ImportError:
         PIL = None
-### 2014 09 S. Shiraiwa 
-### import PIL is not right on some platform?
+# 2014 09 S. Shiraiwa
+# import PIL is not right on some platform?
 if PIL is None:
     try:
-        import Image, ImageChops
+        import Image
+        import ImageChops
         from GifImagePlugin import getheader, getdata
         PIL = Image
     except ImportError:
@@ -35,7 +38,7 @@ if PIL is None:
 try:
     import numpy as np
 except ImportError:
-    np = None    
+    np = None
 
 # getheader gives a 87a header and a color palette (two elements in a list).
 # getdata()[0] gives the Image Descriptor up to (including) "LZW min code size".
@@ -48,7 +51,7 @@ def intToBin(i):
     """ Integer to two bytes """
     # devide in two parts (bytes)
     i1 = i % 256
-    i2 = int( i/256)
+    i2 = int(i/256)
     # make string (little endian)
     return chr(i1) + chr(i2)
 
@@ -81,7 +84,7 @@ def getGraphicsControlExt(duration=0.1):
     each image. Specifies transparancy and duration. """
     bb = '\x21\xF9\x04'
     bb += '\x08'  # no transparancy
-    bb += intToBin( int(duration*100) ) # in 100th of seconds
+    bb += intToBin(int(duration*100))  # in 100th of seconds
     bb += '\x00'  # no transparant color
     bb += '\x00'  # end
     return bb
@@ -90,46 +93,46 @@ def getGraphicsControlExt(duration=0.1):
 def _writeGifToFile(fp, images, durations, loops):
     """ Given a set of images writes the bytes to the specified stream.
     """
-    
+
     # init
     frames = 0
     previous = None
-    
+
     for im in images:
-        
+
         if not previous:
             # first image
-            
+
             # gather data
             # This one stopped working
             # PIL might have changed??? 2016/03/30
             palette = getheader(im)[1]
             if palette is None:
                 palette = getheader(im)[0][-1]
-            
+
             data = getdata(im)
-            imdes, data = data[0], data[1:]            
+            imdes, data = data[0], data[1:]
             header = getheaderAnim(im)
             appext = getAppExt(loops)
             graphext = getGraphicsControlExt(durations[0])
-            
+
             # write global header
             fp.write(header)
             fp.write(palette)
             fp.write(appext)
-            
+
             # write image
             fp.write(graphext)
             fp.write(imdes)
             for d in data:
                 fp.write(d)
-            
+
         else:
-            # gather info (compress difference)              
-            data = getdata(im) 
-            imdes, data = data[0], data[1:]       
+            # gather info (compress difference)
+            data = getdata(im)
+            imdes, data = data[0], data[1:]
             graphext = getGraphicsControlExt(durations[frames])
-            
+
             # write image
             fp.write(graphext)
             fp.write(imdes)
@@ -137,28 +140,28 @@ def _writeGifToFile(fp, images, durations, loops):
                 fp.write(d)
 
 #             # delta frame - does not seem to work
-#             delta = ImageChops.subtract_modulo(im, previous)            
+#             delta = ImageChops.subtract_modulo(im, previous)
 #             bbox = delta.getbbox()
-#             
+#
 #             if bbox:
-#                 
-#                 # gather info (compress difference)              
-#                 data = getdata(im.crop(bbox), offset = bbox[:2]) 
-#                 imdes, data = data[0], data[1:]       
+#
+#                 # gather info (compress difference)
+#                 data = getdata(im.crop(bbox), offset = bbox[:2])
+#                 imdes, data = data[0], data[1:]
 #                 graphext = getGraphicsControlExt(durations[frames])
-#                 
+#
 #                 # write image
 #                 fp.write(graphext)
 #                 fp.write(imdes)
 #                 for d in data:
 #                     fp.write(d)
-#                 
+#
 #             else:
 #                 # FIXME: what should we do in this case?
 #                 pass
-        
+
         # prepare for next round
-        previous = im.copy()        
+        previous = im.copy()
         frames = frames + 1
 
     fp.write(";")  # end gif
@@ -172,18 +175,18 @@ def writeGif(filename, images, duration=0.1, loops=0, dither=1):
     Numpy images of type float should have pixels between 0 and 1.
     Numpy images of other types are expected to have values between 0 and 255.
     """
-    
+
     if PIL is None:
         raise RuntimeError("Need PIL to write animated gif files.")
-    
+
     images2 = []
-    
+
     # convert to PIL
     for im in images:
-        
+
         if isinstance(im, Image.Image):
-            images2.append(im.convert('P',dither=dither))
-            
+            images2.append(im.convert('P', dither=dither))
+
         elif np and isinstance(im, np.ndarray):
             if im.dtype == np.uint8:
                 pass
@@ -192,18 +195,18 @@ def writeGif(filename, images, duration=0.1, loops=0, dither=1):
             else:
                 im = im.astype(np.uint8)
             # convert
-            if len(im.shape)==3 and im.shape[2]==3:
-                im = Image.fromarray(im,'RGB').convert('P',dither=dither)
-            elif len(im.shape)==2:
-                im = Image.fromarray(im,'L').convert('P',dither=dither)
+            if len(im.shape) == 3 and im.shape[2] == 3:
+                im = Image.fromarray(im, 'RGB').convert('P', dither=dither)
+            elif len(im.shape) == 2:
+                im = Image.fromarray(im, 'L').convert('P', dither=dither)
             else:
                 raise ValueError("Array has invalid shape to be an image.")
             images2.append(im)
-            
+
         else:
             print(isinstance(im, Image.Image))
             raise ValueError("Unknown image type.")
-    
+
     # check duration
     if hasattr(duration, '__len__'):
         if len(duration) == len(images2):
@@ -212,39 +215,39 @@ def writeGif(filename, images, duration=0.1, loops=0, dither=1):
             raise ValueError("len(duration) doesn't match amount of images.")
     else:
         durations = [duration for im in images2]
-        
-    
+
     # open file
     fp = open(filename, 'wb')
-    
+
     # write
     try:
         n = _writeGifToFile(fp, images2, durations, loops)
-        print(n, 'frames written')
+        print((n, 'frames written'))
     finally:
         fp.close()
+
 
 def glob2Gif(path, out, *args, **kwargs):
     """
     An extension to writeGif which takes a glob path instead of a list of
     images
     """
-    
+
     files = glob.glob(path)
     images = []
 
     for f in sorted(files):
         im = Image.open(f)
         images.append(im)
-    
+
     writeGif(out, images, *args, **kwargs)
 
-    
+
 if __name__ == '__main__':
-    im = np.zeros((200,200), dtype=np.uint8)
-    im[10:30,:] = 100
-    im[:,80:120] = 255
-    im[-50:-40,:] = 50
-    
+    im = np.zeros((200, 200), dtype=np.uint8)
+    im[10:30, :] = 100
+    im[:, 80:120] = 255
+    im[-50:-40, :] = 50
+
     images = [im*1.0, im*0.8, im*0.6, im*0.4, im*0]
-    writeGif('lala3.gif',images, duration=0.5, dither=0)
+    writeGif('lala3.gif', images, duration=0.5, dither=0)

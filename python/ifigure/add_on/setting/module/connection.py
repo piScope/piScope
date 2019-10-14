@@ -1,6 +1,7 @@
-import  numpy as np
-import  wx
-import  ifigure.widgets.dialog as dialog
+from ifigure.mto.py_connection import PyConnection
+import numpy as np
+import wx
+import ifigure.widgets.dialog as dialog
 ######################################################
 #         Setting for module file for py_module
 #
@@ -13,14 +14,14 @@ import  ifigure.widgets.dialog as dialog
 #      Strong recommendation : make module "independent".
 #      Py_Modules does not check the dependency of
 #      modules.
-#      If moduels used in Py_Modules depends on 
-#      each other by for example module variable, 
-#      it will cause complicate  module loading 
+#      If moduels used in Py_Modules depends on
+#      each other by for example module variable,
+#      it will cause complicate  module loading
 #      order-dependency problem.
-#      
+#
 #   name of module/class
 module_name = 'connection_module'
-class_name  = 'connection_module'
+class_name = 'connection_module'
 #   module_evt_handler
 #   functions which can be called from project tree
 #
@@ -31,7 +32,7 @@ class_name  = 'connection_module'
 #   or True
 #   if it return False, ifigure stops exectuion at
 #   this module
-#  
+#
 menu = [("New Connection...", "onNewConnection", True)]
 method = ['onNewConnection', 'add_connection']
 icon = 'world_link.png'
@@ -39,19 +40,18 @@ icon = 'world_link.png'
 can_have_child = True
 has_private_owndir = True
 ######################################################
-from ifigure.mto.py_connection import PyConnection
+
 
 def add_connection(self, new_name):
     child = PyConnection()
-    imodel=self.td.add_child(new_name, child)
+    imodel = self.td.add_child(new_name, child)
     child.setvar('server', new_name)
+
+
 def onNewConnection(self, e):
 
-   
     app = self.td.get_app()
-    ret, new_name=dialog.textentry(app,
-             "Enter the name of new connection", "Add Connection", "")
+    ret, new_name = dialog.textentry(app,
+                                     "Enter the name of new connection", "Add Connection", "")
     if ret:
         self.add_connection(new_name)
-
-

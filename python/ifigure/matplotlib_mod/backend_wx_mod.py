@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 
   class:FigureCanvasWxMod
@@ -14,13 +16,14 @@
 
 
 """
+
 # uncomment the following to use wx rather than wxagg
 import matplotlib
 import wx
 from matplotlib.backends.backend_wx import FigureCanvasWx as Canvas
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as CanvasAgg
 from matplotlib.backends.backend_wx import RendererWx
-from ifigure.utils.cbook import EraseBitMap 
+from ifigure.utils.cbook import EraseBitMap
 from operator import itemgetter
 
 
@@ -28,18 +31,19 @@ class CanvasMod(object):
     '''
     CanvasMod provides modification to Wx and WxAgg
     '''
+
     def __init__(self, *args, **kargs):
-#        super(FigureCanvasWxMod, self).__init__(*args, **kargs)
-        self.frame_bitmap  = None
+        #        super(FigureCanvasWxMod, self).__init__(*args, **kargs)
+        self.frame_bitmap = None
         self.others_bitmap = None
         self.figure_bitmap = None
         self.empty_bytes = []
 
     def draw_by_bitmap(self, *args, **kargs):
         print('draw bitmap')
-        self.renderer=self.make_renderer()
+        self.renderer = self.make_renderer()
 #       gc = self.renderer.new_gc()
-#       gc.select()        
+#       gc.select()
 #        self.renderer.handle_clip_rectangle(gc)
         gc = None
         self.frame_bitmap = self.make_bitmap(self.figure.draw_frame, gc)
@@ -48,31 +52,30 @@ class CanvasMod(object):
 #        gc.unselect()
 
         self.erase_bitmap()
-#        EraseBitMap(self.bitmap)        
+#        EraseBitMap(self.bitmap)
 
         bmplist = self.make_bmp_list()
         self.draw_from_bitmap(bmplist)
         self._isDrawn = True
-        self.figure_bitmap =self.bitmap.GetSubBitmap(
-                           (0, 0,
-                            self.bitmap.GetWidth(),
-                            self.bitmap.GetHeight()))
+        self.figure_bitmap = self.bitmap.GetSubBitmap(
+            (0, 0,
+             self.bitmap.GetWidth(),
+             self.bitmap.GetHeight()))
 
-    def draw(self, drawDC = None):
+    def draw(self, drawDC=None):
         self.draw_by_bitmap()
         self.gui_repaint(drawDC=drawDC)
 
 #    def draw_all(self, drawDC=None):
 #        pass
 
-
     def sorted_axes_list(self):
         # a list of (zorder, func_to_call, list_of_args)
         dsu = []
         for a in self.figure.axes:
             if (hasattr(a, 'figobj') and
-                a.figobj is not None):
-                dsu.append( (a.get_zorder(), a))
+                    a.figobj is not None):
+                dsu.append((a.get_zorder(), a))
         dsu.sort(key=itemgetter(0))
         return dsu
 
@@ -83,10 +86,10 @@ class CanvasMod(object):
         dsu = self.sorted_axes_list()
         for zorder, a in dsu:
             bmplist.append(a.figobj.get_bmp())
-            #bmplist.append(a.figobj.get_bmp())
+            # bmplist.append(a.figobj.get_bmp())
         bmplist.append((self.others_bitmap, 0, 0))
         return bmplist
-                
+
     def erase_bitmap_by_copyfrombuffer(self):
         # erase bitmap by 0,0,0,0 to prepare
         # transparent empty screen
@@ -96,24 +99,24 @@ class CanvasMod(object):
         h = self.bitmap.GetHeight()
 
         if (len(self.empty_bytes) !=
-            self.bitmap.GetWidth()*self.bitmap.GetHeight()*bpp):
-            self.empty_bytes =  array.array('B', [0] * w*h*bpp)
+                self.bitmap.GetWidth()*self.bitmap.GetHeight()*bpp):
+            self.empty_bytes = array.array('B', [0] * w*h*bpp)
 
         self.bitmap.CopyFromBufferRGBA(self.empty_bytes)
 
         return
-#        self.renderer = RendererWx(self.bitmap, self.figure.dpi) 
+#        self.renderer = RendererWx(self.bitmap, self.figure.dpi)
 #        gc = self.renderer.new_gc()
-#        gc.select()        
+#        gc.select()
 #        gc.dc.SetBackground(wx.TRANSPARENT_BRUSH)
 #        gc.dc.SetBackground(wx.TRANSPARENT_BRUSH)
 #        gc.dc.Clear()
-#        gc.unselect()        
+#        gc.unselect()
 #        return
 #        dc = wx.MemoryDC()
         dc = self.renderer.gc.dc
 #        dc.SelectObject(self.bitmap)
-        dc.SetBackground(wx.Brush(wx.Colour(0,0,0,255)))
+        dc.SetBackground(wx.Brush(wx.Colour(0, 0, 0, 255)))
 #        dc.SetBackground(wx.Brush('white'))
         dc.SetBackgroundMode(wx.SOLID)
         dc.SetLogicalFunction(wx.CLEAR)
@@ -124,9 +127,9 @@ class CanvasMod(object):
 #        dc.DrawRectangle(0,0, self.bitmap.GetWidth(),self.bitmap.GetHeight()/2)
 
 #        dc.DrawRectangle(0,0, 100,100)
-#        dc.SelectObject(wx.NullBitmap)        
+#        dc.SelectObject(wx.NullBitmap)
 #        del dc
-        #self.bitmap.SetMaskColour('black')
+        # self.bitmap.SetMaskColour('black')
 
     def erase_bitmap(self):
         self.erase_bitmap_by_copyfrombuffer()
@@ -139,57 +142,60 @@ class CanvasMod(object):
         self.erase_buffer()
 #        gc = self.renderer.new_gc()
 #        self.renderer.handle_clip_rectangle(gc)
-#        gc.select()        
+#        gc.select()
         func(self.renderer)
 #        gc.unselect()
-        self.prepare_bitmap()                
+        self.prepare_bitmap()
         bitmap = self.bitmap.GetSubBitmap(
-                            (0, 0,
-                            self.bitmap.GetWidth(),
-                            self.bitmap.GetHeight()))
-        return bitmap #self.make_true_bitmap_copy(bitmap)
+            (0, 0,
+             self.bitmap.GetWidth(),
+             self.bitmap.GetHeight()))
+        return bitmap  # self.make_true_bitmap_copy(bitmap)
 
     def make_axes_bitmap(self, gc):
-#        gc = self.renderer.new_gc()
-#        gc.select()        
+        #        gc = self.renderer.new_gc()
+        #        gc.select()
         dsu = self.sorted_axes_list()
         for zorder, a in dsu:
             if not a.figobj.get_bmp_update():
-               self.erase_buffer()
-               self.figure.draw_axes(self.renderer, a)
-               self.prepare_bitmap()                
-               box = a.figobj.get_axesartist_extent(renderer=self.renderer)
-               h = self.renderer.bitmap.GetHeight()
+                self.erase_buffer()
+                self.figure.draw_axes(self.renderer, a)
+                self.prepare_bitmap()
+                box = a.figobj.get_axesartist_extent(renderer=self.renderer)
+                h = self.renderer.bitmap.GetHeight()
 #               bmp =  self.make_subbitmap_copy(
 #                            box[0], h-box[3],
 #                            box[1]-box[0],
 #                            box[3]-box[2])
-               bmp =self.bitmap.GetSubBitmap(
-                           (box[0], h-box[3],
-                            box[1]-box[0],
-                            box[3]-box[2]))
+                bmp = self.bitmap.GetSubBitmap(
+                    (box[0], h-box[3],
+                     box[1]-box[0],
+                     box[3]-box[2]))
 #               bmp = self.make_true_bitmap_copy(bmp)
-               a.figobj.set_bmp(bmp, box[0], h-box[3])
-#        gc.unselect()                
+                a.figobj.set_bmp(bmp, box[0], h-box[3])
+#        gc.unselect()
+
     def draw_artist(self, drawDC=None, alist=None):
         """
         Render the figure using RendererWx instance renderer, or using a
         previously defined renderer if none is specified.
         """
-        if alist is None: return
-        if len(alist) == 0: return
+        if alist is None:
+            return
+        if len(alist) == 0:
+            return
         if drawDC is None:
-           drawDC=wx.ClientDC(self)
-        #print 'draw artist'
+            drawDC = wx.ClientDC(self)
+        # print 'draw artist'
         self.erase_buffer()
         self.renderer = self.make_renderer()
         for a in alist:
             a.draw(self.renderer)
-        self.prepare_bitmap()                
+        self.prepare_bitmap()
         bitmap = self.bitmap.GetSubBitmap(
-                            (0, 0,
-                            self.bitmap.GetWidth(),
-                            self.bitmap.GetHeight()))
+            (0, 0,
+             self.bitmap.GetWidth(),
+             self.bitmap.GetHeight()))
         self.erase_bitmap()
         self.canvas_draw_bitmap(self.figure_bitmap, 0, 0)
         self.canvas_draw_bitmap(bitmap, 0, 0)
@@ -207,15 +213,15 @@ class CanvasMod(object):
         wx.TheClipboard.Close()
         wx.TheClipboard.Flush()
 
-
     def make_true_bitmap_copy(self, bitmap):
-        bmp =bitmap.GetSubBitmap(
-                           (0, 0,
-                            bitmap.GetWidth(),
-                            bitmap.GetHeight()))
+        bmp = bitmap.GetSubBitmap(
+            (0, 0,
+             bitmap.GetWidth(),
+             bitmap.GetHeight()))
         img = bmp.ConvertToImage()
         img.SaveFile('saved.png', wx.BITMAP_TYPE_PNG)
         return wx.BitmapFromImage(img)
+
 
 class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
     def __init__(self, *args, **kargs):
@@ -237,8 +243,9 @@ class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
 
     def erase_buffer(self):
         if hasattr(self, '_lastKey'):
-           del self._lastKey
-           self.renderer = self.make_renderer()
+            del self._lastKey
+            self.renderer = self.make_renderer()
+
     def make_renderer(self):
         return self.get_renderer()
 
@@ -248,15 +255,16 @@ class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
         self.renderer.bitmap = self.bitmap
 
     def draw_from_bitmap(self, bmplist):
-        if not self.figure.get_visible(): return
+        if not self.figure.get_visible():
+            return
         self.figure.draw_from_bitmap(self.renderer)
         dc = wx.MemoryDC()
         dc.SelectObject(self.bitmap)
         gfx_ctx = wx.GraphicsContext.Create(dc)
         for bmp, x, y in bmplist:
-           gfx_ctx.DrawBitmap(bmp, x, y, 
-                         bmp.GetWidth(),
-                         bmp.GetHeight())
+            gfx_ctx.DrawBitmap(bmp, x, y,
+                               bmp.GetWidth(),
+                               bmp.GetHeight())
         dc.SelectObject(wx.NullBitmap)
 
     def canvas_draw_bitmap(self, bitmap, x, y):
@@ -264,6 +272,7 @@ class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
         dc.SelectObject(self.bitmap)
         dc.DrawBitmap(bitmap, x, y)
         dc.SelectObject(wx.NullBitmap)
+
 
 class FigureCanvasWxMod(CanvasMod, Canvas):
     def __init__(self, *args, **kargs):
@@ -284,20 +293,24 @@ class FigureCanvasWxMod(CanvasMod, Canvas):
         Canvas.draw(self)
 
     def make_renderer(self):
-        return RendererWx(self.bitmap, self.figure.dpi) 
+        return RendererWx(self.bitmap, self.figure.dpi)
+
     def prepare_bitmap(self):
         pass
+
     def draw_from_bitmap(self, bmplist):
-        if not self.figure.get_visible(): return
+        if not self.figure.get_visible():
+            return
         self.figure.draw_from_bitmap(self.renderer)
         gc = self.renderer.new_gc()
         self.renderer.handle_clip_rectangle(gc)
         gc.select()
         for bmp, x, y in bmplist:
-           gc.gfx_ctx.DrawBitmap(bmp, x, y, 
-                         bmp.GetWidth(),
-                         bmp.GetHeight())
+            gc.gfx_ctx.DrawBitmap(bmp, x, y,
+                                  bmp.GetWidth(),
+                                  bmp.GetHeight())
         gc.unselect()
+
     def erase_buffer(self):
         self.erase_bitmap()
 
@@ -305,8 +318,8 @@ class FigureCanvasWxMod(CanvasMod, Canvas):
         gc = self.renderer.new_gc()
         gc.select()
 #        self.renderer.handle_clip_rectangle(gc)
-        #gc.gfx_ctx.ResetClip()
-        gc.gfx_ctx.DrawBitmap(bitmap, x, y, 
+        # gc.gfx_ctx.ResetClip()
+        gc.gfx_ctx.DrawBitmap(bitmap, x, y,
                               bitmap.GetWidth(),
                               bitmap.GetHeight())
         gc.unselect()

@@ -3,14 +3,15 @@ from ifigure.widgets.book_viewer import BookViewer
 import numpy as np
 import wx
 
+
 class BookViewerGui(BookViewer):
     def __init__(self, *args, **kargs):
         BookViewer.__init__(self, *args, **kargs)
-        extra_menu = wx.Menu()  
-        self.menuBar.Insert(self.menuBar.GetMenuCount()-1, 
-                        extra_menu,"ExtraMenu")
-        self.add_menu(extra_menu, wx.ID_ANY, 
-                      "Plot Something...", 
+        extra_menu = wx.Menu()
+        self.menuBar.Insert(self.menuBar.GetMenuCount()-1,
+                            extra_menu, "ExtraMenu")
+        self.add_menu(extra_menu, wx.ID_ANY,
+                      "Plot Something...",
                       "plot sine wave (this is string for status bar)",
                       self.onPlotSomething)
 

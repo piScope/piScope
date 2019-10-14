@@ -1,66 +1,73 @@
 import numpy as np
 
-def read_ishotktime(f):
-   line=f.readline()
-   line = line.rstrip("\r\n")
 
-   a = line.split(' ')
-   a = [x for x in a if len(x) != 0]
-   return long(a[0]), long(a[1])
+def read_ishotktime(f):
+    line = f.readline()
+    line = line.rstrip("\r\n")
+
+    a = line.split(' ')
+    a = [x for x in a if len(x) != 0]
+    return int(a[0]), int(a[1])
+
 
 def read1055(f):
-   '''
-   form1055 = '(1x,a10,2a5)'
-   '''
-   line=f.readline()
-   line = line.rstrip("\r\n")
+    '''
+    form1055 = '(1x,a10,2a5)'
+    '''
+    line = f.readline()
+    line = line.rstrip("\r\n")
 
-   a = line[1:11]
-   b = line[11:16]
-   c = line[16:21]
-   return a, (b,c)
+    a = line[1:11]
+    b = line[11:16]
+    c = line[16:21]
+    return a, (b, c)
+
 
 def read1060(f):
-   '''
-   form1060=' (1x ,f7.2,10x,i5,11x,i5,1x,a3,1x,i3,1x,i3,1x,a3)'
-   '''
-   line=f.readline()
-   line = line.rstrip("\r\n")
+    '''
+    form1060=' (1x ,f7.2,10x,i5,11x,i5,1x,a3,1x,i3,1x,i3,1x,a3)'
+    '''
+    line = f.readline()
+    line = line.rstrip("\r\n")
 
-   a = line[1:8]
-   b = line[18:23]
-   c = line[34:39]
-   d = line[40:43]
-   e = line[44:47]
-   f = line[48:51]
-   g = line[52:55]
-   return float(a), long(b), long(c), d, long(e), long(f), g
+    a = line[1:8]
+    b = line[18:23]
+    c = line[34:39]
+    d = line[40:43]
+    e = line[44:47]
+    f = line[48:51]
+    g = line[52:55]
+    return float(a), int(b), int(c), d, int(e), int(f), g
+
 
 def read1040(f):
-   '''
-   form1040 = '(1x,4e16.9)'
-   '''
-   line=f.readline()
-   line = line.rstrip("\r\n")
-   line = line + ' '*45
-   a = line[1:17]
-   b = line[17:33]
-   c = line[33:49]
-   d = line[49:65]
+    '''
+    form1040 = '(1x,4e16.9)'
+    '''
+    line = f.readline()
+    line = line.rstrip("\r\n")
+    line = line + ' '*45
+    a = line[1:17]
+    b = line[17:33]
+    c = line[33:49]
+    d = line[49:65]
 
-   return a, b, c, d
+    return a, b, c, d
+
 
 def read1040f(f):
-   a,b,c,d = read1040(f)
-   return float(a), float(b), float(c), float(d)
+    a, b, c, d = read1040(f)
+    return float(a), float(b), float(c), float(d)
+
 
 def read1040_array(f, num):
-   i = 0
-   val = ()
-   while(i < num):
-     val =  val + read1040(f)
-     i = i+4
-   return [float(x) for x in val[0:num]]
+    i = 0
+    val = ()
+    while(i < num):
+        val = val + read1040(f)
+        i = i+4
+    return [float(x) for x in val[0:num]]
+
 
 def read_afile(file=None):
     '''
@@ -135,49 +142,48 @@ def read_afile(file=None):
        readf,2,form=form1042,header
        print,header 
     '''
-    #file='/home/shiraiwa/a1120912012.01000'
+    # file='/home/shiraiwa/a1120912012.01000'
     f = open(file, 'r')
-   
-    uday,mfvers = read1055(f)
+
+    uday, mfvers = read1055(f)
     ishot, ktime = read_ishotktime(f)
     time = float(f.readline())
-    timejj,jflag,lflag,limloc,mco2v,mco2r,qmflag = read1060(f)
+    timejj, jflag, lflag, limloc, mco2v, mco2r, qmflag = read1060(f)
 
-    tsaisq,rcencm,bcentr,pasmat = read1040f(f)
-    cpasma,rout,zout,aout = read1040f(f)
-    eout,doutu,doutl,vout = read1040f(f)
-    rcurrt,zcurrt,qsta,betat = read1040f(f)
-    betap,ali,oleft,oright = read1040f(f)
-    otop,obott,qpsib,vertn = read1040f(f)
+    tsaisq, rcencm, bcentr, pasmat = read1040f(f)
+    cpasma, rout, zout, aout = read1040f(f)
+    eout, doutu, doutl, vout = read1040f(f)
+    rcurrt, zcurrt, qsta, betat = read1040f(f)
+    betap, ali, oleft, oright = read1040f(f)
+    otop, obott, qpsib, vertn = read1040f(f)
 
-    rco2v =  read1040_array(f, mco2v)
-    dco2v =  read1040_array(f, mco2v)
-    rco2r =  read1040_array(f, mco2r)
-    dco2r =  read1040_array(f, mco2r)
+    rco2v = read1040_array(f, mco2v)
+    dco2v = read1040_array(f, mco2v)
+    rco2r = read1040_array(f, mco2r)
+    dco2r = read1040_array(f, mco2r)
 
-    shearb,bpolav,s1,s2 = read1040f(f)
-    s3,qout,olefs,orighs = read1040f(f)
-    otops,sibdry,areao,wplasm = read1040f(f)
-    terror,elongm,qqmagx,cdflux = read1040f(f)
-    alpha,rttt,psiref,xndnt = read1040f(f)
+    shearb, bpolav, s1, s2 = read1040f(f)
+    s3, qout, olefs, orighs = read1040f(f)
+    otops, sibdry, areao, wplasm = read1040f(f)
+    terror, elongm, qqmagx, cdflux = read1040f(f)
+    alpha, rttt, psiref, xndnt = read1040f(f)
 
-    rzseps = np.array(read1040(f)).reshape((2,2))
-    rseps = np.transpose(rzseps[0,:])
-    zseps = np.transpose(rzseps[1,:])
+    rzseps = np.array(read1040(f)).reshape((2, 2))
+    rseps = np.transpose(rzseps[0, :])
+    zseps = np.transpose(rzseps[1, :])
 
-    sepexp,obots,btaxp,btaxv = read1040f(f)
-    aaq1,aaq2,aaq3,seplim = read1040f(f)
-    rmagx,zmagx,simagx,taumhd = read1040f(f)
-    betapd,betatd,wplasmd,fluxx = read1040f(f)
-    vloopt,taudia,qmerci,tavem = read1040f(f)
+    sepexp, obots, btaxp, btaxv = read1040f(f)
+    aaq1, aaq2, aaq3, seplim = read1040f(f)
+    rmagx, zmagx, simagx, taumhd = read1040f(f)
+    betapd, betatd, wplasmd, fluxx = read1040f(f)
+    vloopt, taudia, qmerci, tavem = read1040f(f)
 
+    val = {}
 
-    val = {} 
-
-    val["uday"]=uday
-    val["mfvers"]=mfvers
-    val["ishot"]=ishot
-    val["ktime"]=ktime
+    val["uday"] = uday
+    val["mfvers"] = mfvers
+    val["ishot"] = ishot
+    val["ktime"] = ktime
     val["time"] = time
     val["timejj"] = timejj
     val["jflag"] = jflag
@@ -190,23 +196,23 @@ def read_afile(file=None):
     val["rcencm"] = rcencm
     val["bcentr"] = bcentr
     val["pasmat"] = pasmat
-    val["cpasma"] =  cpasma
+    val["cpasma"] = cpasma
     val["rout"] = rout
     val["zout"] = zout
     val["aout"] = aout
-    val[" eout"] =  eout
+    val[" eout"] = eout
     val["doutu"] = doutu
     val["doutl"] = doutl
     val["vout"] = vout
-    val["rcurrt"] =  rcurrt
+    val["rcurrt"] = rcurrt
     val["zcurrt"] = zcurrt
     val["qsta"] = qsta
     val["betat"] = betat
-    val["betap"] =  betap
+    val["betap"] = betap
     val["ali"] = ali
     val["oleft"] = oleft
     val["oright"] = oright
-    val["otop"] =  otop
+    val["otop"] = otop
     val["obott"] = obott
     val["qpsib"] = qpsib
     val["vertn"] = vertn
@@ -258,6 +264,3 @@ def read_afile(file=None):
     val["tavem"] = tavem
 
     return val
-
- 
- 

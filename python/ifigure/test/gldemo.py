@@ -17,13 +17,14 @@ try:
 except ImportError:
     haveOpenGL = False
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 buttonDefs = {
-    wx.NewId() : ('CubeCanvas',      'Cube'),
-    wx.NewId() : ('ConeCanvas',      'Cone'),
-    }
+    wx.NewId(): ('CubeCanvas',      'Cube'),
+    wx.NewId(): ('ConeCanvas',      'Cone'),
+}
+
 
 class ButtonPanel(wx.Panel):
     def __init__(self, parent):
@@ -31,23 +32,22 @@ class ButtonPanel(wx.Panel):
 
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add((20, 30))
-        keys = buttonDefs.keys()
+        keys = list(buttonDefs.keys())
         keys.sort()
         for k in keys:
             text = buttonDefs[k][1]
             btn = wx.Button(self, k, text)
-            box.Add(btn, 0, wx.ALIGN_CENTER|wx.ALL, 15)
+            box.Add(btn, 0, wx.ALIGN_CENTER | wx.ALL, 15)
             self.Bind(wx.EVT_BUTTON, self.OnButton, btn)
 
-        #** Enable this to show putting a GLCanvas on the wx.Panel
+        # ** Enable this to show putting a GLCanvas on the wx.Panel
         if 1:
             c = CubeCanvas(self)
             c.SetMinSize((200, 200))
-            box.Add(c, 0, wx.ALIGN_CENTER|wx.ALL, 15)
+            box.Add(c, 0, wx.ALIGN_CENTER | wx.ALL, 15)
 
         self.SetAutoLayout(True)
         self.SetSizer(box)
-
 
     def OnButton(self, evt):
         if not haveGLCanvas:
@@ -68,7 +68,7 @@ class ButtonPanel(wx.Panel):
         else:
             canvasClassName = buttonDefs[evt.GetId()][0]
             canvasClass = eval(canvasClassName)
-            frame = wx.Frame(None, -1, canvasClassName, size=(400,400))
+            frame = wx.Frame(None, -1, canvasClassName, size=(400, 400))
             canvas = canvasClass(frame)
             frame.Show(True)
 
@@ -78,7 +78,7 @@ class MyCanvasBase(glcanvas.GLCanvas):
         glcanvas.GLCanvas.__init__(self, parent, -1)
         self.init = False
         self.context = glcanvas.GLContext(self)
-        
+
         # initial mouse position
         self.lastx = self.x = 30
         self.lasty = self.y = 30
@@ -90,10 +90,8 @@ class MyCanvasBase(glcanvas.GLCanvas):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
 
-
     def OnEraseBackground(self, event):
-        pass # Do nothing, to avoid flashing on MSW.
-
+        pass  # Do nothing, to avoid flashing on MSW.
 
     def OnSize(self, event):
         wx.CallAfter(self.DoSetViewport)
@@ -103,8 +101,6 @@ class MyCanvasBase(glcanvas.GLCanvas):
         size = self.size = self.GetClientSize()
         self.SetCurrent(self.context)
         glViewport(0, 0, size.width, size.height)
-        
-
 
     def OnPaint(self, event):
         dc = wx.PaintDC(self)
@@ -114,23 +110,18 @@ class MyCanvasBase(glcanvas.GLCanvas):
             self.init = True
         self.OnDraw()
 
-
     def OnMouseDown(self, evt):
         self.CaptureMouse()
         self.x, self.y = self.lastx, self.lasty = evt.GetPosition()
 
-
     def OnMouseUp(self, evt):
         self.ReleaseMouse()
-
 
     def OnMouseMotion(self, evt):
         if evt.Dragging() and evt.LeftIsDown():
             self.lastx, self.lasty = self.x, self.y
             self.x, self.y = evt.GetPosition()
             self.Refresh(False)
-
-
 
 
 class CubeCanvas(MyCanvasBase):
@@ -151,48 +142,47 @@ class CubeCanvas(MyCanvasBase):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
 
-
     def OnDraw(self):
         # clear color and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # draw six faces of a cube
         glBegin(GL_QUADS)
-        glNormal3f( 0.0, 0.0, 1.0)
-        glVertex3f( 0.5, 0.5, 0.5)
+        glNormal3f(0.0, 0.0, 1.0)
+        glVertex3f(0.5, 0.5, 0.5)
         glVertex3f(-0.5, 0.5, 0.5)
-        glVertex3f(-0.5,-0.5, 0.5)
-        glVertex3f( 0.5,-0.5, 0.5)
+        glVertex3f(-0.5, -0.5, 0.5)
+        glVertex3f(0.5, -0.5, 0.5)
 
-        glNormal3f( 0.0, 0.0,-1.0)
-        glVertex3f(-0.5,-0.5,-0.5)
-        glVertex3f(-0.5, 0.5,-0.5)
-        glVertex3f( 0.5, 0.5,-0.5)
-        glVertex3f( 0.5,-0.5,-0.5)
+        glNormal3f(0.0, 0.0, -1.0)
+        glVertex3f(-0.5, -0.5, -0.5)
+        glVertex3f(-0.5, 0.5, -0.5)
+        glVertex3f(0.5, 0.5, -0.5)
+        glVertex3f(0.5, -0.5, -0.5)
 
-        glNormal3f( 0.0, 1.0, 0.0)
-        glVertex3f( 0.5, 0.5, 0.5)
-        glVertex3f( 0.5, 0.5,-0.5)
-        glVertex3f(-0.5, 0.5,-0.5)
+        glNormal3f(0.0, 1.0, 0.0)
+        glVertex3f(0.5, 0.5, 0.5)
+        glVertex3f(0.5, 0.5, -0.5)
+        glVertex3f(-0.5, 0.5, -0.5)
         glVertex3f(-0.5, 0.5, 0.5)
 
-        glNormal3f( 0.0,-1.0, 0.0)
-        glVertex3f(-0.5,-0.5,-0.5)
-        glVertex3f( 0.5,-0.5,-0.5)
-        glVertex3f( 0.5,-0.5, 0.5)
-        glVertex3f(-0.5,-0.5, 0.5)
+        glNormal3f(0.0, -1.0, 0.0)
+        glVertex3f(-0.5, -0.5, -0.5)
+        glVertex3f(0.5, -0.5, -0.5)
+        glVertex3f(0.5, -0.5, 0.5)
+        glVertex3f(-0.5, -0.5, 0.5)
 
-        glNormal3f( 1.0, 0.0, 0.0)
-        glVertex3f( 0.5, 0.5, 0.5)
-        glVertex3f( 0.5,-0.5, 0.5)
-        glVertex3f( 0.5,-0.5,-0.5)
-        glVertex3f( 0.5, 0.5,-0.5)
+        glNormal3f(1.0, 0.0, 0.0)
+        glVertex3f(0.5, 0.5, 0.5)
+        glVertex3f(0.5, -0.5, 0.5)
+        glVertex3f(0.5, -0.5, -0.5)
+        glVertex3f(0.5, 0.5, -0.5)
 
         glNormal3f(-1.0, 0.0, 0.0)
-        glVertex3f(-0.5,-0.5,-0.5)
-        glVertex3f(-0.5,-0.5, 0.5)
+        glVertex3f(-0.5, -0.5, -0.5)
+        glVertex3f(-0.5, -0.5, 0.5)
         glVertex3f(-0.5, 0.5, 0.5)
-        glVertex3f(-0.5, 0.5,-0.5)
+        glVertex3f(-0.5, 0.5, -0.5)
         glEnd()
 
         if self.size is None:
@@ -202,17 +192,14 @@ class CubeCanvas(MyCanvasBase):
         h = max(h, 1.0)
         xScale = 180.0 / w
         yScale = 180.0 / h
-        glRotatef((self.y - self.lasty) * yScale, 1.0, 0.0, 0.0);
-        glRotatef((self.x - self.lastx) * xScale, 0.0, 1.0, 0.0);
+        glRotatef((self.y - self.lasty) * yScale, 1.0, 0.0, 0.0)
+        glRotatef((self.x - self.lastx) * xScale, 0.0, 1.0, 0.0)
 
         self.SwapBuffers()
 
 
-
-
-
 class ConeCanvas(MyCanvasBase):
-    def InitGL( self ):
+    def InitGL(self):
         glMatrixMode(GL_PROJECTION)
         # camera frustrum setup
         glFrustum(-0.5, 0.5, -0.5, 0.5, 1.0, 3.0)
@@ -233,10 +220,9 @@ class ConeCanvas(MyCanvasBase):
         # position viewer
         glMatrixMode(GL_MODELVIEW)
         # position viewer
-        glTranslatef(0.0, 0.0, -2.0);
+        glTranslatef(0.0, 0.0, -2.0)
         #
         glutInit(sys.argv)
-
 
     def OnDraw(self):
         # clear color and depth buffers
@@ -252,15 +238,13 @@ class ConeCanvas(MyCanvasBase):
         glRotate(250, 1, 0, 0)
         glutSolidCone(0.5, 1, 30, 5)
         glPopMatrix()
-        glRotatef((self.y - self.lasty), 0.0, 0.0, 1.0);
-        glRotatef((self.x - self.lastx), 1.0, 0.0, 0.0);
+        glRotatef((self.y - self.lasty), 0.0, 0.0, 1.0)
+        glRotatef((self.x - self.lastx), 1.0, 0.0, 0.0)
         # push into visible buffer
         self.SwapBuffers()
 
 
-
-
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 
 def runTest(frame):
@@ -268,19 +252,15 @@ def runTest(frame):
     return win
 
 
-
-
-
-
 overview = """\
 """
 
 
-
 if __name__ == '__main__':
-    import sys,os
+    import sys
+    import os
     app = wx.App()
-    frame =wx.Frame(None)
+    frame = wx.Frame(None)
     frame.Show()
     runTest(frame)
     app.MainLoop()
