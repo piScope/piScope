@@ -15,7 +15,7 @@ and for the above purposes, &pi;Scope is equipped with
  * interactively annotate figure using text, arrow, lines,,,
  * draw 3D (OpenGL) in matplotlib canvas.
 
-&pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM.
+&pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM (https://piscope.psfc.mit.edu/index.php/Petra-M)
      
 Requirements
 *  Python2.7 or 3.6
