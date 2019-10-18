@@ -751,7 +751,7 @@ def onPlotMid(self, e=None):
     dr = x[1]-x[0]
     dz = y[1]-y[0]
 #    br = psi[:][j+1]
-    j = psi.shape[0]/2
+    j = psi.shape[0]//2
     psi_mid = psi[:][j]
     psi_mid = array([interp(zmaxis, y, psi[:, i]) for i in range(nr)])
 
