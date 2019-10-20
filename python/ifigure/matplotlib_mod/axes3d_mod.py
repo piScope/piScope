@@ -61,27 +61,39 @@ def get_glcanvas():
 def norm_vec(n):
     d = np.sum(n**2)
     if d == 0:
-        return [0, 0, 0]
+        return np.zeros(len(n))
     else:
         return n/np.sqrt(d)
 
 
-def arrow3d(base, r1, r2, ort, l, h, m=13, pivot='tail'):
-    x = np.array([1., 0., 0.])
-    y = np.array([0., 1., 0.])
-    th = np.linspace(0, np.pi*2, m).reshape(-1, 1)
+def arrow3d(base, r1, r2, ort, l, h, m=13, pivot='tail', d1d2 = None):
     ort = norm_vec(ort)
-    if np.sum(ort * x) == 0:
-        d1 = norm_vec(np.cross(ort, y))
+    th = np.linspace(0, np.pi*2, m).reshape(-1, 1)
+    
+    if d1d2 is None:
+        x = np.array([1., 0., 0.])
+        y = np.array([0., 1., 0.])
+        z = np.array([0., 0., 1.])    
+
+
+        if np.sum(np.cross(ort, x)**2) == 0:
+            if np.sum(np.cross(ort, y)**2) == 0:
+                d1 = norm_vec(np.cross(ort, z))
+            else:
+                d1 = norm_vec(np.cross(ort, y))            
+        else:
+            d1 = norm_vec(np.cross(ort, x))
+        d2 = np.cross(ort, d1)
     else:
-        d1 = norm_vec(np.cross(ort, x))
+        d1, d2 = d1d2
+    
     if pivot == 'tip':
         base = base - (l+h)*ort
     elif pivot == 'mid':
         base = base - (l+h)*ort/2.
     else:
         pass
-    d2 = np.cross(ort, d1)
+
     p = base + l*r1 * (d1*np.cos(th) + d2*np.sin(th))
     q = p + l*ort
     p2 = base + l*r2 * (d1*np.cos(th) + d2*np.sin(th)) + l*ort
@@ -446,23 +458,11 @@ class Axes3DMod(Axes3D):
         # this is to debug this method...
         #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
         #return test(self, xdata, ydata, sxdata, sydata)
-        from ifigure.utils.geom import transform_point
-
-        def norm2sc(x1, x2):
-            x0, y0 = transform_point(
-                     self.transAxes, x1, x2)
-            x0, y0 = transform_point(
-                     self.transData.inverted(), x0, y0)
-            return x0, y0
-            
         dx =  - (xdata + sxdata)/2.0
         dy =  - (ydata + sydata)/2.0
 
         w = self._pseudo_w
         h = self._pseudo_h
-
-        #dx = dx/w
-        #dy = dy/h
 
         # dx, dy : normalized screen coordinate of center of zoom
         df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
@@ -1249,8 +1249,108 @@ class Axes3DMod(Axes3D):
     def show_3d_axes(self, value):
         self._show_3d_axes = value
 
+    def _find_3d_loc_for_axis(self):
+        # 3D axes range 
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
+        midx = (minx+maxx)/2.
+        midy = (miny+maxy)/2.
+        midz = (minz+maxz)/2.
+        vrange = np.array([maxx-minx,  maxy-miny, maxz-minz])
+        vmid =  np.array([midx, midy, midz])
+
+        M = self.get_proj()
+
+        def vec2sc(vec):
+            x = np.dot(M, (vec[0], vec[1], vec[2], 1))
+            return x[0:2]/x[-1]
+        
+        xx = vec2sc((maxx, midy, midz,)) - vec2sc((minx, midy, midz,))
+        yy = vec2sc((midx, maxy, midz,)) - vec2sc((midx, miny, midz,))
+        zz = vec2sc((midx, midy, maxz,)) - vec2sc((midx, midy, minz,))        
+
+        from scipy.optimize import nnls
+        from scipy.linalg import null_space
+        A = np.vstack((xx, yy, zz)).transpose()
+
+        x = (null_space(A)).flatten()
+        nx = norm_vec(x)
+        
+        v1 = np.cross(nx, [1, 0, 0])*vrange
+        v2 = np.cross(nx, [0, 1, 0])*vrange
+        v3 = np.cross(nx, [0, 0, 1])*vrange
+        #print("v1, v2, v3", v1,  v2, v3)
+        
+        def screen_diff(vv):
+            return (vec2sc((midx+vv[0], midy+vv[1], midz+vv[2])) -
+                    vec2sc((midx-vv[0], midy-vv[1], midz-vv[2])))/2.0
+        d1 = screen_diff(v1)
+        d2 = screen_diff(v2)
+        d3 = screen_diff(v3)
+        
+        #print(d1, d2, d3)
+        c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
+        c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
+        c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
+        #print("c1, c2, c3", c1,  c2, c3)
+        vv = [v1, v2, v3]
+        dd = [d1, d2, d3]        
+
+        ii = np.argsort([c1,c2,c3])
+        iii = ((1,2), (0, 2), (0, 1))[ii[-1]]
+
+        v1 = vv[iii[1]]
+        v2 = vv[iii[0]]
+        d1 = dd[iii[1]]
+        d2 = dd[iii[0]]        
+
+        '''
+        v2 = np.cross(x, v1)
+        v1 = v1/np.sqrt(np.sum(v1**2))
+        v2 = v2/np.sqrt(np.sum(v2**2))
+
+        d1 = vec2sc((midx+v1[0], midy+v1[1], midz+v1[2])) - vec2sc((midx, midy, midz))
+        d2 = vec2sc((midx+v2[0], midy+v2[1], midz+v2[2])) - vec2sc((midx, midy, midz))
+
+
+        print("v1, v2", v1, v2)        
+        print("d1, d2", d1, d2)        
+        '''
+        A = np.vstack((d1, d2)).transpose()
+
+        from ifigure.utils.geom import transform_point
+        x0, y0 = transform_point(
+                 self.transAxes, 0.1, 0.1)
+        x0, y0 = transform_point(
+                     self.transData.inverted(), x0, y0)
+        x1, y1 = transform_point(
+                 self.transAxes, 0.5, 0.5)
+        x1, y1 = transform_point(
+                     self.transData.inverted(), x1, y1)
+        
+        #print("position here", x0, y0, x1, y1)
+        ## dd is the screen space move I want to make
+        dd = np.array([-x1+x0, -y1+y0])
+        sol = np.dot(np.linalg.inv(A), dd)
+        center_move = (v1*sol[0]+ v2*sol[1])
+        
+        base = vmid + center_move
+        return base, vrange
+
+
+    def remove_3daxes_artists(self):
+        if self._3d_axes_icon is None: return
+        self._3d_axes_icon[0]().remove()
+        self._3d_axes_icon[1]().remove()
+        self._3d_axes_icon[2]().remove()         
+        self.texts.remove(self._3d_axes_icon[3]())
+        self.texts.remove(self._3d_axes_icon[4]())
+        self.texts.remove(self._3d_axes_icon[5]())
+        self._3d_axes_icon = None
+        
     def draw_3d_axes(self):
         M = self.get_proj()
+        '''
         dx = self.get_xlim()
         dy = self.get_ylim()
         dz = self.get_zlim()
@@ -1268,40 +1368,73 @@ class Axes3DMod(Axes3D):
             pp = self.transData.transform(x)
             st = tt.transform(po)
             et = tt.transform((pp-pod)/fac+po)
-            et2 = tt.transform(1.5*(pp-pod)/fac+po)
+            et2 = tt.transform(3*(pp-pod)/fac+po)
             return [st[0], et[0]], [st[1], et[1]], et2
+        '''
 
+        def ptf2(x, dx):        
+            #xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
+            #xx1 = xvec[:2]/xvec[3]
+            xvec = np.dot(M, np.array([x[0]+dx[0], x[1]+dx[1], x[2]+dx[2], 1]))
+            xx2 = xvec[:2]/xvec[3]
+            return xx2
+
+        
         if self._3d_axes_icon is None:
-            p0, p1, pt = ptf(xvec)
-            a1 = Line2D(p0, p1,
-                        color='r', axes=self, figure=self.figure)
-            a4 = Text(pt[0], pt[1], 'x', color='r',
+            base, lbase = self._find_3d_loc_for_axis()
+            vecx = np.array([1, 0, 0.])
+            vecy = np.array([0, 1, 0.])
+            vecz = np.array([0, 0, 1.])            
+
+            pt1 = ptf2(base, vecx*2*lbase[0]/10)
+            v = np.vstack([arrow3d(base, 0.05/lbase[0], 0.25/lbase[0], vecx,
+                                   lbase[0]/10., lbase[0]/10.*0.8, m=13,
+                                   d1d2 = (vecy*lbase[1], vecz*lbase[2]) )])
+
+            kwargs = {'facecolor': 'r', 'edgecolor': 'r', 'linewidth':0}
+            a1 = self.plot_solid(v, **kwargs)
+            a1._gl_always_noclip = True
+            a1._gl_repr_name = 'x arrow'
+            a1._gl_isLast = True
+            
+            pt2 = ptf2(base, vecy*2*lbase[1]/10)
+            v = np.vstack([arrow3d(base, 0.05/lbase[1], 0.25/lbase[1], vecy,
+                                   lbase[1]/10., lbase[1]/10.*0.8, m=13,
+                                   d1d2 = (vecx*lbase[0], vecz*lbase[2]) )])            
+            kwargs = {'facecolor': 'g', 'edgecolor': 'g', 'linewidth':0}           
+            a2 = self.plot_solid(v, **kwargs)
+            a2._gl_always_noclip = True
+            a2._gl_repr_name = 'y arrow'
+            a2._gl_isLast = True            
+            
+            pt3 = ptf2(base, vecz*2*lbase[2]/10)
+            v = np.vstack([arrow3d(base, 0.05/lbase[2], 0.25/lbase[2], vecz,
+                                   lbase[2]/10., lbase[2]/10.*0.8, m=13,
+                                   d1d2 = (vecx*lbase[0], vecy*lbase[1]) )])                        
+            kwargs = {'facecolor': 'b', 'edgecolor': 'b', 'linewidth':0}
+            a3 = self.plot_solid(v, **kwargs)
+            a3._gl_always_noclip = True
+            a3._gl_repr_name = 'z arrow'
+            a3._gl_isLast = True                        
+            
+            a4 = Text(pt1[0], pt1[1], 'X', color='r',
                       axes=self, figure=self.figure,
                       transform=self.transData,
                       verticalalignment='center',
                       horizontalalignment='center')
 
-            p0, p1, pt = ptf(yvec)
-            a2 = Line2D(p0, p1,
-                        color='g', axes=self, figure=self.figure)
-            a5 = Text(pt[0], pt[1], 'y', color='g',
+            a5 = Text(pt2[0], pt2[1], 'Y', color='g',
                       axes=self, figure=self.figure,
                       transform=self.transData,
                       verticalalignment='center',
                       horizontalalignment='center')
 
-            p0, p1, pt = ptf(zvec)
-            a3 = Line2D(p0, p1,
-                        color='b', axes=self, figure=self.figure)
-            a6 = Text(pt[0], pt[1], 'z', color='b',
+            a6 = Text(pt3[0], pt3[1], 'Z', color='b',
                       axes=self, figure=self.figure,
                       transform=self.transData,
                       verticalalignment='center',
                       horizontalalignment='center')
 
-            self.add_line(a1)
-            self.add_line(a2)
-            self.add_line(a3)
             self.texts.append(a4)
             self.texts.append(a5)
             self.texts.append(a6)
@@ -1313,20 +1446,20 @@ class Axes3DMod(Axes3D):
                                   weakref.ref(a6)]
         else:
             p0, p1, pt = ptf(xvec)
-            self._3d_axes_icon[0]().set_xdata(p0)
-            self._3d_axes_icon[0]().set_ydata(p1)
+            #self._3d_axes_icon[0]().set_xdata(p0)
+            #self._3d_axes_icon[0]().set_ydata(p1)
             self._3d_axes_icon[3]().set_x(pt[0])
             self._3d_axes_icon[3]().set_y(pt[1])
 
             p0, p1, pt = ptf(yvec)
-            self._3d_axes_icon[1]().set_xdata(p0)
-            self._3d_axes_icon[1]().set_ydata(p1)
+            #self._3d_axes_icon[1]().set_xdata(p0)
+            #self._3d_axes_icon[1]().set_ydata(p1)
             self._3d_axes_icon[4]().set_x(pt[0])
             self._3d_axes_icon[4]().set_y(pt[1])
 
             p0, p1, pt = ptf(zvec)
-            self._3d_axes_icon[2]().set_xdata(p0)
-            self._3d_axes_icon[2]().set_ydata(p1)
+            #self._3d_axes_icon[2]().set_xdata(p0)
+            #self._3d_axes_icon[2]().set_ydata(p1)
             self._3d_axes_icon[5]().set_x(pt[0])
             self._3d_axes_icon[5]().set_y(pt[1])
 
@@ -1338,6 +1471,15 @@ class Axes3DMod(Axes3D):
     def draw(self, renderer):
         #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
+        
+        if self._show_3d_axes:
+            self.remove_3daxes_artists()            
+            self.draw_3d_axes()
+            for a in self._3d_axes_icon:
+                a().set_zorder(gl_len+1)
+        else:
+            self.remove_3daxes_artists()
+        
         if isSupportedRenderer(renderer):
             self._matrix_cache = self.get_proj2()
             artists = []
@@ -1346,8 +1488,13 @@ class Axes3DMod(Axes3D):
             artists.extend(self.collections)
             artists.extend(self.patches)
             artists.extend(self.lines)
-            artists.extend(self.texts)
             artists.extend(self.artists)
+            artists.extend(self.texts)
+
+            zorder = max([a.get_zorder() for a in artists])
+            for a in self._3d_axes_icon[3:]:a().set_zorder(zorder+5)
+            #zorder = max([a.get_zorder() for a in artists])
+            #print(zorder)
 
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
 
@@ -1366,19 +1513,6 @@ class Axes3DMod(Axes3D):
         # axes3D seems to change frameon status....
         frameon = self.get_frame_on()
         self.set_frame_on(False)
-        if self._show_3d_axes:
-            self.draw_3d_axes()
-            for a in self._3d_axes_icon:
-                a().set_zorder(gl_len+1)
-        else:
-            if self._3d_axes_icon is not None:
-                self.lines.remove(self._3d_axes_icon[0]())
-                self.lines.remove(self._3d_axes_icon[1]())
-                self.lines.remove(self._3d_axes_icon[2]())
-                self.texts.remove(self._3d_axes_icon[3]())
-                self.texts.remove(self._3d_axes_icon[4]())
-                self.texts.remove(self._3d_axes_icon[5]())
-            self._3d_axes_icon = None
 
         if self._gl_scale != 1.0:
             print(("gl_scale", self._gl_scale))

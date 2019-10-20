@@ -39,7 +39,6 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     renderer._k_globj += 1
     if (renderer._k_globj != renderer._num_globj):
         return
-    #print ("finish gl draw", renderer._k_globj, renderer._num_globj)
     if not glcanvas._hittest_map_update:
         glcanvas._no_hl = False
         id_dict = glcanvas.draw_mpl_artists(tag)
@@ -127,6 +126,8 @@ class ArtGL(object):
         self._gl_hl_use_array_idx = False
         self._gl_marker_tex = weakref.WeakKeyDictionary()
         self._gl_isLast = False  # an aritst which should be drawn last
+        self._gl_always_noclip = False  # used for axis
+        self._gl_repr_name = ''
         # extra index number assined to
         # each triangle/line segment/...
 
@@ -227,7 +228,15 @@ class ArtGL(object):
     def get_alpha_float(self):
         if self.get_alpha() is None: return 1
         return self.get_alpha()
-    
+
+    def __repr__(self):
+        if self._gl_repr_name == '':
+            return object.__repr__(self)
+        else:
+            return self._gl_repr_name
+    def __str__(self):
+        return self.__repr__()
+        
 class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
         self._invalidz = False
@@ -707,8 +716,9 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._update_v = True
         self._update_i = True
         self._update_a = True
-        Poly3DCollection.__init__(self, *args, **kargs)
 
+        Poly3DCollection.__init__(self, *args, **kargs)
+        
     def convert_2dpath_to_3dpath(self, z, zdir='z'):
         '''
         convert a path on flat surface
@@ -836,6 +846,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             self._gl_cz = False
 
     def update_scalarmappable(self):
+        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        
         if self._gl_solid_facecolor is not None:
             f = cc.to_rgba(self._gl_solid_facecolor)
             self._gl_facecolor = np.tile(f, (len(self._gl_3dpath[2]), 1))
@@ -873,13 +885,18 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 z = np.array(z)
                 self._gl_edgecolor = self.to_rgba(z)
             else:
-                self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
+                if self._gl_cz is None:
+                     self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
+                else:
+                     self._gl_edgecolor = self.to_rgba(self._gl_cz)
             if self._alpha is not None:
                 if self._gl_edgecolor.ndim == 3:
                     self._gl_edgecolor[:, :, -1] = self._alpha
                 else:
                     self._gl_edgecolor[:, -1] = self._alpha
 
+        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        #print('update_scalarmappable', self._gl_facecolor, self._gl_edgecolor)
         Poly3DCollection.update_scalarmappable(self)
 
     def update_idxset(self, idxset):
@@ -951,7 +968,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                         self._offset_position,
                         stencil_test=self.do_stencil_test,
                         view_offset=self._gl_voffset,
-                        array_idx=self._gl_array_idx)
+                        array_idx=self._gl_array_idx,
+                        always_noclip = self._gl_always_noclip)
 
                 else:
                     renderer.gl_draw_path_collection_e(
@@ -964,7 +982,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                         stencil_test=self.do_stencil_test,
                         view_offset=self._gl_voffset,
                         array_idx=self._gl_array_idx,
-                        use_pointfill=self._gl_use_pointfill)
+                        use_pointfill=self._gl_use_pointfill,
+                        always_noclip = self._gl_always_noclip)
 
 #           renderer.do_stencil_test = False
             glcanvas.end_draw_request()

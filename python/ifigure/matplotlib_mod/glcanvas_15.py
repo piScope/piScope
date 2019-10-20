@@ -769,7 +769,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
         if do_clear_depth:
             glClear(GL_DEPTH_BUFFER_BIT)
-
+            
         for aa in self.artists_data:
             if not aa is tag:
                 continue
@@ -777,9 +777,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self.vbo[aa] = weakref.WeakKeyDictionary()
             # aa:axes, a: aritsit
             artists = [(a.get_alpha_float(), a) for a in self.artists_data[aa]]
+
             artists = list(reversed(sorted(artists, key=lambda x:x[0])))            
             artists = ([(alpha, a) for alpha, a in artists if not a._gl_isLast] +
                        [(alpha, a) for alpha, a in artists if a._gl_isLast])
+
             for alpha, a in artists:
                 if alpha == 1 or alpha is None:
                     if not draw_solid:
@@ -1846,9 +1848,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                lighting=True,
                                view_offset=(0, 0, 0, 0),
                                array_idx=None,
-                               use_pointfill=True):
+                               use_pointfill=True,
+                               always_noclip = False):
         if vbos is None:
             return
+
         if len(paths[4][0]) > 4:
             self.draw_path_collection(vbos, gc,  paths,
                                       facecolor, edgecolor,
@@ -1857,8 +1861,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                       lighting=lighting,
                                       view_offset=view_offset,
                                       array_idx=array_idx)
+            if self._use_clip and always_noclip:
+                self.set_uniform(glUniform1i,  'uUseClip', 1)
+
             return
         nindex, nindexe, counts = vbos['nindex'], vbos['nindexe'], vbos['counts']
+
+        if always_noclip:
+            self.set_uniform(glUniform1i,  'uUseClip', 0)
+            glDisable(GL_DEPTH_TEST)        
 
         if facecolor is not None and vbos['primitive'] is not None:
             glBindVertexArray(vbos['vao'])
@@ -1910,10 +1921,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         # if not(linewidth[0] > 0.0 and not self._shadow): return
         if self._shadow:
+            if self._use_clip and always_noclip:
+                self.set_uniform(glUniform1i,  'uUseClip', 1)
+            if always_noclip: glEnable(GL_DEPTH_TEST)                                    
             return
-
+        
         if vbos['primitive'] is not None:
             if linewidth[0] == 0.0:
+                if self._use_clip and always_noclip:
+                    self.set_uniform(glUniform1i,  'uUseClip', 1)
+                if always_noclip: glEnable(GL_DEPTH_TEST)                    
                 return
 
         if vbos['eprimitive'] == GL_TRIANGLES:
@@ -1996,6 +2013,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glBindVertexArray(0)
         self.select_shader(self.shader)
+        
+        if self._use_clip and always_noclip:
+            self.set_uniform(glUniform1i,  'uUseClip', 1)                        
+        if always_noclip: glEnable(GL_DEPTH_TEST)
+
+
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
                                   edgecolor, *args,  **kwargs):

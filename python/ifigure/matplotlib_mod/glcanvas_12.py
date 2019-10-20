@@ -1652,7 +1652,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                lighting=True,
                                view_offset=(0, 0, 0, 0),
                                array_idx=None,
-                               use_pointfill=True):
+                               use_pointfill=True,
+                               always_noclip = False):        
         if vbos is None:
             return
         first, counts = vbos['first'], vbos['counts']
@@ -1686,6 +1687,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             # for now this case is redirected
             ## assert False, "use_multdrawarrays not supported"
             ##
+        if always_noclip:
+            self.set_uniform(glUniform1i,  'uUseClip', 0)
+            glDisable(GL_DEPTH_TEST)        
 
         # glEnableClientState(GL_INDEX_ARRAY)
         vbos['i'].bind()
@@ -1789,6 +1793,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['vertex_id'] is not None:
             self.DisableVertexAttrib('vertex_id')
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
+        
+        if self._use_clip and always_noclip:
+            self.set_uniform(glUniform1i,  'uUseClip', 1)
+        if always_noclip: glEnable(GL_DEPTH_TEST)                                    
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
                                   edgecolor, *args,  **kwargs):
