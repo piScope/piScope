@@ -460,7 +460,8 @@ class Axes3DMod(Axes3D):
         #return test(self, xdata, ydata, sxdata, sydata)
         dx =  - (xdata + sxdata)/2.0
         dy =  - (ydata + sydata)/2.0
-
+        dp = np.array((dx, dy))
+        
         w = self._pseudo_w
         h = self._pseudo_h
 
@@ -470,45 +471,11 @@ class Axes3DMod(Axes3D):
         # 3D axes range 
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
 
-        midx = (minx+maxx)/2.
-        midy = (miny+maxy)/2.
-        midz = (minz+maxz)/2.
+        #midx = (minx+maxx)/2.
+        #midy = (miny+maxy)/2.
+        #midz = (minz+maxz)/2.
 
-        M = self.get_proj()
-        #M = self.figobj.get_figbook().find_bookviewer().canvas.canvas.glcanvas.draw_M
-        dp = np.array([dx, dy])
-
-        xx = (np.dot(M, (maxx, midy, midz, 1)) -
-              np.dot(M, (miny, midy, midz, 1)))[:2]
-        yy = (np.dot(M, (midx, maxy, midz, 1)) -
-              np.dot(M, (midx, miny, midz, 1)))[:2]
-        zz = (np.dot(M, (midx, midy, maxz, 1)) -
-              np.dot(M, (midx, midy, minz, 1)))[:2]
-
-        from scipy.optimize import nnls
-        from scipy.linalg import null_space
-        A = np.vstack((xx, yy, zz)).transpose()
-
-        x = (null_space(A)).flatten()
-
-        v1 = np.cross(x, [1, 0, 0])
-        if np.sum(v1**2) == 0:
-            v1 = np.cross(x, [0, 1, 0])
-            if np.sum(v1**2) == 0:
-                v1 = np.cross(x, [0, 0, 1])
-
-        v2 = np.cross(x, v1)
-        v1 = v1/np.sqrt(np.sum(v1**2))
-        v2 = v2/np.sqrt(np.sum(v2**2))
-
-        tmp = np.dot(M, (midx, midy, midz, 1))
-        d1 = (np.dot(M, (midx+v1[0], midy+v1[1], midz+v1[2], 1)) - tmp)[:2]/tmp[2]
-        d2 = (np.dot(M, (midx+v2[0], midy+v2[1], midz+v2[2], 1)) - tmp)[:2]/tmp[2]
-
-        A = np.vstack((d1, d2)).transpose()
-        sol = np.dot(np.linalg.inv(A), dp)
-        center_move = (v1*sol[0]+ v2*sol[1])
-
+        center_move = self._screen_move_to_3d_move(-dp)
         minp = np.array([minx, miny, minz])
         maxp = np.array([maxx, maxy, maxz])
 
@@ -1250,74 +1217,13 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = value
 
     def _find_3d_loc_for_axis(self):
-        # 3D axes range 
-        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-
-        midx = (minx+maxx)/2.
-        midy = (miny+maxy)/2.
-        midz = (minz+maxz)/2.
-        vrange = np.array([maxx-minx,  maxy-miny, maxz-minz])
-        vmid =  np.array([midx, midy, midz])
-
-        M = self.get_proj()
-
-        def vec2sc(vec):
-            x = np.dot(M, (vec[0], vec[1], vec[2], 1))
-            return x[0:2]/x[-1]
         
-        xx = vec2sc((maxx, midy, midz,)) - vec2sc((minx, midy, midz,))
-        yy = vec2sc((midx, maxy, midz,)) - vec2sc((midx, miny, midz,))
-        zz = vec2sc((midx, midy, maxz,)) - vec2sc((midx, midy, minz,))        
-
-        from scipy.optimize import nnls
-        from scipy.linalg import null_space
-        A = np.vstack((xx, yy, zz)).transpose()
-
-        x = (null_space(A)).flatten()
-        nx = norm_vec(x)
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()        
+        vmax = np.array((maxx, maxy, maxz))
+        vmin = np.array((minx, miny, minz))
+        vrange = vmax-vmin
+        vmid =  (vmax + vmin)/2.0
         
-        v1 = np.cross(nx, [1, 0, 0])*vrange
-        v2 = np.cross(nx, [0, 1, 0])*vrange
-        v3 = np.cross(nx, [0, 0, 1])*vrange
-        #print("v1, v2, v3", v1,  v2, v3)
-        
-        def screen_diff(vv):
-            return (vec2sc((midx+vv[0], midy+vv[1], midz+vv[2])) -
-                    vec2sc((midx-vv[0], midy-vv[1], midz-vv[2])))/2.0
-        d1 = screen_diff(v1)
-        d2 = screen_diff(v2)
-        d3 = screen_diff(v3)
-        
-        #print(d1, d2, d3)
-        c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
-        c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
-        c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
-        #print("c1, c2, c3", c1,  c2, c3)
-        vv = [v1, v2, v3]
-        dd = [d1, d2, d3]        
-
-        ii = np.argsort([c1,c2,c3])
-        iii = ((1,2), (0, 2), (0, 1))[ii[-1]]
-
-        v1 = vv[iii[1]]
-        v2 = vv[iii[0]]
-        d1 = dd[iii[1]]
-        d2 = dd[iii[0]]        
-
-        '''
-        v2 = np.cross(x, v1)
-        v1 = v1/np.sqrt(np.sum(v1**2))
-        v2 = v2/np.sqrt(np.sum(v2**2))
-
-        d1 = vec2sc((midx+v1[0], midy+v1[1], midz+v1[2])) - vec2sc((midx, midy, midz))
-        d2 = vec2sc((midx+v2[0], midy+v2[1], midz+v2[2])) - vec2sc((midx, midy, midz))
-
-
-        print("v1, v2", v1, v2)        
-        print("d1, d2", d1, d2)        
-        '''
-        A = np.vstack((d1, d2)).transpose()
-
         from ifigure.utils.geom import transform_point
         x0, y0 = transform_point(
                  self.transAxes, 0.1, 0.1)
@@ -1331,10 +1237,10 @@ class Axes3DMod(Axes3D):
         #print("position here", x0, y0, x1, y1)
         ## dd is the screen space move I want to make
         dd = np.array([-x1+x0, -y1+y0])
-        sol = np.dot(np.linalg.inv(A), dd)
-        center_move = (v1*sol[0]+ v2*sol[1])
-        
+
+        center_move = self._screen_move_to_3d_move(dd)
         base = vmid + center_move
+        
         return base, vrange
 
 
@@ -1350,27 +1256,6 @@ class Axes3DMod(Axes3D):
         
     def draw_3d_axes(self):
         M = self.get_proj()
-        '''
-        dx = self.get_xlim()
-        dy = self.get_ylim()
-        dz = self.get_zlim()
-        xvec = np.dot(M, np.array([abs(dx[1]-dx[0]), 0, 0, 0]))[:2]
-        yvec = np.dot(M, np.array([0, abs(dy[1]-dy[0]), 0, 0]))[:2]
-        zvec = np.dot(M, np.array([0, 0, abs(dz[1]-dz[0]), 0]))[:2]
-
-        po = self.transAxes.transform([0.1, 0.1])
-        pod = self.transData.transform([0.0, 0.0])
-        fac = np.sqrt(np.sum((xvec-pod)**2 + (yvec-pod)**2 + (zvec-pod)**2))/5.
-
-        tt = self.transData.inverted()
-
-        def ptf(x):
-            pp = self.transData.transform(x)
-            st = tt.transform(po)
-            et = tt.transform((pp-pod)/fac+po)
-            et2 = tt.transform(3*(pp-pod)/fac+po)
-            return [st[0], et[0]], [st[1], et[1]], et2
-        '''
 
         def ptf2(x, dx):        
             #xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
@@ -1538,3 +1423,72 @@ class Axes3DMod(Axes3D):
 
         self.set_frame_on(frameon)
         return val
+
+
+    def _screen_move_to_3d_move(self, delta_in_axesnorm):
+        #
+        # compute the linear transformation in 3D,
+        # which causes the transformation given by dd (axes normal coords)
+        #
+        # the computed 3D transformation is normal to screen normal
+        #
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
+        vmax = np.array((maxx, maxy, maxz))
+        vmin = np.array((minx, miny, minz))
+        vrange = vmax-vmin
+        vmid =  (vmax + vmin)/2.0
+        midx, midy, midz = vmid
+        
+        M = self.get_proj()
+
+        def vec2sc(vec):
+            x = np.dot(M, (vec[0], vec[1], vec[2], 1))
+            return x[0:2]/x[-1]
+        
+        xx = vec2sc((maxx, midy, midz,)) - vec2sc((minx, midy, midz,))
+        yy = vec2sc((midx, maxy, midz,)) - vec2sc((midx, miny, midz,))
+        zz = vec2sc((midx, midy, maxz,)) - vec2sc((midx, midy, minz,))        
+
+        from scipy.optimize import nnls
+        from scipy.linalg import null_space
+        A = np.vstack((xx, yy, zz)).transpose()
+
+        x = (null_space(A)).flatten()
+        nx = norm_vec(x)
+        
+        v1 = np.cross(nx, [1, 0, 0])*vrange
+        v2 = np.cross(nx, [0, 1, 0])*vrange
+        v3 = np.cross(nx, [0, 0, 1])*vrange
+        #print("v1, v2, v3", v1,  v2, v3)
+        
+        def screen_diff(vv):
+            return (vec2sc((midx+vv[0], midy+vv[1], midz+vv[2])) -
+                    vec2sc((midx-vv[0], midy-vv[1], midz-vv[2])))/2.0
+        d1 = screen_diff(v1)
+        d2 = screen_diff(v2)
+        d3 = screen_diff(v3)
+        
+        #print(d1, d2, d3)
+        c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
+        c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
+        c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
+        #print("c1, c2, c3", c1,  c2, c3)
+        vv = [v1, v2, v3]
+        dd = [d1, d2, d3]        
+
+        ii = np.argsort([c1,c2,c3])
+        iii = ((1,2), (0, 2), (0, 1))[ii[-1]]
+
+        v1 = vv[iii[1]]
+        v2 = vv[iii[0]]
+        d1 = dd[iii[1]]
+        d2 = dd[iii[0]]        
+
+        A = np.vstack((d1, d2)).transpose()
+
+        sol = np.dot(np.linalg.inv(A), delta_in_axesnorm)
+        center_move = (v1*sol[0]+ v2*sol[1])
+
+        return center_move
+                                
