@@ -1363,8 +1363,8 @@ class Axes3DMod(Axes3D):
         if self._show_3d_axes:
             self.remove_3daxes_artists()            
             self.draw_3d_axes()
-            for a in self._3d_axes_icon:
-                a().set_zorder(gl_len+1)
+            #for a in self._3d_axes_icon:
+            #    a().set_zorder(gl_len+1)
         else:
             self.remove_3daxes_artists()
         
@@ -1379,8 +1379,9 @@ class Axes3DMod(Axes3D):
             artists.extend(self.artists)
             artists.extend(self.texts)
 
-            zorder = max([a.get_zorder() for a in artists])
-            for a in self._3d_axes_icon[3:]:a().set_zorder(zorder+5)
+            if self._show_3d_axes:
+                zorder = max([a.get_zorder() for a in artists])
+                for a in self._3d_axes_icon[3:]:a().set_zorder(zorder+5)
             #zorder = max([a.get_zorder() for a in artists])
             #print(zorder)
 
@@ -1403,7 +1404,7 @@ class Axes3DMod(Axes3D):
         self.set_frame_on(False)
 
         if self._gl_scale != 1.0:
-            print(("gl_scale", self._gl_scale))
+            #print(("gl_scale", self._gl_scale))
             xmin, xmax = self.get_xlim3d()
             ymin, ymax = self.get_ylim3d()
             zmin, zmax = self.get_zlim3d()
