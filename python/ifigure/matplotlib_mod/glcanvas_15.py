@@ -757,7 +757,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                         draw_solid=True,
                         draw_non_solid=True,
                         do_clear_depth=False,
-                        id_dict=None, ignore_alpha=False):
+                        id_dict=None, ignore_alpha=False,
+                        draw_arrow=False):
 
         if id_dict is None:
             id_dict = {}
@@ -781,6 +782,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
             artists = list(reversed(sorted(artists, key=lambda x:x[0])))            
             artists = ([(alpha, a) for alpha, a in artists if not a._gl_isLast] +
                        [(alpha, a) for alpha, a in artists if a._gl_isLast])
+            
+            if draw_arrow:
+                artists = [(alpha, a) for alpha, a in artists if a._gl_isArrow]                                
+            else:
+                artists = [(alpha, a) for alpha, a in artists if not a._gl_isArrow]                
 
             for alpha, a in artists:
                 if alpha == 1 or alpha is None:
@@ -1013,6 +1019,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.set_uniform(glUniform1i,  'uisFinal', 0)
             self._do_depth_test = True
 
+        if self._hittest_map_update:
+            self._im_stored = self.read_data(tag)
+        self.do_draw_artists(tag, 
+                             draw_non_solid=False,
+                             do_clear_depth=True,
+                             draw_arrow = True)
         # glFinish()
         # glPopMatrix()
 
@@ -1022,6 +1034,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._do_draw_mpl_artists = False
         self._artist_mask = None
         return id_dict
+    
+    @property                           
+    def stored_im(self):
+        return self._im_stored
 
     def read_hit_map_data(self, a):
         w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(a)
@@ -1681,7 +1697,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              stencil_test=False,
                              lighting=True,
                              view_offset=(0, 0, 0, 0),
-                             array_idx=None):
+                             array_idx=None,
+                             always_noclip = False):                                             
 
         if vbos is None:
             return
@@ -1869,7 +1886,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if always_noclip:
             self.set_uniform(glUniform1i,  'uUseClip', 0)
-            glDisable(GL_DEPTH_TEST)        
 
         if facecolor is not None and vbos['primitive'] is not None:
             glBindVertexArray(vbos['vao'])
@@ -1923,14 +1939,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._shadow:
             if self._use_clip and always_noclip:
                 self.set_uniform(glUniform1i,  'uUseClip', 1)
-            if always_noclip: glEnable(GL_DEPTH_TEST)                                    
             return
         
         if vbos['primitive'] is not None:
             if linewidth[0] == 0.0:
                 if self._use_clip and always_noclip:
                     self.set_uniform(glUniform1i,  'uUseClip', 1)
-                if always_noclip: glEnable(GL_DEPTH_TEST)                    
                 return
 
         if vbos['eprimitive'] == GL_TRIANGLES:
@@ -2016,9 +2030,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         if self._use_clip and always_noclip:
             self.set_uniform(glUniform1i,  'uUseClip', 1)                        
-        if always_noclip: glEnable(GL_DEPTH_TEST)
-
-
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
                                   edgecolor, *args,  **kwargs):

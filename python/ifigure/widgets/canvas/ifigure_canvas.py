@@ -225,6 +225,7 @@ class draghandler_base2(draghandler_base):
         self.mpl_id = self.panel.canvas.mpl_connect(
             'motion_notify_event',
             self.panel.mousedrag_panzoom)
+        
         self.dragging = False
         self.a = self.panel.axes_selection()
 
@@ -2201,6 +2202,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             
     def buttonpress0(self, event):
         self._alt_shift_hit = False
+        self.draghandler.clean(None)
         if self.toolbar.mode == '':
             hit = 0
             if (abs(self._a_mode_scale_anchor[0] - event.x) < 10 and
@@ -2401,6 +2403,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.draghandler.bind_mpl(event)
             return
         
+        if event.button == 3:
+            self.mpl_connect('normal')            
 #      if event.button == 1 and event.key == 'd':
 #         self.draghandler = self.draghandlers[2]
 #         self.draghandler.bind_mpl(event)

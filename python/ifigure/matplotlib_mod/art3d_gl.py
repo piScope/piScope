@@ -42,7 +42,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     if not glcanvas._hittest_map_update:
         glcanvas._no_hl = False
         id_dict = glcanvas.draw_mpl_artists(tag)
-        im = glcanvas.read_data(tag)  # im : image, im2: id, im3: depth
+        im = glcanvas.read_data(tag)        
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
@@ -58,11 +58,12 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         glcanvas._hittest_map_update = True
         id_dict = glcanvas.draw_mpl_artists(tag)
         # im : image, im2, im2d: id, im3: depth
-        im, im2, im2d, im3 = glcanvas.read_data(tag)
+        im, im2, im2d, im3 = glcanvas.stored_im
 
         glcanvas._hittest_map_update = False
         id_dict = glcanvas.draw_mpl_artists(tag)
-        im = glcanvas.read_data(tag)  # im : image, im2: id, im3: depth
+        im = glcanvas.read_data(tag)
+        
         glcanvas._hittest_map_update = True
 
         gc = renderer.new_gc()
@@ -127,6 +128,7 @@ class ArtGL(object):
         self._gl_marker_tex = weakref.WeakKeyDictionary()
         self._gl_isLast = False  # an aritst which should be drawn last
         self._gl_always_noclip = False  # used for axis
+        self._gl_isArrow = False  # used for axis        
         self._gl_repr_name = ''
         # extra index number assined to
         # each triangle/line segment/...

@@ -1279,6 +1279,7 @@ class Axes3DMod(Axes3D):
             kwargs = {'facecolor': 'r', 'edgecolor': 'r', 'linewidth':0}
             a1 = self.plot_solid(v, **kwargs)
             a1._gl_always_noclip = True
+            a1._gl_isArrow = True
             a1._gl_repr_name = 'x arrow'
             a1._gl_isLast = True
             
@@ -1289,6 +1290,7 @@ class Axes3DMod(Axes3D):
             kwargs = {'facecolor': 'g', 'edgecolor': 'g', 'linewidth':0}           
             a2 = self.plot_solid(v, **kwargs)
             a2._gl_always_noclip = True
+            a2._gl_isArrow = True            
             a2._gl_repr_name = 'y arrow'
             a2._gl_isLast = True            
             
@@ -1299,6 +1301,7 @@ class Axes3DMod(Axes3D):
             kwargs = {'facecolor': 'b', 'edgecolor': 'b', 'linewidth':0}
             a3 = self.plot_solid(v, **kwargs)
             a3._gl_always_noclip = True
+            a3._gl_isArrow = True                        
             a3._gl_repr_name = 'z arrow'
             a3._gl_isLast = True                        
             
