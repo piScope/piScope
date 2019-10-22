@@ -477,7 +477,7 @@ class FigLegend(FigObjGPHolder):
             idx = self._artists[0].get_texts().index(self._hit_a)
         else:
             idx = -1
-        return idx, idxlabel, zip(labels, colors)
+        return idx, idxlabel, list(zip(labels, colors))
 
     def set_legendentry(self, value, a):
         idx = value[0]
