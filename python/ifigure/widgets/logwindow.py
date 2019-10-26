@@ -74,7 +74,6 @@ class Logwindow(wx.MiniFrame):
         self.redirector.add(evt.thread, log.AppendText)
         self.threadlist.append([evt.thread, td, log, 0])
 
-#        self.timer.Start(1000, oneShot = True)
         wx.CallLater(1000, self.check_thread)
 
         st = time.localtime(time.time())
@@ -93,6 +92,8 @@ class Logwindow(wx.MiniFrame):
         for t, td, log, status in self.threadlist:
             if status == 0:
                 t.start()
+                # this is when we want to run the process in the main thread temtativcely...
+                #t.run()
                 st = time.localtime(time.time())
                 strt = time.strftime(" %b %d, %Y  %I:%M:%S", st)
                 log.AppendText('thread started at '+strt+'\n')
@@ -121,11 +122,12 @@ class Logwindow(wx.MiniFrame):
                 log.AppendText('done....('+strt+')\n')
                 self.redirector.rm(t)
                 deadlist.append(t)
+
         for t in deadlist:
             self.threadlist = [x for x
                                in self.threadlist if x[0] != t]
         if restart:
-            # print 'restarting log window timer'
+            #print('restarting log window timer')
             wx.CallLater(1000, self.check_thread)
             #self.timer.Start(1000, oneShot=True)
 
