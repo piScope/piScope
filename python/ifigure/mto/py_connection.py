@@ -105,10 +105,14 @@ class PyConnection(TreeDict):
 
         try:
             if self.getvar('verbose'):
-                p = subprocess.Popen(args, **kargs)
+                p = subprocess.Popen(args,
+                                     universal_newlines=True,
+                                     **kargs)
             else:
                 p = subprocess.Popen(args, stderr=subprocess.STDOUT,
-                                     stdout=subprocess.PIPE, **kargs)
+                                     stdout=subprocess.PIPE,
+                                     universal_newlines=True,
+                                     **kargs)
         except:
             print(traceback.format_exc())
 
@@ -142,11 +146,15 @@ class PyConnection(TreeDict):
 
         try:
             if self.getvar('verbose'):
-                p = subprocess.Popen(args, **kargs)
+                p = subprocess.Popen(args,
+                                     universal_newlines=True,                                     
+                                     **kargs)
 
             else:
                 p = subprocess.Popen(args, stderr=subprocess.STDOUT,
-                                     stdout=subprocess.PIPE, **kargs)
+                                     stdout=subprocess.PIPE,
+                                     universal_newlines=True,
+                                     **kargs)
         except:
             print(traceback.format_exc())
 
@@ -177,7 +185,9 @@ class PyConnection(TreeDict):
 
         try:
             p = subprocess.Popen(args, stderr=subprocess.STDOUT,
-                                 stdout=subprocess.PIPE, **kargs)
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True,
+                                 **kargs)
         except:
             print(traceback.format_exc())
         print('a new process (id =' + str(p.pid) + ') is running')

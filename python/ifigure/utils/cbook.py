@@ -395,10 +395,17 @@ def isBinary(filename):
     File is considered to be binary if it contains a NULL byte.
     (This approach incorrectly reports UTF-16 as binary.)
     """
-    with open(filename, 'rb') as f:
-        for block in f:
-            if '\0' in block:
-                return True
+    if six.PY2:    
+        with open(filename, 'rb') as f:
+            for block in f:
+                if '\0' in block:
+                    return True
+    else:
+        with open(filename, 'rb') as f:
+            for block in f:
+                if b'\0' in block:
+                    return True
+                
     return False
 
 

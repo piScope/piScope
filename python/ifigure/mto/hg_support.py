@@ -1057,7 +1057,7 @@ try:
         def _save_tree_data(self):
             fpath = os.path.join(self.owndir(), ".tree_data_hg")
             try:
-                fid = open(fpath, 'w')
+                fid = open(fpath, 'wb')
                 self.save2(fid)
                 fid.close()
                 return True
@@ -1110,7 +1110,7 @@ try:
                 if os.path.exists(fpath):
                     os.remove(fpath)
             else:
-                f = open(fpath, 'w')
+                f = open(fpath, 'wb')
                 for name, url, root, path in res:
                     txt = name + ' = ' + url
 #                  print txt
