@@ -274,7 +274,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             if obj.get_figaxes() is None:
                 continue
             if obj._floating and not obj.get_figaxes()._floating:
-                dsu2.extend([(a, a.draw, [self.renderer])
+                dsu2.extend([(a.get_zorder(), a.draw, [self.renderer])
                              for a in obj._artists])
         self.iothers = self.make_buffer_image(
             self.figure.draw_others, dsu=dsu2)
@@ -342,7 +342,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         except:
             dprint1("make_buffer_image faield")
             #import traceback
-            # traceback.print_exc()
+            #traceback.print_exc()
         return self._bufferstring2image()
 
     def make_axes_image(self):

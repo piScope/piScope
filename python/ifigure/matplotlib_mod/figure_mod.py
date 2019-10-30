@@ -81,6 +81,7 @@ class FigureMod(Figure):
 
         for a in self.legends:
             dsu.append((a.get_zorder(), a.draw, [renderer]))
+
         dsu.sort(key=itemgetter(0))
         for zorder, func, args in dsu:
             func(*args)
