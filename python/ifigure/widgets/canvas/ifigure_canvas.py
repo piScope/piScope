@@ -2475,7 +2475,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                 figobj._picker_a_mode == 0 and not figobj.isCompound()):
                             already_selected = True
                 if already_selected and not double_click:
-                    dprint1('already_select')
+                    dprint1('already_selected')
                     if event.guiEvent.ShiftDown():
                         #                 if event.key == 'shift':
                         self.unselect(self._pevent.artist)
