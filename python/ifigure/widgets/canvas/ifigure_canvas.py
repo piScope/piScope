@@ -194,6 +194,7 @@ class draghandler_base(object):
         self.d_mode = ''
         self.panel = weakref.proxy(panel, self.clean)
         self._disable_square = False
+        self.st_event = None
 
     def set_artist(self, a):
         self.a = a
@@ -209,7 +210,6 @@ class draghandler_base(object):
         if self.mpl_id is not None:
             self.panel.canvas.mpl_disconnect(self.mpl_id)
         self.mpl_id = None
-        self.st_event = None
 
     def isDragging(self):
         return self.mpl_id != None
@@ -872,6 +872,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
 
         d1 = abs(evt.x - st_event.x)
         d2 = abs(evt.y - st_event.y)
+
         if not ((d1 > 5) and (d2 > 5)):
             return
 
@@ -2303,7 +2304,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.toolbar.mode in ['rect',  'text', 'line', 'curve', 'curve2',
                                   'circle', 'legend', 'colorbar',
                                   'eps', 'arrow']):
-            dprint1('toolbar mode ' + self.toolbar.mode)
+            #dprint1('toolbar mode ' + self.toolbar.mode)
             self._insert_mode = True
             self._insert_st_event = event
             if self.toolbar.mode == 'arrow':
@@ -2405,6 +2406,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         annote_selected = (len(self.selection) > 0 and
                            self.selection[0]() is not None and
                            self.selection[0]().figobj.get_figaxes() is None)
+
         if (event.button == 1 and  self.toolbar.mode == '' and
             not annote_selected  and
             ax is not None and ax.figobj.get_3d()):
@@ -2430,7 +2432,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         
     def buttonrelease0(self, event):
         #print("button release0")
-        self.draghandler.clean(None)        
         self._alt_shift_hit = False
         self._skip_blur_hl = False        
         double_click = False
