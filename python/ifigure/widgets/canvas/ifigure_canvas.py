@@ -122,6 +122,8 @@ popup_skip_2d = 1
 # double click interval in two unit ;D
 dcinterval_ms = 200.
 dcinterval = 0.2
+# single click threshold (less than this time, drag is ignored)
+scinterval_th = 0.1
 
 class guiEventCopy(object):
     def __init__(self, guiEvent):
@@ -2027,7 +2029,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             frame.onPrevPage(event.guiEvent)
 
     def mousedrag(self, event):
-        #      print 'mousedrag'
+        #print('mousedrag')
         # drag event cancel picking
         #      if len(self.selection) != 0:
         #         print 'mouse drag', self.selecetion[0]().figobj.get_full_path()
@@ -2071,7 +2073,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.dodrag(event)
 
     def mousedrag_cursor(self, event):
-        #       print 'mousedrag_cursor'
+        #print('mousedrag_cursor')
         if not self.draghandler.dragging:
             if (len(self.selection) == 1 and
                     self.selection[0]() is not None):
@@ -2084,7 +2086,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.dodrag(event)
 
     def mousedrag_panzoom(self, event):
-        #       print 'mousedrag_panzoom'
+        #print('mousedrag_panzoom', time.time()-self._previous_lclick)
+        if time.time()-self._previous_lclick < scinterval_th:
+            # too short interval is ignored
+            return
         self._skip_blur_hl = True
         if not self.draghandler.dragging:
             self._picked = False
@@ -2191,6 +2196,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         #print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)   
         event.guiEvent = evt
+        self.draghandler.unbind_mpl()
+        self._click_interval = time.time()-self._previous_lclick
         wx.CallLater(dcinterval_ms, self.run_buttonrelease0, event)
 
     def run_buttonrelease0(self, event):
@@ -2202,6 +2209,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             
     def buttonpress0(self, event):
         self._alt_shift_hit = False
+
         self.draghandler.clean(None)
         if self.toolbar.mode == '':
             hit = 0
@@ -2242,6 +2250,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         if (not (self.toolbar.mode in ('zoom', 'pan', '3dzoom'))
                 and event.button == 1):
             self.run_picker(event)
+
         elif event.button == 2:
             self.toolbar.ExitInsertMode()
             self.toolbar.SetPMode()
@@ -2421,6 +2430,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         
     def buttonrelease0(self, event):
         #print("button release0")
+        self.draghandler.clean(None)        
         self._alt_shift_hit = False
         self._skip_blur_hl = False        
         double_click = False
