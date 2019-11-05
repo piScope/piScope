@@ -2467,16 +2467,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             # left click (deselect all if _picked is false)
             if self._picked:
                 already_selected = False
+                shift_down = event.guiEvent.ShiftDown()
                 for item in self.selection:
                     if item() is not None:
                         figobj = item().figobj
 #                  if figobj is not None: figobj.highlight_artist(False)
                         if (self._pevent.artist == item() and
-                                figobj._picker_a_mode == 0 and not figobj.isCompound()):
+                            figobj._picker_a_mode == 0 and not figobj.isCompound()):
                             already_selected = True
+
                 if already_selected and not double_click:
-                    dprint1('already_selected')
-                    if event.guiEvent.ShiftDown():
+                    if shift_down:
                         #                 if event.key == 'shift':
                         self.unselect(self._pevent.artist)
                     else:
@@ -2486,7 +2487,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 else:
                     figobj = self._pevent.artist.figobj
                     if figobj.isCompound() and not double_click:
-                        figobj._artists[0].mask_array_idx()
+                        figobj._artists[0].mask_array_idx(shift_down)
                     
                     if not event.guiEvent.ShiftDown() and not double_click:
                         self.unselect_all()

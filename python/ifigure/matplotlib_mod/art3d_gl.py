@@ -156,11 +156,16 @@ class ArtGL(object):
         check, array_id = c.gl_hit_test(evt.x, evt.y,
                                         self, radius=3)
         if check:
+            shift_down = evt.guiEvent.ShiftDown()
+            
             self._gl_hit_array_id_new = self._gl_hit_array_id.copy()
             if int(array_id) in self._gl_hit_array_id:
                 self._gl_hit_array_id_new.remove(int(array_id))
             else:
-                self._gl_hit_array_id_new.append(int(array_id))
+                if shift_down:
+                    self._gl_hit_array_id_new.append(int(array_id))
+                else:
+                    self._gl_hit_array_id_new = [int(array_id)]
             #self.mask_array_idx()
             return True, {'child_artist': self}
         return False, {}
@@ -172,8 +177,14 @@ class ArtGL(object):
             self._gl_hit_array_id_new = []            
             self.mask_array_idx()
 
-    def mask_array_idx(self):
+    def mask_array_idx(self, shift_down=True):
         if self._gl_array_idx is not None:
+            if (not shift_down and len(self._gl_hit_array_id) > 0):
+                #any([not x in self._gl_hit_array_id  for x in self._gl_hit_array_id_new])):
+                # if not shift-donw. already_selected, and all new selected is not in already_selected
+                self.unselect_gl_artist()
+                return
+            
             array_idx = np.abs(self._gl_array_idx)
             mask = np.isin(array_idx, self._gl_hit_array_id_new)
             array_idx[mask] *= -1
