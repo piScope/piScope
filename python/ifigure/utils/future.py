@@ -4,6 +4,7 @@
 '''
 import sys
 import os
+import shutil
 import subprocess as sp
 import ifigure
 futurize = None
@@ -26,6 +27,10 @@ futurize3 = os.path.join(os.path.dirname(
                          os.path.dirname(ifigure.__file__))))), 'bin', 'futurize')
 if os.path.exists(futurize3):
     futurize = futurize3
+
+# probably the best is to keep only this one??    
+if futurize is None:    
+    futurize=shutil.which("futurize")
     
 def call_futurize(file=None, dryrun=False, verbose=False, unicode=True,
                   stage1=True, stage2=False, help=False):

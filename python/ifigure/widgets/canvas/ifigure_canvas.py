@@ -122,6 +122,8 @@ popup_skip_2d = 1
 # double click interval in two unit ;D
 dcinterval_ms = 200.
 dcinterval = 0.2
+# single click threshold (less than this time, drag is ignored)
+scinterval_th = 0.1
 
 class guiEventCopy(object):
     def __init__(self, guiEvent):
@@ -192,6 +194,7 @@ class draghandler_base(object):
         self.d_mode = ''
         self.panel = weakref.proxy(panel, self.clean)
         self._disable_square = False
+        self.st_event = None
 
     def set_artist(self, a):
         self.a = a
@@ -207,7 +210,6 @@ class draghandler_base(object):
         if self.mpl_id is not None:
             self.panel.canvas.mpl_disconnect(self.mpl_id)
         self.mpl_id = None
-        self.st_event = None
 
     def isDragging(self):
         return self.mpl_id != None
@@ -870,6 +872,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
 
         d1 = abs(evt.x - st_event.x)
         d2 = abs(evt.y - st_event.y)
+
         if not ((d1 > 5) and (d2 > 5)):
             return
 
@@ -2028,7 +2031,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             frame.onPrevPage(event.guiEvent)
 
     def mousedrag(self, event):
-        #      print 'mousedrag'
+        #print('mousedrag')
         # drag event cancel picking
         #      if len(self.selection) != 0:
         #         print 'mouse drag', self.selecetion[0]().figobj.get_full_path()
@@ -2072,7 +2075,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.dodrag(event)
 
     def mousedrag_cursor(self, event):
-        #       print 'mousedrag_cursor'
+        #print('mousedrag_cursor')
         if not self.draghandler.dragging:
             if (len(self.selection) == 1 and
                     self.selection[0]() is not None):
@@ -2085,7 +2088,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.dodrag(event)
 
     def mousedrag_panzoom(self, event):
-        #       print 'mousedrag_panzoom'
+        #print('mousedrag_panzoom', time.time()-self._previous_lclick)
+        if time.time()-self._previous_lclick < scinterval_th:
+            # too short interval is ignored
+            return
         self._skip_blur_hl = True
         if not self.draghandler.dragging:
             self._picked = False
@@ -2192,6 +2198,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         #print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)   
         event.guiEvent = evt
+        self.draghandler.unbind_mpl()
+        self._click_interval = time.time()-self._previous_lclick
         wx.CallLater(dcinterval_ms, self.run_buttonrelease0, event)
 
     def run_buttonrelease0(self, event):
@@ -2203,6 +2211,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             
     def buttonpress0(self, event):
         self._alt_shift_hit = False
+
         self.draghandler.clean(None)
         if self.toolbar.mode == '':
             hit = 0
@@ -2243,6 +2252,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         if (not (self.toolbar.mode in ('zoom', 'pan', '3dzoom'))
                 and event.button == 1):
             self.run_picker(event)
+
         elif event.button == 2:
             self.toolbar.ExitInsertMode()
             self.toolbar.SetPMode()
@@ -2295,7 +2305,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.toolbar.mode in ['rect',  'text', 'line', 'curve', 'curve2',
                                   'circle', 'legend', 'colorbar',
                                   'eps', 'arrow']):
-            dprint1('toolbar mode ' + self.toolbar.mode)
+            #dprint1('toolbar mode ' + self.toolbar.mode)
             self._insert_mode = True
             self._insert_st_event = event
             if self.toolbar.mode == 'arrow':
@@ -2397,6 +2407,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         annote_selected = (len(self.selection) > 0 and
                            self.selection[0]() is not None and
                            self.selection[0]().figobj.get_figaxes() is None)
+
         if (event.button == 1 and  self.toolbar.mode == '' and
             not annote_selected  and
             ax is not None and ax.figobj.get_3d()):
@@ -2468,16 +2479,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             # left click (deselect all if _picked is false)
             if self._picked:
                 already_selected = False
+                shift_down = event.guiEvent.ShiftDown()
                 for item in self.selection:
                     if item() is not None:
                         figobj = item().figobj
 #                  if figobj is not None: figobj.highlight_artist(False)
                         if (self._pevent.artist == item() and
-                                figobj._picker_a_mode == 0 and not figobj.isCompound()):
+                            figobj._picker_a_mode == 0 and not figobj.isCompound()):
                             already_selected = True
+
                 if already_selected and not double_click:
-                    dprint1('already_select')
-                    if event.guiEvent.ShiftDown():
+                    if shift_down:
                         #                 if event.key == 'shift':
                         self.unselect(self._pevent.artist)
                     else:
@@ -2487,7 +2499,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 else:
                     figobj = self._pevent.artist.figobj
                     if figobj.isCompound() and not double_click:
-                        figobj._artists[0].mask_array_idx()
+                        figobj._artists[0].mask_array_idx(shift_down)
                     
                     if not event.guiEvent.ShiftDown() and not double_click:
                         self.unselect_all()

@@ -3,6 +3,7 @@ from ifigure.utils.images2gif import writeGif
 #from PIL import Image
 import os
 from ifigure.utils.cbook import image_to_pil
+import six
 dither = 1
 
 
@@ -14,5 +15,13 @@ def save_animation(func, params, canvas, filename='animation.gif',
         image = canvas.canvas.bitmap.ConvertToImage()
         images.append(image_to_pil(image))
 
-    print(writeGif.__doc__)
-    writeGif(filename, images, duration=duration, dither=dither)
+
+    
+    if six.PY2:
+        writeGif(filename, images, duration=duration, dither=dither)
+    else:
+        # we use PIL's implementation in PY3
+        images[0].save(filename,
+                       save_all=True,
+                       append_images=images[1:],
+                       optimize=False, duration=duration, loop=1)

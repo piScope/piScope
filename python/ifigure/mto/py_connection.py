@@ -16,6 +16,62 @@ usr = get_username()
 sltime = 0.25  # sleep time during wait
 
 
+
+def run_ssh_wait_and_retry(args, kargs, verbose=False):
+    retry = 5
+    ktry=0
+    while (ktry < retry):
+        try:
+            #if verbose:
+            #    p = subprocess.Popen(args,
+            #                         universal_newlines=True,
+            #                         **kargs)
+            #else:
+            p = subprocess.Popen(args, stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True,
+                                 **kargs)
+        except:
+            print(traceback.format_exc())
+
+        while p.poll() == None:
+            #if isInMainThread(): wx.Yield()
+            time.sleep(sltime)
+        stat = p.wait()
+
+        err=p.stderr.readlines()
+        success=True
+        for x in err:
+            if x.find('reset') != -1:
+                print(x)
+                success=False
+            elif len(x)>0:
+                print("unknown error", x)
+            else:
+                pass
+        if success: break
+        
+        ktry=ktry+1
+        print("retrying communicaiton : (" + str(ktry) + ")")
+    return p
+        
+def run_ssh_no_retry(args, kargs, verbose=False):
+    try:
+        if verbose:
+            p = subprocess.Popen(args,
+                                 universal_newlines=True,
+                                 **kargs)
+        else:
+            p = subprocess.Popen(args, stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True,
+                                 **kargs)
+    except:
+        print(traceback.format_exc())
+
+    return p
+
+        
 class PyConnection(TreeDict):
     def __init__(self, *args, **kargs):
         super(PyConnection, self).__init__(*args, **kargs)
@@ -103,6 +159,14 @@ class PyConnection(TreeDict):
         if self.getvar('verbose'):
             print(command)
 
+        verbose=self.getvar('verbose')
+        if verbose: print(command)        
+        if nowait:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        else:
+            p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
+        return p
+        '''
         try:
             if self.getvar('verbose'):
                 p = subprocess.Popen(args,
@@ -122,7 +186,9 @@ class PyConnection(TreeDict):
                 time.sleep(sltime)
             stat = p.wait()
         return p
+        '''
 
+        
     def GetFile(self, src, dest, nowait=False):
         '''
         get a file in a remote server
@@ -141,9 +207,16 @@ class PyConnection(TreeDict):
             command = 'cp ' + src + ' ' + dest
             args = command
             kargs = {"shell": True}
-        if self.getvar('verbose'):
-            print(command)
 
+        verbose=self.getvar('verbose')
+
+        if verbose: print(command)
+        if nowait:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        else:
+            p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
+        return p
+        '''            
         try:
             if self.getvar('verbose'):
                 p = subprocess.Popen(args,
@@ -164,7 +237,8 @@ class PyConnection(TreeDict):
                 time.sleep(sltime)
             # print p.wait()
         return p
-
+        '''
+        
     def Execute(self, command, nowait=False):
         server, port, user,  use_ssh = self.getvar('server', 'port',
                                                    'user', 'use_ssh')
@@ -180,6 +254,17 @@ class PyConnection(TreeDict):
             args = command
             kargs = {"shell": True}
 
+
+        verbose=self.getvar('verbose')
+
+        if verbose: print(command)
+        if nowait:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        else:
+            p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
+        return p
+
+        '''    
         if self.getvar('verbose'):
             print(command)
 
@@ -197,3 +282,4 @@ class PyConnection(TreeDict):
                 time.sleep(sltime)
             print(p.wait())
         return p
+        '''

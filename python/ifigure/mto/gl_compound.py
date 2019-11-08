@@ -7,7 +7,9 @@ dprint1, dprint2, dprint3 = debug.init_dprints('GL_COMPOUND')
 
 class GLCompound(object):
     def isCompound(self):
-        return self.hasvar('array_idx')
+        if (self.hasvar('array_idx') and
+            self._var['array_idx'] is not None): return True
+        return False
 
     @property
     def hidden_component(self):
@@ -84,7 +86,8 @@ class GLCompound(object):
         return v, idx, cdata
 
     def isSelected(self):
-        return (len(self._artists[0]._gl_hit_array_id) > 0)
+        # this is called to check if click hit this object 
+        return (len(self._artists[0]._gl_hit_array_id_new) > 0)
 
     def getSelectedIndex(self):
         return self._artists[0]._gl_hit_array_id
