@@ -1506,6 +1506,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._alt_shift_hit = False
         self._full_screen_mode = False
         self._skip_blur_hl = False # on during drag
+        self.dblclick_occured = False # double click
 
         self.selection = []
         self.axes_selection = cbook.WeakNone()
