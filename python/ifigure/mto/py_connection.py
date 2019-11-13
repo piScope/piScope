@@ -45,8 +45,12 @@ def run_ssh_wait_and_retry(args, kargs, verbose=False):
             if x.find('reset') != -1:
                 print(x)
                 success=False
+            elif x.find('lost') != -1:
+                print(x)
+                success=False
             elif len(x)>0:
                 print("unknown error", x)
+                success=False                
             else:
                 pass
         if success: break
