@@ -1458,6 +1458,13 @@ def videoviewer(file='', book=None):
     viewer = figure(file=file, book=book, viewer=VideoViewer)
     return viewer
 
+def waveviewer(file='', book=None, nframe=30, sign=-1):
+
+    from ifigure.widgets.wave_viewer import WaveViewer
+    viewer = figure(file=file, book=book, viewer=WaveViewer)
+    viewer.sign=sign
+    viewer.nframe=nframe
+    return viewer
 
 def video(*args, **kargs):
     '''
@@ -1474,7 +1481,7 @@ def video(*args, **kargs):
         y = args[2]
     else:
         raise ValueError
-
+    
     v = videoviewer()
     o = v.image(*args, **kargs)
     v.goto_frame(0)

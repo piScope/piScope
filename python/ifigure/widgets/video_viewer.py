@@ -138,6 +138,15 @@ class VideoViewerMode(object):
             self.draw()
         BookViewer.save_animgif(self, filename=filename,
                                 show_page=show_page)
+        
+    def save_animpng(self, filename='animation.png',
+                     show_page=None):
+        def show_page(args):
+            k = args[0]
+            self.goto_frame(k)
+            self.draw()
+        BookViewer.save_animpng(self, filename=filename,
+                                show_page=show_page)
 
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):

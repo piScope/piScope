@@ -271,7 +271,8 @@ class SimpleShell(ShellBase):
                 dprint1('running startup file', file)
                 txt = 'Running user startup file '+file
                 self.push('print %r' % txt)
-                execfile(file, globals(), self.lvar)
+                #self.execfile(file, globals(), self.lvar)
+                self.execStartupScript(file)
 
         self.SetDropTarget(simple_shell_droptarget(self))
 

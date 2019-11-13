@@ -3584,7 +3584,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 'png': (3, namebase+'.png'),
                 'jpeg': (4, namebase+'.jpeg'),
                 'gifanim': (5, namebase+'.gif'),
-                'pdfall': (6, namebase+'.pdf'), }
+                'pnganim': (6, namebase+'.png'),                
+                'pdfall': (7, namebase+'.pdf'), }
 
         fname = os.path.join(rcdir, data[self._mailpic_format][1])
         self.save_pic(ret=fname, wc=data[self._mailpic_format][0])
@@ -3607,9 +3608,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         import ifigure.widgets.dialog as dialog
         if wc is None:
             wildcard1 = "Encapsulated Post Script(eps)|*.eps|Portable Document Format(pdf)|*.pdf|Scalable Vector Graphics (svg)|*.svg|Portable Network Graphics(png)|*.png|Joint Photographic Experts Group (jpeg)|*.jpeg"
-            wildcard2 = "Animated - Graphic Interchange Format (gif)|*.gif|Multipage PDF|*.pdf"
+            wildcard2 = "Animated - Graphic Interchange Format (gif)|*.gif"
+            wildcard3 = "Animated - PNG (png)|*.png"
+            wildcard4 = "Multipage PDF|*.pdf"                        
             if self.GetTopLevelParent().num_page() > 1:
-                wildcard = wildcard1 + '|' + wildcard2
+                wildcard = wildcard1 + '|' + wildcard2 + '|' + wildcard3 + '|' + wildcard4
             else:
                 wildcard = wildcard1
             ret, wc = dialog.write(parent=None, defaultfile='image',
@@ -3661,6 +3664,29 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             matplotlib.rcParams['font.family'] = org_rc[2]
             return
         elif wc == 6:
+            if ret[-4:] != '.png':
+                ret = ret + '.png'
+            fname = '.'.join(ret.split('.')[:-1])
+            try:
+                import apng
+            except ImportError:
+                dialog.message(parent = self,
+                               message='APNG is not found (consider pip install apng)',
+                               title = 'missing module', style = 0)
+                return                
+            try:
+                self.GetTopLevelParent().save_animpng(filename=fname+'.png')
+            except:
+                import traceback
+                print(traceback.format_exc())
+            if (matplotlib.rcParams['text.usetex'] and
+                    not org_rc[0]):
+                call_convert_to_tex_style_text(False)
+            matplotlib.rcParams['text.usetex'] = org_rc[0]
+            matplotlib.rcParams['ps.usedistiller'] = org_rc[1]
+            matplotlib.rcParams['font.family'] = org_rc[2]
+            return
+        elif wc == 7:
             if ret[-4:] != '.pdf':
                 ret = ret + '.pdf'
             fname = '.'.join(ret.split('.')[:-1])
