@@ -1650,11 +1650,11 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book = args[1]
                 book.show_page(k)
                 book.draw()
-#            wx.Yield()
                 time.sleep(0.1)
+                
         from ifigure.utils.edit_list import DialogEditList
         l = [
-            ["Frame Spped(s/framd)", str(0.5),
+            ["Frame Speed(s/frame)", str(0.5),
              0, {'noexpand': True}],
             [None, True, 3, {"text": "Dither", "noindent": None}],
         ]
@@ -1674,6 +1674,36 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         save_animation(show_page, param, self.canvas, filename=filename,
                        duration=speed, dither=dither)
 
+    def save_animpng(self, filename='animation.png', show_page=None):
+        if show_page is None:
+            def show_page(args):
+                import wx
+                import time
+                k = args[0]
+                book = args[1]
+                book.show_page(k)
+                book.draw()
+                time.sleep(0.1)
+                
+        from ifigure.utils.edit_list import DialogEditList
+        l = [
+            ["Frame Speed(s/frame)", str(0.5),
+             0, {'noexpand': True}],
+        ]
+        value = DialogEditList(l, parent=self,
+                               title="PNG animation...",
+                               style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        if not value[0]:
+            return
+
+        speed = float(value[1][0])*1000.
+        param = []
+        for k in range(self.num_page()):
+            param.append((k, self))
+        from ifigure.utils.png_animation import save_animation
+        print('saveing png animation...'+filename)
+        save_animation(show_page, param, self.canvas, filename=filename, duration=speed)
+        
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):
         if show_page is None:

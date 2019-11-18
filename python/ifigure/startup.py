@@ -29,7 +29,7 @@ from ifigure.interactive import ispline
 from ifigure.interactive import figure, close, edit
 from ifigure.interactive import newbook
 from ifigure.interactive import scope, scopenw, tscope
-from ifigure.interactive import video
+from ifigure.interactive import video, waveviewer, videoviewer
 #from ifigure.interactive import sliceviewer
 from ifigure.interactive import addpage
 from ifigure.interactive import delpage

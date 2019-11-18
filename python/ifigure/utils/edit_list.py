@@ -4857,20 +4857,30 @@ class EditListMiniFrame(wx.MiniFrame):
                  wx.RESIZE_BORDER |
                  wx.FRAME_FLOAT_ON_PARENT,
                  tip=None, pos=None, nobutton=True,
-                 callback=None, close_callback=None):
+                 callback=None, close_callback=None,
+                 ok_callback=None):
+
         wx.MiniFrame.__init__(self, parent, id, title, style=style)
         self.nobutton = nobutton
         self.callback = callback
         self.close_callback = close_callback
+        self.ok_callback = ok_callback        
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         self.elp = EditListPanel(self, list, tip=tip)
         self.elp.Layout()
         vbox.Add(self.elp, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 10)
         if not self.nobutton:
-            sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
-            if sizer is not None:
-                vbox.Add(sizer, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, 10)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)            
+            okbutton = wx.Button(self, wx.ID_OK, "OK")
+            cancelbutton = wx.Button(self, wx.ID_CANCEL, "Cancel")
+            sizer.AddStretchSpacer()
+            sizer.Add(okbutton, 0, wx.ALIGN_CENTER | wx.ALL, 1)            
+            sizer.Add(cancelbutton, 0, wx.ALIGN_CENTER | wx.ALL, 1)
+            sizer.AddStretchSpacer()            
+            okbutton.Bind(wx.EVT_BUTTON, self.onOK)
+            cancelbutton.Bind(wx.EVT_BUTTON, self.onCancel)            
+            vbox.Add(sizer, 0, wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, 5)
 #        self.Fit()
         self.Layout()
         if pos is None:
@@ -4899,7 +4909,16 @@ class EditListMiniFrame(wx.MiniFrame):
             value = self.GetValue()
             self.close_callback(value)
         evt.Skip()
-
+        
+    def onOK(self, evt):
+        if self.ok_callback is not None:
+            value = self.GetValue()
+            self.ok_callback(value)            
+        self.Close()
+        
+    def onCancel(self, evt):
+        self.Close()
+        
     def _myRefresh(self):
         win = self.GetTopLevelParent()
 #        win.SetSizeHints(win)
