@@ -42,15 +42,15 @@ def run_ssh_wait_and_retry(args, kargs, verbose=False):
         err=p.stderr.readlines()
         success=True
         for x in err:
-            if x.find('reset') != -1:
+            if x.find('reset connection') != -1:
                 print(x)
                 success=False
-            elif x.find('lost') != -1:
+            elif x.find('lost connection') != -1:
                 print(x)
                 success=False
             elif len(x)>0:
-                print("unknown error", x)
-                success=False                
+                print(x)
+                #success=False                
             else:
                 pass
         if success: break
@@ -85,6 +85,7 @@ class PyConnection(TreeDict):
         self.setvar('use_ssh', True)
         self.setvar('verbose', True)
         self.setvar('queue_type', 'sbatch')
+        self.setvar('check', False)
 
     @classmethod
     def isPyConnection(self):
@@ -112,12 +113,14 @@ class PyConnection(TreeDict):
         self.setvar('port', int(value[1][1][1]))
         self.setvar('user', str(value[1][1][2]))
         self.setvar('queue_type', str(value[2]))
+        self.setvar('nocheck', not bool(value[3]))        
 
     def onSetting(self, evt=None):
-        server, port, user, use_ssh, queue_type = self.getvar('server', 'port',
+        server, port, user, use_ssh, queue_type, nocheck = self.getvar('server', 'port',
                                                               'user',
                                                               'use_ssh',
-                                                              'queue_type')
+                                                                       'queue_type',
+                                                                        'nocheck' )
         if use_ssh is None:
             use_ssh = True
         if server is None:
@@ -128,6 +131,8 @@ class PyConnection(TreeDict):
             user = usr  # os.getnev('USER')
         if queue_type is None:
             queue_type = 'sbatch'  # os.getnev('USER')
+        if nocheck is None:
+            nocheck = False
 
         s_queue = {"style": wx.CB_DROPDOWN,
                    "choices": ["sbatch", "qsub"]}
@@ -138,7 +143,8 @@ class PyConnection(TreeDict):
         l1 = [["", "SSH connection", 2],
               [None, (use_ssh, [server, str(port), user]), 27,
                ({'text': 'use SSH'}, {'elp': l2})],
-              ["queue type", str(queue_type), 4, s_queue], ]
+              ["queue type", str(queue_type), 4, s_queue], 
+              [None, not nocheck, 3, {"text":"connection check/retry"}], ]        
         proj_tree_viewer = wx.GetApp().TopWindow.proj_tree_viewer
         proj_tree_viewer.OpenPanel(l1, self, 'setSetting',
                                    title='Connection setting')
@@ -147,8 +153,10 @@ class PyConnection(TreeDict):
         '''
         put a file in a remote server
         '''
-        server, port, user, use_ssh = self.getvar('server', 'port',
-                                                  'user', 'use_ssh')
+        server, port, user, use_ssh, nocheck = self.getvar('server', 'port',
+                                                  'user', 'use_ssh', 'nocheck')
+        
+        if nocheck is None:  nocheck = False
 
         if use_ssh:
             command = 'scp -P '+str(port) + ' ' + src + \
@@ -167,39 +175,20 @@ class PyConnection(TreeDict):
         if verbose: print(command)        
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        elif nocheck:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+            p.wait()
         else:
             p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
         return p
-        '''
-        try:
-            if self.getvar('verbose'):
-                p = subprocess.Popen(args,
-                                     universal_newlines=True,
-                                     **kargs)
-            else:
-                p = subprocess.Popen(args, stderr=subprocess.STDOUT,
-                                     stdout=subprocess.PIPE,
-                                     universal_newlines=True,
-                                     **kargs)
-        except:
-            print(traceback.format_exc())
-
-        if not nowait:
-            while p.poll() == None:
-                #if isInMainThread(): wx.Yield()
-                time.sleep(sltime)
-            stat = p.wait()
-        return p
-        '''
-
         
-    def GetFile(self, src, dest, nowait=False):
+    def GetFile(self, src, dest, nowait=False, nocheck=False):
         '''
         get a file in a remote server
         '''
-        server, port, user,  use_ssh = self.getvar('server', 'port',
-                                                   'user', 'use_ssh')
-
+        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
+                                                   'user', 'use_ssh', 'nocheck')
+        if nocheck is None:  nocheck = False
         if use_ssh:
             command = 'scp -P '+str(port) + ' ' + user + \
                 '@'+server+':'+src + ' ' + dest
@@ -217,6 +206,9 @@ class PyConnection(TreeDict):
         if verbose: print(command)
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        elif nocheck:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+            p.wait()
         else:
             p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
         return p
@@ -243,10 +235,10 @@ class PyConnection(TreeDict):
         return p
         '''
         
-    def Execute(self, command, nowait=False):
-        server, port, user,  use_ssh = self.getvar('server', 'port',
-                                                   'user', 'use_ssh')
-
+    def Execute(self, command, nowait=False, nocheck=False):
+        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
+                                                   'user', 'use_ssh', 'nocheck')
+        if nocheck is None:  nocheck = False
         if use_ssh:
             command = 'ssh -x -p '+str(port)+' ' + \
                 user+'@'+server + ' "' + command + '"'
@@ -264,6 +256,9 @@ class PyConnection(TreeDict):
         if verbose: print(command)
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        elif nocheck:
+            p = run_ssh_no_retry(args, kargs, verbose=verbose)
+            p.wait()
         else:
             p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
         return p
