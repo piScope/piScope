@@ -85,7 +85,7 @@ class PyConnection(TreeDict):
         self.setvar('use_ssh', True)
         self.setvar('verbose', True)
         self.setvar('queue_type', 'sbatch')
-        self.setvar('check', False)
+        self.setvar('nocheck', False)
 
     @classmethod
     def isPyConnection(self):
@@ -168,10 +168,9 @@ class PyConnection(TreeDict):
             command = 'cp ' + src + ' ' + dest
             args = command
             kargs = {'shell': True}
-        if self.getvar('verbose'):
-            print(command)
 
         verbose=self.getvar('verbose')
+        
         if verbose: print(command)        
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
@@ -252,8 +251,8 @@ class PyConnection(TreeDict):
 
 
         verbose=self.getvar('verbose')
-
         if verbose: print(command)
+        
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
         elif nocheck:
