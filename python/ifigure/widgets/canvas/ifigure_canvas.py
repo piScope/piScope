@@ -2148,7 +2148,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                         in self._figure.axes if not axes.figobj._floating])
 
             if floating_axes[0][0] < fixed_axes_zordermax:
-                for zorder, axes in sorted(floating_axes):
+                for zorder, axes in sorted(floating_axes, key=lambda x:x[0]):
                     axes.figobj.set_zorder_front()
 
         figax_list = set([a.figobj for a in reversed(self._figure.axes)])
