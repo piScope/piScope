@@ -66,7 +66,6 @@ class CheckBoxs(wx.Panel):
 
     def onHitCheck(self, evt):
         evt.SetEventObject(self)
-        print(self)
         if hasattr(self.GetParent(), "send_event"):
             self.GetParent().send_event(self, evt)
         

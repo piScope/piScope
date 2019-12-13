@@ -3420,7 +3420,7 @@ class MDSSource0(wx.Panel):
     def onPageClose(self, evt):
         ipage = self.nb.GetSelection()
         label = self.nb.GetPageText(ipage).strip()
-        print(label, 'closing')
+        #print(label, 'closing')
         if str(label) in ['x', 'y', 'z', 'xerr', 'yerr']:
             ret = dialog.message(self,
                                  '"'+label+'"' + " is reserved and cannot be deleted",
