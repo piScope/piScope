@@ -1225,14 +1225,15 @@ class Axes3DMod(Axes3D):
         vmid =  (vmax + vmin)/2.0
         
         from ifigure.utils.geom import transform_point
-        x0, y0 = transform_point(
+        x0s, y0s = transform_point(
                  self.transAxes, 0.1, 0.1)
         x0, y0 = transform_point(
-                     self.transData.inverted(), x0, y0)
-        x1, y1 = transform_point(
+                     self.transData.inverted(), x0s, y0s)
+        
+        x1s, y1s = transform_point(
                  self.transAxes, 0.5, 0.5)
         x1, y1 = transform_point(
-                     self.transData.inverted(), x1, y1)
+                     self.transData.inverted(), x1s, y1s)
         
         #print("position here", x0, y0, x1, y1)
         ## dd is the screen space move I want to make
@@ -1240,8 +1241,9 @@ class Axes3DMod(Axes3D):
 
         center_move = self._screen_move_to_3d_move(dd)
         base = vmid + center_move
-        
-        return base, vrange
+
+        dds =  np.array([-x0s+x1s, -y0s+y1s])
+        return base, vrange, dds
 
 
     def remove_3daxes_artists(self):
@@ -1266,14 +1268,18 @@ class Axes3DMod(Axes3D):
 
         
         if self._3d_axes_icon is None:
-            base, lbase = self._find_3d_loc_for_axis()
+            base, lbase, dd = self._find_3d_loc_for_axis()
+
+            # 35 ia an arbiray limit to keep the arrow from getting too big.
+            scale = 0.1 if dd[0]*0.1 < 35 else 35./dd[0]
+            
             vecx = np.array([1, 0, 0.])
             vecy = np.array([0, 1, 0.])
             vecz = np.array([0, 0, 1.])            
 
-            pt1 = ptf2(base, vecx*2*lbase[0]/10)
+            pt1 = ptf2(base, vecx*2*lbase[0]*scale)
             v = np.vstack([arrow3d(base, 0.05/lbase[0], 0.25/lbase[0], vecx,
-                                   lbase[0]/10., lbase[0]/10.*0.8, m=13,
+                                   lbase[0]*scale, lbase[0]*scale*0.8, m=13,
                                    d1d2 = (vecy*lbase[1], vecz*lbase[2]) )])
 
             kwargs = {'facecolor': 'r', 'edgecolor': 'r', 'linewidth':0}
@@ -1283,9 +1289,9 @@ class Axes3DMod(Axes3D):
             a1._gl_repr_name = 'x arrow'
             a1._gl_isLast = True
             
-            pt2 = ptf2(base, vecy*2*lbase[1]/10)
+            pt2 = ptf2(base, vecy*2*lbase[1]*scale)
             v = np.vstack([arrow3d(base, 0.05/lbase[1], 0.25/lbase[1], vecy,
-                                   lbase[1]/10., lbase[1]/10.*0.8, m=13,
+                                   lbase[1]*scale, lbase[1]*scale*0.8, m=13,
                                    d1d2 = (vecx*lbase[0], vecz*lbase[2]) )])            
             kwargs = {'facecolor': 'g', 'edgecolor': 'g', 'linewidth':0}           
             a2 = self.plot_solid(v, **kwargs)
@@ -1294,9 +1300,9 @@ class Axes3DMod(Axes3D):
             a2._gl_repr_name = 'y arrow'
             a2._gl_isLast = True            
             
-            pt3 = ptf2(base, vecz*2*lbase[2]/10)
+            pt3 = ptf2(base, vecz*2*lbase[2]*scale)
             v = np.vstack([arrow3d(base, 0.05/lbase[2], 0.25/lbase[2], vecz,
-                                   lbase[2]/10., lbase[2]/10.*0.8, m=13,
+                                   lbase[2]*scale, lbase[2]*scale*0.8, m=13,
                                    d1d2 = (vecx*lbase[0], vecy*lbase[1]) )])                        
             kwargs = {'facecolor': 'b', 'edgecolor': 'b', 'linewidth':0}
             a3 = self.plot_solid(v, **kwargs)
