@@ -1943,10 +1943,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
             nverts = len(paths[0])
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()
-                if array_idx.shape[0] == l:
-                    array_idx = [array_idx]*counts[0]
-                elif array_idx.shape[0] == nverts:
+                if array_idx.shape[0] == nverts:
                     pass
+                elif array_idx.shape[0] == l:
+                    array_idx = [array_idx]*counts[0]
                 else:
                     assert False, "array_idx length should be the same as the number of vertex"
                 vertex_id = np.array(array_idx,

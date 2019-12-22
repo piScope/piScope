@@ -969,7 +969,6 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             glcanvas.frame_request(self, trans)
 #           renderer.do_stencil_test = self.do_stencil_test
             glcanvas.start_draw_request(self)
-
             if self._gl_3dpath is not None:
                 if isinstance(self._gl_3dpath[4], list):
                     renderer.gl_draw_path_collection(
