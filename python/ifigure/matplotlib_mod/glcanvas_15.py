@@ -567,11 +567,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              -minZ/near_clipping,
                              minZ/near_clipping,
                              minZ, maxZ, view_scale=self._gl_scale)
-            #projM = frustum(-minZ/dist,
-            #                 minZ/dist,
-            #                 -minZ/dist,
-            #                 minZ/dist,
-            #                 minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
             a = (dist+1.)/dist
@@ -2257,8 +2252,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def set_view_offset(self, offset_base=(0, 0, 0., 0)):
         offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))   # works clipping 9
-#        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0001, 0.)))   # works clipping 9.9
-#        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.000, 0.)))
+
         if self._use_frustum:
             self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
         else:

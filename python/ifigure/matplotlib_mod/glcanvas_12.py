@@ -26,6 +26,8 @@ attribList = [glcanvas.WX_GL_SAMPLES,
 vert_suffix = '_12.vert'
 frag_suffix = '_12.frag'
 
+#depth_stencil_format = GL_DEPTH24_STENCIL8
+depth_stencil_format = GL_DEPTH32F_STENCIL8
 
 class dummy(object):
     pass
@@ -351,7 +353,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         buf = glGenRenderbuffers(1)
         glBindRenderbuffer(GL_RENDERBUFFER, buf)
         glRenderbufferStorage(GL_RENDERBUFFER,
-                              GL_DEPTH24_STENCIL8,
+                              depth_stencil_format,
                               w, h)
         # glFramebufferRenderbuffer(GL_FRAMEBUFFER,
         #                          GL_DEPTH_ATTACHMENT,
@@ -359,7 +361,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         dbuf = glGenRenderbuffers(1)
         glBindRenderbuffer(GL_RENDERBUFFER, dbuf)
         glRenderbufferStorage(GL_RENDERBUFFER,
-                              GL_DEPTH24_STENCIL8,
+                              depth_stencil_format,                              
                               w, h)
         glBindRenderbuffer(GL_RENDERBUFFER, 0)
 
@@ -392,7 +394,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             smallbuf = glGenRenderbuffers(1)
             glBindRenderbuffer(GL_RENDERBUFFER, smallbuf)
             glRenderbufferStorage(GL_RENDERBUFFER,
-                                  GL_DEPTH24_STENCIL8,
+                                  depth_stencil_format,                                                                
                                   wim, him)
 
             texs.append(smallTexId)
