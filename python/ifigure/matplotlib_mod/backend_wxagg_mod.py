@@ -85,18 +85,21 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def onMouseWheel(self, evt):
         rot = evt.GetWheelRotation()
+        x = evt.GetX()
+        y = self.figure.bbox.height - evt.GetY()        
+
         if rot != 0 and self._pre_rot == 0:
             # start wheel
-            event = {'guiEvent': evt, 'start': True,
+            event = {'guiEvent': evt, 'start': True, 'x': x, 'y':y,
                      'end': False, 'direction': rot > 0}
         elif rot == 0 and self._pre_rot != 0:
             # end  wheel
-            event = {'guiEvent': evt, 'start': False,
+            event = {'guiEvent': evt, 'start': False, 'x': x, 'y':y,
                      'end': True, 'direction': rot > 0}
         elif rot == 0:
             event = None
         else:
-            event = {'guiEvent': evt, 'start': False,
+            event = {'guiEvent': evt, 'start': False, 'x': x, 'y':y,
                      'end': False, 'direction': rot > 0}
         self._pre_rot = rot
         try:

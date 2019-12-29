@@ -212,7 +212,7 @@ class navibar(ButtonPanel):
         if zoom_crs is None:
             from ifigure.utils.cbook import make_crs_list
             path1 = os.path.join(icondir, '16x16', 'zoom2.png')
-            path2 = os.path.join(icondir, '16x16', 'zoom2minus.png')
+            path2 = os.path.join(icondir, '16x16', 'zoom3minus.png')
             path3 = os.path.join(icondir, '16x16', 'zoom2menu.png')
             path4 = os.path.join(icondir, '16x16', 'zoom2minusmenu.png')
             globals()['zoom_crs'] = make_crs_list(
