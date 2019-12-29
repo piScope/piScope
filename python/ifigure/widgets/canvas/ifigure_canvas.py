@@ -882,11 +882,9 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
         
         for a in figaxes._artists:
             range_data[a] = {}
-            print("evt", evt.x, evt.y)
             xdata, ydata = transform_point(
                 a.transData.inverted(),
                 evt.x, evt.y)
-            print("data", xdata, ydata)
             sxdata, sydata = transform_point(
                 a.transData.inverted(),
                 st_event.x, st_event.y)
@@ -2668,7 +2666,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             # set scale accumulator for pan_sensitivity
             requests = self.make_range_request_pan(axes.figobj, auto=False)            
             action = UndoRedoArtistProperty(axes, 'gl_scale_accum',
-                                            axes._gl_scale_accum/val[3])
+                                            axes._gl_scale_accum*val[3])
             
             self.send_range_action(requests, '3D wheel', extra_actions = [action])
 
@@ -3135,7 +3133,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         # dprint1(str(header))
         if return_header:
             return header
-
+        
         p = None
         if (header["mode"] == 'obj' or
                 header["mode"] == 'axesobj'):
@@ -3186,6 +3184,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                          title="Paste Section",
                                          style=4)
                     if ret == 'yes':
+                        self.unselect_all()
                         for name, child in f_axes.get_children():
                             child.destroy()
                         # copying axes setting, here
