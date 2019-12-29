@@ -454,7 +454,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1f,  'farZ',  -maxZ)
 
         if self._use_frustum:
-            #projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
             projM = frustum(-minZ/near_clipping,
                             minZ/near_clipping,
                             -minZ/near_clipping,
@@ -462,7 +461,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                             minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
-            a = (dist+1.)/dist
+            a = dist/near_clipping            
             glOrtho(-a, a, -a, a, minZ, maxZ)
             projM = ortho(-a, a, -a, a, minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  0)

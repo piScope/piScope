@@ -569,7 +569,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
-            a = (dist+1.)/dist
+            a = dist/near_clipping
             projM = ortho(-a, a, -a, a, minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  0)
         projM = np.dot(self.M_extra, projM)

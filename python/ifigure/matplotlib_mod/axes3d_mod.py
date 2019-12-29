@@ -1214,8 +1214,9 @@ class Axes3DMod(Axes3D):
             b = -2*(zfront*zback)/(zfront-zback)
             perspM = np.array([[1, 0, 0, 0],
                                [0, 1, 0, 0],
-                               [0, 0, a, b],
-                               [0, 0, -1/10000., self.dist]
+                               [0, 0, b, a],
+                               [0, 0, 0, self.dist]                               
+                               ###[0, 0, -1/10000., self.dist]
                                ])
 
         if self._ignore_screen_aspect_ratio:
@@ -1299,7 +1300,7 @@ class Axes3DMod(Axes3D):
         self._3d_axes_icon = None
         
     def draw_3d_axes(self):
-        M = self._matrix_cache_combined        
+        M = self._matrix_cache_combined
         # M = self.get_proj()
 
         def ptf2(x, dx):        
