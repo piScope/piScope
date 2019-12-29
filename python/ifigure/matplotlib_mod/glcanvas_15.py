@@ -26,6 +26,8 @@ vert_suffix = '_15.vert'
 frag_suffix = '_15.frag'
 geom_suffix = '_15.geom'
 
+#depth_stencil_format = GL_DEPTH24_STENCIL8
+depth_stencil_format = GL_DEPTH32F_STENCIL8
 
 class dummy(object):
     pass
@@ -467,8 +469,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         otex = gen_tex(w, h, GL_RGBA12, GL_RGBA, GL_FLOAT)
         otex2 = gen_tex(w, h, GL_RGBA12, GL_RGBA, GL_FLOAT)
 
-        buf = gen_renderbuffer(w, h, GL_DEPTH24_STENCIL8)
-        dbuf = gen_renderbuffer(w, h, GL_DEPTH24_STENCIL8)
+        buf = gen_renderbuffer(w, h, depth_stencil_format)
+        dbuf = gen_renderbuffer(w, h, depth_stencil_format)
 
 
 #        if not check_framebuffer('creating new frame buffer'): return [None]*4
@@ -500,7 +502,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             smallbuf = glGenRenderbuffers(1)
             glBindRenderbuffer(GL_RENDERBUFFER, smallbuf)
             glRenderbufferStorage(GL_RENDERBUFFER,
-                                  GL_DEPTH24_STENCIL8,
+                                  depth_stencil_format,
                                   wim, him)
 
             texs.append(smallTexId)
@@ -560,12 +562,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1f,  'farZ',  -maxZ)
 
         if self._use_frustum:
-            #projM = frustum(-minZ/9., minZ/9., -minZ/9., minZ/9., minZ, maxZ)
             projM = frustum(-minZ/near_clipping,
-                            minZ/near_clipping,
-                            -minZ/near_clipping,
-                            minZ/near_clipping,
-                            minZ, maxZ, view_scale=self._gl_scale)
+                             minZ/near_clipping,
+                             -minZ/near_clipping,
+                             minZ/near_clipping,
+                             minZ, maxZ, view_scale=self._gl_scale)
+            #projM = frustum(-minZ/dist,
+            #                 minZ/dist,
+            #                 -minZ/dist,
+            #                 minZ/dist,
+            #                 minZ, maxZ, view_scale=self._gl_scale)
             self.set_uniform(glUniform1i,  'isFrust',  1)
         else:
             a = (dist+1.)/dist
@@ -2250,7 +2256,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return vbos
 
     def set_view_offset(self, offset_base=(0, 0, 0., 0)):
-        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))
+        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))   # works clipping 9
+#        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0001, 0.)))   # works clipping 9.9
 #        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.000, 0.)))
         if self._use_frustum:
             self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)

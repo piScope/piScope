@@ -188,6 +188,7 @@ class ArtGLHighlight(FigureImage):
     def remove(self):
         self.figure.artists.remove(self)
 
+from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 class Axes3DMod(Axes3D):
     pan_sensitivity = 5
@@ -217,13 +218,21 @@ class Axes3DMod(Axes3D):
         self._upvec = np.array([0, 0, 1])
         self._ignore_screen_aspect_ratio = True
         self._gl_scale = 1.0
+        self._gl_scale_accum = 1.0        
 
+    @property
+    def dist(self):
+        return  camera_distance
+    @dist.setter
+    def dist(self, value):
+        pass
+        
     def view_init(self, elev=None, azim=None):
         """
         Copied form Axes3D to play with self.dist
         """
-        from ifigure.matplotlib_mod.canvas_common import camera_distance
-        self.dist = camera_distance  # default 10
+
+        #self.dist = camera_distance
 
         if elev is None:
             self.elev = self.initial_elev
@@ -454,7 +463,7 @@ class Axes3DMod(Axes3D):
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
-    def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata):
+    def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
         #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
         #return test(self, xdata, ydata, sxdata, sydata)
@@ -466,25 +475,22 @@ class Axes3DMod(Axes3D):
         h = self._pseudo_h
 
         # dx, dy : normalized screen coordinate of center of zoom
-        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
-
+        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h, 0.05)
+        if updown == 'down':
+            df = 1./df
         # 3D axes range 
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
 
-        #midx = (minx+maxx)/2.
-        #midy = (miny+maxy)/2.
-        #midz = (minz+maxz)/2.
 
         center_move = self._screen_move_to_3d_move(-dp)
         minp = np.array([minx, miny, minz])
         maxp = np.array([maxx, maxy, maxz])
 
-        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2.0 + center_move
-        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2.0 + center_move        
+        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2 + center_move
+        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2 + center_move        
 
-        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2])
+        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2]), df
         
-
     def _on_move_mod(self, event):
         """
         added pan mode 
@@ -519,8 +525,10 @@ class Axes3DMod(Axes3D):
             rightvec = np.cross(self._upvec, p1)
             #dx = dx/np.sqrt(dx**2 + dy**2)/3.
             #dy = dy/np.sqrt(dx**2 + dy**2)/3.
+
             newp1 = p1 - (dx/w*rightvec + dy/h*self._upvec) * \
-                Axes3DMod.pan_sensitivity
+                Axes3DMod.pan_sensitivity *self._gl_scale_accum
+            
             newp1 = newp1/np.sqrt(np.sum(newp1**2))
             self._upvec = self._upvec - newp1*np.sum(newp1*self._upvec)
             self._upvec = self._upvec/np.sqrt(np.sum(self._upvec**2))
@@ -1163,10 +1171,11 @@ class Axes3DMod(Axes3D):
         else:
             V = np.array((0, 0, 1))
         V = self._upvec
+        viewM = view_transformation(E, R, V)
+        
         zfront, zback = -self.dist, self.dist
         #zfront, zback = self.dist-1, self.dist+1
 
-        viewM = view_transformation(E, R, V)
         if self._use_frustum:
             perspM = persp_transformation(zfront, zback)
         else:
@@ -1502,3 +1511,9 @@ class Axes3DMod(Axes3D):
 
         return center_move
                                 
+    def set_gl_scale_accum(self, value):
+        self._gl_scale_accum = value
+        
+    def get_gl_scale_accum(self):
+        return self._gl_scale_accum
+    

@@ -293,7 +293,7 @@ class RangeRequestMaker(object):
                 requests[key] = mrequests[key]
         return requests
 
-    def send_range_action(self, requests, menu_name='edit'):
+    def send_range_action(self, requests, menu_name='edit', extra_actions=None):
         from ifigure.widgets.undo_redo_history import GlobalHistory
 
         a = []
@@ -306,14 +306,11 @@ class RangeRequestMaker(object):
 #            f.append((ifigure.events, 'SendRangeChangedEvent', (key,)))
         if len(a) == 0:
             return
+        if extra_actions is not None:
+            a.extend(extra_actions)
         window = self.GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(
             a, finish_action=f, menu_name=menu_name)
-
-#        book = self._figure.figobj.get_figbook()
-#        import ifigure.events
-#        ifigure.events.SendPVDrawRequest(book, w=self, wait_idle=True)
-
 
 class AdjustableRangeHolder(object):
     '''
