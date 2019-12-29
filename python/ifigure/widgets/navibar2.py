@@ -212,7 +212,7 @@ class navibar(ButtonPanel):
         if zoom_crs is None:
             from ifigure.utils.cbook import make_crs_list
             path1 = os.path.join(icondir, '16x16', 'zoom2.png')
-            path2 = os.path.join(icondir, '16x16', 'zoom2minus.png')
+            path2 = os.path.join(icondir, '16x16', 'zoom3minus.png')
             path3 = os.path.join(icondir, '16x16', 'zoom2menu.png')
             path4 = os.path.join(icondir, '16x16', 'zoom2minusmenu.png')
             globals()['zoom_crs'] = make_crs_list(
@@ -1002,6 +1002,22 @@ class navibar(ButtonPanel):
     def ToggleZoomUpDown(self):
         self.zoom_up_down = 'up' if self.zoom_up_down == 'down' else 'down'
         self._set_zoomcxr()
+        
+    def ToggleZoomForward(self):
+        ### up -> donw if it is already down return False
+        if self.zoom_up_down == 'up':
+            self.ToggleZoomUpDown()
+            return True
+        else:
+            return False
+        
+    def ToggleZoomBackward(self):
+        ### down -> up if it is already up return False
+        if self.zoom_up_down == 'down':
+            self.ToggleZoomUpDown()
+            return True
+        else:
+            return False
 
     def ToggleZoomMenu(self):
         self.zoom_menu = 1 if self.zoom_menu == 0 else 0

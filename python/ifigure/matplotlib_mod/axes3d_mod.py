@@ -188,6 +188,7 @@ class ArtGLHighlight(FigureImage):
     def remove(self):
         self.figure.artists.remove(self)
 
+from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 class Axes3DMod(Axes3D):
     pan_sensitivity = 5
@@ -217,13 +218,21 @@ class Axes3DMod(Axes3D):
         self._upvec = np.array([0, 0, 1])
         self._ignore_screen_aspect_ratio = True
         self._gl_scale = 1.0
+        self._gl_scale_accum = 1.0        
 
+    @property
+    def dist(self):
+        return  camera_distance
+    @dist.setter
+    def dist(self, value):
+        pass
+        
     def view_init(self, elev=None, azim=None):
         """
         Copied form Axes3D to play with self.dist
         """
-        from ifigure.matplotlib_mod.canvas_common import camera_distance
-        self.dist = camera_distance  # default 10
+
+        #self.dist = camera_distance
 
         if elev is None:
             self.elev = self.initial_elev
@@ -437,7 +446,10 @@ class Axes3DMod(Axes3D):
 #        for obj in fig_axes.walk_tree():
 #            obj.switch_scale('coarse')
         Axes3D._button_press(self, evt)
-
+        
+    def _on_move_start(self):
+        get_glcanvas()._hittest_map_update = False
+        
     def _on_move(self, evt):
         if not self._mouse_hit:
             return
@@ -454,7 +466,7 @@ class Axes3DMod(Axes3D):
     def _on_move_done(self):
         get_glcanvas()._hittest_map_update = True
 
-    def calc_range_change_by_pan(self, xdata, ydata, sxdata, sydata):
+    def calc_range_change_zoom3d(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
         #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
         #return test(self, xdata, ydata, sxdata, sydata)
@@ -466,25 +478,50 @@ class Axes3DMod(Axes3D):
         h = self._pseudo_h
 
         # dx, dy : normalized screen coordinate of center of zoom
-        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h)
-
+        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h, 0.05)
+        if updown == 'down':
+            df = 1./df
         # 3D axes range 
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
 
-        #midx = (minx+maxx)/2.
-        #midy = (miny+maxy)/2.
-        #midz = (minz+maxz)/2.
 
         center_move = self._screen_move_to_3d_move(-dp)
         minp = np.array([minx, miny, minz])
         maxp = np.array([maxx, maxy, maxz])
 
-        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2.0 + center_move
-        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2.0 + center_move        
+        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2 + center_move
+        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2 + center_move        
 
-        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2])
+        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2]), df
+
+    def calc_range_change_wheel(self, xdata, ydata, sxdata, sydata, updown):
+        # this is to debug this method...
+        #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
+        #return test(self, xdata, ydata, sxdata, sydata)
+
+        r = -0.15 if updown == 'down' else 0.15
+        dx =  - (xdata + sxdata)/2.0 * r
+        dy =  - (ydata + sydata)/2.0 * r
+        dp = np.array((dx, dy))
         
+        w = self._pseudo_w
+        h = self._pseudo_h
 
+        # dx, dy : normalized screen coordinate of center of zoom
+        df = 1/0.95 if updown == 'down' else 0.95
+        # 3D axes range 
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
+
+        center_move = self._screen_move_to_3d_move(-dp)
+        minp = np.array([minx, miny, minz])
+        maxp = np.array([maxx, maxy, maxz])
+
+        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2 + center_move
+        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2 + center_move        
+
+        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2]), df
+    
     def _on_move_mod(self, event):
         """
         added pan mode 
@@ -519,8 +556,10 @@ class Axes3DMod(Axes3D):
             rightvec = np.cross(self._upvec, p1)
             #dx = dx/np.sqrt(dx**2 + dy**2)/3.
             #dy = dy/np.sqrt(dx**2 + dy**2)/3.
+
             newp1 = p1 - (dx/w*rightvec + dy/h*self._upvec) * \
-                Axes3DMod.pan_sensitivity
+                Axes3DMod.pan_sensitivity *self._gl_scale_accum
+            
             newp1 = newp1/np.sqrt(np.sum(newp1**2))
             self._upvec = self._upvec - newp1*np.sum(newp1*self._upvec)
             self._upvec = self._upvec/np.sqrt(np.sum(self._upvec**2))
@@ -1163,10 +1202,11 @@ class Axes3DMod(Axes3D):
         else:
             V = np.array((0, 0, 1))
         V = self._upvec
+        viewM = view_transformation(E, R, V)
+        
         zfront, zback = -self.dist, self.dist
         #zfront, zback = self.dist-1, self.dist+1
 
-        viewM = view_transformation(E, R, V)
         if self._use_frustum:
             perspM = persp_transformation(zfront, zback)
         else:
@@ -1174,8 +1214,9 @@ class Axes3DMod(Axes3D):
             b = -2*(zfront*zback)/(zfront-zback)
             perspM = np.array([[1, 0, 0, 0],
                                [0, 1, 0, 0],
-                               [0, 0, a, b],
-                               [0, 0, -1/10000., self.dist]
+                               [0, 0, b, a],
+                               [0, 0, 0, self.dist]                               
+                               ###[0, 0, -1/10000., self.dist]
                                ])
 
         if self._ignore_screen_aspect_ratio:
@@ -1193,15 +1234,17 @@ class Axes3DMod(Axes3D):
         self._matrix_cache_extra = M
 
         perspM = np.dot(M, perspM)
+        
+        M0 = np.dot(viewM, worldM)
+        M = np.dot(perspM, M0)
 
+        self._matrix_cache_combined = M
         # perspM is used to draw Axes,,,
         return worldM, viewM, perspM, E, R, V, self.dist
 
     def get_proj(self):
-        worldM, viewM, perspM, E, R, V, self.dist = self.get_proj2()
-        M0 = np.dot(viewM, worldM)
-        M = np.dot(perspM, M0)
-        return M
+        void = self.get_proj2()
+        return self._matrix_cache_combined
 
     def set_lighting(self, *args, **kwargs):
         if len(args) != 0:
@@ -1257,7 +1300,8 @@ class Axes3DMod(Axes3D):
         self._3d_axes_icon = None
         
     def draw_3d_axes(self):
-        M = self.get_proj()
+        M = self._matrix_cache_combined
+        # M = self.get_proj()
 
         def ptf2(x, dx):        
             #xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
@@ -1366,16 +1410,15 @@ class Axes3DMod(Axes3D):
         #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
         
-        if self._show_3d_axes:
-            self.remove_3daxes_artists()            
-            self.draw_3d_axes()
-            #for a in self._3d_axes_icon:
-            #    a().set_zorder(gl_len+1)
-        else:
-            self.remove_3daxes_artists()
-        
         if isSupportedRenderer(renderer):
             self._matrix_cache = self.get_proj2()
+
+            if self._show_3d_axes:
+                self.remove_3daxes_artists()            
+                self.draw_3d_axes()
+            else:
+                self.remove_3daxes_artists()
+            
             artists = []
 
             artists.extend(self.images)
@@ -1404,7 +1447,9 @@ class Axes3DMod(Axes3D):
                     return
             renderer._num_globj = gl_len
             renderer._k_globj = 0
-
+        else:
+            assert False, "Unsupported Renderer"
+            
         # axes3D seems to change frameon status....
         frameon = self.get_frame_on()
         self.set_frame_on(False)
@@ -1450,7 +1495,7 @@ class Axes3DMod(Axes3D):
         vmid =  (vmax + vmin)/2.0
         midx, midy, midz = vmid
         
-        M = self.get_proj()
+        M = self._matrix_cache_combined
 
         def vec2sc(vec):
             x = np.dot(M, (vec[0], vec[1], vec[2], 1))
@@ -1502,3 +1547,9 @@ class Axes3DMod(Axes3D):
 
         return center_move
                                 
+    def set_gl_scale_accum(self, value):
+        self._gl_scale_accum = value
+        
+    def get_gl_scale_accum(self):
+        return self._gl_scale_accum
+    

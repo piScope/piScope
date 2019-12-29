@@ -577,18 +577,20 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 
             if (ifigure._cursor_book is None or
                     ifigure._cursor_book() is None):
-                print('creating slice viewer')
+                #print('creating slice viewer')
                 book, viewer = app.open_newbook_in_newviewer(
                     SliceViewer)
 
                 ifigure._cursor_book = weakref.ref(book)
             book = ifigure._cursor_book()
             if not book.isOpen:
-                print('opening slice viewer')
+                if book.num_page() == 0:
+                    book.add_page()
                 viewer = app.open_book_in_newviewer(SliceViewer,
                                                     book)
             else:
                 viewer = app.find_bookviewer(book)
+                    
 #            data1, data2 = target.figobj.get_slice(x, y)
             data1, data2 = target.figobj.get_slice(evt.x, evt.y)
             if data1 is None:
@@ -1341,7 +1343,6 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         val = pickle.load(fid)
         for key in val:
             self.setp(key, val[key])
-        # print "loading  fig_axes data", val
         super(FigAxes, self).load_data(fid)
 
     def load_data2(self, data):

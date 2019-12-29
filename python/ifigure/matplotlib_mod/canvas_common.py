@@ -30,8 +30,11 @@ try:
 except ImportError:
     haveOpenGL = False
 
-near_clipping = 9.  # must be float (default 8)
-camera_distance = 10.  # must be float (default 10)
+    
+near_clipping = 45.    # must be float (default 8) = A
+camera_distance = 50.  # must be float (default 10) = B
+# I haven't check relations between these. Apparently, (B-A)/B = 1/10.?
+
 view_scale = 1.
 
 multisample = 1

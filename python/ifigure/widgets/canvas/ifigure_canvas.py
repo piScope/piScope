@@ -878,7 +878,8 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
 
         canvas = self.panel
         range_data = {}
-
+        extra_actions = None
+        
         for a in figaxes._artists:
             range_data[a] = {}
             xdata, ydata = transform_point(
@@ -887,11 +888,17 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
             sxdata, sydata = transform_point(
                 a.transData.inverted(),
                 st_event.x, st_event.y)
+            
             if figaxes.get_3d():
-                val = a.calc_range_change_by_pan(xdata, ydata, sxdata, sydata)
+                updown = canvas.toolbar.zoom_up_down
+                val = a.calc_range_change_zoom3d(xdata, ydata, sxdata, sydata, updown)
                 range_data[a]['x'] = val[0]
                 range_data[a]['y'] = val[1]
                 range_data[a]['z'] = val[2]
+                # set scale accumulator for pan_sensitivity            
+                extra_actions = [UndoRedoArtistProperty(a, 'gl_scale_accum',
+                                                        a._gl_scale_accum*val[3]), ]
+                
             else:
                 # work to expand/shrink range
                 if evt.x > st_event.x:
@@ -952,7 +959,7 @@ class ifigure_canvas_draghandler_zoom(draghandler_base2,
                 requests = canvas.make_range_request_zoom(figaxes, key, range,
                                                           False, a, requests=requests)
         requests = canvas.expand_requests(requests)
-        canvas.send_range_action(requests, 'zoom')
+        canvas.send_range_action(requests, 'zoom', extra_actions=extra_actions)
 
         self.expand_dir = 'both'
 #        self.panel.draw()
@@ -1875,12 +1882,21 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         if evt.guiEvent.GetKeyCode() == wx.WXK_SHIFT:
             if is3Dax and self._alt_shift_hit:
+                # select -> zoom up -> zoom down -> pan -> 3d zoom
                 if self.toolbar.mode == 'pan':
                     self.toolbar.ClickP1Button('3dzoom')
                 elif self.toolbar.mode == '3dzoom':
                     self.toolbar.ClickP1Button('select')
+                elif self.toolbar.mode == 'select':
+                    self.toolbar.ClickP1Button('zoom')
+                elif self.toolbar.mode == 'zoom':
+                    if self.toolbar.ToggleZoomForward():
+                        pass
+                    else:
+                       self.toolbar.ClickP1Button('pan')                        
                 else:
-                    self.toolbar.ClickP1Button('pan')
+                    self.toolbar.ClickP1Button('zoom')                    
+
             elif self.toolbar.mode == 'zoom':
                 self.toolbar.ToggleZoomUpDown()
             elif self.toolbar.mode == 'pan':
@@ -1894,12 +1910,22 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                     self._3d_rot_mode = 0
         elif evt.guiEvent.GetKeyCode() == wx.WXK_ALT:
             if is3Dax and self._alt_shift_hit:
+                # select -> 3dzoom -> pan -> zoom down -> zoom up
                 if self.toolbar.mode == 'zoom':
+                    if self.toolbar.ToggleZoomBackward():
+                        pass
+                    else:
+                       self.toolbar.ClickP1Button('select')                        
+                elif self.toolbar.mode == 'select':
                     self.toolbar.ClickP1Button('3dzoom')
-                elif self.toolbar.mode == '3dzoom':
-                    self.toolbar.ClickP1Button('select')
-                else:
+                elif self.toolbar.mode == '3dzoom':                    
+                    self.toolbar.ClickP1Button('pan')
+                elif self.toolbar.mode == 'pan':                                        
                     self.toolbar.ClickP1Button('zoom')
+                    self.toolbar.ToggleZoomForward()
+                else:
+                    self.toolbar.ClickP1Button('3dzoom')                                        
+
             elif self.toolbar.mode == 'zoom':
                 self.toolbar.ToggleZoomMenu()
             elif self.toolbar.mode == '3dzoom':
@@ -2610,28 +2636,40 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         if event['start']:
             self._wheel_start_range = axes.get_w_lims()
-
+            axes._on_move_start()
+            
         elif event['end']:
             # apparently this event is not returned on linux...
             self._wheel_end_range = axes.get_w_lims()
             requests = self.make_range_request_pan(axes.figobj, auto=False)
             #requests = self.expand_requests(requests)
+            axes._on_move_done()            
             self.send_range_action(requests, '3D zoom')
 
         else:
-            df = 0.05 if event['direction'] else -0.05
-            minx, maxx, miny, maxy, minz, maxz = axes.get_w_lims()
-            dx = (maxx-minx)*df
-            dy = (maxy-miny)*df
-            dz = (maxz-minz)*df
-            axes.set_xlim3d(minx - dx, maxx + dx)
-            axes.set_ylim3d(miny - dy, maxy + dy)
-            axes.set_zlim3d(minz - dz, maxz + dz)
+            range_data = {}
+            range_data[axes] = {}
+
+            # convert event point and axes center
+            xdata, ydata = axes.transData.inverted().transform((event['x'], event['y']))
+            x0, y0 = axes.transAxes.transform((0.5, 0.5))
+            sxdata, sydata = axes.transData.inverted().transform((x0, y0))
+
+            updown = 'up' if event['direction'] else 'down'
+            val = axes.calc_range_change_wheel(xdata, ydata, sxdata, sydata, updown)
+
+            axes.set_xlim3d(val[0])
+            axes.set_ylim3d(val[1])
+            axes.set_zlim3d(val[2])
             axes.figobj.set_bmp_update(False)
-            #axes._gl_scale = axes._gl_scale*(1.-df*2)
-            requests = self.make_range_request_pan(axes.figobj, auto=False)
-            self.send_range_action(requests, '3D zoom')
-            # self.draw_later()
+            
+            # set scale accumulator for pan_sensitivity
+            requests = self.make_range_request_pan(axes.figobj, auto=False)            
+            action = UndoRedoArtistProperty(axes, 'gl_scale_accum',
+                                            axes._gl_scale_accum*val[3])
+            
+            self.send_range_action(requests, '3D wheel', extra_actions = [action])
+
 
     def set_pmode(self):
         self.toolbar.ExitInsertMode()
@@ -2758,6 +2796,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                     requests = self.make_xyauto_request(
                         ax.figobj, 'z', requests=requests)
                     ax._gl_scale = 1.0
+                    ax._gl_scale_accum = 1.0                    
                 requests[ax.figobj] = ax.figobj.compute_new_range(
                     request=requests[ax.figobj])
                 self.send_range_action(requests, 'range')
@@ -3094,7 +3133,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         # dprint1(str(header))
         if return_header:
             return header
-
+        
         p = None
         if (header["mode"] == 'obj' or
                 header["mode"] == 'axesobj'):
@@ -3145,6 +3184,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                          title="Paste Section",
                                          style=4)
                     if ret == 'yes':
+                        self.unselect_all()
                         for name, child in f_axes.get_children():
                             child.destroy()
                         # copying axes setting, here
