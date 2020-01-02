@@ -2432,6 +2432,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         annote_selected = (len(self.selection) > 0 and
                            self.selection[0]() is not None and
+                           self.selection[0]().figobj is not None and                       
                            self.selection[0]().figobj.get_figaxes() is None)
 
         if (event.button == 1 and  self.toolbar.mode == '' and

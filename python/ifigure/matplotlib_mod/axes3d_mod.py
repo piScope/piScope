@@ -1091,11 +1091,9 @@ class Axes3DMod(Axes3D):
                 p0 = xyz[:, 0, :] - xyz[:, 1, :]
                 p1 = xyz[:, 0, :] - xyz[:, 2, :]
                 n1a = np.cross(p0, p1)
-                da = np.sqrt(np.sum(n1a**2, 1))
+                da = np.atleast_2d(np.linalg.norm(n1a, axis=1)).transpose()
                 da[da == 0.0] = 1.
-                n1a[:, 0] /= -da
-                n1a[:, 1] /= -da
-                n1a[:, 2] /= -da
+                n1a = -n1a/da
             else:
                 da = np.zeros(idxset.shape[0])
                 n1a = np.zeros((nverts, 3), dtype=np.float32)  # weight
@@ -1147,9 +1145,9 @@ class Axes3DMod(Axes3D):
                 n1a = (n1a.transpose()*f).transpose()
                 norms = table.dot(n1a)
                 '''
-            nn = np.sqrt(np.sum(norms**2, 1))
+            nn = np.atleast_2d(np.linalg.norm(norms, axis=1)).transpose()
             nn[nn == 0.0] = 1.
-            norms = norms/nn.reshape(-1, 1)
+            norms = norms/nn
 
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
