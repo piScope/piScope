@@ -174,7 +174,8 @@ def SendCloseFileEvent(td, w=None, file=None):
 #    handler.ProcessEvent(evt)
 
 
-def SendSelectionEvent(td, w=None, selections=[], mode='replace', useProcessEvent=True):
+def SendSelectionEvent(td, w=None, selections=[], multi_figobj=None, 
+                       mode='replace', useProcessEvent=True):
     # events sent when figobj is selected
     # selections can be self.selection or self.axes_selection
     if td is None:
@@ -189,6 +190,7 @@ def SendSelectionEvent(td, w=None, selections=[], mode='replace', useProcessEven
     evt.SetEventObject(deref_proxy(w))
     evt.event_name = 'selection'
     evt.mode = mode
+    evt.multi_figobj=multi_figobj
     handler = td.get_root_parent().app.GetEventHandler()
     post_process_event(evt, handler, useProcessEvent)
 #    handler.ProcessEvent(evt)

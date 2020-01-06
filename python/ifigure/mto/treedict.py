@@ -2094,6 +2094,10 @@ class TopTreeDict(TreeDict):
         # return MenuString, Handler, MenuImage
         return None
 
+    def get_trash(self):
+        wdir = self.getvar("wdir")
+        return os.path.join(wdir, '.trash')
+
     def set_app(self, app):
         self._app = weakref.proxy(app)
 

@@ -387,14 +387,6 @@ class ifigure_app(BookViewerFrame):
                     "Open Recent", self._recentmenu)
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
-#       self.save_project_menu = self.add_menu(
-#                     self.filemenu, wx.ID_ANY,
-#                     "Save Project", "Save Project",
-#                     self.onSave)
-#       self.update_save_project_menu(False)
-#       self.add_menu(self.filemenu, wx.ID_SAVEAS,
-#                     "Save Project As...", "Save Project",
-#                     self.onSaveAs)
         self.add_menu(self.filemenu, ID_SAVEDOC,
                       "Save Document", "Save current editor document",
                       self.onSaveDoc)

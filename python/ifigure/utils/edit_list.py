@@ -138,7 +138,7 @@ class FunctionButton(wx.Button):
             if hasattr(self._handler_obj, self._handler):
                 _handler = getattr(self._handler_obj, self._handler)
             else:
-                _hander = Noen
+                _hander = None
         else:
             _handler = self._handler
         if _handler is not None:

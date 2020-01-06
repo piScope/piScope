@@ -3433,16 +3433,22 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def onTD_Selection(self, evt):
         # when td was selected in other widget...
         figobj = evt.GetTreeDict()
-#      print 'onTD_Selection in ifigure_canvas', figobj.get_full_path()
-#      figobj=selections[0]().figobj
+
         if not self._figure.figobj.is_descendant(figobj):
             if len(self.selection) == 0:
                 return
 
         if len(evt.selections) != 0:
-            if evt.selections[0]() in figobj._artists:
-                evt.selections[0] = weakref.ref(figobj._artists[0])
+            if evt.multi_figobj is not None:
+                alist = sum([x._artists for x in evt.multi_figobj], [])
+            else:
+                alist = figobj._artists
+                
+            evt.selections = [weakref.ref(x().figobj._artists[0]) for x in evt.selections
+                              if  x() in alist]
 
+        alist = [x() for x in evt.selections]
+        
         mode = 0
         if (isinstance(figobj, FigObj) and
             not isinstance(figobj, FigPage) and
@@ -3462,20 +3468,19 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             for item in self.selection:
                 if len(evt.selections) == 0:
                     continue
-                if item() != evt.selections[0]():
+                if not item() in  alist:
                     self.unselect(item())
                 else:
                     flag = False
             if flag:
                 self.selection = evt.selections
-                #            for refa in self.selection:
-                #               refa().figobj.highlight_artist(True, artist=[refa()])
+
         if mode == 2:
             self.unselect_all()
             self.axes_selection = weakref.ref(figobj._artists[0])
         if mode == 3:
             self.axes_selection = weakref.ref(figobj._artists[0])
-
+            
         self.draw_later(refresh_hl=True)
 
     def px2norm(self, x, y):
