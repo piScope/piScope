@@ -308,7 +308,7 @@ class iFigureConfig(PrefComponent):
         else:
             text = 'yes'
         list = [["Model add-on path", s['usr_addon_dir'], 0, None],
-                ["Root work directory", s['root_work_directory'], 200, None],
+                ["Root work dir. (need restart)", s['root_work_directory'], 200, None],
                 ["WikiHelp front", s['wikihelp_front'], 0, None],
                 ["WikiHelp base", s['wikihelp_base'], 0, None],
                 ["Default keep book in proj", text, 1,
