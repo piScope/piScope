@@ -1883,7 +1883,10 @@ class ifigure_app(BookViewerFrame):
         viewer_class = evt.viewer
         viewer = self.open_book_in_newviewer(viewer_class, book,
                                              ipage=evt.ipage, kwargs=evt.kwargs)
-
+        if viewer is None:
+            print(self.proj.getvar("filename"))
+            return
+        
         if evt.isPropShown is not None:
             if viewer.isPropShown() != evt.isPropShown:
                 wx.CallAfter(viewer.toggle_property)
