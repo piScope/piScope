@@ -12,8 +12,14 @@ if __name__ == '__main__':
     import weakref
     import matplotlib
     import shutil
-    if 'forkserver' in mp.get_all_start_methods():
-       mp.set_start_method('forkserver')
+    
+    import platform
+    if platform.system() == 'Darwin':
+       mp.set_start_method('spawn')
+    else:
+       if 'forkserver' in mp.get_all_start_methods():
+           mp.set_start_method('forkserver')
+           
     matplotlib.use('WXAGG')
 
     '''

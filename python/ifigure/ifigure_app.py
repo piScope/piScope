@@ -669,12 +669,13 @@ class ifigure_app(BookViewerFrame):
                                                proj=self.proj)
 
     def onOpen(self, e=None, path=None):
-        from ifigure.utils.mp_tarzip import lc
-        if not lc.acquire(False):
+        from ifigure.utils.mp_tarzip import local_lc
+        if not local_lc.acquire(False):
             ret = dialog.message(
                 self, 'Save job is running.', 'Please wait', 0)
             return
-        lc.release()
+        local_lc.release()
+        
         if path is None:
             path = dialog.read(parent=self,  message="Select project (.pfz) to open",
                                wildcard='*.pfz')
@@ -1051,10 +1052,12 @@ class ifigure_app(BookViewerFrame):
                 self._go_closed_figure_mode()
 
     def onSave(self, e):
-        if not MPTarzip().isReady():
+        from ifigure.utils.mp_tarzip import local_lc
+        if not local_lc.acquire(False):
             ret = dialog.message(
                 self, 'Previous save job is still running.', 'Please wait', 0)
             return
+        
         path = self.proj.getvar("filename")
         if path is None:
             self.onSaveAs(e)
@@ -1096,11 +1099,11 @@ class ifigure_app(BookViewerFrame):
         if not self.proj.get_saved():
             title = title + '*'
 
-        from ifigure.utils.mp_tarzip import lc
-        if not lc.acquire(False):
+        from ifigure.utils.mp_tarzip import MPTarzip
+        if not MPTarzip().isReady():
             title = title + ' (save project in progress)'
-        else:
-            lc.release()
+        #else:
+        #    MPTarzip.lc.release()
         self.SetTitle(title)
 
     def set_proj_saved(self, value):
@@ -1127,12 +1130,13 @@ class ifigure_app(BookViewerFrame):
 #        self.SetTitle(':'.join(arr))
 
     def onSaveAs(self, e):
-        from ifigure.utils.mp_tarzip import lc
-        if not lc.acquire(False):
+        from ifigure.utils.mp_tarzip import local_lc
+        if not local_lc.acquire(False):
             ret = dialog.message(
                 self, 'Previous save job is still running.', 'Please wait', 0)
             return
-        lc.release()
+        #lc.release()
+        
         opath = self.proj.getvar("filename")
         owdir = self.proj.getvar("wdir")
         self.save_gui_setting()
@@ -1318,12 +1322,12 @@ class ifigure_app(BookViewerFrame):
 
     def onAppWindowClose(self, e):
 
-        from ifigure.utils.mp_tarzip import lc
-        if not lc.acquire(False):
+        from ifigure.utils.mp_tarzip import local_lc
+        if not local_lc.acquire(False):
             ret = dialog.message(
                 self, 'Save job is running. Application will close after \ndata is saved.', 'Please wait', 0)
-            lc.acquire()
-        lc.release()
+            local_lc.acquire()
+        #MPTarzip.lc.release()
 
         import multiprocessing
         children = multiprocessing.active_children()
