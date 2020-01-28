@@ -628,9 +628,9 @@ class JobMonitor(threading.Thread):
 
 
 class TaskBarIcon(wxTaskBarIcon):
-    TBMENU_OPENNEW = wx.NewId()
-    TBMENU_OPENED = wx.NewId()
-    TBMENU_CLOSE = wx.NewId()
+    TBMENU_OPENNEW = wx.NewIdRef(count=1)
+    TBMENU_OPENED = wx.NewIdRef(count=1)
+    TBMENU_CLOSE = wx.NewIdRef(count=1)
 
     def __init__(self, frame):
         wxTaskBarIcon.__init__(self, TBI_DOCK)

@@ -50,10 +50,10 @@ from ifigure.widgets.book_viewer_interactive import BookViewerInteractive
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('BookViewer')
 
-ID_KEEPDATA = wx.NewId()
-ID_HIDEAPP = wx.NewId()
-ID_WINDOWS = wx.NewId()
-ID_HDF_EXPORT = wx.NewId()
+ID_KEEPDATA = wx.NewIdRef(count=1)
+ID_HIDEAPP = wx.NewIdRef(count=1)
+ID_WINDOWS = wx.NewIdRef(count=1)
+ID_HDF_EXPORT = wx.NewIdRef(count=1)
 
 
 class FrameWithWindowList(wx.Frame):
@@ -319,10 +319,10 @@ class FramePlus(FrameWithWindowList):
     it also define self.finemenu and self.editmenu,
     and method to define cut/paste menu
     '''
-    ID_COPY = wx.NewId()
-    ID_PASTE = wx.NewId()
-    ID_COPYS = wx.NewId()
-    ID_PASTES = wx.NewId()
+    ID_COPY = wx.NewIdRef(count=1)
+    ID_PASTE = wx.NewIdRef(count=1)
+    ID_COPYS = wx.NewIdRef(count=1)
+    ID_PASTES = wx.NewIdRef(count=1)
 
     def __init__(self, *args,  **kargs):
         kargs["size"] = (10, 10)
@@ -470,15 +470,15 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     matplot and property editor
 
     '''
-    ID_PM = [wx.NewId() for x in range(16)]
-    ID_EXPORTBOOK = wx.NewId()
-    ID_EXPORTBOOK_AS = wx.NewId()
-    ID_SAVEIMAGE = wx.NewId()
+    ID_PM = [wx.NewIdRef(count=1) for x in range(16)]
+    ID_EXPORTBOOK = wx.NewIdRef(count=1)
+    ID_EXPORTBOOK_AS = wx.NewIdRef(count=1)
+    ID_SAVEIMAGE = wx.NewIdRef(count=1)
     ID_BOOKNONE_CHECK = ID_PM + [ID_EXPORTBOOK, ID_EXPORTBOOK_AS, ID_SAVEIMAGE]
-    ID_SAVEPROJAS = wx.NewId()
-    ID_SAVEPROJ = wx.NewId()
-    ID_LOCKSCALE = wx.NewId()
-    ID_SCREENRATIOLOCK = wx.NewId()
+    ID_SAVEPROJAS = wx.NewIdRef(count=1)
+    ID_SAVEPROJ = wx.NewIdRef(count=1)
+    ID_LOCKSCALE = wx.NewIdRef(count=1)
+    ID_SCREENRATIOLOCK = wx.NewIdRef(count=1)
     def __init__(self, *args, **kargs):
 
         # hisotry mode 0 : global history stack
@@ -515,7 +515,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         make sure that history is cleared. so that
         references hold in hisotry becomes None
         '''
-        self.history.clear()
+        if self.history is not None:
+            self.history.clear()
         self.history = None
 
     def onUpdateUI(self, evt):
@@ -1814,6 +1815,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 self.Destroy()
             evt.Skip()
 
+        self.canvas.close()
+        
 #    def close_figurebook(self):
 #        self.onWindowClose()
     def install_toolbar_palette(self, name, tasks,  mode='2D', refresh=None):

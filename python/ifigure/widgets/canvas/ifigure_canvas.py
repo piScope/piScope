@@ -217,7 +217,7 @@ class draghandler_base(object):
     def clean(self, canvas):
         self.a = None
         self.unbind_mpl()
-
+        self.st_event = None
 
 class draghandler_base2(draghandler_base):
     def bind_mpl(self, event):
@@ -1610,7 +1610,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 self.canvas.SetFocus()
         wx.CallAfter(func, self)
         evt.Skip()
-
+        
+    def close(self):
+        dprint2("process close window")
+        for dh in self.draghandlers:
+            dh.clean(None)
+        self.draghandlers = None
+        self.draghandler = None        
+        self.canvas.set_wheel_cb(None)
+        self.mpl_disconnect()
+        self.canvas = None
+        
     def hold_once(self, value=None):
         if value is None:
             return self._hold_once
@@ -1619,13 +1629,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def onCanvasFocus(self, e):
         # print 'get focus', self._figure.figobj
-        self.mpl_connect(mode=self._mpl_mode)
+        if not self.canvas is None:
+            self.mpl_connect(mode=self._mpl_mode)
         e.Skip()
 
     def onCanvasKillFocus(self, e):
         # print 'kill focus'
         #       self.mpl_connect(mode = self._mpl_mode)
-        self.mpl_disconnect()
+        if not self.canvas is None:        
+            self.mpl_disconnect()
         e.Skip()
 
     def enter_layout_mode(self):

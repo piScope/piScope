@@ -179,7 +179,7 @@ class PanelCheckbox(object):
         for i, pinfo, cb in pinfos:
             #            m = root2.Append(wx.ID_ANY, pinfo["name"],
             if not pinfo["message"] in ID_LIST:
-                ID_LIST[pinfo["message"]] = wx.NewId()
+                ID_LIST[pinfo["message"]] = wx.NewIdRef(count=1)
             id = ID_LIST[pinfo["message"]]
 
             m = root2.Append(id, pinfo["name"],
@@ -225,9 +225,9 @@ class PanelCheckbox(object):
 
     def primary_client(self, *args):
         if len(args) == 0:
-            return self.root_parent()._primary_client
+            return self.root_parent()._primary_client()
         else:
-            self.root_parent()._primary_client = args[0]
+            self.root_parent()._primary_client = weakref.ref(args[0])
 
     def menu_handler(self, evt, pinfo=None, cb=None):
         #self == root

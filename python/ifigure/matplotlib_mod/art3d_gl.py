@@ -1,3 +1,7 @@
+import numpy as np
+import weakref
+import threading
+
 from matplotlib.image import AxesImage
 from matplotlib.patches import Polygon
 from ifigure.matplotlib_mod.is_supported_renderer import isSupportedRenderer
@@ -10,8 +14,6 @@ from mpl_toolkits.mplot3d.art3d import PathPatch3D, juggle_axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3D, Patch3D
 from matplotlib.collections import Collection, LineCollection, \
     PolyCollection, PatchCollection, PathCollection
-import numpy as np
-import weakref
 
 # matplotlib
 try:

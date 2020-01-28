@@ -6,6 +6,8 @@ import time
 import wx
 import weakref
 import array
+import gc
+
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
 import matplotlib
@@ -56,7 +58,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.artists_data = weakref.WeakKeyDictionary()
         self.frame_list = weakref.WeakKeyDictionary()
         self.vbo = weakref.WeakKeyDictionary()
-#        self.gc = weakref.WeakKeyDictionary()
+        self.vbo_check = {}
         self._do_draw_mpl_artists = False
         self._draw_request = None
         self._do_depth_test = True
@@ -96,7 +98,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     if hasattr(a, 'figobj') and a.figobj is None:
                         del self.artists_data[aa][a]
                         del self.vbo[aa][a]
-
+                        
+    def gc_vbo_dict(self):
+        names = []
+        for aa in self.vbo:
+            tmp = [str(id(a)) + '_' + str(id(aa)) for a in self.vbo[aa]]
+            names.extend(tmp)
+        del_names = [n for n in self.vbo_check if not n in names]
+        for n in del_names:
+            #print("deleteing n", n)
+            del self.vbo_check[n]
+        gc.collect()
+        
     def set_depth_test(self):
         if self._do_depth_test:
             glEnable(GL_DEPTH_TEST)
@@ -139,6 +152,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDeleteFramebuffers(len(frames), self.frames)
         if len(self.bufs) > 0:
             glDeleteRenderbuffers(len(bufs), self.bufs)
+        self.vbo_check = None
 
     def start_draw_request(self, artist):
         self._draw_request = artist
@@ -754,6 +768,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                GL_TEXTURE_2D, texs[4], 0)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+       
     def do_draw_artists(self, tag,  update_id=False, do_clear=None,
                         draw_solid=True,
                         draw_non_solid=True,
@@ -828,7 +843,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     xxx[k] = m(xxx[k], *data[1], **data[2])
                     m = getattr(self, 'draw_' + data[0])
                     m(xxx[k], *data[1], **data[2])
+                    
                 self.vbo[aa][a] = xxx
+                self.vbo_check[str(id(a)) + '_' + str(id(aa))] = xxx
+                
                 id_dict[int(current_id)] = weakref.ref(a)
                 current_id = current_id + 1
         # glFinish()
@@ -893,7 +911,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def draw_mpl_artists(self, tag):
         self._use_frustum = tag._use_frustum
         self._use_clip = tag._use_clip
+        
         self.gc_artist_data()
+        self.gc_vbo_dict()
+        
         if MyGLCanvas.offscreen:
             w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(tag)
             frame = frames[0]

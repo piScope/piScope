@@ -46,6 +46,7 @@ basedir = os.path.dirname(__file__)
 def compile_file(file, mode):
     fid = open(os.path.join(basedir, file), 'r')
     prog = ''.join(fid.readlines())
+    fid.close()
     pl = shaders.compileShader(prog, mode)
     return pl
 

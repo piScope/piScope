@@ -163,10 +163,10 @@ class EditorPanel(wx.Panel):
     pass
 
 
-ID_DETACH_EDITOR = wx.NewId()
-ID_SAVEDOC = wx.NewId()
-ID_SAVEASDOC = wx.NewId()
-ID_RECENT = wx.NewId()
+ID_DETACH_EDITOR = wx.NewIdRef(count=1)
+ID_SAVEDOC = wx.NewIdRef(count=1)
+ID_SAVEASDOC = wx.NewIdRef(count=1)
+ID_RECENT = wx.NewIdRef(count=1)
 
 RECENT_FILE = deque(['']*10, 10)
 

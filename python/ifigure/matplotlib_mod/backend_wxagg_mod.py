@@ -35,6 +35,9 @@ import matplotlib
 import wx
 import weakref
 import array
+import sys
+import gc
+
 from matplotlib.backends.backend_wx import FigureCanvasWx as Canvas
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as CanvasAgg
 from matplotlib.backends.backend_wx import RendererWx
@@ -83,6 +86,9 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._wheel_cb = None
         self._pre_rot = 0
 
+    def __del__(self):
+        dprint1("FigureCanvasWxAggMod __del__")
+        
     def onMouseWheel(self, evt):
         rot = evt.GetWheelRotation()
         x = evt.GetX()
@@ -340,12 +346,12 @@ class FigureCanvasWxAggMod(CanvasAgg):
         prepare renderer.bitmap 
         '''
         self.renderer.clear()
+        
         try:
             func(self.renderer, **kargs)
         except:
             dprint1("make_buffer_image faield")
-            #import traceback
-            #traceback.print_exc()
+
         return self._bufferstring2image()
 
     def make_axes_image(self):
@@ -394,6 +400,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
                 a.figobj.set_bmp(image.copy(), x, y)
                 axes_darty = True
+
         return dsu, axes_darty
 
     def _draw_floating_axes(self):
@@ -447,6 +454,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
                 
         # print h, w
         img = img.reshape((int(h), int(w), 4))
+        
         if box is not None:
             a = int(max((np.floor(h-box[3]), 0)))
             b = int(min((np.floor(h-box[1])+2, h-1)))

@@ -31,7 +31,8 @@ EXTRA=''
 EXTRA2=''
 EXTRA3=''
 EXTRA4=''
-while getopts "r:e:f:sdchpngku" opts
+PY_DEBUG=''
+while getopts "r:e:f:sdchpngkuX" opts
 do 
    case $opts in
       e) INTERPRETER=$OPTARG
@@ -41,6 +42,8 @@ do
       s) EXTRA='-s'
          ;;
       d) EXTRA2='-d'
+         ;;
+      X) PY_DEBUG='-Wd'
          ;;
       c) EXTRA2='-c'
          ;;
@@ -64,8 +67,8 @@ done
 shift `expr ${OPTIND} - 1`
 
 ME=`python -c "import os,sys;print(os.path.realpath('$0'))"`
-#ME=$(`python -c 'import os,sys;print os.path.realpath(sys.argv[1])' $0`)
 echo $ME
+
 #echo $DYLD_LIBRARY_PATH ## On MacOS El Capitan, this is not carried if
                          ## #!/bin/bash -l is not used....
 MEDIR=$(dirname $ME)
@@ -77,8 +80,23 @@ DIR=$(dirname $MEDIR)
 # python add script directory in search path 
 APP=$DIR/python/piscope.py
 
+VERMAJOR=$($INTERPRETER -c "import sys;print(sys.version_info.major)")
+VERMINOR=$($INTERPRETER -c "import sys;print(sys.version_info.minor)")
+
+if [ $VERMAJOR = 2 ]; then
+   PY_DEBUG=''
+else
+    if [ $VERMINOR -gt 6 -a ! "${PY_DEBUG}" = '' ]; then
+	PY_DEBUG='-X dev'
+    fi
+fi
+
+if [ ! "${PY_DEBUG}" = '' ]; then
+    echo "PY DEBUG option" $PY_DEBUG
+fi
+
 if ! [ -x "$(command -v unbeffer)" ]; then
-   $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+   $INTERPRETER $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
 else
    if [ -z ${UNSUPPRESS_GTK+x} ];then
        unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"

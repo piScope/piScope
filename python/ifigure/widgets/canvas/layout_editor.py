@@ -127,7 +127,7 @@ class layout_editor_popup(wx.Menu):
     def __init__(self, parent):
         super(layout_editor_popup, self).__init__(
             style=wx.WS_EX_PROCESS_UI_UPDATES)
-        self.parent = parent
+        self.parent = weakref.ref(parent)
         self.mmi = []
         m = ["Split", "Merge", "Swap", "Distribute Horizontally",
              "Distribute Vertically",
@@ -151,8 +151,8 @@ class layout_editor_popup(wx.Menu):
             self.mmi.append(mmi)
 
     def onSplit(self, e):
-        dialog = AskRC(self.parent, wx.ID_ANY, "Split Subplot")
-        le = self.parent.layout_editor
+        dialog = AskRC(self.parent(), wx.ID_ANY, "Split Subplot")
+        le = self.parent().layout_editor
         if dialog.ShowModal() == wx.ID_OK:
             rc = dialog.GetValue()
             area = le.area_hit
@@ -167,43 +167,43 @@ class layout_editor_popup(wx.Menu):
         dialog.Destroy()
 
     def onMerge(self, e):
-        self.parent.layout_editor._wait4merge = True
-        self.parent.layout_editor._merge_a = self.parent.layout_editor.area_hit
+        self.parent().layout_editor._wait4merge = True
+        self.parent().layout_editor._merge_a = self.parent().layout_editor.area_hit
 
     def onSwap(self, e):
-        self.parent.layout_editor._wait4swap = True
-        self.parent.layout_editor._swap_a = self.parent.layout_editor.area_hit
+        self.parent().layout_editor._wait4swap = True
+        self.parent().layout_editor._swap_a = self.parent().layout_editor.area_hit
 
     def onDistH(self, e):
-        self.parent.layout_editor.distH(self.parent.layout_editor.area_hit)
+        self.parent().layout_editor.distH(self.parent().layout_editor.area_hit)
 
     def onDistV(self, e):
-        self.parent.layout_editor.distV(self.parent.layout_editor.area_hit)
+        self.parent().layout_editor.distV(self.parent().layout_editor.area_hit)
 
     def onCommBtm(self, e):
-        self.parent.layout_editor.apply_bottom_only(
-            self.parent.layout_editor.area_hit)
+        self.parent().layout_editor.apply_bottom_only(
+            self.parent().layout_editor.area_hit)
 
     def onCommLft(self, e):
-        self.parent.layout_editor.apply_left_only(
-            self.parent.layout_editor.area_hit)
+        self.parent().layout_editor.apply_left_only(
+            self.parent().layout_editor.area_hit)
 
     def onSortRow(self, e):
         from ifigure.events import SendChangedEvent
-        self.parent._figure.figobj.sort_axes_row()
-        self.parent.layout_editor.draw()
-        fig = self.parent._figure.figobj
+        self.parent()._figure.figobj.sort_axes_row()
+        self.parent().layout_editor.draw()
+        fig = self.parent()._figure.figobj
         SendChangedEvent(fig, w=None, useProcessEvent=False)
 
     def onSortCol(self, e):
         from ifigure.events import SendChangedEvent
-        self.parent._figure.figobj.sort_axes_col()
-        self.parent.layout_editor.draw()
-        fig = self.parent._figure.figobj
+        self.parent()._figure.figobj.sort_axes_col()
+        self.parent().layout_editor.draw()
+        fig = self.parent()._figure.figobj
         SendChangedEvent(fig, w=None, useProcessEvent=False)
 
     def onResetCommon(self, evt):
-        fig = self.parent._figure
+        fig = self.parent()._figure
         f_page = fig.figobj
         ac = []
         request = []
@@ -215,15 +215,15 @@ class layout_editor_popup(wx.Menu):
             request.append(('m', f_page.get_iaxes(f_axes), f_axes.get_area()))
 
         # finish up
-        send_area_request(self.parent, request=request,
+        send_area_request(self.parent(), request=request,
                           ac=ac, name='reset common axis')
 
     def update_ui(self):
-        if self.parent.axes_selection() is None:
+        if self.parent().axes_selection() is None:
             return False
-        if self.parent.axes_selection().figobj is None:
+        if self.parent().axes_selection().figobj is None:
             return False
-        if any(self.parent.axes_selection().figobj.get_edge_only()):
+        if any(self.parent().axes_selection().figobj.get_edge_only()):
             self.mmi[-1].Enable(True)
         else:
             self.mmi[-1].Enable(False)
@@ -233,7 +233,7 @@ class layout_editor_popup(wx.Menu):
 
 class layout_editor(object):
     def __init__(self, parent):
-        self.parent = weakref.proxy(parent)
+        self.parent = weakref.ref(parent)
         self.area = []
         self.rect = []
         self.fig_hl = []  # used to draw area
@@ -260,15 +260,15 @@ class layout_editor(object):
 
     @property
     def canvas(self):
-        return self.parent
+        return self.parent()
 
     @property
     def mpl_canvas(self):
-        return self.parent.canvas
+        return self.parent().canvas
 
     @property
     def figure(self):
-        return self.parent._figure
+        return self.parent()._figure
 
     def enter_layout_mode(self):
         self. _load_canvas_value()

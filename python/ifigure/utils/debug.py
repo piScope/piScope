@@ -87,3 +87,4 @@ def set_level(name, level):
 def init_dprints(name, level=debug_default_level):
     set_level(name, level)
     return prints(name)
+

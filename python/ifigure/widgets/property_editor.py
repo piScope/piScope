@@ -52,7 +52,7 @@ class property_editor(wx.Panel):
         self.SetSizer(sizer)
 #        self.SetSizeHints(250, -1, maxW=250)
         self.Layout()
-        self.parent = parent
+#        self.parent = parent
         self.CP1.GetSizer().Layout()
 
         # initial setting
@@ -70,6 +70,10 @@ class property_editor(wx.Panel):
         # Debug messages.
         self._panel_shown_flag = [True, False, False]
 
+    @property
+    def parent(self):
+        return self.GetParent()
+    
     def set_sizehint(self):
         if (property_editor.screen_width == None
                 or property_editor.screen_width == 0):

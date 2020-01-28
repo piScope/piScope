@@ -991,6 +991,7 @@ def LoadScriptFile(file):
     except:
         print(traceback.format_exc())
         raise
+    f.close()
     return txt, code, mtime
 
 
