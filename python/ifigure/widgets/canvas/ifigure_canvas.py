@@ -132,8 +132,11 @@ class guiEventCopy(object):
                  'LeftUp',
                  'GetEventObject',
                  'AltDown',
-                 'ControlDown']
+                 'ControlDown',
+                 'GetX',
+                 'GetY']
         for name in methods:
+            if not hasattr(guiEvent, name): continue
             m = getattr(guiEvent, name)
             setattr(self, '_'+name, m())
 
@@ -150,7 +153,13 @@ class guiEventCopy(object):
         return self._ControlDown
         
     def AltDown(self):
-        return self._AltDown        
+        return self._AltDown
+    
+    def GetX(self):
+        return self._GetX
+    
+    def GetY(self):
+        return self._GetY
     
 class ifigure_DropTarget(wx.TextDropTarget):
     def __init__(self, canvas):
