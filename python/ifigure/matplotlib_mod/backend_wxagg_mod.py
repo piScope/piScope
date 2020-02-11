@@ -87,7 +87,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._pre_rot = 0
 
     def __del__(self):
-        dprint1("FigureCanvasWxAggMod __del__")
+        dprint2("FigureCanvasWxAggMod __del__")
         
     def onMouseWheel(self, evt):
         rot = evt.GetWheelRotation()

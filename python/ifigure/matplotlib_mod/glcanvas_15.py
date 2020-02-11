@@ -497,8 +497,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         bufs = [buf, dbuf]
 
         if multisample > 1:
-            wim = w/multisample
-            him = h/multisample
+            wim = w//multisample
+            him = h//multisample
 
             frame2 = glGenFramebuffers(1)
             glBindFramebuffer(GL_FRAMEBUFFER, frame2)
