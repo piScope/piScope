@@ -183,6 +183,12 @@ class property_editor(wx.Panel):
         else:
             self.b2.SetValue(True)
         self.CP2.GetSizer().Layout()
+
+        # set selected axes to panel 
+        canvas = self.get_canvas()
+        ax = canvas.axes_selection()
+        self.CP2.set_axes(ax)
+ 
         self.CP2.update_panel()
         self.OnPaneChanged()
         self.CP2.Layout()

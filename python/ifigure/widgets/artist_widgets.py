@@ -1490,7 +1490,15 @@ class panel2(artist_widgets):
                     self.mode].get_selected_page_text()
 
             self.update_panel()
-
+            
+    def set_axes(self, ax):
+        if ax is None:
+            self.ax = None
+            self.enable(False)
+        else:
+            self.ax = weakref.ref(ax)
+            self.enable(True)
+        
     def onEL_Changed(self, evt):
         actions, name = evt.artist_panel.set_artist_property(evt)
         if actions is None:
