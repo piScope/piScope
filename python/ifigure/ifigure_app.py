@@ -1057,9 +1057,10 @@ class ifigure_app(BookViewerFrame):
             ret = dialog.message(
                 self, 'Previous save job is still running.', 'Please wait', 0)
             return
-        
+
         path = self.proj.getvar("filename")
         if path is None:
+            local_lc.release()                    
             self.onSaveAs(e)
         else:
             self.save_gui_setting()
@@ -1135,8 +1136,7 @@ class ifigure_app(BookViewerFrame):
             ret = dialog.message(
                 self, 'Previous save job is still running.', 'Please wait', 0)
             return
-        #lc.release()
-        
+
         opath = self.proj.getvar("filename")
         owdir = self.proj.getvar("wdir")
         self.save_gui_setting()
@@ -1165,7 +1165,9 @@ class ifigure_app(BookViewerFrame):
             if not path in RECENT_FILE:
                 RECENT_FILE.append(path)
                 self.write_recent_files()
-
+        else:
+            local_lc.release()
+            
     def onSaveFile(self, e=None, saveas=False):
         self.script_editor.SaveFile(saveas)
 
