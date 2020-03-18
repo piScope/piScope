@@ -15,7 +15,8 @@ import os
 from ifigure.utils.wx3to4 import TextEntryDialog, deref_proxy
 
 
-def read(parent=None, message='Select file to read', wildcard='*', defaultfile=''):
+def read(parent=None, message='Select file to read', wildcard='*', defaultfile='',
+         defaultdir = ''):
 
     open_dlg = wx.FileDialog(parent, message=message,
                              wildcard=wildcard, style=wx.FD_OPEN)
@@ -23,6 +24,9 @@ def read(parent=None, message='Select file to read', wildcard='*', defaultfile='
         open_dlg.SetFilename(os.path.basename(defaultfile))
         if os.path.dirname(defaultfile) != '':
             open_dlg.SetDirectory(os.path.dirname(defaultfile))
+    if defaultdir != '':
+        open_dlg.SetDirectory(defaultdir)
+            
     path = ''
     if open_dlg.ShowModal() == wx.ID_OK:
         path = open_dlg.GetPath()

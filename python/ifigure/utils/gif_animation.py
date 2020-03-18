@@ -22,4 +22,6 @@ def save_animation(func, params, canvas, filename='animation.gif',
         images[0].save(filename,
                        save_all=True,
                        append_images=images[1:],
-                       optimize=False, duration=duration, loop=1)
+                       optimize=False,
+                       duration=duration*1000,  # this parameter is ms
+                       loop=0)
