@@ -428,7 +428,7 @@ class TreeDict(object):
         if name is not None:
             names = self.get_childnames()
             c = names.count(name)
-            if c is 0:
+            if c == 0:
                 return None
             idx = names.index(name)
             return self._d[idx]

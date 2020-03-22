@@ -798,31 +798,31 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             if not isTop:
                 base.AppendSeparator()
             continue
-        elif s[0] is '+':
+        elif s[0] == '+':
             new_base = wx.Menu()
             menu_Append(base, id, s[1:], new_base)
             base = new_base
             isTop = True
             mmm = base
-        elif s[0] is '!':
+        elif s[0] == '!':
             base = base.GetParent()
             isTop = False
         else:
             isTop = False
-            if s[0] is '-':
+            if s[0] == '-':
                 mmi = wx.MenuItem(base, id, s[1:])
-            elif s[0] is '*':
+            elif s[0] == '*':
                 mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
-            elif s[0] is '^':
+            elif s[0] == '^':
                 mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
             else:
                 mmi = wx.MenuItem(base, id, s)
             if bmp is not None:
                 mmi.SetBitmap(bmp)
             menu_AppendItem(base, mmi)
-            if s[0] is '^':
+            if s[0] == '^':
                 mmi.Check(True)
-            if s[0] is '-':
+            if s[0] == '-':
                 mmi.Enable(False)
 
             def func(evt, handler=h, obj=eventobj, extra=i,

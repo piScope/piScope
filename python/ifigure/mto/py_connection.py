@@ -234,11 +234,11 @@ class PyConnection(TreeDict):
         return p
         '''
         
-    def Execute(self, command, nowait=False, nocheck=False):
+    def Execute(self, command, nowait=False, nocheck=False, force_ssh=False):
         server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
                                                    'user', 'use_ssh', 'nocheck')
         if nocheck is None:  nocheck = False
-        if use_ssh:
+        if use_ssh or force_ssh:
             command = 'ssh -x -p '+str(port)+' ' + \
                 user+'@'+server + ' "' + command + '"'
             args = shlex.split(command)

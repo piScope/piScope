@@ -156,7 +156,7 @@ class AbsModule(object):
             setattr(self._m_co, 'debug', self._debug)
 
     def check_filenew(self):
-        if self._m_file is '':
+        if self._m_file == '':
             return False
         if os.path.exists(self._m_file):
             return (os.path.getmtime(self._m_file) >
