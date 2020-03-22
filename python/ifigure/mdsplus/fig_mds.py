@@ -364,7 +364,7 @@ class FigMds(FigGrp):
     def set_mdsevent(self, value, a=None):
         self.setvar('event', value)
         # update viewers event wait list (if it is opened by mdsscope)
-        if value is not '':
+        if value != '':
             book = self.get_figbook()
             if book is None:
                 return
@@ -479,8 +479,8 @@ class FigMds(FigGrp):
         exp = get_mdsexpr('experiment', self.getvar(), dwglobal)
         node = ''
         if (self.getvar('default_node') is None or
-                self.getvar('default_node') is ''):
-            if (self.getvar('experiment') is '' or
+                self.getvar('default_node') == ''):
+            if (self.getvar('experiment') == '' or
                     self.getvar('experiment') is None):
                 # if both default node and experiment is blank
                 node = get_mdsexpr('default_node', self.getvar(), dwglobal)

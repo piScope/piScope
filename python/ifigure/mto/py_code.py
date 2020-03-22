@@ -458,7 +458,7 @@ class AbsScriptContainer(object):
                 ifigure.__path__[0], 'template', 'script', '_blank_script.py')
 
         child = py_script.PyScript()
-        if name is '':
+        if name == '':
             iname = '_'.join([x for x in os.path.basename(temp)[
                              :-3].split('_') if len(x) != 0])
             if parent is None:

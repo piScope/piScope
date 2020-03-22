@@ -153,7 +153,7 @@ def triplot(ax, *args, **kwargs):
 
     # Draw lines without markers, if lines are required.
     a = []
-    if linestyle is not None and linestyle is not 'None':
+    if linestyle is not None and linestyle != 'None':
         kw = kwargs.copy()
         kw.pop('marker', None)     # Ignore marker if set.
         kw['linestyle'] = ls_mapper[linestyle]

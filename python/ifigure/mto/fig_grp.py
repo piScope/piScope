@@ -236,7 +236,7 @@ class FigGrp(FigObj):
             extra = {"child_artist": self._artists[0]}
             # if edge or point was picked, it does not check
             # the children
-            if type is not 'area':
+            if type !=  'area':
                 return hit, extra
 
         children = reversed(

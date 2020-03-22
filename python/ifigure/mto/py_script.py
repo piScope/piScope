@@ -183,7 +183,7 @@ class AbsScript(object):
     def load_script(self, file):
         if file is None:
             return
-        if file is '':
+        if file == '':
             return
         try:
             a, b, c = cbook.LoadScriptFile(file)
