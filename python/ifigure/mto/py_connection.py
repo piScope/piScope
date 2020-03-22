@@ -240,7 +240,7 @@ class PyConnection(TreeDict):
         if nocheck is None:  nocheck = False
         if use_ssh or force_ssh:
             command = 'ssh -x -p '+str(port)+' ' + \
-                user+'@'+server + ' '' + command + '''
+                user+'@'+server + " '" + command + "'"
             args = shlex.split(command)
             kargs = {}
             args = command
