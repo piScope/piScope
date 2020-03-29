@@ -28,6 +28,7 @@ import os
 import time
 import webbrowser
 import weakref
+import platform
 import ifigure.utils.pickle_wrapper as pickle
 import wx.aui as aui
 import ifigure
@@ -55,6 +56,14 @@ ID_HIDEAPP = wx.NewIdRef(count=1)
 ID_WINDOWS = wx.NewIdRef(count=1)
 ID_HDF_EXPORT = wx.NewIdRef(count=1)
 
+if platform.system() == 'Darwin':
+    def internal_idl(obj):
+        if wx.UpdateUIEvent.CanUpdate(obj) and obj._menu_open:
+            obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
+else:            
+    def internal_idl(obj):
+        if wx.UpdateUIEvent.CanUpdate(obj):
+            obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
 
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -84,19 +93,15 @@ class FrameWithWindowList(wx.Frame):
         self._count = 0
         self._menu_open = False
         
+
     def OnInternalIdle(self):
-        self._count += 1
-        print("OnInternalIdle")
-        if wx.UpdateUIEvent.CanUpdate(self) and self._menu_open:
-            self.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)        
+        internal_idl(self)
         
     def onMenuOpen(self, evt):
-        print("MenuOpen", evt)
         self._menu_open = True
         
     def onMenuClose(self, evt):
         self._menu_open = False        
-        print("MenuClose", evt)
         
     def turn_on_updateui_event(self):
         pass
