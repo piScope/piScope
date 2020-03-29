@@ -22,6 +22,8 @@ if __name__ == '__main__':
            
     matplotlib.use('WXAGG')
 
+    wx.UpdateUIEvent.SetMode(wx.UPDATE_UI_PROCESS_SPECIFIED)
+
     import ifigure
     from ifigure.ifigure_app import ifigure_app, MyApp
     from ifigure.utils.mp_tarzip import MPTarzip
