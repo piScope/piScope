@@ -542,8 +542,6 @@ class ifigure_app(BookViewerFrame):
         self.tbicon = TaskBarIcon(self)
 
     def onUpdateUI(self, evt):
-        print(evt.GetEventObject())
-
         if evt.GetId() == ID_DETACH_EDITOR:
             if (self.script_editor.GetTopLevelParent() == self and
                     self.gui_tree.get_toggle(self.panel2)):
