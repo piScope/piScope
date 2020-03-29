@@ -85,7 +85,8 @@ class FrameWithWindowList(wx.Frame):
         self._menu_open = False
         
     def OnInternalIdle(self):
-        self._count += 1                
+        self._count += 1
+        print("OnInternalIdle")
         if wx.UpdateUIEvent.CanUpdate(self) and self._menu_open:
             self.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)        
         
