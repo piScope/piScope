@@ -86,13 +86,14 @@ class FrameWithWindowList(wx.Frame):
         self.SetMenuBar(self.menuBar)
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
-        #self.turn_on_updateui_event()
+
         self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)        
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
         
         self._count = 0
         self._menu_open = False
-        
+
+        wx.CallAfter(self.UpdateWindowUI)
 
     def OnInternalIdle(self):
         internal_idl(self)
