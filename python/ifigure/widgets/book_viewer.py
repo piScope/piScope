@@ -80,8 +80,6 @@ class FrameWithWindowList(wx.Frame):
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
 
         self.menuBar = wx.MenuBar()
-        self.Bind(wx.EVT_MENU_OPEN, self.onMenuOpen)
-        self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)        
         
         self.SetMenuBar(self.menuBar)
         tw = wx.GetApp().TopWindow
@@ -89,9 +87,20 @@ class FrameWithWindowList(wx.Frame):
 
         self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)        
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
-        
-        self._count = 0
-        self._menu_open = False
+
+        if platform.system() == 'Darwin':
+            # Note:
+            #   (from doc)
+            #   wxWidgets tries to optimize update events on some platforms. On Windows and GTK+,
+            #   events for menubar items are only sent when the menu is about to be shown, and not
+            #   in idle time
+            #
+            # On MaOSX, we see too many UpdateWindowUI call. This reduces the 
+            # call of UpdateWindowUI from OnInternalild
+            #
+            self.Bind(wx.EVT_MENU_OPEN, self.onMenuOpen)
+            self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)        
+            self._menu_open = False
 
         wx.CallAfter(self.UpdateWindowUI)
 
@@ -103,7 +112,8 @@ class FrameWithWindowList(wx.Frame):
         
     def onMenuClose(self, evt):
         self._menu_open = False        
-        
+
+    '''
     def turn_on_updateui_event(self):
         pass
         #self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
@@ -111,7 +121,8 @@ class FrameWithWindowList(wx.Frame):
     def turn_off_updateui_event(self):
         pass
         #self.Unbind(wx.EVT_UPDATE_UI)
-        
+    '''
+    
     def onActivate(self, evt):
         if evt.GetActive():
             wx.GetApp().process_child_focus(self)

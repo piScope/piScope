@@ -301,13 +301,9 @@ class SimpleShell(ShellBase):
         self._auto_complete = True
 
     def onSetFocus(self, evt):
-        w = self.GetTopLevelParent()
-        w.turn_off_updateui_event()        
         evt.Skip()
 
     def onKillFocus(self, evt):
-        w = self.GetTopLevelParent()
-        w.turn_on_updateui_event()        
         evt.Skip()        
 
     def setBuiltinKeywords(self):
