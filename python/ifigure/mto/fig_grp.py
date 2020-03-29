@@ -243,6 +243,7 @@ class FigGrp(FigObj):
             sorted(
                 [(child.getp('zorder'), child)
                  for name, child in self.get_children()]
+                , key=lambda x: x[0]
             ))
 
         for z, child in children:

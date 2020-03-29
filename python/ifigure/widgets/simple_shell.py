@@ -293,11 +293,22 @@ class SimpleShell(ShellBase):
         SimpleShell.SHELL = self
         self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
-
+        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)        
         self.st = ''  # search txt
         self.st_flag = False
 
         self._auto_complete = True
+
+    def onSetFocus(self, evt):
+        w = self.GetTopLevelParent()
+        w.turn_off_updateui_event()        
+        evt.Skip()
+
+    def onKillFocus(self, evt):
+        w = self.GetTopLevelParent()
+        w.turn_on_updateui_event()        
+        evt.Skip()        
 
     def setBuiltinKeywords(self):
         '''

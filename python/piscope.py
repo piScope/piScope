@@ -22,15 +22,6 @@ if __name__ == '__main__':
            
     matplotlib.use('WXAGG')
 
-    '''
-   try:
-      import OpenGL
-      OpenGL.ERROR_LOGGING = False   
-      OpenGL.ERROR_CHECKING = False
-      OpenGL.ERROR_ON_COPY = False
-   except:
-      pass
-   '''
     import ifigure
     from ifigure.ifigure_app import ifigure_app, MyApp
     from ifigure.utils.mp_tarzip import MPTarzip

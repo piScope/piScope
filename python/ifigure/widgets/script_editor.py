@@ -343,9 +343,13 @@ class PythonSTC(stc.StyledTextCtrl):
         self._search_st = -1
 
     def onSetFocus(self, evt):
+        w = self.GetTopLevelParent()
+        w.turn_off_updateui_event()        
         evt.Skip()
 
     def onKillFocus(self, evt):
+        w = self.GetTopLevelParent()
+        w.turn_on_updateui_event()        
         self._exit_search_mode()
         evt.Skip()
 

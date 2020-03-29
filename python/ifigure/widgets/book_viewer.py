@@ -69,14 +69,20 @@ class FrameWithWindowList(wx.Frame):
         super(FrameWithWindowList, self).__init__(*args, **kargs)
         # Creating the menubar.
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
+
         self.menuBar = wx.MenuBar()
         self.SetMenuBar(self.menuBar)
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
-        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
-        #self.Bind(wx.EVT_CHILD_FOCUS, self.onChildFocus)
+        self.turn_on_updateui_event()
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
-
+        
+    def turn_on_updateui_event(self):
+        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
+        
+    def turn_off_updateui_event(self):        
+        self.Unbind(wx.EVT_UPDATE_UI)
+        
     def onActivate(self, evt):
         if evt.GetActive():
             wx.GetApp().process_child_focus(self)
