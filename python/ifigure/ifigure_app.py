@@ -1331,7 +1331,7 @@ class ifigure_app(BookViewerFrame):
             ret = dialog.message(
                 self, 'Save job is running. Application will close after \ndata is saved.', 'Please wait', 0)
             local_lc.acquire()
-        #MPTarzip.lc.release()
+        local_lc.release()
 
         import multiprocessing
         children = multiprocessing.active_children()

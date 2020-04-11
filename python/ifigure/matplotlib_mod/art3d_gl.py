@@ -614,6 +614,8 @@ class Line3DCollectionGL(ArtGL, Line3DCollection):
         return self._alpha
 
     def seg_c_data(self, cdata):
+        if np.iscomplexobj(cdata):
+            cdata = cdata.real
         self._c_data = cdata
         self._gl_solid_edgecolor = None
 

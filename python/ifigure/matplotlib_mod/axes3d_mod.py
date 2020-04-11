@@ -705,7 +705,11 @@ class Axes3DMod(Axes3D):
         from .art3d_gl import image_to_gl
         im = Axes3D.imshow(self, *args, **kwargs)
         image_to_gl(im)
+        if len(args) > 2:
+            extent = (min(args[0]), max(args[0]), min(args[1]), max(args[0]))
+            im.set_extent(extent)
         im.set_3dpath(im_center, im_axes)
+        
         return im
 
     def contourf(self, *args, **kwargs):
