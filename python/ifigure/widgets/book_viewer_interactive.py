@@ -1510,6 +1510,12 @@ class BookViewerInteractive(object):
                 ax.elev, ax.azim = 30, -60
                 ax._upvec = np.array([0, 0, 1])
                 fig_axes.set_bmp_update(False)
+            elif args[0] == '90':
+                ax.rotate_view_90deg(True)
+                fig_axes.set_bmp_update(False)
+            elif args[0] == '-90':
+                ax.rotate_view_90deg(False)
+                fig_axes.set_bmp_update(False)
             elif args[0] == 'updown':
                 ax._upvec = -ax._upvec
                 fig_axes.set_bmp_update(False)

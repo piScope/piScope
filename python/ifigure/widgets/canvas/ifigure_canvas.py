@@ -1086,11 +1086,14 @@ class ifigure_popup(wx.Menu):
                 if parent.axes_selection().figobj.get_3d():
                     menus.extend([
                         ('+3D view',  None, None),
-                        ('XY Plain',  self.on3DXY, None),
-                        ('XZ Plain',  self.on3DXZ, None),
-                        ('YZ Plain',  self.on3DYZ, None),
+                        ('XY Plane',  self.on3DXY, None),
+                        ('XZ Plane',  self.on3DXZ, None),
+                        ('YZ Plane',  self.on3DYZ, None),
+                        ('Rotate 90', self.on3D_Rot90r, None),
+                        ('Rotate -90', self.on3D_Rot90, None),                                                                                 
+                        ('Flip', self.on3DUpDown, None),                       
                         ('Default View', self.on3DDefaultView, None),
-                        ('Up -> Down', self.on3DUpDown, None)])
+                        ('---', None, None),])                    
                     if parent.axes_selection()._use_frustum:
                         menus.append(('Use Ortho', self.on3DOrtho, None))
                     else:
@@ -1211,7 +1214,15 @@ class ifigure_popup(wx.Menu):
     def on3DUpDown(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('updown')
-
+        
+    def on3D_Rot90(self, e):
+        canvas = e.GetEventObject()
+        canvas.GetTopLevelParent().view('90')
+        
+    def on3D_Rot90r(self, e):
+        canvas = e.GetEventObject()
+        canvas.GetTopLevelParent().view('-90')
+        
     def on3DOrtho(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('ortho')

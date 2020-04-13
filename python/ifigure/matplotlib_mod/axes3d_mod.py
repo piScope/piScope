@@ -162,6 +162,20 @@ def persp_transformation(zfront, zback):
                      [0, 0, -1, 0]
                      ])
 
+def rotation_mat(ax, an):
+    '''
+    matrix to rotate arounc ax by an [rad]
+    '''
+    c = np.cos(an); s = np.sin(an)
+    ax = ax/np.sqrt(np.sum(ax**2))
+    R = np.array(
+            [[c + (1-c)*ax[0]**2, ax[0]*ax[1]*(1-c)-ax[2]*s, ax[0]*ax[2]*(1-c)+ax[1]*s],
+             [ax[0]*ax[1]*(1-c)+ax[2]*s, c + (1-c)*ax[1]**2,  ax[1]*ax[2]*(1-c)-ax[0]*s],
+             [ax[0]*ax[2]*(1-c)-ax[1]*s, ax[1]*ax[2]*(1-c)+ax[0]*s, c + (1-c)*ax[2]**2]]
+            )
+
+    return R
+
 
 def use_gl_switch(func):
     '''
@@ -699,7 +713,7 @@ class Axes3DMod(Axes3D):
         return cset
 
     def imshow(self, *args, **kwargs):
-        im_center = kwargs.pop('im_center', (0, 0))
+        im_center = kwargs.pop('im_center', (0, 0, 0))
         im_axes = kwargs.pop('im_axes', [(1, 0, 0), (0, 1, 0)])
 
         from .art3d_gl import image_to_gl
@@ -1170,7 +1184,15 @@ class Axes3DMod(Axes3D):
         a.do_stencil_test = False
 
         return a
-
+    
+    def rotate_view_90deg(self, flip=False):
+        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
+        if flip:
+            M = rotation_mat(self.vvec, np.pi/2)
+        else:
+            M = rotation_mat(self.vvec, -np.pi/2)            
+        self._upvec = np.dot(M, self._upvec)
+        
     def get_proj2(self):
         '''
         based on mplot3d::get_proj()

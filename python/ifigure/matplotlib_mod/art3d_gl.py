@@ -444,10 +444,11 @@ class AxesImageGL(ArtGL, AxesImage):
                (x)
         '''
         x1, x2, y1, y2 = self.get_extent()
-        p = [im_center[0]+x1*np.array(im_axes[0]) + +y1*np.array(im_axes[1]),
-             im_center[0]+x2*np.array(im_axes[0]) + +y1*np.array(im_axes[1]),
-             im_center[0]+x2*np.array(im_axes[0]) + +y2*np.array(im_axes[1]),
-             im_center[0]+x1*np.array(im_axes[0]) + +y2*np.array(im_axes[1]), ]
+        im_center = np.array(im_center)
+        p = [im_center+x1*np.array(im_axes[0]) + +y1*np.array(im_axes[1]),
+             im_center+x2*np.array(im_axes[0]) + +y1*np.array(im_axes[1]),
+             im_center+x2*np.array(im_axes[0]) + +y2*np.array(im_axes[1]),
+             im_center+x1*np.array(im_axes[0]) + +y2*np.array(im_axes[1]), ]
 
         n = np.cross(im_axes[0], im_axes[1])
         x = np.array([pp[0] for pp in p]).flatten()
