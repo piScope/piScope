@@ -2410,7 +2410,10 @@ class SelectableELP(Panel):
 #        self.show_elp(self.elp)
         for elp in self.elps:
             self.csizer.Add(elp, 1, wx.EXPAND | wx.ALL, 5)
-
+            
+        self.cb.SetValue(setting[0]['choices'][0])
+        self.SetFFShowHide()
+        
     def SetFFShowHide(self):
         idx = self.cb.GetSelection()
         for k, elp in enumerate(self.elps):
@@ -4706,7 +4709,7 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
                                           {'elp':[['Experiment', 'cmod', 0, None],]
                                            }], ]
      127: CheckBoxModifiedELP (revserse the bool of checkbox)
-     227: ComoboBoxModifiedELP (revserse the bool of checkbox)
+     227: ComoboBoxModifiedELP
       28: CaxisSelector
       29: XYResize 
       30: XYAnchor

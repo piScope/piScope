@@ -30,6 +30,7 @@ from ifigure.mto.fig_quiver import FigQuiver
 from ifigure.mto.fig_plot import FigPlot
 from ifigure.mto.fig_solid import FigSolid
 from ifigure.mto.fig_surface import FigSurface
+from ifigure.mto.fig_image import FigImage
 from matplotlib.collections import TriMesh
 
 
@@ -94,6 +95,22 @@ class FigSolidPhasor(FigSolid):
         self._artists[0]._update_fc = True
 
 
+class FigImagePhasor(FigImage):
+    def set_phasor(self, angle=None):
+        z = self.getvar('complex_z')
+        if angle is not None:
+            self.setvar('z', (z * np.exp(1j*angle)).real)
+        else:
+            self.setvar('z', np.absolute(z))
+        self.reset_artist()
+
+    def get_crange(self, crange=[None, None],
+                   xrange=[None, None],
+                   yrange=[None, None],
+                   scale='linear'):
+        z = self.getvar('complex_z')        
+        return [-np.max(np.abs(z)), np.max(np.abs(z))]
+
 class FigSurfacePhasor(FigSurface):
     def set_phasor(self, angle=None):
         if angle is not None:
@@ -136,6 +153,8 @@ def convert_figobj(obj):
         if obj.getvar('cdata') is None:
             return
         obj.__class__ = FigSurfacePhasor
+    elif obj.__class__ == FigImage:
+        obj.__class__ = FigImagePhasor
     else:
         pass
 
@@ -184,7 +203,8 @@ class WaveViewer(VideoBookPlayer):
             convert_figobj(o)
             self.add_video_obj(o)
             o.setvar('complex_u', o.getvar('u'))
-            o.setvar('complex_v', o.getvar('v'))
+            o.setvar('complex_v', o.
+                     getvar('v'))
             o.setvar('u', o.getvar('u').real)
             o.setvar('v', o.getvar('v').real)
         return o
@@ -208,6 +228,28 @@ class WaveViewer(VideoBookPlayer):
         self.add_video_obj(o)
         return o
 
+    def image(self, *args, **kwargs):
+        if len(args) == 1:
+            complex_z = args[0]
+            if np.iscomplexobj(complex_z):
+               args = (complex_z.real,)
+        elif len(args) == 3:
+            complex_z = args[2]
+            if np.iscomplexobj(complex_z):
+               args = (args[0], args[1], complex_z.real,)
+        else:
+            print("incorrect number of arguments: image(z) or image(x, y, z)")
+            return
+        
+        try:
+            o = BookViewer.image(self, *args, **kwargs)
+        except ValueError as x:
+            return
+        o.setvar('complex_z', complex_z)                
+        convert_figobj(o)
+        self.add_video_obj(o)
+        return o
+        
     def _get_phase(self, ipage):
         return self.sign*np.pi*2*ipage/self.nframe
 

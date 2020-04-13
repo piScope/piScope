@@ -22,15 +22,9 @@ if __name__ == '__main__':
            
     matplotlib.use('WXAGG')
 
-    '''
-   try:
-      import OpenGL
-      OpenGL.ERROR_LOGGING = False   
-      OpenGL.ERROR_CHECKING = False
-      OpenGL.ERROR_ON_COPY = False
-   except:
-      pass
-   '''
+    wx.UpdateUIEvent.SetMode(wx.UPDATE_UI_PROCESS_SPECIFIED)
+    wx.UpdateUIEvent.SetUpdateInterval(1000)
+
     import ifigure
     from ifigure.ifigure_app import ifigure_app, MyApp
     from ifigure.utils.mp_tarzip import MPTarzip

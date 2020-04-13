@@ -12,8 +12,6 @@ from __future__ import print_function
 #
 #
 
-#import wxversion
-# wxversion.ensureMinimal('2.8')
 import time
 import weakref
 from ifigure.widgets.undo_redo_history import GlobalHistory, UndoRedoHistory
@@ -202,6 +200,7 @@ class ifigure_app(BookViewerFrame):
         self.BindTreeDictEvents()
         self.BindPVCVEvents()
 #       self.Bind(ifigure.events.TD_EVT_NEWHISTORY, self.onNewHistory)
+
         self.shell.set_proj(self.proj)
 
         self.set_filename_2_window_title()
@@ -338,6 +337,7 @@ class ifigure_app(BookViewerFrame):
         self._rebuild_ifigure_canvas()
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
+
 
         # File Menu
         newmenu = wx.Menu()
@@ -485,7 +485,7 @@ class ifigure_app(BookViewerFrame):
         # self.SetAcceleratorTable(aTable)
 
 #       self.Layout()
-
+  
         self.panel2.Hide()
         self.gui_tree.hide_toggle_menu(self.panel2)
         self.gui_tree.rebuild_menu()
@@ -677,8 +677,10 @@ class ifigure_app(BookViewerFrame):
         local_lc.release()
         
         if path is None:
-            path = dialog.read(parent=self,  message="Select project (.pfz) to open",
-                               wildcard='*.pfz')
+            path = dialog.read(parent=self,
+                               message="Select project (.pfz) to open",
+                               wildcard='*.pfz',
+                               defaultdir = os.getcwd())
         if path != '':
             call_close = (self.proj is not None)
             if not self.open_file(path, call_close=call_close):
@@ -1329,7 +1331,7 @@ class ifigure_app(BookViewerFrame):
             ret = dialog.message(
                 self, 'Save job is running. Application will close after \ndata is saved.', 'Please wait', 0)
             local_lc.acquire()
-        #MPTarzip.lc.release()
+        local_lc.release()
 
         import multiprocessing
         children = multiprocessing.active_children()

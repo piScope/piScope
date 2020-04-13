@@ -28,6 +28,7 @@ import os
 import time
 import webbrowser
 import weakref
+import platform
 import ifigure.utils.pickle_wrapper as pickle
 import wx.aui as aui
 import ifigure
@@ -55,6 +56,14 @@ ID_HIDEAPP = wx.NewIdRef(count=1)
 ID_WINDOWS = wx.NewIdRef(count=1)
 ID_HDF_EXPORT = wx.NewIdRef(count=1)
 
+if platform.system() == 'Darwin':
+    def internal_idl(obj):
+        if wx.UpdateUIEvent.CanUpdate(obj) and obj._menu_open:
+            obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
+else:            
+    def internal_idl(obj):
+        if wx.UpdateUIEvent.CanUpdate(obj):
+            obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
 
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -69,14 +78,51 @@ class FrameWithWindowList(wx.Frame):
         super(FrameWithWindowList, self).__init__(*args, **kargs)
         # Creating the menubar.
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
+
         self.menuBar = wx.MenuBar()
+        
         self.SetMenuBar(self.menuBar)
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
-        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
-        #self.Bind(wx.EVT_CHILD_FOCUS, self.onChildFocus)
+
+        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)        
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
 
+        if platform.system() == 'Darwin':
+            # Note:
+            #   (from doc)
+            #   wxWidgets tries to optimize update events on some platforms. On Windows and GTK+,
+            #   events for menubar items are only sent when the menu is about to be shown, and not
+            #   in idle time
+            #
+            # On MaOSX, we see too many UpdateWindowUI call. This reduces the 
+            # call of UpdateWindowUI from OnInternalild
+            #
+            self.Bind(wx.EVT_MENU_OPEN, self.onMenuOpen)
+            self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)        
+            self._menu_open = False
+
+        wx.CallAfter(self.UpdateWindowUI)
+
+    def OnInternalIdle(self):
+        internal_idl(self)
+        
+    def onMenuOpen(self, evt):
+        self._menu_open = True
+        
+    def onMenuClose(self, evt):
+        self._menu_open = False        
+
+    '''
+    def turn_on_updateui_event(self):
+        pass
+        #self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
+        
+    def turn_off_updateui_event(self):
+        pass
+        #self.Unbind(wx.EVT_UPDATE_UI)
+    '''
+    
     def onActivate(self, evt):
         if evt.GetActive():
             wx.GetApp().process_child_focus(self)
