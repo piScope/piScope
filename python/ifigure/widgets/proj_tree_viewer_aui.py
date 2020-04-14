@@ -1088,7 +1088,8 @@ class ProjTreeViewer(wx.Panel):
 #        self.Delete(old)
 #        self.InsertItem(parent, new, text)
 
-    def OpenPanel(self, list, obj=None, callback=None, title='title', **kargs):
+    def OpenPanel(self, list, obj=None, callback=None, title='title',
+                  **kargs):
         if self.panel is not None:
             self.ClosePanel()
 

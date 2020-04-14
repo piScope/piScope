@@ -149,6 +149,7 @@ class PyConnection(TreeDict):
         proj_tree_viewer.OpenPanel(l1, self, 'setSetting',
                                    title='Connection setting')
 
+
     def PutFile(self, src, dest, nowait=False):
         '''
         put a file in a remote server

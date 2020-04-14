@@ -108,12 +108,14 @@ def readdir(parent=None,  message='Directory to read'):
         return None
 
 
-def textentry(parent=None, message='', title='', def_string='', center=False):
-
+def textentry(parent=None, message='', title='', def_string='', center=False,
+              center_on_screen=False):    
     dlg = TextEntryDialog(parent,
                           message, caption=title, value=def_string)
     if center:
         dlg.Centre()
+    if center_on_screen:
+        dlg.CentreOnScreen()        
     if dlg.ShowModal() == wx.ID_OK:
         new_name = str(dlg.GetValue())
         dlg.Destroy()
@@ -124,7 +126,8 @@ def textentry(parent=None, message='', title='', def_string='', center=False):
 
 
 def textselect(parent=None, message='', title='', def_string='',
-               center=False, choices=['']):
+               center=False, choices=[''],
+               center_on_screen=False):
     s = {"style": wx.CB_DROPDOWN | wx.TE_PROCESS_ENTER,
          "choices": choices}
     if message != '':
@@ -134,20 +137,24 @@ def textselect(parent=None, message='', title='', def_string='',
         ll = [['Selection', choices[0],  104,  s], ]
     from ifigure.utils.edit_list import EditListDialog
 
-    dia = EditListDialog(parent, wx.ID_ANY, title, ll)
+    dlg = EditListDialog(parent, wx.ID_ANY, title, ll)
     if center:
-        dia.Centre()
-    val = dia.ShowModal()
-    value = dia.GetValue()
+        dlg.Centre()
+    if center_on_screen:
+        dlg.CentreOnScreen()        
+    val = dlg.ShowModal()
+    value = dlg.GetValue()
+    print(val, wx.ID_OK)
     if val == wx.ID_OK:
-        dia.Destroy()
+        dlg.Destroy()
         return True, value[-1]
-    dia.Destroy()
+    dlg.Destroy()
     return False, value[-1]
 
 
 def message(parent=None, message='', title='', style=0,
-            icon=wx.ICON_EXCLAMATION):
+            icon=wx.ICON_EXCLAMATION,
+            center_on_screen=False):    
     if style == 0:
         style0 = wx.OK
     if style == 1:
@@ -170,7 +177,8 @@ def message(parent=None, message='', title='', style=0,
               message,
               title,
               style0)
-
+    if center_on_screen:
+        dlg.CentreOnScreen()        
     ret = dlg.ShowModal()
     if ret == wx.ID_OK:
         ret = 'ok'
@@ -187,10 +195,13 @@ def message(parent=None, message='', title='', style=0,
     return ret
 
 
-def showtraceback(parent=None, txt='', title="Error", traceback='None\n'):
+def showtraceback(parent=None, txt='', title="Error", traceback='None\n',
+                  center_on_screen=True):
     from ifigure.widgets.dlg_message_scroll import DlgMessageScroll
 
     dlg = DlgMessageScroll(parent, wx.ID_ANY, title)
+    if center_on_screen:
+        dlg.CentreOnScreen()        
     dlg.update(txt + '\n'+traceback)
     ret = dlg.ShowModal()
 
