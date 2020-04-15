@@ -235,7 +235,7 @@ class ifigure_app(BookViewerFrame):
             msy = dx-50
         self.SetSize((msx, msy))
         self.Layout()
-        self.Centre()
+
         h, w = self.GetPosition()
         if h < 0 or w < 0:
             self.SetSize((msx-(100-h), msy-(100-h)))
@@ -246,16 +246,7 @@ class ifigure_app(BookViewerFrame):
             wx.CallAfter(
                 self.proj_tree_viewer.get_shellvar_viewer().update, self.shell)
 
-#       self.Show()
-#       self.Raise()
-
-#       spx, spy=self.GetScreenPosition()
-#       if spx < 40: spx = 40
-#       if spy < 40: spy = 40
-
-#       def onidle(evt):
-#           print 'onidle'
-#       self.Bind(wx.EVT_IDLE, onidle)
+        wx.CallAfter(self.CentreOnScreen)
 
     @property
     def aviewer(self):
