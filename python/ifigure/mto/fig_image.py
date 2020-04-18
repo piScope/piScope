@@ -266,7 +266,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 kywds["aspect"] = aspect
                 kywds["origin"] = 'lower'
                 kywds["interpolation"] = self.getp("interp")
-                print("kywds here", kywds)
                 self.set_artist(container.imshow(*args,
                                                  #                            picker=cpicker.Picker,
                                                  extent=extent,  **kywds))

@@ -432,7 +432,8 @@ class AxesImageGL(ArtGL, AxesImage):
         AxesImage.__init__(self, *args, **kargs)
         self._gl_interp = 'nearest'
         self._gl_rgbacache_id = None
-
+        self._update_im = False
+        
     def __repr__(self):
         return 'ImageGL'
 
@@ -457,6 +458,10 @@ class AxesImageGL(ArtGL, AxesImage):
         self._gl_3dpath = (x, y, z, np.hstack([n]*len(x)),
                            np.arange(len(x)).astype(np.int))
 
+    def set_cmap(self, *args, **kwargs):
+        super(AxesImage, self).set_cmap(*args, **kwargs)
+        self._gl_rgbacache_id = None
+        
     def make_hl_artist(self, container):
         idx = [0, 1, 2, 3]
         x = [self._gl_3dpath[0][k] for k in idx]
@@ -478,7 +483,6 @@ class AxesImageGL(ArtGL, AxesImage):
             for x in d:
                 x['im_update'] = True
 #           path.zvalues =  self.get_zdata()
-
         self._gl_texture_update = False
 
     @draw_wrap
@@ -506,6 +510,7 @@ class AxesImageGL(ArtGL, AxesImage):
                 self._im_cache = im
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
+
                 if self._gl_rgbacache_id != id(self._rgbacache):
                     if glcanvas.has_vbo_data(self):
                         d = glcanvas.get_vbo_data(self)

@@ -96,7 +96,7 @@ if [ ! "${PY_DEBUG}" = '' ]; then
 fi
 
 if ! [ -x "$(command -v unbeffer)" ]; then
-   $INTERPRETER $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+   $INTERPRETER -x $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
 else
    if [ -z ${UNSUPPRESS_GTK+x} ];then
        unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
