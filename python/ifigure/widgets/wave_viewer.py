@@ -110,6 +110,13 @@ class FigImagePhasor(FigImage):
                    scale='linear'):
         z = self.getvar('complex_z')        
         return [-np.max(np.abs(z)), np.max(np.abs(z))]
+    
+    def get_export_val(self, a):
+        x, y, z = self._eval_xyz()
+        z = self.getvar('complex_z')
+        return {"cdata": z,
+                "xdata": x,
+                "ydata": y}
 
 class FigSurfacePhasor(FigSurface):
     def set_phasor(self, angle=None):
@@ -261,14 +268,18 @@ class WaveViewer(VideoBookPlayer):
         for obj in self.book.walk_tree():
             if isinstance(obj, FigTripcolorPhasor):
                 self.add_video_obj(obj)
-            if isinstance(obj, FigPlotPhasor):
+            elif isinstance(obj, FigPlotPhasor):
                 self.add_video_obj(obj)
-            if isinstance(obj, FigQuiverPhasor):
+            elif isinstance(obj, FigQuiverPhasor):
                 self.add_video_obj(obj)
-            if isinstance(obj, FigSolidPhasor):
+            elif isinstance(obj, FigSolidPhasor):
                 self.add_video_obj(obj)
-            if isinstance(obj, FigSurfacePhasor):
+            elif isinstance(obj, FigSurfacePhasor):
                 self.add_video_obj(obj)
+            elif isinstance(obj, FigImagePhasor):
+                self.add_video_obj(obj)
+            else:
+                pass
 
     def UpdateImage(self, i):
         phase = self._get_phase(i)

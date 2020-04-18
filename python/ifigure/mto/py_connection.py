@@ -202,8 +202,8 @@ class PyConnection(TreeDict):
             kargs = {"shell": True}
 
         verbose=self.getvar('verbose')
-
         if verbose: print(command)
+        
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
         elif nocheck:
@@ -212,29 +212,34 @@ class PyConnection(TreeDict):
         else:
             p = run_ssh_wait_and_retry(args, kargs, verbose=verbose)
         return p
-        '''            
-        try:
-            if self.getvar('verbose'):
-                p = subprocess.Popen(args,
-                                     universal_newlines=True,                                     
-                                     **kargs)
-
-            else:
-                p = subprocess.Popen(args, stderr=subprocess.STDOUT,
-                                     stdout=subprocess.PIPE,
-                                     universal_newlines=True,
-                                     **kargs)
-        except:
-            print(traceback.format_exc())
-
-        if not nowait:
-            while p.poll() == None:
-                #if isInMainThread(): wx.Yield()
-                time.sleep(sltime)
-            # print p.wait()
-        return p
+    
+    def GetFiles(self, srcs, dest_dir):
         '''
+        get multiple files to a directory
+        '''
+        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
+                                                   'user', 'use_ssh', 'nocheck')
+        if nocheck is None:  nocheck = False
+        src = '\{'+ ','.join(srcs) + '\}'
         
+        if use_ssh:
+            command = 'scp -P '+str(port) + ' ' + user + \
+                '@'+server+':'+src + ' ' + dest_dir
+            args = shlex.split(command)
+            kargs = {}
+            args = command
+            kargs = {'shell': True}
+        else:
+            command = 'cp ' + src + ' ' + dest_sie
+            args = command
+            kargs = {"shell": True}
+
+        verbose=self.getvar('verbose')
+        if verbose: print(command)
+        
+        p = run_ssh_no_retry(args, kargs, verbose=verbose)
+        p.wait()
+    
     def Execute(self, command, nowait=False, nocheck=False, force_ssh=False):
         server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
                                                    'user', 'use_ssh', 'nocheck')

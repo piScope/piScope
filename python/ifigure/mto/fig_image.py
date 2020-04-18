@@ -249,7 +249,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     extent = (np.min(xp), np.max(xp),
                               np.min(yp), np.max(yp), )
                 args = []
-                kywds = self._var["kywds"]
+                kywds = self._var["kywds"].copy()
                 kywds['alpha'] = self.getp('alpha')
     #              args.append(np.flipud(zp))
 
@@ -266,6 +266,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 kywds["aspect"] = aspect
                 kywds["origin"] = 'lower'
                 kywds["interpolation"] = self.getp("interp")
+                print("kywds here", kywds)
                 self.set_artist(container.imshow(*args,
                                                  #                            picker=cpicker.Picker,
                                                  extent=extent,  **kywds))
@@ -331,6 +332,11 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 xp, yp, zp = self.interp_image(x, y, z)
                 args = []
                 kywds = {}
+                if 'im_center' in self._var["kywds"]:
+                    kywds['im_center'] = self._var["kywds"]['im_center']
+                if 'im_axes' in self._var["kywds"]:
+                    kywds['im_axes'] = self._var["kywds"]['im_axes']
+                    
                 kywds['alpha'] = self.getp('alpha')
                 kywds["interpolation"] = self.getp("interp")
 #                  print lp[0]
