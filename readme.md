@@ -1,8 +1,9 @@
 ## &pi;Scope
 &pi;Scope is a python based workbench for data analysis and modeling.
 Goal of piScope includes
-* To build a data browsing (scope) application for MDSplus data system (www.mdsplus.org)
-* To provide lego blocks for gluing up large simulation codes using python
+* Data browsing (scope) application for MDSplus data system (www.mdsplus.org)
+* Lego blocks for gluing up large simulation codes using python
+* User frontend platform for Petra-M (MFEM based finite element simulation).
 
 and for the above purposes, &pi;Scope is equipped with
 * a data analysis environment (= python shell, editor, data structure browser, and matplotlib figure)
@@ -18,7 +19,7 @@ and for the above purposes, &pi;Scope is equipped with
 &pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM (https://piscope.psfc.mit.edu/index.php/Petra-M)
      
 Requirements
-*  Python2.7 or 3.6
+*  Python >3.6
 *  wxPython 4
 *  matplotlib 
 *  PyOpenGL
