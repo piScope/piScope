@@ -18,7 +18,7 @@ and for the above purposes, &pi;Scope is equipped with
 &pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM (https://piscope.psfc.mit.edu/index.php/Petra-M)
      
 Requirements
-*  Python2.7 or 3.6
+*  Python >3.6
 *  wxPython 4
 *  matplotlib 
 *  PyOpenGL
