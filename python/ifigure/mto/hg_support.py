@@ -27,6 +27,8 @@ import traceback
 import time
 import subprocess
 import shlex
+
+
 from fnmatch import fnmatch
 import ifigure.widgets.dialog as dialog
 from ifigure.mto.treedict import TreeDict
@@ -45,9 +47,13 @@ diffwindow = None
 usr = get_username()
 
 try:
+    org_lang = os.environ['LANG']
     import hgapi
-    has_hg = True
+    hgapi.Repo._env = os.environ.copy()
+    os.environ['LANG'] = org_lang
 
+    has_hg = True
+    
     def has_repo(obj):
         if not isinstance(obj, HGSupport):
             return False
