@@ -43,7 +43,7 @@ if __name__ == '__main__':
     site.USER_SITE = os.path.join(
         home, '.ifigure_rc', '.local', 'site-packages')
     site.USER_BASE = os.path.join(home, '.ifigure_rc', '.local')
-    redirect_std = True
+    redirect_std = False
     file = None
     start_server = False
     show_file_open_error = False
