@@ -47,7 +47,8 @@ diffwindow = None
 usr = get_username()
 
 try:
-    org_lang = os.environ['LANG']
+    if 'LANG' in os.environ:
+        org_lang = os.environ['LANG']
     import hgapi
     hgapi.Repo._env = os.environ.copy()
     if 'LANG' in os.environ:
