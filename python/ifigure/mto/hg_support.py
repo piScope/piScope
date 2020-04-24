@@ -49,9 +49,11 @@ usr = get_username()
 try:
     if 'LANG' in os.environ:
         org_lang = os.environ['LANG']
+    else:
+        org_lang = ''
     import hgapi
     hgapi.Repo._env = os.environ.copy()
-    if 'LANG' in os.environ:
+    if 'LANG' in os.environ and org_lang != '':
        os.environ['LANG'] = org_lang
 
     has_hg = True
