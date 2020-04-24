@@ -227,7 +227,18 @@ class ifigure_app(BookViewerFrame):
         self.aconfig = AdvancedConfig()
         self.aconfig.add_user_path()
 
+        self.Layout()
+        
+        if not hide:
+            wx.CallAfter(self.Show, True)
+            wx.CallAfter(self.Raise)
+            wx.CallAfter(
+                self.proj_tree_viewer.get_shellvar_viewer().update, self.shell)
+        wx.CallAfter(self.adjust_initial_position)
+
+    def adjust_initial_position(self):
         dx, dy = wx.GetDisplaySize()
+
         msx, msy = self.GetSize()
         if msy > dy:
             msy = dy-50
@@ -235,16 +246,10 @@ class ifigure_app(BookViewerFrame):
             msy = dx-50
         self.SetSize((msx, msy))
         self.Layout()
-
         h, w = self.GetPosition()
         if h < 0 or w < 0:
             self.SetSize((msx-(100-h), msy-(100-h)))
             self.SetPosition((100, 100))
-        if not hide:
-            wx.CallAfter(self.Show, True)
-            wx.CallAfter(self.Raise)
-            wx.CallAfter(
-                self.proj_tree_viewer.get_shellvar_viewer().update, self.shell)
 
         wx.CallAfter(self.CentreOnScreen)
 

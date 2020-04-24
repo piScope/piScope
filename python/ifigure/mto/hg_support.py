@@ -50,7 +50,8 @@ try:
     org_lang = os.environ['LANG']
     import hgapi
     hgapi.Repo._env = os.environ.copy()
-    os.environ['LANG'] = org_lang
+    if 'LANG' in os.environ:
+       os.environ['LANG'] = org_lang
 
     has_hg = True
     

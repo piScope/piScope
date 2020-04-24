@@ -507,6 +507,8 @@ class AxesImageGL(ArtGL, AxesImage):
                 except:
                     # this is for an old version of matplotlib
                     im = self.make_image(renderer.get_image_magnification())
+                idx_none = im[...,3] == 0
+                im[idx_none,0:3] = 255
                 self._im_cache = im
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
