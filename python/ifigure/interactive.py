@@ -1744,11 +1744,11 @@ def glinfo():
     except ImportError:
         print("OpenGL not avaiable")
         return
-    print('OpenGL Ver. : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VERSION))
+    print('OpenGL Ver. : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VERSION).decode())
     print('GS Lang Ver.: ' +
-          OpenGL.GL.glGetString(OpenGL.GL.GL_SHADING_LANGUAGE_VERSION))
-    print('Vendor      : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VENDOR))
-    print('Renderer    : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_RENDERER))
+          OpenGL.GL.glGetString(OpenGL.GL.GL_SHADING_LANGUAGE_VERSION).decode())
+    print('Vendor      : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_VENDOR).decode())
+    print('Renderer    : ' + OpenGL.GL.glGetString(OpenGL.GL.GL_RENDERER).decode())
 
 
 def setupmodel(package='', root='', path='setup_scripts', model=None,

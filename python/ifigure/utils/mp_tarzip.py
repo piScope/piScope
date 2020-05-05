@@ -32,8 +32,15 @@ class MPTarzip(object):
         print("starting tar.gz....(save)")
         
         MPTarzip.worker = Process(target=do_zip, args=(filename, tarname, d))
-        
-        MPTarzip.worker.start()
+
+        try:
+            MPTarzip.worker.start()
+        except:
+            import traceback
+            from ifigure.widgets.dialog import showtraceback
+            showtraceback(wx.GetApp().TopWindow, txt=traceback.format_exc())
+            local_lc.release()
+            return 
         self.odir = odir
         self.d = d
         wx.CallLater(100, self.CheckFinished)
