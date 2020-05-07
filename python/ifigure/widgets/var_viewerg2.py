@@ -655,8 +655,11 @@ class VarViewerG(wx.Panel):
         self.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onGridLDClick)
 
         # this allows to select row always...
-        self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
-
+        try:
+            self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
+        except: #wxPython 4.1.0
+            self.grid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
+            
     def onGridLClick(self, evt):
         row = evt.GetRow()
         self._startrow = row

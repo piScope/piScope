@@ -320,7 +320,7 @@ class HdfExportWindow(wx.Frame):
 
         sizer.Add(self.filepicker, 0, wx.EXPAND | wx.ALL, 1)
         sizer.Add(self.sp, 1, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(sizer_h, 0, wx.EXPAND | wx.ALL | wx.ALIGN_RIGHT, 5)
+        sizer.Add(sizer_h, 0, wx.EXPAND | wx.ALL, 5)
 
         #sizer_h.Add(self.btn_load, 0,   wx.EXPAND|wx.ALL, 1)
         sizer_h.Add(self.cb, 0,   wx.EXPAND | wx.ALL, 1)

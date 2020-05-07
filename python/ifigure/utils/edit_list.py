@@ -430,7 +430,7 @@ class AxisRange(wx.Panel):
         self.tc2 = TextCtrlCopyPaste(self.panel, wx.ID_ANY, '',
                                      style=wx.TE_PROCESS_ENTER)
         self.panel.GetSizer().Add(vsizer, 1,
-                                  wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                                  wx.EXPAND | wx.ALL, 1)
         vsizer.AddStretchSpacer()
         vsizer.Add(self.tc1, 0)  # wx.EXPAND)
         vsizer.Add(self.tc2, 0)  # , wx.EXPAND)
@@ -452,9 +452,9 @@ class AxisRange(wx.Panel):
         s2.Add(self.cb_mar, 0, wx.EXPAND)
         self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
         self.GetSizer().Add(self.panel, 1,
-                            wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                            wx.EXPAND | wx.ALL, 1)
         self.GetSizer().Add(self.panel2, 0,
-                            wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                            wx.EXPAND | wx.ALL, 1)
         self.check_range_order = setting.pop('check_range_order', False)
 
     def Enable(self, value=True):
@@ -1511,21 +1511,31 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self._use_escape = True
         nlines = 1
         flag = 0
+        
+        if not 'style' in kargs:
+            kargs['style'] = 0
+            
         changing_event = kargs.pop('changing_event', False)
         setfocus_event = kargs.pop('setfocus_event', False)
         self._validator = kargs.pop('validator', None)
         self._validator_param = kargs.pop('validator_param', None)
-        if 'style' in kargs:
-            flag = wx.TE_MULTILINE & kargs['style']
-            if 'nlines' in kargs:
-                nlines = kargs['nlines']
-                del kargs['nlines']
 
+        flag = wx.TE_MULTILINE & kargs['style']
+        if 'nlines' in kargs:
+            nlines = kargs['nlines']
+            del kargs['nlines']
+            
+        if flag == 0:
+            kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
+            
         wx.TextCtrl.__init__(self, *args, **kargs)
+        
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
+        
         if flag == 0:
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
+            
         dt1 = TextDropTarget(self)
         self.SetDropTarget(dt1)
         if len(args) > 2:
@@ -2164,7 +2174,7 @@ class CSliderWithCB(Panel):
         self.cb = ComboBox_Float(self,  wx.ID_ANY, **setting)
         self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
         self.GetSizer().Add(self.cb, 0, wx.ALIGN_CENTER)
-        self.GetSizer().Add(self.sl, 1, wx.EXPAND | wx.ALIGN_CENTER)
+        self.GetSizer().Add(self.sl, 1, wx.EXPAND )
         self.Bind(EVT_CDS_CHANGED, self.onCDS_Event)
         self._use_float = True
 
@@ -4517,7 +4527,7 @@ class EditListDialog(wx.Dialog):
         if not self.nobutton:
             sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
             if sizer is not None:
-                vbox.Add(sizer, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, 10)
+                vbox.Add(sizer, 0, wx.ALIGN_CENTER | wx.ALL, 10)
 #        self.Fit()
         self.Layout()
         if pos is None:
@@ -4571,7 +4581,7 @@ class EditListDialogTab(wx.Dialog):
         if not self.nobutton:
             sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
             if sizer is not None:
-                vbox.Add(sizer, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+                vbox.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(vbox)
         self.Fit()
         if pos is None:
@@ -4883,7 +4893,7 @@ class EditListMiniFrame(wx.MiniFrame):
             sizer.AddStretchSpacer()            
             okbutton.Bind(wx.EVT_BUTTON, self.onOK)
             cancelbutton.Bind(wx.EVT_BUTTON, self.onCancel)            
-            vbox.Add(sizer, 0, wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, 5)
+            vbox.Add(sizer, 0, wx.EXPAND|wx.ALL, 5)
 #        self.Fit()
         self.Layout()
         if pos is None:

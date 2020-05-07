@@ -32,7 +32,7 @@ class UsernamePasswordDialog(wx.Dialog):
         self.mainSizer.Add(self.buttonSizer, 0, wx.ALL, 0)
         self.Bind(wx.EVT_BUTTON, self.onOK, id=wx.ID_OK)
         self.Bind(wx.EVT_BUTTON, self.onCancel, id=wx.ID_CANCEL)
-        self.Bind(wx.EVT_TEXT_ENTER, self.onOK)
+        #self.Bind(wx.EVT_TEXT_ENTER, self.onOK)
         self.SetSizer(self.mainSizer)
         self.Fit()
         self.Centre()
