@@ -22,7 +22,7 @@ class ShotNumberCtrl(wx.stc.StyledTextCtrl):
     def __init__(self, *args, **kargs):
         self._use_escape = True
 
-        if not 'style' in kargs: kargs['style'] = ''
+        if not 'style' in kargs: kargs['style'] = 0
         kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
         
         super(ShotNumberCtrl, self).__init__(*args, **kargs)
