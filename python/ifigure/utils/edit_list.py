@@ -4527,7 +4527,7 @@ class EditListDialog(wx.Dialog):
         if not self.nobutton:
             sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
             if sizer is not None:
-                vbox.Add(sizer, 0, wx.EXPAND | wx.ALIGN_CENTER | wx.ALL, 10)
+                vbox.Add(sizer, 0, wx.ALIGN_CENTER | wx.ALL, 10)
 #        self.Fit()
         self.Layout()
         if pos is None:
@@ -4581,7 +4581,7 @@ class EditListDialogTab(wx.Dialog):
         if not self.nobutton:
             sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
             if sizer is not None:
-                vbox.Add(sizer, 0, wx.ALIGN_CENTER | wx.ALL, 10)
+                vbox.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(vbox)
         self.Fit()
         if pos is None:
@@ -4893,7 +4893,7 @@ class EditListMiniFrame(wx.MiniFrame):
             sizer.AddStretchSpacer()            
             okbutton.Bind(wx.EVT_BUTTON, self.onOK)
             cancelbutton.Bind(wx.EVT_BUTTON, self.onCancel)            
-            vbox.Add(sizer, 0, wx.EXPAND|wx.ALIGN_CENTER|wx.ALL, 5)
+            vbox.Add(sizer, 0, wx.EXPAND|wx.ALL, 5)
 #        self.Fit()
         self.Layout()
         if pos is None:
