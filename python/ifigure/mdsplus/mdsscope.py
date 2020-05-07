@@ -1321,7 +1321,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
 
         self.shot_field_panel.GetSizer().Add(txt, 0, wx.ALIGN_CENTER)
         self.shot_field_panel.GetSizer().Add(self.txt_shot, 1,
-                                             wx.EXPAND | wx.ALL | wx.ALIGN_CENTER_VERTICAL, 0)
+                                             wx.EXPAND | wx.ALL, 0)
         self.shot_field_panel.GetSizer().Add(self.bt_apply, 0,
                                              wx.ALL, 1)
 
