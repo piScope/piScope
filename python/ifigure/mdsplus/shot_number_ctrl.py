@@ -21,7 +21,10 @@ max_history = 15
 class ShotNumberCtrl(wx.stc.StyledTextCtrl):
     def __init__(self, *args, **kargs):
         self._use_escape = True
+        
+        kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
         super(ShotNumberCtrl, self).__init__(*args, **kargs)
+        
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)

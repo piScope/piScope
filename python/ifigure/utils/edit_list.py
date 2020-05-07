@@ -1520,8 +1520,11 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             if 'nlines' in kargs:
                 nlines = kargs['nlines']
                 del kargs['nlines']
-
+        if flag == 0:
+            kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
+            
         wx.TextCtrl.__init__(self, *args, **kargs)
+        
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
         if flag == 0:
