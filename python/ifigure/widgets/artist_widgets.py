@@ -550,8 +550,7 @@ class artist_panel(wx.Panel):
 #       if len(self.list) > 1: nb.ChangeSelection(0)
         pansizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(pansizer)
-        pansizer.Add(nb, 1,
-                     wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+        pansizer.Add(nb, 1, wx.EXPAND | wx.ALL,
                      0)
         self.Layout()
         self.Bind(EDITLIST_CHANGED, self.onEL_Changed)
