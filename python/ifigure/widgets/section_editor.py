@@ -81,18 +81,11 @@ class section_editor(wx.Panel):
         self.st1 = wx.StaticText(nb1, label="Axis Margin")
         self.sl_margin = MarginWidget(nb1)
         minisizer.Add(self.st1, 0, wx.ALL, 2)
-        minisizer.Add(self.sl_margin, 0,
-                      wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, 1)
+        minisizer.Add(self.sl_margin, 0, wx.ALL | wx.EXPAND , 1)
         self.st2 = wx.StaticText(nb1, label="Page Margin ")
         self.sl_marginp = MarginpWidget(nb1)
         minisizer.Add(self.st2, 0, wx.ALL, 2)
-        minisizer.Add(self.sl_marginp, 0,
-                      wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, 1)
-#       bt = wx.Button(nb1, wx.ID_ANY, 'Reset Common Axis')
-#       minisizer.Add(bt, 0, wx.ALL, 1)
-#       bt.Bind(wx.EVT_BUTTON, self.onResetCommonAxis)
-
-    #    pansizer.SetSizeHints(self.canvas)
+        minisizer.Add(self.sl_marginp, 0, wx.ALL | wx.EXPAND,  1)
 
         s_fontsize = {"style": wx.TE_PROCESS_ENTER,
                       "choices": ["7", "8", "9", "10", "11", "12", "14",
