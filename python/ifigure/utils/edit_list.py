@@ -1512,7 +1512,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         nlines = 1
         flag = 0
         
-        if 'style' in kargs:
+        if not 'style' in kargs:
             kargs['style'] = 0
             
         changing_event = kargs.pop('changing_event', False)
