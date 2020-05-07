@@ -1511,15 +1511,20 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self._use_escape = True
         nlines = 1
         flag = 0
+        
+        if 'style' in kargs:
+            kargs['style'] = 0
+            
         changing_event = kargs.pop('changing_event', False)
         setfocus_event = kargs.pop('setfocus_event', False)
         self._validator = kargs.pop('validator', None)
         self._validator_param = kargs.pop('validator_param', None)
-        if 'style' in kargs:
-            flag = wx.TE_MULTILINE & kargs['style']
-            if 'nlines' in kargs:
-                nlines = kargs['nlines']
-                del kargs['nlines']
+
+        flag = wx.TE_MULTILINE & kargs['style']
+        if 'nlines' in kargs:
+            nlines = kargs['nlines']
+            del kargs['nlines']
+            
         if flag == 0:
             kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
             
@@ -1527,8 +1532,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
         self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
+        
         if flag == 0:
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
+            
         dt1 = TextDropTarget(self)
         self.SetDropTarget(dt1)
         if len(args) > 2:
