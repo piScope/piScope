@@ -754,18 +754,18 @@ class UndoRedoHistory(object):
 
     def update_menu_item(self):
         if len(self.undostack) == 0:
-            self.undo_mi.SetText("Can't Undo")
+            self.undo_mi.SetItemLabel("Can't Undo")
             self.undo_mi.Enable(False)
         else:
             name = self.undostack[-1].menu_name
-            self.undo_mi.SetText('Undo '+name)
+            self.undo_mi.SetItemLabel('Undo '+name)
             self.undo_mi.Enable(True)
         if len(self.redostack) == 0:
-            self.redo_mi.SetText("Can't Redo")
+            self.redo_mi.SetItemLabel("Can't Redo")
             self.redo_mi.Enable(False)
         else:
             name = self.redostack[-1].menu_name
-            self.redo_mi.SetText('Redo '+name)
+            self.redo_mi.SetItemLabel('Redo '+name)
             self.redo_mi.Enable(True)
 
     def replace_artist(self, a1, a2):
