@@ -430,7 +430,7 @@ class AxisRange(wx.Panel):
         self.tc2 = TextCtrlCopyPaste(self.panel, wx.ID_ANY, '',
                                      style=wx.TE_PROCESS_ENTER)
         self.panel.GetSizer().Add(vsizer, 1,
-                                  wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                                  wx.EXPAND | wx.ALL, 1)
         vsizer.AddStretchSpacer()
         vsizer.Add(self.tc1, 0)  # wx.EXPAND)
         vsizer.Add(self.tc2, 0)  # , wx.EXPAND)
@@ -452,9 +452,9 @@ class AxisRange(wx.Panel):
         s2.Add(self.cb_mar, 0, wx.EXPAND)
         self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
         self.GetSizer().Add(self.panel, 1,
-                            wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                            wx.EXPAND | wx.ALL, 1)
         self.GetSizer().Add(self.panel2, 0,
-                            wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 1)
+                            wx.EXPAND | wx.ALL, 1)
         self.check_range_order = setting.pop('check_range_order', False)
 
     def Enable(self, value=True):
@@ -2174,7 +2174,7 @@ class CSliderWithCB(Panel):
         self.cb = ComboBox_Float(self,  wx.ID_ANY, **setting)
         self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
         self.GetSizer().Add(self.cb, 0, wx.ALIGN_CENTER)
-        self.GetSizer().Add(self.sl, 1, wx.EXPAND | wx.ALIGN_CENTER)
+        self.GetSizer().Add(self.sl, 1, wx.EXPAND )
         self.Bind(EVT_CDS_CHANGED, self.onCDS_Event)
         self._use_float = True
 
