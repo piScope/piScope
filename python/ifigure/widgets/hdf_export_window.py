@@ -297,8 +297,8 @@ class HdfExportWindow(wx.Frame):
                                                 mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         c3 = self.dataviewCtrl.AppendTextColumn('shape', 3,
                                                 mode=dv.DATAVIEW_CELL_ACTIVATABLE)
-        c4 = self.dataviewCtrl.AppendTextColumn('metadata', 4,
-                                                mode=dv.DATAVIEW_CELL_ACTIVATABLE)
+        #c4 = self.dataviewCtrl.AppendTextColumn('metadata', 4,
+        #                                        mode=dv.DATAVIEW_CELL_ACTIVATABLE)
         for c in self.dataviewCtrl.Columns:
             c.Sortable = True
             c.Reorderable = True
