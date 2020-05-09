@@ -623,7 +623,8 @@ class AxisCParam(AxisParam):
         elif self.scale == 'symlog':
             a2.set_norm(SymLogNorm(self.symloglin,
                                    vmin=self.range[0],
-                                   vmax=self.range[1])
+                                   vmax=self.range[1],
+                                   base=10)
                         )
             a2.set_clim(self.range)
         else:
