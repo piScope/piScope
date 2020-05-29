@@ -80,7 +80,7 @@ def redirect_to_aviewer(func):
     def checker(*args, **kargs):
         if aviewer is None:
             figure()
-            wx.Yield()  # yield let wx to process event including
+            wx.GetApp().Yield()  # yield let wx to process event including
             # project_tree_widget update
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = _hold
@@ -96,7 +96,7 @@ def redirect_to_aviewer_3D(func):
     def checker(*args, **kargs):
         if aviewer is None:
             figure()
-            wx.Yield()  # yield let wx to process event including
+            wx.GetApp().Yield()  # yield let wx to process event including
             # project_tree_widget update
         m = getattr(aviewer, func.__name__)
         kargs['hold'] = _hold
@@ -1209,6 +1209,8 @@ def cbar(*args, **kwargs):
 #
 #   functions which are actually implemented here
 #
+
+
 @check_aviewer
 def aviewer():
     return aviewer
@@ -1458,13 +1460,15 @@ def videoviewer(file='', book=None):
     viewer = figure(file=file, book=book, viewer=VideoViewer)
     return viewer
 
+
 def waveviewer(file='', book=None, nframe=30, sign=-1):
 
     from ifigure.widgets.wave_viewer import WaveViewer
     viewer = figure(file=file, book=book, viewer=WaveViewer)
-    viewer.sign=sign
-    viewer.nframe=nframe
+    viewer.sign = sign
+    viewer.nframe = nframe
     return viewer
+
 
 def video(*args, **kargs):
     '''
@@ -1481,17 +1485,18 @@ def video(*args, **kargs):
         y = args[2]
     else:
         raise ValueError
-    
+
     v = videoviewer()
     o = v.image(*args, **kargs)
     v.goto_frame(0)
 
     return v
 
+
 def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, stage2=True, help=False):
     '''
     futurize : an interface to PY2->PY3 conversion utility.
-       
+
        it uses futurizer in future module. Default actin is to perform
        both stage1 and stage2 conversion. 
 
@@ -1507,7 +1512,7 @@ def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, s
        stage1: perform stage 1 conversion
        stage2: perform stage 2 conversion
     '''
-    
+
     from ifigure.utils.future import futurizer as ft
     futurizer = ft()
     if help == True:
@@ -1516,7 +1521,7 @@ def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, s
         return
     if obj is None:
         futurizer.process_proj(dryrun=dryrun, verbose=verbose, unicode=unicode,
-                              stage1=stage1, stage2=stage2, help=False)
+                               stage1=stage1, stage2=stage2, help=False)
     from ifigure.mto.py_script import PyScript
     from ifigure.mto.py_code import PyFolder
     if isinstance(obj, PyScript):
@@ -1528,7 +1533,7 @@ def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, s
     else:
         pass
 
-        
+
 def scopenw(book):
     from ifigure.mdsplus.mdsscope_nw import MDSScopeNW
     return MDSScopeNW(book=book)
@@ -1733,7 +1738,7 @@ def quit():
     from __main__ import ifig_app
     ifig_app.onQuit()
 
-    
+
 def glinfo():
     '''
     show OpenGL information
