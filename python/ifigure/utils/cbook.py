@@ -245,12 +245,12 @@ class ImageFiles(object):
         def bmp2array(bm):
             h, w = bm.GetSize()
             im = bm.ConvertToImage()
-            array = np.fromstring(bytes(im.GetData()), dtype=np.uint8)
+            array = np.frombuffer(bytes(im.GetData()), dtype=np.uint8).copy()
             array = array.reshape(w, h, -1)
             alpha = image_GetAlpha(im)
             if alpha is not None:
-                alpha = np.fromstring(bytes(image_GetAlpha(im)),
-                                      dtype=np.uint8).reshape(w, h, -1)
+                alpha = np.frombuffer(bytes(image_GetAlpha(im)),
+                                      dtype=np.uint8).reshape(w, h, -1).copy()
             else:
                 alpha = np.zeros((w, h, 1), dtype=np.uint8)+255
             return array, alpha,

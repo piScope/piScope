@@ -644,7 +644,8 @@ class BitmapButtons(wx.Panel):
                 h, w = bitmap.GetSize()
 
                 image = bitmap.ConvertToImage()
-                array = np.fromstring(bytes(image.GetData()), dtype=np.uint8)
+                array = np.frombuffer(bytes(image.GetData()), dtype=np.uint8)
+                array = array.copy()
                 array = array.reshape(w, h, -1)
             else:
                 array = imagearray[name]

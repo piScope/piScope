@@ -126,7 +126,7 @@ class WindowList(list):
     def get_next(self, current):
         ret = self._get_valid_item()
         self._validate_ref()
-        id = ret.index(current)+1
+        id = ret.index(current) + 1
         if id >= len(self):
             id = 0
         return self[id]()
@@ -134,9 +134,9 @@ class WindowList(list):
     def get_prev(self, current):
         ret = self._get_valid_item()
         self._validate_ref()
-        id = ret.index(current)-1
+        id = ret.index(current) - 1
         if id < 0:
-            id = len(self)-1
+            id = len(self) - 1
         return self[id]()
 
     def _get_valid_item(self):
@@ -166,7 +166,7 @@ ID_SAVEDOC = wx.NewIdRef(count=1)
 ID_SAVEASDOC = wx.NewIdRef(count=1)
 ID_RECENT = wx.NewIdRef(count=1)
 
-RECENT_FILE = deque(['']*10, 10)
+RECENT_FILE = deque([''] * 10, 10)
 
 
 class ifigure_app(BookViewerFrame):
@@ -228,7 +228,7 @@ class ifigure_app(BookViewerFrame):
         self.aconfig.add_user_path()
 
         self.Layout()
-        
+
         if not hide:
             wx.CallAfter(self.Show, True)
             wx.CallAfter(self.Raise)
@@ -241,14 +241,14 @@ class ifigure_app(BookViewerFrame):
 
         msx, msy = self.GetSize()
         if msy > dy:
-            msy = dy-50
+            msy = dy - 50
         if msx > dx:
-            msy = dx-50
+            msy = dx - 50
         self.SetSize((msx, msy))
         self.Layout()
         h, w = self.GetPosition()
         if h < 0 or w < 0:
-            self.SetSize((msx-(100-h), msy-(100-h)))
+            self.SetSize((msx - (100 - h), msy - (100 - h)))
             self.SetPosition((100, 100))
 
         wx.CallAfter(self.CentreOnScreen)
@@ -267,15 +267,16 @@ class ifigure_app(BookViewerFrame):
         set_aviewer(self._aviewer)
 
     def get_components(self):
-        return [self.config, self.appearanceconfig, self.po, self.helper, self.aconfig]
+        return [self.config, self.appearanceconfig,
+                self.po, self.helper, self.aconfig]
 
     def load_pref(self):
         from ifigure.utils.setting_parser import iFigureSettingParser as SP
         p = SP()
         names = ['cursor_config', 'visual_config']
         for name in names:
-            var = p.read_setting('pref.'+name)
-            d = getattr(ifigure, '_'+name)
+            var = p.read_setting('pref.' + name)
+            d = getattr(ifigure, '_' + name)
             for key in var:
                 d[key] = var[key]
 
@@ -284,8 +285,8 @@ class ifigure_app(BookViewerFrame):
         p = SP()
         names = ['cursor_config', 'visual_config']
         for name in names:
-            d = getattr(ifigure, '_'+name)
-            p.write_setting('pref.'+name, d)
+            d = getattr(ifigure, '_' + name)
+            p.write_setting('pref.' + name, d)
 
     def InitUI(self, parent, title, noPyShell=False):
         # A Statusbar in the bottom of the window
@@ -333,7 +334,6 @@ class ifigure_app(BookViewerFrame):
         self._rebuild_ifigure_canvas()
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
-
 
         # File Menu
         newmenu = wx.Menu()
@@ -481,7 +481,7 @@ class ifigure_app(BookViewerFrame):
         # self.SetAcceleratorTable(aTable)
 
 #       self.Layout()
-  
+
         self.panel2.Hide()
         self.gui_tree.hide_toggle_menu(self.panel2)
         self.gui_tree.rebuild_menu()
@@ -491,7 +491,7 @@ class ifigure_app(BookViewerFrame):
         self.gui_tree.set_splitters()
         self.Layout()
         size = self.GetSize()
-        self.gui_tree.set_sashposition([200, size[1]-100, 300])
+        self.gui_tree.set_sashposition([200, size[1] - 100, 300])
         self.property_editor.set_sizehint()
 
   #      if os.path.exists(geom_file):
@@ -501,7 +501,7 @@ class ifigure_app(BookViewerFrame):
             if "editor_detached" in val:
                 #               print 'editor_detached', val["editor_detached"]
                 self.script_editor._first_open_style = val["editor_detached"]
-        except:
+        except BaseException:
             self.book.set_open(True)
         else:
             val["sh"][1] = False  # this is to hide script editor
@@ -513,8 +513,6 @@ class ifigure_app(BookViewerFrame):
             self.gui_tree.set_showhide(val["sh"])
             self.gui_tree.update_check()
             self.gui_tree.set_splitters()
-
-            self.CenterOnScreen()
 
             self.Layout()
             self.gui_tree.set_sashposition(val["pos"])
@@ -536,7 +534,8 @@ class ifigure_app(BookViewerFrame):
 
         from ifigure.widgets.taskbar import TaskBarIcon
         self.tbicon = TaskBarIcon(self)
-
+        self.CenterOnScreen()
+        
     def onUpdateUI(self, evt):
         if evt.GetId() == ID_DETACH_EDITOR:
             if (self.script_editor.GetTopLevelParent() == self and
@@ -671,12 +670,12 @@ class ifigure_app(BookViewerFrame):
                 self, 'Save job is running.', 'Please wait', 0)
             return
         local_lc.release()
-        
+
         if path is None:
             path = dialog.read(parent=self,
                                message="Select project (.pfz) to open",
                                wildcard='*.pfz',
-                               defaultdir = os.getcwd())
+                               defaultdir=os.getcwd())
         if path != '':
             call_close = (self.proj is not None)
             if not self.open_file(path, call_close=call_close):
@@ -698,13 +697,13 @@ class ifigure_app(BookViewerFrame):
             try:
                 rule = x['ext']
                 p = re.compile(rule)
-            except:
+            except BaseException:
                 print('compile error of regular expression: ' + rule)
             if p.match(basepath) is not None:
                 if not x['use']:
                     continue
                 command = x['action']
-                command = command.replace('{1}', '"'+path+'"')
+                command = command.replace('{1}', '"' + path + '"')
                 command = command.replace('{top}', 'proj')
                 return command
         return ''
@@ -959,7 +958,8 @@ class ifigure_app(BookViewerFrame):
 
     def onNewDoc(self, e=None):
         #        path = obj.path2fullpath()
-        if not self.gui_tree.get_toggle(self.panel2) and self.isEditorAttached():
+        if not self.gui_tree.get_toggle(
+                self.panel2) and self.isEditorAttached():
             #             self.gui_tree.toggle_panel(self.panel2, True)
             self.gui_tree.set_showhide([True], self.panel2)
             self.gui_tree.show_toggle_menu(self.panel2)
@@ -1021,9 +1021,9 @@ class ifigure_app(BookViewerFrame):
             for v in opend_book_data:
                 if isinstance(v, tuple):
                     v = {'module': v[0],
-                         'class':  v[1],
-                         'path':   v[2],
-                         'ipage':  v[3]}
+                         'class': v[1],
+                         'path': v[2],
+                         'ipage': v[3]}
                 try:
                     mod = __import__(v['module'])
                     mod = sys.modules[v['module']]
@@ -1042,7 +1042,7 @@ class ifigure_app(BookViewerFrame):
                                                          w=self,
                                                          viewer=cls,
                                                          **kargs)
-                except:
+                except BaseException:
                     import traceback
                     traceback.print_exc()
 
@@ -1058,7 +1058,7 @@ class ifigure_app(BookViewerFrame):
 
         path = self.proj.getvar("filename")
         if path is None:
-            local_lc.release()                    
+            local_lc.release()
             self.onSaveAs(e)
         else:
             self.save_gui_setting()
@@ -1091,9 +1091,9 @@ class ifigure_app(BookViewerFrame):
         self.write_launcher_file(name)
 
         if len(title) > 0:
-            xxx = ['piScope',  name, title]
+            xxx = ['piScope', name, title]
         else:
-            xxx = ['piScope',  name]
+            xxx = ['piScope', name]
         title = ':'.join(xxx)
         if not self.proj.get_saved():
             title = title + '*'
@@ -1101,7 +1101,7 @@ class ifigure_app(BookViewerFrame):
         from ifigure.utils.mp_tarzip import MPTarzip
         if not MPTarzip().isReady():
             title = title + ' (save project in progress)'
-        #else:
+        # else:
         #    MPTarzip.lc.release()
         self.SetTitle(title)
 
@@ -1141,14 +1141,14 @@ class ifigure_app(BookViewerFrame):
 
         try:
             def_path = os.path.dirname(opath)
-        except:
+        except BaseException:
             def_path = os.getcwd()
         path = dialog.write(parent=self, message="Enter Project File Name",
                             defaultfile=os.path.join(def_path, '.pfz'))
 
         if path != '':
             if path[-4:] != '.pfz':
-                path = path+'.pfz'
+                path = path + '.pfz'
             print(("saving to " + path))
             self.proj_tree_viewer.ch.savetofile(filename=os.path.join(
                 self.proj.getvar("wdir"), '.command_history'))
@@ -1165,7 +1165,7 @@ class ifigure_app(BookViewerFrame):
                 self.write_recent_files()
         else:
             local_lc.release()
-            
+
     def onSaveFile(self, e=None, saveas=False):
         self.script_editor.SaveFile(saveas)
 
@@ -1202,7 +1202,7 @@ class ifigure_app(BookViewerFrame):
         try:
             info = wx.AboutDialogInfo()
             use_adv = False
-        except:
+        except BaseException:
             info = wx.adv.AboutDialogInfo()
             use_adv = True
 
@@ -1329,12 +1329,6 @@ class ifigure_app(BookViewerFrame):
             local_lc.acquire()
         local_lc.release()
 
-        import multiprocessing
-        children = multiprocessing.active_children()
-        if len(children) > 0:
-            dprint1("terminating active children : " + str(len(children)))
-            for x in children: x.terminate()
-        
         dprint1("ending program...(window close)")
         from ifigure.widgets.debugger import is_waiting
         if is_waiting():
@@ -1380,6 +1374,16 @@ class ifigure_app(BookViewerFrame):
         except PyDeadObjectError:
             pass
 
+        self.proj.destroy()
+        
+        import multiprocessing
+        children = multiprocessing.active_children()
+        if len(children) > 0:
+            dprint1("terminating active children : " + str(len(children)))
+            for x in children:
+                x.terminate()
+
+        
         # close script editor if it is detached
         try:
             from ifigure.mto.hg_support import diffwindow
@@ -1407,7 +1411,7 @@ class ifigure_app(BookViewerFrame):
         val = {"version": 0, "size": size, "sh": sh, "pos": pos,
                'editor_detached': not self.isEditorAttached(),
                'RECENT_FILE': RECENT_FILE}
-        
+
         from ifigure.ifigure_config import geom_file
         fid = open(geom_file, 'wb')
         pickle.dump(val, fid)
@@ -1651,7 +1655,7 @@ class ifigure_app(BookViewerFrame):
 
     def run_text(self, txt, no_exec=False):
         if not no_exec:
-            self.shell.lvar['command'] = txt+'\n'
+            self.shell.lvar['command'] = txt + '\n'
             self.shell.execute_text(txt)
         else:
             self.shell.write(txt)
@@ -1696,7 +1700,7 @@ class ifigure_app(BookViewerFrame):
             else:
                 relpath = item
             if hasattr(item, 'td'):
-                relpath = relpath + '\t'+item.td
+                relpath = relpath + '\t' + item.td
             fid.write(relpath + '\n')
         fid.close()
 
@@ -1890,7 +1894,7 @@ class ifigure_app(BookViewerFrame):
         if viewer is None:
             print(self.proj.getvar("filename"))
             return
-        
+
         if evt.isPropShown is not None:
             if viewer.isPropShown() != evt.isPropShown:
                 wx.CallAfter(viewer.toggle_property)
@@ -1899,8 +1903,8 @@ class ifigure_app(BookViewerFrame):
         if evt.pos is not None:
             from ifigure.utils.cbook import get_current_display_size
             x0, y0, xd, yd = get_current_display_size(self)
-            if (evt.pos[0] < 0.9*xd and
-                    evt.pos[1] < 0.9*yd):
+            if (evt.pos[0] < 0.9 * xd and
+                    evt.pos[1] < 0.9 * yd):
                 wx.CallAfter(viewer.SetPosition, evt.pos)
         return viewer
 
@@ -2047,7 +2051,7 @@ class ifigure_app(BookViewerFrame):
         server = ifigure.server.Server()
         try:
             response = server.process(evt.command)
-        except:
+        except BaseException:
             import traceback
             traceback.print_exc()
             response = 'failed'
@@ -2055,7 +2059,7 @@ class ifigure_app(BookViewerFrame):
 
     def use_server(self):
         from six.moves import queue as Queue
-        
+
         self.server_response_queue = Queue.Queue()
         return self.server_response_queue
 
@@ -2129,7 +2133,7 @@ class MyApp(wx.App):
         for w in x:
             try:
                 w.Raise()
-            except:
+            except BaseException:
                 import traceback
                 traceback.print_exc()
                 pass
@@ -2172,13 +2176,13 @@ class MyApp(wx.App):
                     try:
                         x.Show()
                         x.Raise()
-                    except:
+                    except BaseException:
                         pass
             else:
                 for x in self._palettes[key]:
                     try:
                         x.Hide()
-                    except:
+                    except BaseException:
                         pass
 
     def get_ifig_app(self):

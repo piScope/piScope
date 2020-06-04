@@ -1,4 +1,5 @@
 from __future__ import print_function
+from ifigure.matplotlib_mod.canvas_common import *
 # uncomment the following to use wx rather than wxagg
 
 import numpy as np
@@ -7,6 +8,7 @@ import wx
 import weakref
 import array
 import gc
+import traceback
 
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
@@ -22,7 +24,6 @@ from operator import itemgetter
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
 
-from ifigure.matplotlib_mod.canvas_common import *
 
 vert_suffix = '_15.vert'
 frag_suffix = '_15.frag'
@@ -30,6 +31,7 @@ geom_suffix = '_15.geom'
 
 #depth_stencil_format = GL_DEPTH24_STENCIL8
 depth_stencil_format = GL_DEPTH32F_STENCIL8
+
 
 class dummy(object):
     pass
@@ -109,7 +111,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             #print("deleteing n", n)
             del self.vbo_check[n]
         gc.collect()
-        
+
     def set_depth_test(self):
         if self._do_depth_test:
             glEnable(GL_DEPTH_TEST)
@@ -169,8 +171,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         # compile shader and set uniform variables
         # set viewing projection
-        fs = compile_file('depthmap'+frag_suffix, GL_FRAGMENT_SHADER)
-        vs = compile_file('depthmap'+vert_suffix, GL_VERTEX_SHADER)
+        fs = compile_file('depthmap' + frag_suffix, GL_FRAGMENT_SHADER)
+        vs = compile_file('depthmap' + vert_suffix, GL_VERTEX_SHADER)
         # default vertex array object was deprecated, so I need this
         vao = glGenVertexArrays(1)
         glBindVertexArray(vao)
@@ -199,25 +201,25 @@ class MyGLCanvas(glcanvas.GLCanvas):
             define_unform(self.dshader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
-        self.set_uniform(glUniform1i,  'uisMarker', 0)
-        self.set_uniform(glUniform1i,  'uisImage', 0)
-        self.set_uniform(glUniform1i,  'uUseClip', 1)
-        self.set_uniform(glUniform1i,  'uHasHL', 0)
+        self.set_uniform(glUniform1i, 'uisMarker', 0)
+        self.set_uniform(glUniform1i, 'uisImage', 0)
+        self.set_uniform(glUniform1i, 'uUseClip', 1)
+        self.set_uniform(glUniform1i, 'uHasHL', 0)
         self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (0, 0, 0))
         self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (1, 1, 1))
-        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
-        self.set_uniform(glUniform1i,  'uAlphaTest', 0)
-        self.set_uniform(glUniform1f,  'uAlphaLimit', 0.0)
+        self.set_uniform(glUniform1i, 'uUseArrayID', 0)
+        self.set_uniform(glUniform1i, 'uAlphaTest', 0)
+        self.set_uniform(glUniform1f, 'uAlphaLimit', 0.0)
         self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0.65))
-        self.set_uniform(glUniform1i,  'uUseSolidColor', 0)
+        self.set_uniform(glUniform1i, 'uUseSolidColor', 0)
         self.set_uniform(glUniform4fv, 'uColor', 1, (0, 0, 0., 1.0))
 
         #
         # line & triangles
         #
-        fs = compile_file('lines'+frag_suffix, GL_FRAGMENT_SHADER)
-        gs = compile_file('lines'+geom_suffix, GL_GEOMETRY_SHADER)
-        vs = compile_file('lines'+vert_suffix, GL_VERTEX_SHADER)
+        fs = compile_file('lines' + frag_suffix, GL_FRAGMENT_SHADER)
+        gs = compile_file('lines' + geom_suffix, GL_GEOMETRY_SHADER)
+        vs = compile_file('lines' + vert_suffix, GL_VERTEX_SHADER)
         vao = glGenVertexArrays(1)
         glBindVertexArray(vao)
         self.lshader = shaders.compileProgram(vs, gs, fs)
@@ -228,12 +230,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.lshader)
 
         anames = anames0 + ['inNormal', 'inNormalMatrix',
-                            'Vertex2',  'vertex_id', 'inTexCoord']
+                            'Vertex2', 'vertex_id', 'inTexCoord']
         for name in anames:
             define_attrib(self.lshader, name)
         names = names0 + ['uLightDir', 'uLightColor',
                           'uLightPow', 'uLightPowSpec',
-                          'uMaxAlpha',  'uShadowM',
+                          'uMaxAlpha', 'uShadowM',
                           'uShadowMaxZ', 'uShadowMinZ',
                           'uShadowTex', 'uUseShadowMap',
                           'uShadowTexSize', 'uShadowTex2',
@@ -246,9 +248,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         for name in names:
             define_unform(self.lshader, name)
 
-        fs = compile_file('lines'+frag_suffix, GL_FRAGMENT_SHADER)
-        gs = compile_file('triangles'+geom_suffix, GL_GEOMETRY_SHADER)
-        vs = compile_file('lines'+vert_suffix, GL_VERTEX_SHADER)
+        fs = compile_file('lines' + frag_suffix, GL_FRAGMENT_SHADER)
+        gs = compile_file('triangles' + geom_suffix, GL_GEOMETRY_SHADER)
+        vs = compile_file('lines' + vert_suffix, GL_VERTEX_SHADER)
         vao = glGenVertexArrays(1)
         glBindVertexArray(vao)
         self.tshader = shaders.compileProgram(vs, gs, fs)
@@ -266,8 +268,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #
         #  default shader
         #
-        fs = compile_file('simple_oit'+frag_suffix, GL_FRAGMENT_SHADER)
-        vs = compile_file('simple'+vert_suffix, GL_VERTEX_SHADER)
+        fs = compile_file('simple_oit' + frag_suffix, GL_FRAGMENT_SHADER)
+        vs = compile_file('simple' + vert_suffix, GL_VERTEX_SHADER)
         vao = glGenVertexArrays(1)
         glBindVertexArray(vao)
 
@@ -280,12 +282,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.shader)
 
         anames = anames0 + ['inNormal', 'inNormalMatrix',
-                            'Vertex2',  'vertex_id', 'inTexCoord']
+                            'Vertex2', 'vertex_id', 'inTexCoord']
         for name in anames:
             define_attrib(self.shader, name)
         names = names0 + ['uLightDir', 'uLightColor',
                           'uLightPow', 'uLightPowSpec',
-                          'uMaxAlpha',  'uShadowM',
+                          'uMaxAlpha', 'uShadowM',
                           'uShadowMaxZ', 'uShadowMinZ',
                           'uShadowTex', 'uUseShadowMap',
                           'uShadowTexSize', 'uShadowTex2',
@@ -299,21 +301,21 @@ class MyGLCanvas(glcanvas.GLCanvas):
             define_unform(self.shader, name)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0., 0))
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, (0, 0, 0., 0))
-        self.set_uniform(glUniform1i,  'uisMarker', 0)
-        self.set_uniform(glUniform1i,  'uisImage', 0)
-        self.set_uniform(glUniform1i,  'uisAtlas', 0)
-        self.set_uniform(glUniform1i,  'uUseClip', 1)
-        self.set_uniform(glUniform1i,  'uHasHL', 0)
+        self.set_uniform(glUniform1i, 'uisMarker', 0)
+        self.set_uniform(glUniform1i, 'uisImage', 0)
+        self.set_uniform(glUniform1i, 'uisAtlas', 0)
+        self.set_uniform(glUniform1i, 'uUseClip', 1)
+        self.set_uniform(glUniform1i, 'uHasHL', 0)
         self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0.65))
-        self.set_uniform(glUniform1i,  'uLineStyle', -1)
-        self.set_uniform(glUniform1i,  'uisFinal', 0)
-        self.set_uniform(glUniform1i,  'uisSolid', 0)
-        self.set_uniform(glUniform1i,  'uisClear', 0)
-        self.set_uniform(glUniform2iv,  'uSCSize', 1, (0, 0))
-        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
-        self.set_uniform(glUniform1i,  'uAlphaTest', 0)
-        self.set_uniform(glUniform1f,  'uAlphaLimit', 0.0)
-        self.set_uniform(glUniform1i,  'uUseSolidColor', 0)
+        self.set_uniform(glUniform1i, 'uLineStyle', -1)
+        self.set_uniform(glUniform1i, 'uisFinal', 0)
+        self.set_uniform(glUniform1i, 'uisSolid', 0)
+        self.set_uniform(glUniform1i, 'uisClear', 0)
+        self.set_uniform(glUniform2iv, 'uSCSize', 1, (0, 0))
+        self.set_uniform(glUniform1i, 'uUseArrayID', 0)
+        self.set_uniform(glUniform1i, 'uAlphaTest', 0)
+        self.set_uniform(glUniform1f, 'uAlphaLimit', 0.0)
+        self.set_uniform(glUniform1i, 'uUseSolidColor', 0)
         self.set_uniform(glUniform4fv, 'uColor', 1, (0, 0, 0., 1.0))
 
         self.set_lighting()
@@ -334,11 +336,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         iNumSamples = (GLint * 1)()
         glGetIntegerv(GL_SAMPLE_BUFFERS, iMultiSample)
         glGetIntegerv(GL_SAMPLES, iNumSamples)
-        print(("MSAA on, GL_SAMPLE_BUFFERS ",  np.array(iMultiSample),
-              " ", np.array(iNumSamples)))
+        print(("MSAA on, GL_SAMPLE_BUFFERS ", np.array(iMultiSample),
+               " ", np.array(iNumSamples)))
 
     def setLineWidth(self, l):
-        self.set_uniform(glUniform1f,  'uLineWidth', l)
+        self.set_uniform(glUniform1f, 'uLineWidth', l)
         #print('uLineWidth', l)
         #l = min(l, self._line_width_range[1])
         #l = max(l, self._line_width_range[0])
@@ -346,9 +348,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def setSolidColor(self, c):
         if c == -1:
-            self.set_uniform(glUniform1i,  'uUseSolidColor', 0)
+            self.set_uniform(glUniform1i, 'uUseSolidColor', 0)
         else:
-            self.set_uniform(glUniform1i,  'uUseSolidColor', 1)
+            self.set_uniform(glUniform1i, 'uUseSolidColor', 1)
             self.set_uniform(glUniform4fv, 'uColor', 1, tuple(c))
 
     def EnableVertexAttrib(self, name):
@@ -415,7 +417,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                      (1.0, 1.0, 1.0, 1.0))
-        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1,  0.0)
+        glUniform1fv(self.shader.uniform_loc['uLightPow'], 1, 0.0)
         glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1, 0.0)
         self._use_shadow_map = False
 
@@ -430,7 +432,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.InitGL()
             self.init = True
         event.Skip()
-        #self.OnDraw()
+        # self.OnDraw()
 
     def OnSize(self, event):
         if MyGLCanvas.offscreen and self.GetSize()[0] > 2:
@@ -497,8 +499,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         bufs = [buf, dbuf]
 
         if multisample > 1:
-            wim = w//multisample
-            him = h//multisample
+            wim = w // multisample
+            him = h // multisample
 
             frame2 = glGenFramebuffers(1)
             glBindFramebuffer(GL_FRAMEBUFFER, frame2)
@@ -537,8 +539,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         try:
             w, h, m, frame, buf, stc, dtex = self.frame_list[c]
             return w, h, m, frame, buf, stc, dtex
-        except:
-            return [None]*6
+        except BaseException:
+            return [None] * 6
 
     def force_fill_screen(self):
         # draw a big rectangle covering the entire 3D scene
@@ -547,7 +549,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # It clears a screen area where 3D object exists. Otherwise
         # the buffer is not untouched...
         # This routine forces to erase entire scene.
-        I_M = np.diag([1.0]*4)
+        I_M = np.diag([1.0] * 4)
         I_MS = np.array([[1., 0., 0., -0.5],
                          [0., 1., 0., -0.5],
                          [0., 0., 1., -0.5],
@@ -555,10 +557,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniformMatrix4fv, 'uWorldM', 1, GL_TRUE, I_M)
         self.set_uniform(glUniformMatrix4fv, 'uViewM', 1, GL_TRUE, I_MS)
         self.set_uniform(glUniformMatrix4fv, 'uProjM', 1, GL_TRUE, I_M)
-        self.set_uniform(glUniform1i,  'uUseClip', 0)
+        self.set_uniform(glUniform1i, 'uUseClip', 0)
         glDisable(GL_BLEND)
         glDepthMask(GL_FALSE)
-        glColor4f(1., 1, 1,  0)
+        glColor4f(1., 1, 1, 0)
         glRecti(-1, -1, 2, 2)
         self.set_depth_mask()
         # glFinish()
@@ -570,22 +572,22 @@ class MyGLCanvas(glcanvas.GLCanvas):
         dist = self.M[-1]
 
         # viwe range shoud be wide enough to avoid near clipping
-        minZ = dist-near_clipping
-        maxZ = dist+near_clipping
-        self.set_uniform(glUniform1f,  'nearZ', -minZ)
-        self.set_uniform(glUniform1f,  'farZ',  -maxZ)
+        minZ = dist - near_clipping
+        maxZ = dist + near_clipping
+        self.set_uniform(glUniform1f, 'nearZ', -minZ)
+        self.set_uniform(glUniform1f, 'farZ', -maxZ)
 
         if self._use_frustum:
-            projM = frustum(-minZ/near_clipping,
-                             minZ/near_clipping,
-                             -minZ/near_clipping,
-                             minZ/near_clipping,
-                             minZ, maxZ, view_scale=self._gl_scale)
-            self.set_uniform(glUniform1i,  'isFrust',  1)
+            projM = frustum(-minZ / near_clipping,
+                            minZ / near_clipping,
+                            -minZ / near_clipping,
+                            minZ / near_clipping,
+                            minZ, maxZ, view_scale=self._gl_scale)
+            self.set_uniform(glUniform1i, 'isFrust', 1)
         else:
-            a = dist/near_clipping
+            a = dist / near_clipping
             projM = ortho(-a, a, -a, a, minZ, maxZ, view_scale=self._gl_scale)
-            self.set_uniform(glUniform1i,  'isFrust',  0)
+            self.set_uniform(glUniform1i, 'isFrust', 0)
         projM = np.dot(self.M_extra, projM)
         return projM, minZ, maxZ
 
@@ -624,8 +626,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glViewport(0, 0, w, h)
         R = np.array([0.5, 0.5, 0.5])
-        d = np.array(self._light_direction)[:3]*10
-        E = d/np.sqrt(np.sum(d**2))*self.M[-1] + R
+        d = np.array(self._light_direction)[:3] * 10
+        E = d / np.sqrt(np.sum(d**2)) * self.M[-1] + R
 
         V = np.array((0, 0, 1))
         #zfront, zback = -10, 10
@@ -643,9 +645,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # glLoadMatrixf(np.transpose(M).flatten())
 
         if self._use_clip:
-            self.set_uniform(glUniform1i,  'uUseClip', 1)
+            self.set_uniform(glUniform1i, 'uUseClip', 1)
         else:
-            self.set_uniform(glUniform1i,  'uUseClip', 0)
+            self.set_uniform(glUniform1i, 'uUseClip', 0)
 
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
@@ -688,7 +690,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             glViewport(0, 0, w, h)
 
-            # loading this so that I don't need to compute matrix for normal vec
+            # loading this so that I don't need to compute matrix for normal
+            # vec
             M = np.dot(self.M[1], self.M[0])  # viewM * worldM
             # (core) glLoadMatrixf(np.transpose(M).flatten())
 
@@ -713,9 +716,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                               GL_COLOR_ATTACHMENT1])
             if self._use_clip:
-                self.set_uniform(glUniform1i,  'uUseClip', 1)
+                self.set_uniform(glUniform1i, 'uUseClip', 1)
             else:
-                self.set_uniform(glUniform1i,  'uUseClip', 0)
+                self.set_uniform(glUniform1i, 'uUseClip', 0)
 
             M = np.dot(self.M[1], self.M[0])  # viewM * worldM
             M = np.dot(self.projM, M)  # projM * viewM * worldM
@@ -768,8 +771,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                GL_TEXTURE_2D, texs[4], 0)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-       
-    def do_draw_artists(self, tag,  update_id=False, do_clear=None,
+    def choose_artists(self, aa, draw_arrow):
+        artists = [(a.get_alpha_float(), a) for a in self.artists_data[aa]]
+        artists = list(reversed(sorted(artists, key=lambda x: x[0])))
+        artists = ([(alpha, a) for alpha, a in artists if not a._gl_isLast] +
+                   [(alpha, a) for alpha, a in artists if a._gl_isLast])
+        if draw_arrow:
+            artists = [(alpha, a) for alpha, a in artists if a._gl_isArrow]
+        else:
+            artists = [(alpha, a)
+                       for alpha, a in artists if not a._gl_isArrow]
+        return artists
+        
+    def do_draw_artists(self, tag, update_id=False, do_clear=None,
                         draw_solid=True,
                         draw_non_solid=True,
                         do_clear_depth=False,
@@ -786,23 +800,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
         if do_clear_depth:
             glClear(GL_DEPTH_BUFFER_BIT)
-            
+
         for aa in self.artists_data:
             if not aa is tag:
                 continue
             if not aa in self.vbo:
                 self.vbo[aa] = weakref.WeakKeyDictionary()
             # aa:axes, a: aritsit
-            artists = [(a.get_alpha_float(), a) for a in self.artists_data[aa]]
 
-            artists = list(reversed(sorted(artists, key=lambda x:x[0])))            
-            artists = ([(alpha, a) for alpha, a in artists if not a._gl_isLast] +
-                       [(alpha, a) for alpha, a in artists if a._gl_isLast])
-            
-            if draw_arrow:
-                artists = [(alpha, a) for alpha, a in artists if a._gl_isArrow]                                
-            else:
-                artists = [(alpha, a) for alpha, a in artists if not a._gl_isArrow]                
+            artists = self.choose_artists(aa, draw_arrow)
 
             for alpha, a in artists:
                 if alpha == 1 or alpha is None:
@@ -821,21 +827,23 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if self._artist_mask is not None and not a in self._artist_mask:
                     continue
                 if update_id:
-                    cid = ((int(current_id) % 256)/255.,
-                           (int(current_id)//256 % 256)/255.,
+                    cid = ((int(current_id) % 256) / 255.,
+                           (int(current_id) // 256 % 256) / 255.,
                            0.0, 1.0)
                     #       (int(current_id)/256**2 % 256)/255., 1.0)
-                    self.set_uniform(glUniform4fv, 'uArtistID', 1,  cid)
+                    self.set_uniform(glUniform4fv, 'uArtistID', 1, cid)
                 if ((a._gl_hl and not self._hittest_map_update)
                         and not self._no_hl):
                     # second condition indicate it is during pan/rotate
                     self.set_uniform(glUniform1i, 'uHasHL', 1)
                 else:
                     self.set_uniform(glUniform1i, 'uHasHL', 0)
+                    
                 if not a in self.vbo[aa]:
-                    xxx = [None]*len(self.artists_data[aa][a])
+                    xxx = [None] * len(self.artists_data[aa][a])
                 else:
                     xxx = self.vbo[aa][a]
+                    
                 for k, data in enumerate(self.artists_data[aa][a]):
                     m = getattr(self, 'makevbo_' + data[0])
                     if len(xxx) == k:
@@ -843,16 +851,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     xxx[k] = m(xxx[k], *data[1], **data[2])
                     m = getattr(self, 'draw_' + data[0])
                     m(xxx[k], *data[1], **data[2])
-                    
+
                 self.vbo[aa][a] = xxx
                 self.vbo_check[str(id(a)) + '_' + str(id(aa))] = xxx
-                
+
                 id_dict[int(current_id)] = weakref.ref(a)
                 current_id = current_id + 1
         # glFinish()
         return id_dict, need_oit
 
-#    def make_shadow_texture(self, w, h, data, data2 = None):
     def make_shadow_texture(self, w, h, data2=None):
         #        glBindFramebuffer(GL_FRAMEBUFFER, frame)
         shadow_tex = glGenTextures(1)
@@ -867,7 +874,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #data = glReadPixels(0,0, w, h, GL_RGBA, GL_UNSIGNED_BYTE)
         #data = (np.fromstring(data, np.uint8).reshape(h, w, -1))
         #self.shadowc =  data.copy()
-        glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
                          0, 0, w, h, 0)
         glActiveTexture(GL_TEXTURE0)
 
@@ -884,7 +891,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             #          w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT,
             #         data2)
             glReadBuffer(GL_COLOR_ATTACHMENT1)
-            glCopyTexImage2D(GL_TEXTURE_2D, 0,  GL_DEPTH_COMPONENT,
+            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
                              0, 0, w, h, 0)
             glActiveTexture(GL_TEXTURE0 + 2)
 #           self.set_uniform(glUniform1i, 'uShadowTex2', 2)
@@ -911,7 +918,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def draw_mpl_artists(self, tag):
         self._use_frustum = tag._use_frustum
         self._use_clip = tag._use_clip
-        
+
         self.gc_artist_data()
         self.gc_vbo_dict()
         
@@ -929,7 +936,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.M = tag._matrix_cache
         self.M_extra = tag._matrix_cache_extra
         # glPushMatrix()
-        self.set_uniform(glUniform1i,  'uisSolid', 1)
+        self.set_uniform(glUniform1i, 'uisSolid', 1)
         if self._use_shadow_map:
             shadow_params = self.use_depthmap_mode(frame, buf, texs, w, h)
             self.do_draw_artists(tag,
@@ -988,7 +995,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                              draw_non_solid=False,
                              do_clear_depth=True)
         if need_oit:
-            self.set_uniform(glUniform1i,  'uisSolid', 0)
+            self.set_uniform(glUniform1i, 'uisSolid', 0)
             self.set_uniform(glUniform1i, 'uUseShadowMap', 0)
 
             ##
@@ -1034,19 +1041,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
             #glBlendFunc(GL_SRC_ALPHA, GL_ZERO)
             #glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA)
             glDepthMask(GL_FALSE)
-            self.set_uniform(glUniform1i,  'uisFinal', 1)
+            self.set_uniform(glUniform1i, 'uisFinal', 1)
             self._do_depth_test = False
             glDrawBuffers(1, [GL_COLOR_ATTACHMENT0])
             self.do_draw_artists(tag, draw_solid=False)
-            self.set_uniform(glUniform1i,  'uisFinal', 0)
+            self.set_uniform(glUniform1i, 'uisFinal', 0)
             self._do_depth_test = True
 
         if self._hittest_map_update:
             self._im_stored = self.read_data(tag)
-        self.do_draw_artists(tag, 
+        self.do_draw_artists(tag,
                              draw_non_solid=False,
                              do_clear_depth=True,
-                             draw_arrow = True)
+                             draw_arrow=True)
         # glFinish()
         # glPopMatrix()
 
@@ -1056,8 +1063,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._do_draw_mpl_artists = False
         self._artist_mask = None
         return id_dict
-    
-    @property                           
+
+    @property
     def stored_im(self):
         return self._im_stored
 
@@ -1067,8 +1074,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if multisample > 1:
             frame2 = frames[1]
-            wim = w//multisample
-            him = h//multisample
+            wim = w // multisample
+            him = h // multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT1)
@@ -1102,29 +1109,29 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if stream_read:
             pixel_buffers = glGenBuffers(2)
-            size = wim*him
+            size = wim * him
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[0])
-            glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+            glBufferData(GL_PIXEL_PACK_BUFFER, size * 4, None, GL_STREAM_READ)
 
             glReadPixels(0, 0, wim, him, GL_RGBA,
                          GL_UNSIGNED_BYTE, c_void_p(0))
             data2 = string_at(glMapBuffer(
-                GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+                GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
             # *255.
             idmap = (np.fromstring(data2, np.uint8).reshape(him, wim, -1))
-            idmap2 = idmap[:, :, 2] + idmap[:, :, 3]*256
-            idmap0 = idmap[:, :, 0] + idmap[:, :, 1]*256
+            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
+            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_buffers[1])
-            glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+            glBufferData(GL_PIXEL_PACK_BUFFER, size * 4, None, GL_STREAM_READ)
             glReadPixels(0, 0, wim, him, GL_DEPTH_COMPONENT,
                          GL_FLOAT, c_void_p(0))
 
             data3 = string_at(glMapBuffer(
-                GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size*4)
+                GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
             depth = np.fromstring(data3, np.float32).reshape(him, wim)
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -1134,9 +1141,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             data2 = glReadPixels(0, 0, wim, him, GL_RGBA, GL_FLOAT)
             data3 = glReadPixels(0, 0, wim, him, GL_DEPTH_COMPONENT, GL_FLOAT)
-            idmap = (np.fromstring(data2, np.float32).reshape(him, wim, -1))*255.
-            idmap2 = idmap[:, :, 2] + idmap[:, :, 3]*256
-            idmap0 = idmap[:, :, 0] + idmap[:, :, 1]*256
+            idmap = (
+                np.fromstring(
+                    data2, np.float32).reshape(
+                    him, wim, -1)) * 255.
+            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
+            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             depth = np.fromstring(data3, np.float32).reshape(him, wim)
 
         glReadBuffer(GL_NONE)
@@ -1156,8 +1166,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         ###
         if multisample > 1:
             frame2 = frames[1]
-            wim = w//multisample
-            him = h//multisample
+            wim = w // multisample
+            him = h // multisample
 
             glBindFramebuffer(GL_READ_FRAMEBUFFER, frame)
             glReadBuffer(GL_COLOR_ATTACHMENT0)
@@ -1177,16 +1187,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.set_oit_mode_tex(texs)
         ###
         glReadBuffer(GL_COLOR_ATTACHMENT0)
-        size = wim*him
+        size = wim * him
 
         def read_pixbuf(pixel_buffer):
-            glBufferData(GL_PIXEL_PACK_BUFFER, size*4, None, GL_STREAM_READ)
+            glBufferData(GL_PIXEL_PACK_BUFFER, size * 4, None, GL_STREAM_READ)
             glReadPixels(0, 0, wim, him, GL_RGBA,
                          GL_UNSIGNED_BYTE, c_void_p(0))
 
         def map_pixbuf(pixel_buffer):
             data = string_at(glMapBuffer(GL_PIXEL_PACK_BUFFER,
-                                         GL_READ_ONLY), size*4)
+                                         GL_READ_ONLY), size * 4)
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             return data
         stream_read = True
@@ -1226,7 +1236,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self._data_bk = data
             else:
                 read_buffer = self.PIXBUFS[(self.PIXBUFS[-1]) % nump]
-                map_buffer = self.PIXBUFS[(self.PIXBUFS[-1]+1) % nump]
+                map_buffer = self.PIXBUFS[(self.PIXBUFS[-1] + 1) % nump]
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, read_buffer)
                 read_pixbuf(read_buffer)
                 glBindBuffer(GL_PIXEL_PACK_BUFFER, map_buffer)
@@ -1307,9 +1317,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.EnableVertexAttrib('vertex_id')
             self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
                                      0, None)
-            self.set_uniform(glUniform1i,  'uUseArrayID', 1)
+            self.set_uniform(glUniform1i, 'uUseArrayID', 1)
         else:
-            self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+            self.set_uniform(glUniform1i, 'uUseArrayID', 0)
 
     def draw_polygon(self, vbos, gc, f, c, facecolor=None, edgecolor=None):
         glBindVertexArray(vbos['vao'])
@@ -1412,7 +1422,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableVertexAttrib('vertex_id')
         self.EnableVertexAttrib('Vertex2')
         glViewport(0, 0, w, 1)
-        self.set_uniform(glUniform1i,  'uisAtlas', 1)
+        self.set_uniform(glUniform1i, 'uisAtlas', 1)
         self.set_uniform(glUniform3fv, 'uAtlasParam', 1, [w, w0, h0])
         glDrawArrays(GL_LINE_STRIP, 0, w)
         glReadBuffer(GL_COLOR_ATTACHMENT2)
@@ -1451,7 +1461,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableNormal(vbos)
         lw = gc.get_linewidth()
 
-        self.setLineWidth(lw*multisample)
+        self.setLineWidth(lw * multisample)
         self.setSolidColor(gc._rgb)
         if self._wireframe == 2:
             glDisable(GL_DEPTH_TEST)
@@ -1464,19 +1474,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 'vertex_id', 1, GL_FLOAT, GL_FALSE, 0, None)
             self.EnableVertexAttrib('vertex_id')
 
-        self.set_uniform(glUniform1i,  'uisAtlas', 0)
+        self.set_uniform(glUniform1i, 'uisAtlas', 0)
         if linestyle == '--':
-            self.set_uniform(glUniform1i,  'uLineStyle', 0)
+            self.set_uniform(glUniform1i, 'uLineStyle', 0)
         elif linestyle == '-.':
-            self.set_uniform(glUniform1i,  'uLineStyle', 1)
+            self.set_uniform(glUniform1i, 'uLineStyle', 1)
         elif linestyle == ":":
-            self.set_uniform(glUniform1i,  'uLineStyle', 2)
+            self.set_uniform(glUniform1i, 'uLineStyle', 2)
         else:
-            self.set_uniform(glUniform1i,  'uLineStyle', -1)
+            self.set_uniform(glUniform1i, 'uLineStyle', -1)
 
         glDrawArrays(GL_LINE_STRIP, 0, vbos['count'])
 
-        self.set_uniform(glUniform1i,  'uLineStyle', -1)
+        self.set_uniform(glUniform1i, 'uLineStyle', -1)
         self.setSolidColor(-1)
         self.DisableVertexAttrib('inNormal')
         self.DisableVertexAttrib('inVertex')
@@ -1492,13 +1502,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if rgbFace is None:
             if lw > 0:
                 if (linestyle == '-' or self._p_shader != self.shader):
-                    self.draw_path_drawarray(vbos, gc,  *args, **kwargs)
+                    self.draw_path_drawarray(vbos, gc, *args, **kwargs)
                 elif linestyle == 'None':
                     return
                 else:
                     atlas = self.draw_path_atlas(vbos, gc, *args)
                     kwargs['atlas'] = atlas
-                    self.draw_path_drawarray(vbos, gc,  *args, **kwargs)
+                    self.draw_path_drawarray(vbos, gc, *args, **kwargs)
         else:
             self.draw_polygon(vbos, gc, 0, vbos['count'], facecolor=rgbFace,
                               edgecolor=gc._rgb)
@@ -1525,7 +1535,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if paths[3] is None:
                     norms = None
                 elif len(paths[3]) == 1:
-                    norms = [paths[3]]*len(path[0])
+                    norms = [paths[3]] * len(path[0])
                     norms = np.hstack(norms).astype(np.float32).flatten()
                 else:
                     norms = paths[3].astype(np.float32).flatten()
@@ -1561,7 +1571,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindTexture(GL_TEXTURE_2D, vbos['im'])
         glActiveTexture(GL_TEXTURE0 + 0)
         self.set_uniform(glUniform1i, 'uImageTex', 0)
-        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+        self.set_uniform(glUniform1i, 'uUseArrayID', 0)
 
         self.set_uniform(glUniform1i, 'uisImage', 1)
         if self._wireframe == 2:
@@ -1611,7 +1621,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             else:
                 mode = GL_NEAREST
 
-            h, w,  void = im.shape
+            h, w, void = im.shape
             image_tex = glGenTextures(1)
             glBindTexture(GL_TEXTURE_2D, image_tex)
             glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mode)
@@ -1629,7 +1639,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                      trans, rgbFace=None, array_idx=None):
 
         marker_size = marker_trans[0]
-        h, w,  void = marker_path.shape
+        h, w, void = marker_path.shape
         # this should not be necessary, but some linux box need this.
         self.select_shader(self.lshader)
         self.select_shader(self.shader)
@@ -1657,10 +1667,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         self.setLineWidth(1)
-        glPointSize(marker_size*2*multisample+1)
+        glPointSize(marker_size * 2 * multisample + 1)
 
-        self.set_uniform(glUniform1i,  'uAlphaTest',  1)
-        self.set_uniform(glUniform1f,  'uAlphaLimit', 0.5)
+        self.set_uniform(glUniform1i, 'uAlphaTest', 1)
+        self.set_uniform(glUniform1f, 'uAlphaLimit', 0.5)
         self.set_view_offset()
 
         vertex_id = vbos['vertex_id']
@@ -1668,7 +1678,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.VertexAttribPointer('vertex_id', 1, GL_FLOAT, GL_FALSE,
                                  0, None)
         vertex_id.unbind()
-        self.set_uniform(glUniform1i,  'uUseArrayID', 1)
+        self.set_uniform(glUniform1i, 'uUseArrayID', 1)
         self.EnableVertexAttrib('vertex_id')
 
         glDepthFunc(GL_LEQUAL)
@@ -1677,11 +1687,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         #glDrawArrays(GL_LINES,  0, vbos['count'])
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
-        self.set_uniform(glUniform1i,  'uAlphaTest', 0)
+        self.set_uniform(glUniform1i, 'uAlphaTest', 0)
         # glDisable(GL_POINT_SPRITE)
 
         self.set_uniform(glUniform1i, 'uisMarker', 0)
-        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+        self.set_uniform(glUniform1i, 'uUseArrayID', 0)
         if self._wireframe == 2:
             self.set_depth_test()
 
@@ -1713,14 +1723,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                     usage='GL_STATIC_DRAW')
         return vbos
 
-    def draw_path_collection(self, vbos, gc,  paths,
+    def draw_path_collection(self, vbos, gc, paths,
                              facecolor, edgecolor,
                              linewidth, linestyle, offset,
                              stencil_test=False,
                              lighting=True,
                              view_offset=(0, 0, 0, 0),
                              array_idx=None,
-                             always_noclip = False):                                             
+                             always_noclip=False):
 
         if vbos is None:
             return
@@ -1738,7 +1748,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 self.EnableNormal(vbos)
                 self.EnableFaceColor(vbos)
 
-                self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+                self.set_uniform(glUniform1i, 'uUseArrayID', 0)
                 self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
                 self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
 
@@ -1778,7 +1788,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableNormal(vbos)
         self.EnableEdgeColor(vbos)
 
-        self.set_uniform(glUniform1i,  'uUseArrayID', 0)
+        self.set_uniform(glUniform1i, 'uUseArrayID', 0)
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
 
@@ -1786,7 +1796,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # if not lighting and self._p_shader is self.shader:
         #    ambient, light, specular, shadowmap, clip1, clip2 = self.set_lighting_off()
         if linewidth[0] > 0.0 and not self._shadow:
-            self.setLineWidth(linewidth[0]*multisample)
+            self.setLineWidth(linewidth[0] * multisample)
 
             glDepthFunc(GL_LEQUAL)
 
@@ -1853,9 +1863,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if len(facecolor) == 0:
                 facecolor = np.array([[1, 1, 1, 0]])
             if len(facecolor) == len(counts):
-                col = [list(f)*c for f, c in zip(facecolor, counts)]
+                col = [list(f) * c for f, c in zip(facecolor, counts)]
             else:
-                col = [facecolor]*np.sum(counts)
+                col = [facecolor] * np.sum(counts)
             col = np.hstack(col).astype(np.float32)
             if vbos['fc'] is None:
                 vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
@@ -1869,7 +1879,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if len(edgecolor) == np.sum(counts):
                 col = edgecolor
             else:
-                print(edgecolor.shape, counts)
+                #print(edgecolor.shape, counts)
                 assert False, "edge color length is wrong"
             col = np.hstack(col).astype(np.float32)
             if vbos['ec'] is None:
@@ -1880,7 +1890,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(0)
         return vbos
 
-    def draw_path_collection_e(self, vbos, gc,  paths,
+    def draw_path_collection_e(self, vbos, gc, paths,
                                facecolor, edgecolor,
                                linewidth, linestyle, offset,
                                stencil_test=False,
@@ -1888,12 +1898,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                view_offset=(0, 0, 0, 0),
                                array_idx=None,
                                use_pointfill=True,
-                               always_noclip = False):
+                               always_noclip=False):
         if vbos is None:
             return
 
         if len(paths[4][0]) > 4:
-            self.draw_path_collection(vbos, gc,  paths,
+            self.draw_path_collection(vbos, gc, paths,
                                       facecolor, edgecolor,
                                       linewidth, linestyle, offset,
                                       stencil_test=stencil_test,
@@ -1901,13 +1911,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                       view_offset=view_offset,
                                       array_idx=array_idx)
             if self._use_clip and always_noclip:
-                self.set_uniform(glUniform1i,  'uUseClip', 1)
+                self.set_uniform(glUniform1i, 'uUseClip', 1)
 
             return
         nindex, nindexe, counts = vbos['nindex'], vbos['nindexe'], vbos['counts']
 
         if always_noclip:
-            self.set_uniform(glUniform1i,  'uUseClip', 0)
+            self.set_uniform(glUniform1i, 'uUseClip', 0)
 
         if facecolor is not None and vbos['primitive'] is not None:
             glBindVertexArray(vbos['vao'])
@@ -1916,7 +1926,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.EnableNormal(vbos)
             self.EnableVertexID(vbos)
 
-            offset = list(offset)+[0]
+            offset = list(offset) + [0]
             self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
             self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
 
@@ -1960,13 +1970,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # if not(linewidth[0] > 0.0 and not self._shadow): return
         if self._shadow:
             if self._use_clip and always_noclip:
-                self.set_uniform(glUniform1i,  'uUseClip', 1)
+                self.set_uniform(glUniform1i, 'uUseClip', 1)
             return
-        
+
         if vbos['primitive'] is not None:
             if linewidth[0] == 0.0:
                 if self._use_clip and always_noclip:
-                    self.set_uniform(glUniform1i,  'uUseClip', 1)
+                    self.set_uniform(glUniform1i, 'uUseClip', 1)
                 return
 
         if vbos['eprimitive'] == GL_TRIANGLES:
@@ -1984,11 +1994,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableNormal(vbos)
         self.EnableVertexID(vbos)
 
-        offset = list(offset)+[0]
+        offset = list(offset) + [0]
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, offset)
         self.set_uniform(glUniform4fv, 'uViewOffset', 1, view_offset)
 
-        self.setLineWidth(linewidth[0]*multisample)
+        self.setLineWidth(linewidth[0] * multisample)
 
         # Line draw is done using facecolor.
         if vbos['primitive'] is not None:
@@ -1996,7 +2006,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             if linewidth[0] == 0.0:
                 self.EnableEdgeColor(vbos)
-                self.setLineWidth(1.0*multisample)
+                self.setLineWidth(1.0 * multisample)
             else:
                 self.EnableFaceColor(vbos)
         glDepthFunc(GL_LEQUAL)
@@ -2049,18 +2059,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glBindVertexArray(0)
         self.select_shader(self.shader)
-        
+
         if self._use_clip and always_noclip:
-            self.set_uniform(glUniform1i,  'uUseClip', 1)                        
+            self.set_uniform(glUniform1i, 'uUseClip', 1)
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
-                                  edgecolor, *args,  **kwargs):
+                                  edgecolor, *args, **kwargs):
         ### paths is [X, Y, Z, norms, idxset]
         if len(paths[4]) == 0:
             return None
         if len(paths[4][0]) > 4:
             vbos = self.makevbo_path_collection(vbos, gc, paths, facecolor,
-                                                edgecolor, *args,  **kwargs)
+                                                edgecolor, *args, **kwargs)
             return vbos
 
         if vbos is None:
@@ -2105,20 +2115,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if len(paths[4][0]) == 4:
             counts = 3
-            nindex = len(paths[4])*6
-            nindexe = len(paths[4])*6
+            nindex = len(paths[4]) * 6
+            nindexe = len(paths[4]) * 6
             primitive = GL_TRIANGLES
             eprimitive = GL_TRIANGLES
         elif len(paths[4][0]) == 3:
             counts = 3
-            nindex = len(paths[4])*3
-            nindexe = len(paths[4])*6
+            nindex = len(paths[4]) * 3
+            nindexe = len(paths[4]) * 6
             primitive = GL_TRIANGLES
             eprimitive = GL_TRIANGLES
         elif len(paths[4][0]) == 2:
             counts = 2
-            nindex = len(paths[4])*2
-            nindexe = len(paths[4])*3
+            nindex = len(paths[4]) * 2
+            nindexe = len(paths[4]) * 2
             primitive = None
             eprimitive = GL_LINES
         else:
@@ -2143,20 +2153,20 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 norms = paths[3].astype(np.float32, copy=False).flatten()
             elif len(paths[3]) == 1:
                 # norm is common (flat surface)
-                norms = [paths[3]]*nverts
+                norms = [paths[3]] * nverts
                 norms = np.hstack(norms).astype(
                     np.float32, copy=False).flatten()
             else:
                 norms = paths[3].astype(np.float32, copy=False).flatten()
 
             if vbos['v'] is None:
-                vbos['v'] = get_vbo(xyzs, usage='GL_STATIC_DRAW')
+                vbos['v'] = get_vbo(xyzs, usage='GL_DYNAMIC_DRAW')
                 if norms is not None:
-                    vbos['n'] = get_vbo(norms, usage='GL_STATIC_DRAW')
-                vbos['i'] = get_vbo(idxset, usage='GL_STATIC_DRAW',
+                    vbos['n'] = get_vbo(norms, usage='GL_DYNAMIC_DRAW')
+                vbos['i'] = get_vbo(idxset, usage='GL_DYNAMIC_DRAW',
                                     target='GL_ELEMENT_ARRAY_BUFFER')
                 if idxsete is not None:
-                    vbos['ie'] = get_vbo(idxsete, usage='GL_STATIC_DRAW',
+                    vbos['ie'] = get_vbo(idxsete, usage='GL_DYNAMIC_DRAW',
                                          target='GL_ELEMENT_ARRAY_BUFFER')
                 else:
                     vbos['ie'] = None
@@ -2214,13 +2224,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 col = np.hstack(col).astype(np.float32)
             elif len(facecolor) == len(paths[4]):
                 # non index array/flat
-                c = len(paths[0])//len(paths[4])
+                c = len(paths[0]) // len(paths[4])
                 col = np.array(facecolor, copy=False).astype(
                     np.float32, copy=False)
-                col = np.hstack([col]*c)
+                col = np.hstack([col] * c)
             else:
                 col = np.repeat(np.array(facecolor).astype(np.float32),
-                                nindex*counts)
+                                nindex * counts)
             if vbos['fc'] is None:
                 vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
             else:
@@ -2237,7 +2247,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     np.float32, copy=False)
             else:
                 col = np.repeat(np.array(edgecolor).astype(np.float32),
-                                nindex*counts)
+                                nindex * counts)
             #col = np.hstack(col).astype(np.float32, copy = False)
             if vbos['ec'] is None:
                 vbos['ec'] = get_vbo(col, usage='GL_STATIC_DRAW')
@@ -2246,7 +2256,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['ec'].need_update = False
         if vbos['vertex_id'] is None or vbos['vertex_id'].need_update:
             counts = vbos['counts']
-            l = nindex//counts   # number of faces
+            l = nindex // counts   # number of faces
             nverts = len(paths[0])
 
             if array_idx is not None:
@@ -2254,7 +2264,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if array_idx.shape[0] == nverts:
                     pass
                 elif array_idx.shape[0] == l:
-                    array_idx = [array_idx]*counts
+                    array_idx = [array_idx] * counts
                 else:
                     assert False, "array_idx length should be the same as the number of vertex"
                 vertex_id = np.array(array_idx,
@@ -2272,8 +2282,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return vbos
 
     def set_view_offset(self, offset_base=(0, 0, 0., 0)):
-        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0001, 0.)))   # depth 32bit, clipping, camera = (45, 50)
-        #offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))  # depth 24bit, clipping, camera = (9, 10)
+        # depth 32bit, clipping, camera = (45, 50)
+        offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0001, 0.)))
+        # offset = tuple(np.array(offset_base) + np.array((0, 0, -0.0005, 0.)))
+        # # depth 24bit, clipping, camera = (9, 10)
 
         if self._use_frustum:
             self.set_uniform(glUniform4fv, 'uViewOffset', 1, offset)
@@ -2327,7 +2339,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         target = self.get_container(a)
         box = trans.transform([frame_range[0:2], frame_range[2:4]])
         d = box[1] - box[0]
-        w, h = int(d[0])*multisample, int(d[1])*multisample
+        w, h = int(d[0]) * multisample, int(d[1]) * multisample
         make_new = False
 
         if target in self.frame_list:

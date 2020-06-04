@@ -1176,7 +1176,8 @@ class ifigure_popup(wx.Menu):
                     ('Front',    self.onFront, None),
                     ('Bottom',   self.onBottom, None)]
         if (len(parent.selection) == 1 and
-                parent.selection[0]().figobj.get_figaxes() is None):
+            parent.selection[0]() is not None and
+            parent.selection[0]().figobj.get_figaxes() is None):
             if parent.selection[0]().figobj.get_frameart():
                 menus = menus + \
                     [('Unset FrameArt', self.onUnsetFrameArt, None)]

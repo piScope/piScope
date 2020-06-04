@@ -19,35 +19,37 @@ def make_bitmap_with_bluebox(bitmap):
     # second bitmap has blue box around it
     h, w = bitmap.GetSize()
     image = bitmap.ConvertToImage()
-    alpha = np.fromstring(bytes(image_GetAlpha(image)),
+    alpha = np.frombuffer(bytes(image_GetAlpha(image)),
                           dtype=np.uint8).reshape(w, h, -1)
-    array = np.fromstring(bytes(image.GetData()),
-                          dtype=np.uint8)
+    array = np.frombuffer(bytes(image.GetData()), dtype=np.uint8)
+    array = array.copy()
+    alpha = alpha.copy()
+
     array = array.reshape(w, h, -1)
-    array[0,   1:-2, :1] = 0
-    array[-1,  1:-2, :1] = 0
-    array[1:-2,   0, :1] = 0
-    array[1:-2,  -1, :1] = 0
+    array[0, 1:-2, :1] = 0
+    array[-1, 1:-2, :1] = 0
+    array[1:-2, 0, :1] = 0
+    array[1:-2, -1, :1] = 0
 
     array[1, 1, :1] = 0
     array[1, -2, :1] = 0
     array[-2, 1, :1] = 0
     array[-2, -2, :1] = 0
 
-    array[1, 1,  2] = 255
+    array[1, 1, 2] = 255
     array[1, -2, 2] = 255
     array[-2, 1, 2] = 255
     array[-2, -2, 2] = 255
 
-    array[0,   1:-2, 2] = 255
-    array[-1,  1:-2, 2] = 255
-    array[1:-2,   0, 2] = 255
-    array[1:-2,  -1, 2] = 255
+    array[0, 1:-2, 2] = 255
+    array[-1, 1:-2, 2] = 255
+    array[1:-2, 0, 2] = 255
+    array[1:-2, -1, 2] = 255
 
-    alpha[1:-2,   -1] = 127
-    alpha[1:-2,    0] = 127
-    alpha[0,    1:-2] = 127
-    alpha[-1,   1:-2] = 127
+    alpha[1:-2, -1] = 127
+    alpha[1:-2, 0] = 127
+    alpha[0, 1:-2] = 127
+    alpha[-1, 1:-2] = 127
     alpha[1, 1] = 127
     alpha[1, -2] = 127
     alpha[-2, 1] = 127
@@ -75,48 +77,48 @@ btasks0 = [  # ('previous', 'arrowleft.png', 0, 'previous page'),
     #        ('---',    (10,10), 0, ''),
     #                   ('copy',   'copy.png', 0, ''),
     #                   ('paste',  'paste.png', 0, ''),
-    ('pmode',   'pmode.png', 1, 'plot mode'),
-    ('amode',   'amode.png', 1, 'annotation mode'),
-    ('---',    (10, 10), 0, ''), ]
+    ('pmode', 'pmode.png', 1, 'plot mode'),
+    ('amode', 'amode.png', 1, 'annotation mode'),
+    ('---', (10, 10), 0, ''), ]
 
 btasks1_std2d_base = [('select', 'select.png', 1, 'select',),
-                      ('zoom',   'zoom2.png', 1,
+                      ('zoom', 'zoom2.png', 1,
                        '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction'])),
-                      ('pan',   'arrowmove.png', 1, '\n'.join(
+                      ('pan', 'arrowmove.png', 1, '\n'.join(
                           ['pan', ' shift: pan all']),),
-                      ('cursor',   'cursor.png', 1, 'cursor',),
-                      ('---',    (10, 10), 0, ''), ]
+                      ('cursor', 'cursor.png', 1, 'cursor',),
+                      ('---', (10, 10), 0, ''), ]
 btasks1_std2d = btasks1_std2d_base + [
-    ('xlog',  'xlog.png', 0, 'toggle xlog',),
-    ('ylog',  'ylog.png', 0, 'toggle ylog',),
-    ('xauto',  'xauto.png', 0, 'autoscale x', ),
-    ('yauto',  'yauto.png', 0, 'autoscale y', ),
-    ('grid',   'grid.png', 0, 'toggle grid', ),
+    ('xlog', 'xlog.png', 0, 'toggle xlog',),
+    ('ylog', 'ylog.png', 0, 'toggle ylog',),
+    ('xauto', 'xauto.png', 0, 'autoscale x', ),
+    ('yauto', 'yauto.png', 0, 'autoscale y', ),
+    ('grid', 'grid.png', 0, 'toggle grid', ),
     ('nomargin', 'margin.png', 0, 'no margin mode', ), ]
 
 btasks1_std3d_base = [('select', 'select.png', 1, 'select',),
-                      ('zoom',   'zoom2.png', 1,
+                      ('zoom', 'zoom2.png', 1,
                        '\n'.join(['zoom', ' shift: zoom down', ' alt: menu to pick direction'])),
-                      ('pan',   'arrowmove.png', 1, '\n'.join(
+                      ('pan', 'arrowmove.png', 1, '\n'.join(
                           ['pan', ' shift: pan all']),),
-                      ('cursor',   'cursor.png', 1, 'cursor',),
-                      ('3dzoom',   'threed_rot.png', 1,
+                      ('cursor', 'cursor.png', 1, 'cursor',),
+                      ('3dzoom', 'threed_rot.png', 1,
                        '3D zoom\n shift: pan\n alt: zoom',),
-                      ('---',    (10, 10), 0, ''), ]
+                      ('---', (10, 10), 0, ''), ]
 
 btasks1_std3d = btasks1_std3d_base + [
-    ('xauto',  'xauto.png', 0, 'autoscale x', ),
-    ('yauto',  'yauto.png', 0, 'autoscale y', ),
+    ('xauto', 'xauto.png', 0, 'autoscale x', ),
+    ('yauto', 'yauto.png', 0, 'autoscale y', ),
     ('nomargin', 'margin.png', 0, 'no margin mode', ), ]
 
 btasks2 = [  # ('selecta', 'select.bmp', 1, 'select'),
-    ('text',   't.png', 1, 'insert text'),
-    ('line',  'line.png',  1, 'insert line'),
+    ('text', 't.png', 1, 'insert text'),
+    ('line', 'line.png', 1, 'insert line'),
     #                 ('curve2', 'curve.png', 1, 'insert curve'),
     ('curve', 'curve.png', 1, 'insert curve'),
     ('arrow', 'arrow.png', 1, 'insert arrow'),
     ('circle', 'circle.png', 1, 'insert circle'),
-    ('rect',   'box.png', 1, 'insert rectangle'),
+    ('rect', 'box.png', 1, 'insert rectangle'),
     ('legend', 'legend.png', 1, 'insert legend'),
     ('colorbar', 'colorbar.png', 1, 'insert colorbar'),
     ('eps', 'eps.png', 1, 'insert eps'), ]
@@ -161,7 +163,7 @@ class ButtonInfo(bp.ButtonInfo):
     def GetBestSize(self):
         size = self.GetBitmap().GetSize()
         h = 26
-        return ((h-size[1])/2+size[0], h)
+        return ((h - size[1]) / 2 + size[0], h)
 
 
 class ButtonPanel(bp.ButtonPanel):
@@ -178,7 +180,7 @@ class ButtonPanel(bp.ButtonPanel):
 
 class navibar(ButtonPanel):
     def __init__(self, parent, id=-1, text='', *args, **kargs):
-        super(navibar, self).__init__(parent, id,  text, *args, **kargs)
+        super(navibar, self).__init__(parent, id, text, *args, **kargs)
         # mode of action (''=select, 'pan', 'zoom', 'text'....)
         self.mode = ''
         self.ptype = ''   # palette type ('pmode', 'amode')
@@ -205,12 +207,13 @@ class navibar(ButtonPanel):
         self.zoom_menu = 0    # 0 or 1
         self.pan_all = 0
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
-        self.Bind(wx.EVT_KEY_DOWN,  self.OnKeyDown)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 #        self.Bind(wx.EVT_KEY_UP,  self.OnKeyUp)
 
         from ifigure.ifigure_config import icondir
+        from ifigure.utils.cbook import make_crs_list
+        
         if zoom_crs is None:
-            from ifigure.utils.cbook import make_crs_list
             path1 = os.path.join(icondir, '16x16', 'zoom2.png')
             path2 = os.path.join(icondir, '16x16', 'zoom3minus.png')
             path3 = os.path.join(icondir, '16x16', 'zoom2menu.png')
@@ -234,7 +237,7 @@ class navibar(ButtonPanel):
         else:
             return self.p1_btns[self.p1_choice[0]]
 
-    def install_palette(self, name, tasks0,  mode='2D', refresh=None):
+    def install_palette(self, name, tasks0, mode='2D', refresh=None):
         '''
         tasks shou
 
@@ -245,7 +248,7 @@ class navibar(ButtonPanel):
             if t[0] == '---':
                 tasks.append(t)
             else:
-                tasks.append([t[0]+'_' + name]+list(t[1:]))
+                tasks.append([t[0] + '_' + name] + list(t[1:]))
 
         if mode == '2D':
             btasks = btasks1_std2d_base + list(tasks)
@@ -276,7 +279,7 @@ class navibar(ButtonPanel):
             for b in btnls[1:]:
                 b.SetBitmap(b.bitmap1)
 
-    def use_palette(self, name,  mode='2D'):
+    def use_palette(self, name, mode='2D'):
         if mode == '2D':
             self.p1_choice[0] = name
         else:
@@ -822,13 +825,13 @@ class navibar(ButtonPanel):
         idx = data.index(self.GetParent()._mailpic_format)
         m = wx.Menu()
         menus = [
-            ['EPS',  mailpic_set_eps, None],
-            ['PDF',  mailpic_set_pdf, None],
-            ['SVG',  mailpic_set_svg, None],
-            ['PNG',  mailpic_set_png, None],
-            ['JPEG',  mailpic_set_jpeg, None],
-            ['Multipage PDF',  mailpic_set_pdfall, None],
-            ['Animated Gif',  mailpic_set_gifanim, None], ]
+            ['EPS', mailpic_set_eps, None],
+            ['PDF', mailpic_set_pdf, None],
+            ['SVG', mailpic_set_svg, None],
+            ['PNG', mailpic_set_png, None],
+            ['JPEG', mailpic_set_jpeg, None],
+            ['Multipage PDF', mailpic_set_pdfall, None],
+            ['Animated Gif', mailpic_set_gifanim, None], ]
         menus[idx][0] = '^' + menus[idx][0]
 
         cbook.BuildPopUpMenu(m, menus)
@@ -847,7 +850,7 @@ class navibar(ButtonPanel):
         m = wx.Menu()
         menus = [
             ['PickPoints', curve_set_pickpoints, None],
-            ['Freehand',   curve_set_freehand, None], ]
+            ['Freehand', curve_set_freehand, None], ]
 
         menus[idx][0] = '^' + menus[idx][0]
         cbook.BuildPopUpMenu(m, menus)
@@ -889,8 +892,8 @@ class navibar(ButtonPanel):
 
         m = wx.Menu()
         menus = [
-            ['X',  grid_x, None],
-            ['Y',  grid_y, None], ]
+            ['X', grid_x, None],
+            ['Y', grid_y, None], ]
         cbook.BuildPopUpMenu(m, menus)
         x, y = evt_GetPosition(evt)
         self.PopupMenu(m, [x, y])
@@ -976,7 +979,7 @@ class navibar(ButtonPanel):
             if False in [p.has_cbar() for p in ax._caxis]:
                 for k, p in enumerate(ax._caxis):
                     if not p.has_cbar():
-                        p.show_cbar(ax, offset=-0.1*k)
+                        p.show_cbar(ax, offset=-0.1 * k)
             else:
                 for p in ax._caxis:
                     p.hide_cbar(ax)
@@ -990,7 +993,7 @@ class navibar(ButtonPanel):
                         figobj.hide_cbar()
                     else:
                         index = ax._caxis.index(figobj.get_caxisparam())
-                        figobj.get_caxisparam().show_cbar(ax, offset=-0.1*index)
+                        figobj.get_caxisparam().show_cbar(ax, offset=-0.1 * index)
         canvas = self.GetParent().canvas
         canvas.draw()
         ifigure.events.SendChangedEvent(ax, w=canvas)
@@ -1002,17 +1005,17 @@ class navibar(ButtonPanel):
     def ToggleZoomUpDown(self):
         self.zoom_up_down = 'up' if self.zoom_up_down == 'down' else 'down'
         self._set_zoomcxr()
-        
+
     def ToggleZoomForward(self):
-        ### up -> donw if it is already down return False
+        # up -> donw if it is already down return False
         if self.zoom_up_down == 'up':
             self.ToggleZoomUpDown()
             return True
         else:
             return False
-        
+
     def ToggleZoomBackward(self):
-        ### down -> up if it is already up return False
+        # down -> up if it is already up return False
         if self.zoom_up_down == 'down':
             self.ToggleZoomUpDown()
             return True
@@ -1060,10 +1063,10 @@ class navibar(ButtonPanel):
             if isinstance(info, str):
                 continue
             if (info.btask == name or
-                    info.btask == name + '_'+choice):
+                    info.btask == name + '_' + choice):
                 rect = info.GetRect()
-                pt = wx.Point(int(rect[0]+rect[1]/2.),
-                              int(rect[1]+rect[3]/2.))
+                pt = wx.Point(int(rect[0] + rect[1] / 2.),
+                              int(rect[1] + rect[3] / 2.))
 
         if pt is None:
             return
@@ -1080,10 +1083,10 @@ class navibar(ButtonPanel):
     def _set_zoomcxr(self):
         if self.zoom_up_down == 'up':
             self.GetParent().canvas.SetCursor(
-                self.zoom_crs[0 + self.zoom_menu*2])
+                self.zoom_crs[0 + self.zoom_menu * 2])
         else:
             self.GetParent().canvas.SetCursor(
-                self.zoom_crs[1 + self.zoom_menu*2])
+                self.zoom_crs[1 + self.zoom_menu * 2])
 
     def _set_pancxr(self):
         self.GetParent().canvas.SetCursor(self.pan_crs[self.pan_all])
