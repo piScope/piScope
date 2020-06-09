@@ -238,12 +238,12 @@ class ifigure_app(BookViewerFrame):
 
     def adjust_initial_position(self):
         dx, dy = wx.GetDisplaySize()
-
         msx, msy = self.GetSize()
+
         if msy > dy:
-            msy = dy - 50
+            msy = dy - 150
         if msx > dx:
-            msy = dx - 50
+            msx = dx - 250
         self.SetSize((msx, msy))
         self.Layout()
         h, w = self.GetPosition()
@@ -534,7 +534,6 @@ class ifigure_app(BookViewerFrame):
 
         from ifigure.widgets.taskbar import TaskBarIcon
         self.tbicon = TaskBarIcon(self)
-        self.CenterOnScreen()
         
     def onUpdateUI(self, evt):
         if evt.GetId() == ID_DETACH_EDITOR:
