@@ -1158,6 +1158,8 @@ def view(*args, **kwargs):
           view('frustum')
           view('ortho')
           view('updown')
+          view('equal')   # equal aspect ratio
+          view('auto')    # auto aspect ratio
     '''
     if len(args) == 0 and len(kwargs) == 0:
         v = aviewer

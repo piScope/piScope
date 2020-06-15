@@ -1111,7 +1111,13 @@ class ifigure_popup(wx.Menu):
                         menus.append(
                             ('Show Axes Icon', self.on3DAxesIconOn, None))
 
-                    menus.append(('Equal Aspect', self.on3DEqualAspect, None))
+                    if (parent.axes_selection().figobj.getp('aspect') ==
+                            'equal'):
+                        menus.append(('Auto Aspect', self.on3DAutoAspect,
+                                      None))
+                    else:
+                        menus.append(('Equal Aspect', self.on3DEqualAspect,
+                                      None))
                     menus.extend([
                         ('!',  None, None), ])
             except:
@@ -1235,6 +1241,10 @@ class ifigure_popup(wx.Menu):
     def on3DEqualAspect(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('equal')
+        
+    def on3DAutoAspect(self, e):
+        canvas = e.GetEventObject()
+        canvas.GetTopLevelParent().view('auto')
 
     def on3DClipOn(self, e):
         canvas = e.GetEventObject()
@@ -2826,18 +2836,40 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 requests = self.make_xyauto_request(ax.figobj, 'x')
                 requests = self.make_xyauto_request(
                     ax.figobj, 'y', requests=requests)
+                
                 if ax.figobj.get_3d():
                     requests = self.make_xyauto_request(
                         ax.figobj, 'z', requests=requests)
                     ax._gl_scale = 1.0
-                    ax._gl_scale_accum = 1.0                    
+                    ax._gl_scale_accum = 1.0
+
                 requests[ax.figobj] = ax.figobj.compute_new_range(
                     request=requests[ax.figobj])
+                    
+                if ax.figobj.get_3d():                
+                    if ax.figobj.getp("aspect") == 'equal':
+                        xlim = requests[ax.figobj][0][1][2]
+                        ylim = requests[ax.figobj][1][1][2]
+                        zlim = requests[ax.figobj][2][1][2]
+                        dx = abs(xlim[1]-xlim[0])
+                        dy = abs(ylim[1]-ylim[0])
+                        dz = abs(zlim[1]-zlim[0])
+                        dd = max((dx, dy, dz))
+                        xlim = ((xlim[1]+xlim[0]-dd)/2, (xlim[1]+xlim[0]+dd)/2)
+                        ylim = ((ylim[1]+ylim[0]-dd)/2, (ylim[1]+ylim[0]+dd)/2)
+                        zlim = ((zlim[1]+zlim[0]-dd)/2, (zlim[1]+zlim[0]+dd)/2)
+                        requests[ax.figobj][0][1][2] = xlim
+                        requests[ax.figobj][1][1][2] = ylim
+                        requests[ax.figobj][2][1][2] = zlim
+                        requests[ax.figobj][0][1][1] = False
+                        requests[ax.figobj][1][1][1] = False
+                        requests[ax.figobj][2][1][1] = False
+
                 self.send_range_action(requests, 'range')
 
     def refresh_hl_fast(self, alist=None):
         self.draw_artist(alist=alist)
-        
+
     def refresh_hl(self, alist=None):
         #       import traceback
         #       traceback.print_stack()

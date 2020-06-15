@@ -1531,6 +1531,14 @@ class BookViewerInteractive(object):
             elif args[0] == 'clip':
                 ax._use_clip = True
                 fig_axes.set_bmp_update(False)
+
+            elif args[0] == 'auto':
+                self.xauto()
+                self.yauto()
+                self.zauto()
+                fig_axes.set_aspect('auto')
+                fig_axes.set_bmp_update(False)
+
             elif args[0] == 'equal':
                 xlim = self.xlim()
                 ylim = self.ylim()
