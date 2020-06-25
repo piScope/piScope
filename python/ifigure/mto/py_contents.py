@@ -714,10 +714,12 @@ class NETCDFfile(Namelist):
         fpath = td.path2fullpath(modename='nc4_pathmode',
                                  pathname='nc4_path')
         g0 = Dataset(fpath, 'r', format='NETCDF4')
-
-        g = None
+        g = g0
         for i in range(len(self.nc_path)-1):
-            g = getattr(g0, self.nc_path[i])
+            if hasattr(g, self.nc_path[i]):
+                g = getattr(g, self.nc_path[i])
+            else:
+                g = g.__getitem__(self.nc_path[i])
         if g is not None:
             v = g[self.nc_path[-1]][:]
             g0.close()

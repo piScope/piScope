@@ -111,10 +111,14 @@ def do_load_netcdf_file(nm, g, keylist=None):
     for sub_g in g.groups:
         #name = 'group'+str(i)
         name = sub_g
-        nm["variables"][name] = NETCDFfile()
-        nm["variables"][name].nc_path = keylist+["variables", name]
-        do_load_netcdf_file(nm["variables"][name], g[sub_g],
-                            keylist=keylist+["variables", name])
+        #nm["variables"][name] = NETCDFfile()
+        #nm["variables"][name].nc_path = keylist+["variables", name]
+        #do_load_netcdf_file(nm["variables"][name], g[sub_g],
+        #                    keylist=keylist+["variables", name])
+        nm[name] = NETCDFfile()
+        nm[name].nc_path = keylist+[name,]
+        do_load_netcdf_file(nm[name], g[sub_g],
+                            keylist=keylist+[name])
         i = i+1
 
 
