@@ -1,10 +1,10 @@
 '''
- addon_utils: 
+ addon_utils:
        utility functions commonly used in addons
 
        onOpenOrg : open original file
        onOpenCurrent : open current file
-       onLoadFile : ask user an input and copy a file to 
+       onLoadFile : ask user an input and copy a file to
                     owndir as working file.
                     it also ask if copy original file into
                     owndir as original file. this is useful
@@ -24,7 +24,7 @@ def onOpenOrg(td):
 
     file = td.path2fullpath('ofile_pathmode',
                             'ofile_path')
-    if file is '':
+    if file == '':
         return
     ifigure.events.SendEditFileEvent(td, None, file, readonly=True)
 
@@ -32,7 +32,7 @@ def onOpenOrg(td):
 def onWriteFile(td, filename='', dir='', txt='',
                 message='Select File to Save',
                 wildcard='Any|*'):
-    if filename is '':
+    if filename == '':
         open_dlg = wx.FileDialog(None,
                                  message=message,
                                  defaultDir=dir,
@@ -117,7 +117,7 @@ def onLoadFile(td, message="Select File",
         #print(os.path.dirname(file), td.owndir())
         samefile = os.path.samefile(os.path.dirname(file), td.owndir())
         # print(samefile)
-    except:
+    except BaseException:
         samefile = False
     if ask_org_copy and not samefile:
         from ifigure.widgets.dlg_fileimportmode import DlgFileimportmode
@@ -128,16 +128,16 @@ def onLoadFile(td, message="Select File",
         choices = ["auto", "abs", "home", "proj"]
         if td.get_extfolderpath() is not None:
             choices.append(td.get_extfolderpath())
-        list6 = [[None,  [True, ['auto']], 127, 
-                 [{'text':'copy file to project'}, 
+        list6 = [[None,  [True, ['auto']], 127,
+                 [{'text':'copy file to project'},
                   {'elp':[['Select path mode', 'auto', 4,
                            {"style":wx.CB_READONLY,
                             "choices": choices}],]}], ],
-                 [None, False, 3, 
+                 [None, False, 3,
                  {"text":"copy original to project as a separate file"}], ]
-        value = DialogEditList(list6, modal = True, 
+        value = DialogEditList(list6, modal = True,
                      style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER,
-                     tip = None, 
+                     tip = None,
                      parent=None,)
 
         if not value[0]: return
@@ -158,7 +158,7 @@ def onLoadFile(td, message="Select File",
     od = td.owndir()
 
     if ret:
-        new_ofile = os.path.join(od, os.path.basename(file)+'.org')
+        new_ofile = os.path.join(od, os.path.basename(file) + '.org')
         shutil.copyfile(file, new_ofile)
         td.setvar('ofile_pathmode', 'owndir')
         td.setvar('ofile_path', os.path.basename(new_ofile))
@@ -179,14 +179,14 @@ def onLoadFile(td, message="Select File",
         try:
             # this may fail if owndir does not exist
             samefile = os.path.samefile(file, nl_file)
-        except:
+        except BaseException:
             samefile = False
         if not samefile:
             td.remove_ownitem(items=[pathname])
             shutil.copyfile(file, nl_file)
-        td.set_path_pathmode(nl_file,  modename, pathname, extname)
+        td.set_path_pathmode(nl_file, modename, pathname, extname)
     else:
         td.remove_ownitem(items=[pathname])
-        td.set_path_pathmode(file,  modename, pathname,
+        td.set_path_pathmode(file, modename, pathname,
                              extname, checklist=pathmodes)
     return True
