@@ -595,9 +595,9 @@ class VarViewerG(wx.Panel):
 
         self.grid.CreateGrid(3, 0)
         self.grid.SetDefaultCellFont(font)
-        self.grid.SetLabelFont(font_label)
-        self.grid.SetColLabelSize(font_h)
-        self.grid.SetDefaultRowSize(font_h, True)
+        self.grid.SetLabelFont(globals()['font_label'])
+        self.grid.SetColLabelSize(int(font_h))
+        self.grid.SetDefaultRowSize(int(font_h), True)
         self.grid.EnableDragColSize(True)
         self.grid.SetTable(VarViewerGridTable(None, self.grid))
         self.ct1.SetDropTarget(TextDT())

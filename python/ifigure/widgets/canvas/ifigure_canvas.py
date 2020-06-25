@@ -1536,6 +1536,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._line_insert_mode = False
         self._bindidle = False
         self._previous_lclick = 0.
+        self._previous_lclickxy = (0., 0.)
         self._last_draw_time = -1.
 #      self._press_key = None
         self._mpl_mode = 'normal'
@@ -2255,7 +2256,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def buttonpress(self, event):
         self._previous_lclick = time.time()
-        self.dblclick_occured = event.dblclick
+        dist = ((event.x - self._previous_lclickxy[0])**2 + 
+                (event.y - self._previous_lclickxy[1])**2)**0.5
+        self._previous_lclickxy  = (event.x, event.y)
+
+        if dist > 5:
+            self.dblclick_occured = False
+        else:
+            self.dblclick_occured = event.dblclick
+
         if self.dblclick_occured:
             pass
         else:
@@ -2650,6 +2659,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._pevent = None
         if double_click:
             #          print 'double click', self.selection
+            self._clean_selection()
+            
             if self._mpl_artist_click is not None:
                 if isinstance(
                         self._mpl_artist_click[0](), matplotlib.text.Text):

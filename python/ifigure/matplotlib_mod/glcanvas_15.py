@@ -1119,7 +1119,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             data2 = string_at(glMapBuffer(
                 GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
             # *255.
-            idmap = (np.fromstring(data2, np.uint8).reshape(him, wim, -1))
+            #idmap = (np.fromstring(data2, np.uint8).reshape(him, wim, -1))
+            idmap = (np.frombuffer(bytes(data2), dtype=np.uint8)).reshape(him, wim, -1)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -1132,7 +1133,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             data3 = string_at(glMapBuffer(
                 GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
-            depth = np.fromstring(data3, np.float32).reshape(him, wim)
+            #depth = np.fromstring(data3, np.float32).reshape(him, wim)
+            depth= (np.frombuffer(bytes(data3), dtype=np.float32)).reshape(him, wim)
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
@@ -1141,13 +1143,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             data2 = glReadPixels(0, 0, wim, him, GL_RGBA, GL_FLOAT)
             data3 = glReadPixels(0, 0, wim, him, GL_DEPTH_COMPONENT, GL_FLOAT)
-            idmap = (
-                np.fromstring(
-                    data2, np.float32).reshape(
-                    him, wim, -1)) * 255.
+            #idmap = (np.fromstring( data2, np.float32).reshape(him, wim, -1)) * 255.
+            idmap = (np.frombuffer(bytes(data2), dtype=np.float32).reshape(him, wim, -1)) * 255.
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
-            depth = np.fromstring(data3, np.float32).reshape(him, wim)
+            #depth = np.fromstring(data3, np.float32).reshape(him, wim)
+            depth = np.frombuffer(bytes(data3), dtype=np.float32).reshape(him, wim)
 
         glReadBuffer(GL_NONE)
         # if multisample > 1:
@@ -1247,7 +1248,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self._read_data_pixbuf_target1 = (weakref.ref(a), size)
         else:
             data = glReadPixels(0, 0, wim, him, GL_RGBA, GL_UNSIGNED_BYTE)
-        image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
+        #image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
+        image = np.frombuffer(bytes(data), dtype=np.uint8).reshape(him, wim, -1)
 
         # if multisample > 1:
         #glDeleteFramebuffers(1, [frame2])
@@ -1433,7 +1435,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                GL_COLOR_ATTACHMENT2,
                                GL_TEXTURE_2D, 0, 0)
 
-        atlas = np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
+        #atlas = np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
+        atlas = np.hstack((0, np.cumsum(np.frombuffer(bytes(data), dtype=np.float32))))[:-1]
         atlas *= 1000.
         if globals()['multisample'] == 2:
             atlas /= 2.

@@ -82,6 +82,7 @@ def do_load_netcdf_file(nm, g, keylist=None):
 
     nm["dimensions"] = NETCDFfile()
     nm["dimensions"].nc_path = keylist+["dimensions"]
+    
     for dimname in g.dimensions:
         nm["dimensions"].var[dimname] = len(g.dimensions[dimname])
     for attname in g.ncattrs():
@@ -106,11 +107,13 @@ def do_load_netcdf_file(nm, g, keylist=None):
     # walk thorough all sub groups
 
     i = 1
+    
     for sub_g in g.groups:
-        name = 'group'+str(i)
+        #name = 'group'+str(i)
+        name = sub_g
         nm["variables"][name] = NETCDFfile()
         nm["variables"][name].nc_path = keylist+["variables", name]
-        do_load_netcdf_file(nm["variables"]['group'+str(i)], sub_g,
+        do_load_netcdf_file(nm["variables"][name], g[sub_g],
                             keylist=keylist+["variables", name])
         i = i+1
 
@@ -181,6 +184,7 @@ def load_file(fname, check_format=False):
         g.close()
         return f
     nm = NETCDFfile()
+    
     do_load_netcdf_file(nm, g)
     g.close()
     if compress:

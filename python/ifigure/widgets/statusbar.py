@@ -276,7 +276,7 @@ class StatusBar(StatusBarWithXY):
     def Reposition(self):
         for i in range(len(self.icon)):
             rect = self.GetFieldRect(1+i)
-            self.icon[i].SetPosition((rect.x, (rect.height-16)/2+1+rect.y))
+            self.icon[i].SetPosition((rect.x, (rect.height-16)//2+1+rect.y))
   #      self.txt.SetPosition((rect.x, rect.y))
         self.sizeChanged = False
 
