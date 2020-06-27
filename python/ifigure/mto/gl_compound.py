@@ -46,20 +46,26 @@ class GLCompound(object):
 
         a = self._artists[0]
         array_idx = self.getvar('array_idx')
-
+        mask = np.in1d(array_idx, self._hidden_component)
+        
         if self.hasvar('idxset'):
             idxset = self.getvar('idxset')
 
-            mask = np.in1d(array_idx, self._hidden_component)
             mask2 = np.logical_not(np.any(mask[idxset], axis=1))
             a.update_idxset(idxset[mask2])
             self.setSelectedIndex([])
+
+            if self.hasvar('edge_idx') and self.getvar('edge_idx') is not None:
+                idxset = self.getvar('edge_idx')
+                mask2 = np.logical_not(np.any(mask[idxset], axis=1))
+                a.update_edge_idxset(idxset[mask2])
         else:
             assert False, "hide_component is not supported for non-indexed artist"
 
     def get_subset(self, component=None):
         '''
         v, idx, cdata = gl_compound::get_subset(component = None)
+        v, idx, cdata, edge_idx = gl_compound::get_subset(component = None)
 
         return the vertex information of components
         if component is None, it returns visible components
@@ -83,6 +89,16 @@ class GLCompound(object):
             cdata = self.hasvar('cdata')[idx]
         else:
             cdata = None
+
+        if self.hasvar('edge_idx') and self.getvar('edge_idx') is not None:
+            idxset = self.getvar('edge_idx')
+            mask2 = np.array([all(mask[iv]) for iv in idxset], copy=False)
+            s2 = idxset[mask2]
+            mapper = {x:k for k, x in enumerate(ii)}
+            ss2 = np.array([mapper[x] for x in s2.flatten()])
+            s2 = ss2.reshape(s2.shape)
+            return v, idx, cdata, s2
+
         return v, idx, cdata
 
     def isSelected(self):

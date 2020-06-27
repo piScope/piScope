@@ -100,13 +100,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     if hasattr(a, 'figobj') and a.figobj is None:
                         del self.artists_data[aa][a]
                         del self.vbo[aa][a]
-                        
+
     def gc_vbo_dict(self):
         names = []
         for aa in self.vbo:
             tmp = [str(id(a)) + '_' + str(id(aa)) for a in self.vbo[aa]]
             names.extend(tmp)
-        del_names = [n for n in self.vbo_check if not n in names]
+        del_names = [n for n in self.vbo_check if n not in names]
         for n in del_names:
             #print("deleteing n", n)
             del self.vbo_check[n]
@@ -128,7 +128,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     # @wait_gl_finish
     def set_uniform(self, func, name, *args, **kwargs):
-        if not name in self._p_uniform_loc:
+        if name not in self._p_uniform_loc:
             return
         loc = glGetUniformLocation(self._p_shader, name)
         #loc = self._p_uniform_loc[name]
@@ -159,7 +159,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def start_draw_request(self, artist):
         self._draw_request = artist
         tag = self.get_container(artist)
-        if not tag in self.artists_data:
+        if tag not in self.artists_data:
             self.artists_data[tag] = weakref.WeakKeyDictionary()
         self.artists_data[tag][artist] = []
 
@@ -782,7 +782,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             artists = [(alpha, a)
                        for alpha, a in artists if not a._gl_isArrow]
         return artists
-        
+
     def do_draw_artists(self, tag, update_id=False, do_clear=None,
                         draw_solid=True,
                         draw_non_solid=True,
@@ -802,9 +802,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glClear(GL_DEPTH_BUFFER_BIT)
 
         for aa in self.artists_data:
-            if not aa is tag:
+            if aa is not tag:
                 continue
-            if not aa in self.vbo:
+            if aa not in self.vbo:
                 self.vbo[aa] = weakref.WeakKeyDictionary()
             # aa:axes, a: aritsit
 
@@ -824,7 +824,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     alpha = 1.0
                 if a.axes is not aa:
                     continue
-                if self._artist_mask is not None and not a in self._artist_mask:
+                if self._artist_mask is not None and a not in self._artist_mask:
                     continue
                 if update_id:
                     cid = ((int(current_id) % 256) / 255.,
@@ -838,12 +838,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     self.set_uniform(glUniform1i, 'uHasHL', 1)
                 else:
                     self.set_uniform(glUniform1i, 'uHasHL', 0)
-                    
-                if not a in self.vbo[aa]:
+
+                if a not in self.vbo[aa]:
                     xxx = [None] * len(self.artists_data[aa][a])
                 else:
                     xxx = self.vbo[aa][a]
-                    
+
                 for k, data in enumerate(self.artists_data[aa][a]):
                     m = getattr(self, 'makevbo_' + data[0])
                     if len(xxx) == k:
@@ -921,7 +921,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self.gc_artist_data()
         self.gc_vbo_dict()
-        
+
         if MyGLCanvas.offscreen:
             w, h, m, frames, buf, stc, texs = self.get_frame_4_artist(tag)
             frame = frames[0]
@@ -1120,7 +1120,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
             # *255.
             #idmap = (np.fromstring(data2, np.uint8).reshape(him, wim, -1))
-            idmap = (np.frombuffer(bytes(data2), dtype=np.uint8)).reshape(him, wim, -1)
+            idmap = (
+                np.frombuffer(
+                    bytes(data2), dtype=np.uint8)).reshape(
+                him, wim, -1)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -1134,7 +1137,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             data3 = string_at(glMapBuffer(
                 GL_PIXEL_PACK_BUFFER, GL_READ_ONLY), size * 4)
             #depth = np.fromstring(data3, np.float32).reshape(him, wim)
-            depth= (np.frombuffer(bytes(data3), dtype=np.float32)).reshape(him, wim)
+            depth = (
+                np.frombuffer(
+                    bytes(data3),
+                    dtype=np.float32)).reshape(
+                him,
+                wim)
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
@@ -1144,11 +1152,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
             data2 = glReadPixels(0, 0, wim, him, GL_RGBA, GL_FLOAT)
             data3 = glReadPixels(0, 0, wim, him, GL_DEPTH_COMPONENT, GL_FLOAT)
             #idmap = (np.fromstring( data2, np.float32).reshape(him, wim, -1)) * 255.
-            idmap = (np.frombuffer(bytes(data2), dtype=np.float32).reshape(him, wim, -1)) * 255.
+            idmap = (
+                np.frombuffer(
+                    bytes(data2), dtype=np.float32).reshape(
+                    him, wim, -1)) * 255.
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             #depth = np.fromstring(data3, np.float32).reshape(him, wim)
-            depth = np.frombuffer(bytes(data3), dtype=np.float32).reshape(him, wim)
+            depth = np.frombuffer(
+                bytes(data3),
+                dtype=np.float32).reshape(
+                him,
+                wim)
 
         glReadBuffer(GL_NONE)
         # if multisample > 1:
@@ -1249,7 +1264,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             data = glReadPixels(0, 0, wim, him, GL_RGBA, GL_UNSIGNED_BYTE)
         #image = np.fromstring(data, np.uint8).reshape(him, wim, -1)
-        image = np.frombuffer(bytes(data), dtype=np.uint8).reshape(him, wim, -1)
+        image = np.frombuffer(
+            bytes(data), dtype=np.uint8).reshape(
+            him, wim, -1)
 
         # if multisample > 1:
         #glDeleteFramebuffers(1, [frame2])
@@ -1436,7 +1453,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                GL_TEXTURE_2D, 0, 0)
 
         #atlas = np.hstack((0, np.cumsum(np.fromstring(data, np.float32))))[:-1]
-        atlas = np.hstack((0, np.cumsum(np.frombuffer(bytes(data), dtype=np.float32))))[:-1]
+        atlas = np.hstack(
+            (0,
+             np.cumsum(
+                 np.frombuffer(
+                     bytes(data),
+                     dtype=np.float32))))[
+            :-1]
         atlas *= 1000.
         if globals()['multisample'] == 2:
             atlas /= 2.
@@ -2078,16 +2101,26 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return vbos
 
         if vbos is None:
-            vbos = {'vao': None, 'v': None, 'n': None, 'i': None, 'fc': None,
-                    'ec': None, 'counts': None, 'nindexe': None, 'nindex': None,
-                    'vertex_id': None, 'ie': None,
-                    'primitve': None, 'eprimitive': None}
+            vbos = {
+                'vao': None,
+                'v': None,
+                'n': None,
+                'i': None,
+                'fc': None,
+                'ec': None,
+                'counts': None,
+                'nindexe': None,
+                'nindex': None,
+                'vertex_id': None,
+                'ie': None,
+                'primitve': None,
+                'eprimitive': None}
             vbos['vao'] = glGenVertexArrays(1)
         glBindVertexArray(vbos['vao'])
 
         array_idx = kwargs.pop('array_idx', None)
         edge_idx = kwargs.pop('edge_idx', None)
-            
+
         # make indexset when it is needed
         # index set is changed to uint32 instead of uint16 (2016 06 28)
         if ((vbos['v'] is None or vbos['v'].need_update) or
@@ -2095,13 +2128,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ((vbos['fc'] is None or vbos['fc'].need_update) and
              facecolor is not None) or
                 (vbos['ec'] is None or vbos['ec'].need_update)):
-            
-            idxset0 = np.array(paths[4], copy=False).astype(np.uint32,
-                                                            copy=False).flatten()
+
+            idxset0 = np.array(
+                paths[4],
+                copy=False).astype(
+                np.uint32,
+                copy=False).flatten()
             if edge_idx is not None:
-                edge_idx= np.array(edge_idx, copy=False).astype(np.uint32,
-                                                         copy=False).flatten()
-            
+                edge_idx = np.array(
+                    edge_idx, copy=False).astype(
+                    np.uint32, copy=False).flatten()
+
             if len(paths[4][0]) == 4:
                 print('I am here1')
                 idxset0 = idxset0.reshape(-1, 4)
@@ -2126,13 +2163,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if len(paths[4][0]) == 4:
             counts = 3
             nindex = len(paths[4]) * 6
-            nindexe = len(paths[4]) * 6 if edge_idx is None else len(edge_idx)*2
+            nindexe = len(paths[4]) * \
+                6 if edge_idx is None else len(edge_idx) * 2
             primitive = GL_TRIANGLES
             eprimitive = GL_TRIANGLES if edge_idx is None else GL_LINES
         elif len(paths[4][0]) == 3:
             counts = 3
             nindex = len(paths[4]) * 3
-            nindexe = len(paths[4]) * 6 if edge_idx is None else len(edge_idx)*2
+            nindexe = len(paths[4]) * \
+                6 if edge_idx is None else len(edge_idx) * 2
             primitive = GL_TRIANGLES
             eprimitive = GL_TRIANGLES if edge_idx is None else GL_LINES
         elif len(paths[4][0]) == 2:
@@ -2280,6 +2319,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
                                      copy=False).transpose().flatten()
+                
+                print("vertex_id", len(vertex_id))
 
                 if vbos['vertex_id'] is None:
                     vbos['vertex_id'] = get_vbo(vertex_id,
@@ -2304,13 +2345,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def has_vbo_data(self, artist):
         tag = self.get_container(artist)
-        if not tag in self.vbo:
+        if tag not in self.vbo:
             return False
         return artist in self.vbo[tag]
 
     def get_vbo_data(self, artist):
         tag = self.get_container(artist)
-        if not tag in self.vbo:
+        if tag not in self.vbo:
             return None
         if artist in self.vbo[tag]:
             return self.vbo[tag][artist]
@@ -2318,7 +2359,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def store_artists(self, artists):
         for a in artists:
-            if not a in self.artists:
+            if a not in self.artists:
                 self.artists.append(a)
                 self._do_draw_mpl_artists = True
 
