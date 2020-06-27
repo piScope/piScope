@@ -1901,7 +1901,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                view_offset=(0, 0, 0, 0),
                                array_idx=None,
                                use_pointfill=True,
-                               always_noclip=False):
+                               always_noclip=False,
+                               edge_idx=None):
         if vbos is None:
             return
 
@@ -2085,7 +2086,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(vbos['vao'])
 
         array_idx = kwargs.pop('array_idx', None)
-
+        edge_idx = kwargs.pop('edge_idx', None)
+            
         # make indexset when it is needed
         # index set is changed to uint32 instead of uint16 (2016 06 28)
         if ((vbos['v'] is None or vbos['v'].need_update) or
@@ -2093,25 +2095,30 @@ class MyGLCanvas(glcanvas.GLCanvas):
             ((vbos['fc'] is None or vbos['fc'].need_update) and
              facecolor is not None) or
                 (vbos['ec'] is None or vbos['ec'].need_update)):
-            idxset0 = np.array(paths[4], copy=False).astype(
-                np.uint32, copy=False).flatten()
-            #    idxset0 = np.hstack(paths[4]).astype(np.uint32, copy=False)
-            # else:
-            #    idxset0 = paths[4].astype(np.uint32, copy=False)
+            
+            idxset0 = np.array(paths[4], copy=False).astype(np.uint32,
+                                                            copy=False).flatten()
+            if edge_idx is not None:
+                edge_idx= np.array(edge_idx, copy=False).astype(np.uint32,
+                                                         copy=False).flatten()
+            
             if len(paths[4][0]) == 4:
+                print('I am here1')
                 idxset0 = idxset0.reshape(-1, 4)
                 idxset = idxset0[:, [0, 1, 2, 2, 3, 0]].flatten()
-                #idxsete = idxset0[:,[0, 1, 1, 2, 2, 3, 3, 0]].flatten()
-                idxsete = idxset
+                if edge_idx is not None:
+                    idxsete = edge_idx
+                else:
+                    idxsete = idxset
             elif len(paths[4][0]) == 3:
                 idxset = idxset0
-                idxset0 = idxset0.reshape(-1, 3)
-                idxsete = idxset0[:, [0, 1, 2, 1, 2, 0]].flatten()
-                #idxsete = idxset
+                if edge_idx is not None:
+                    idxsete = edge_idx
+                else:
+                    idxset0 = idxset0.reshape(-1, 3)
+                    idxsete = idxset0[:, [0, 1, 2, 1, 2, 0]].flatten()
             elif len(paths[4][0]) == 2:
                 idxset = idxset0
-                # print idxset.shape
-                #idxset=  idxset0[:,[0, 1, 0]].flatten()
                 idxsete = None
             else:
                 assert False, "Unsupported element shape"
@@ -2119,15 +2126,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if len(paths[4][0]) == 4:
             counts = 3
             nindex = len(paths[4]) * 6
-            nindexe = len(paths[4]) * 6
+            nindexe = len(paths[4]) * 6 if edge_idx is None else len(edge_idx)*2
             primitive = GL_TRIANGLES
-            eprimitive = GL_TRIANGLES
+            eprimitive = GL_TRIANGLES if edge_idx is None else GL_LINES
         elif len(paths[4][0]) == 3:
             counts = 3
             nindex = len(paths[4]) * 3
-            nindexe = len(paths[4]) * 6
+            nindexe = len(paths[4]) * 6 if edge_idx is None else len(edge_idx)*2
             primitive = GL_TRIANGLES
-            eprimitive = GL_TRIANGLES
+            eprimitive = GL_TRIANGLES if edge_idx is None else GL_LINES
         elif len(paths[4][0]) == 2:
             counts = 2
             nindex = len(paths[4]) * 2

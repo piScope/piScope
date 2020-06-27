@@ -1153,7 +1153,7 @@ class Axes3DMod(Axes3D):
                         #norms[i, :] = [1,0,0]
                 '''
                 norms = table.dot(n1a)
-                print(time.perf_counter())                
+                print(time.perf_counter())
             nn = np.atleast_2d(np.linalg.norm(norms, axis=1)).transpose()
             nn[nn == 0.0] = 1.
             norms = norms/nn
@@ -1161,9 +1161,13 @@ class Axes3DMod(Axes3D):
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
                                v[..., 2].flatten(),
-                               norms,  idxset]
+                               norms, idxset]
+        edge_idx = kwargs.pop('edge_idx', None)
+        if edge_idx is not None:
+            kwargs['gl_edge_idx'] = edge_idx
 
         from .art3d_gl import Poly3DCollectionGL
+
         if len(args) == 1:
             a = Poly3DCollectionGL(v[:2, ...], **kwargs)
         else:
@@ -1175,7 +1179,7 @@ class Axes3DMod(Axes3D):
         a.do_stencil_test = False
 
         return a
-    
+
     def rotate_view_90deg(self, flip=False):
         self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
         if flip:

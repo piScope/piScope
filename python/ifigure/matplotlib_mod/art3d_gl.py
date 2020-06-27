@@ -723,10 +723,11 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self.do_stencil_test = True
         self._gl_offset = kargs.pop('gl_offset', (0, 0, 0.))
         self._gl_3dpath = kargs.pop('gl_3dpath', None)
-        self._gl_facecolor = kargs.pop('gl_facecolor',  None)
+        self._gl_facecolor = kargs.pop('gl_facecolor', None)
         self._gl_edgecolor = kargs.pop('gl_edgecolor', None)
         self._gl_solid_facecolor = kargs.pop('gl_solid_facecolor', None)
         self._gl_solid_edgecolor = kargs.pop('gl_solid_edgecolor', None)
+        self._gl_edge_idx = kargs.pop('gl_edge_idx', None)
         self._gl_shade = kargs.pop('gl_shade', 'smooth')
         self._gl_lighting = kargs.pop('gl_lighting', True)
         self._gl_facecolordata = kargs.pop('facecolordata', None)
@@ -764,8 +765,13 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             norm = np.array([0., 0, 1.])
 
         txs, tys, tzs, ones = self._vec
-        xyzlist = [(txs[si:ei], tys[si:ei], tzs[si:ei])
-                   for si, ei in self._segis]
+
+        if hasattr(self, '_segis'):
+            xyzlist = [(txs[si:ei], tys[si:ei], tzs[si:ei])
+                        for si, ei in self._segis]
+        else:
+            xyzlist = [(txs[sl], tys[sl], tzs[sl]) for sl in
+                       self._segslices]
 
         for v0, v1, v2 in xyzlist:
             x1.append(v0)
@@ -927,6 +933,10 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     def update_idxset(self, idxset):
         self._gl_3dpath[4] = idxset
         self._update_i = True
+        
+    def update_edge_idxset(self, idxset):
+        self._gl_edge_idx = idxset
+        self._update_i = True
 
     @draw_wrap
     def draw(self, renderer):
@@ -993,7 +1003,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                         stencil_test=self.do_stencil_test,
                         view_offset=self._gl_voffset,
                         array_idx=self._gl_array_idx,
-                        always_noclip = self._gl_always_noclip)
+                        always_noclip=self._gl_always_noclip)
 
                 else:
                     renderer.gl_draw_path_collection_e(
@@ -1007,7 +1017,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                         view_offset=self._gl_voffset,
                         array_idx=self._gl_array_idx,
                         use_pointfill=self._gl_use_pointfill,
-                        always_noclip = self._gl_always_noclip)
+                        always_noclip=self._gl_always_noclip,
+                        edge_idx=self._gl_edge_idx)
 
 #           renderer.do_stencil_test = False
             glcanvas.end_draw_request()

@@ -64,6 +64,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cdata', None)
         p.add_key('shade', 'linear')
         p.add_key('array_idx', None)
+        p.add_key('edge_idx', None)        
         p.add_key('use_pointfill', False)
         p.add_key('draw_last', False)
 
@@ -189,6 +190,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         # if self.getp('alpha') is not None else 1
         kywds['alpha'] = self.getp('alpha')
         kywds['array_idx'] = self.getvar('array_idx')
+        kywds['edge_idx'] = self.getvar('edge_idx')        
         fc = self.getp('facecolor')
         if isinstance(fc, str):
             fc = cc.to_rgba(fc)
