@@ -1690,7 +1690,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                view_offset=(0, 0, 0, 0),
                                array_idx=None,
                                use_pointfill=True,
-                               always_noclip = False):        
+                               always_noclip = False,
+                               edge_idx=None):        
         if vbos is None:
             return
         first, counts = vbos['first'], vbos['counts']
@@ -1786,6 +1787,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
                         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
             vbos['fc'].unbind()
 
+        if vbos['ie'] is not None:
+            vbos['i'].unbind()
+            vbos['ie'].bind()
+            primitive_mode = GL_LINES
+            counts = [2]*len(edge_idx)
+            
         if linewidth[0] > 0.0 and not self._shadow:
             glLineWidth(linewidth[0]*multisample)
             vbos['ec'].bind()
@@ -1821,7 +1828,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         vbos['v'].unbind()
         vbos['n'].unbind()
-        vbos['i'].unbind()
+        if vbos['ie'] is not None:
+            vbos['ie'].unbind()            
+        else:
+            vbos['i'].unbind()
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
@@ -1841,9 +1851,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos is None:
             vbos = {'v': None, 'n': None, 'i': None, 'fc': None,
                     'ec': None, 'first': None, 'counts': None,
-                    'vertex_id': None}
+                    'ie': None, 'vertex_id': None}
 
         array_idx = kwargs.pop('array_idx', None)
+        edge_idx = kwargs.pop('edge_idx', None)
+        
         from matplotlib.path import Path
         # print 'draw_path_collection', len(facecolor)
 
@@ -1897,6 +1909,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if vbos['vertex_id'] is not None:
                 vbos['vertex_id'].need_update = True
             vbos['i'].need_update = False
+            
+            if edge_idx is not None:
+                idxsete = np.array(edge_idx, copy=False).astype(np.uint32, copy=False).flatten()                
+                vbos['ie'] = get_vbo(idxsete, usage='GL_STATIC_DRAW',
+                                    target='GL_ELEMENT_ARRAY_BUFFER')
+            else:
+                vbos['ie'] = None
 
         if vbos['i'].need_update:
             if len(vbos['i']) > len(idxset):
@@ -1913,6 +1932,12 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['i'].set_array(idxset)
             vbos['counts'] = [len(idx) for idx in paths[4]]
             vbos['i'].need_update = False
+            
+            if edge_idx is not None:
+                idxsete = np.array(edge_idx, copy=False).astype(np.uint32, copy=False).flatten()                
+                vbos['ie'].set_array(idxsete)
+            else:
+                vbos['ie'] = None
 
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
                 facecolor is not None):
