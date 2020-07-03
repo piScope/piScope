@@ -1151,7 +1151,7 @@ class Axes3DMod(Axes3D):
                         #norms[i, :] = [1,0,0]
                 '''
                 norms = table.dot(n1a)
-                print(time.perf_counter())
+                #print(time.perf_counter())
             nn = np.atleast_2d(np.linalg.norm(norms, axis=1)).transpose()
             nn[nn == 0.0] = 1.
             norms = norms/nn
