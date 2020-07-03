@@ -1129,8 +1129,8 @@ class Axes3DMod(Axes3D):
             elif idxset.shape[-1] < 3:
                 norms = n1a
             else:
-                print("doing this")
-                print(time.perf_counter())
+                #print("doing this")
+                #print(time.perf_counter())
                 data = np.ones(idxset.flatten().shape[0])
                 jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
                 ii = idxset.transpose().flatten()
@@ -1139,8 +1139,6 @@ class Axes3DMod(Axes3D):
                 csr = table.tocsr()
                 indptr = csr.indptr
                 indices = csr.indices
-                
-                print(csr.shape)
                 data = csr.data
                 '''
                 for i in range(csr.shape[0]):
