@@ -2271,7 +2271,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.buttonpress0(event)
 
     def buttonrelease(self, event):
-        print("button release", event.guiEvent)
+        #print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)
         event.guiEvent = evt
         self.draghandler.unbind_mpl()
@@ -2286,7 +2286,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.buttonrelease0(event)
 
     def buttonpress0(self, event):
-        print("buttonrelease0")
+        #print("buttonrelease0")
         self._alt_shift_hit = False
 
         self.draghandler.clean(None)

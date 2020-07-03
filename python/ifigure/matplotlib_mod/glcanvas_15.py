@@ -2320,8 +2320,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                      dtype=np.float32,
                                      copy=False).transpose().flatten()
                 
-                print("vertex_id", len(vertex_id))
-
                 if vbos['vertex_id'] is None:
                     vbos['vertex_id'] = get_vbo(vertex_id,
                                                 usage='GL_STATIC_DRAW')
