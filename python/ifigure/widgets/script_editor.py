@@ -98,7 +98,8 @@ class PythonSTCPopUp(wx.Menu):
                  ('Paste', parent.onPaste, None),
                  ('Delete', parent.onDeleteBack, None),
                  ('---', None, None,),
-                 ('Select All', parent.onSelectAll, None), ]
+                 ('Select All', parent.onSelectAll, None),
+                 ('Wrap', parent.onWrapText, None),]
         if hasattr(parent.GetParent().GetParent(), 'ToggleFindPanel'):
             if not parent.GetParent().GetParent().get_findpanel_shown():
                 menus.extend([('---', None, None,),
@@ -106,7 +107,8 @@ class PythonSTCPopUp(wx.Menu):
         if parent.doc_name.endswith('.py'):
             menus = menus + [('---', None, None),
                              ('Shift region right', parent.onRegionRight, None),
-                             ('Shift region left',  parent.onRegionLeft, None), ]
+                             ('Shift region left',  parent.onRegionLeft, None), 
+                             ('Format (autopep8)',  parent.onAutopep8, None), ]            
             if parent.check_if_in_script_editor():
                 if parent.get_td() is not None:
                     menus = menus + [
@@ -1114,6 +1116,54 @@ class PythonSTC(stc.StyledTextCtrl):
         cmtime = 0 if not os.path.exists(file) else os.path.getmtime(file)
         return cmtime > self.file_mtime
 
+    def onWrapText(self, evt):
+        import textwrap
+
+        sline = self.GetFirstVisibleLine()
+        sp, ep = self.GetSelection()
+        l1 = self.LineFromPosition(sp)
+        l2 = self.LineFromPosition(ep)
+
+
+        EOL = self.GetEOLMode()
+        if EOL == wx.stc.STC_EOL_CR:
+            s = '\r'
+        elif EOL == wx.stc.STC_EOL_CRLF:
+            s = '\r\n'
+        else:
+            s = '\n'
+
+        lines = self.GetText().split(s)
+        
+        # this case process all lines
+        if l1 == 0 and l2 == 0:
+            l1 = 0
+            l2 = len(lines)-1
+            
+        for x in range(l1, l2+1):
+            lines[x] = s.join(textwrap.wrap(lines[x]))
+
+        self.SetText(s.join(lines))
+        
+        self.ScrollToLine(sline)
+        
+        evt.Skip()
+
+    def onAutopep8(self, evt):
+        import autopep8
+        
+        sline = self.GetFirstVisibleLine()        
+
+        txt = self.GetText()
+
+        txt = autopep8.fix_code(txt)
+
+        self.SetText(txt)
+        
+        self.ScrollToLine(sline)
+        
+        evt.Skip()
+
 #    def turn_on_debugger(self):
 #        app = wx.GetApp().TopWindow.script_editor.d_panel.CheckDebuggerInstance()
 # ----------------------------------------------------------------------
@@ -1683,7 +1733,6 @@ class ScriptEditor(wx.Panel):
         p.MarkerAdd(line-1, DebugCurrentLine)
         p.GotoLine(line-1)
 
-
 class ScriptEditorFrame(FrameWithWindowList):
     def __init__(self, *args, **kargs):
         kargs["style"] = (wx.CAPTION |
@@ -1913,3 +1962,7 @@ class ScriptEditorFrame(FrameWithWindowList):
 
     def onQuit(self, evt=None):
         wx.GetApp().TopWindow.Close()
+
+        
+        
+        
