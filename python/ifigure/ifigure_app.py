@@ -1151,7 +1151,12 @@ class ifigure_app(BookViewerFrame):
             print(("saving to " + path))
             self.proj_tree_viewer.ch.savetofile(filename=os.path.join(
                 self.proj.getvar("wdir"), '.command_history'))
-            self.proj.SaveToFile(path, opath=opath)
+            
+            success = self.proj.SaveToFile(path, opath=opath)
+        else:
+            success = False
+
+        if success:
 #           self.update_save_project_menu(True)
 #           self.set_filename_2_window_title()
             nwdir = self.proj.getvar("wdir")

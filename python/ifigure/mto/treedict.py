@@ -2125,6 +2125,8 @@ class TopTreeDict(TreeDict):
     def SaveToFile(self, filename, opath=None):
         # save data to temporary directory
         old_wdir = self.getvar("wdir")
+        old_filename = self.getvar("filename")
+
         self._set_work_dir(filename)
         d = self.getvar("wdir")
 
@@ -2152,9 +2154,13 @@ class TopTreeDict(TreeDict):
         print("done....(save)")
 
         from ifigure.utils.mp_tarzip import MPTarzip
-        if MPTarzip().isReady():
-            MPTarzip().Run(filename, d, old_wdir)
-        return True
+        success = MPTarzip().Run(filename, d, old_wdir)
+
+        if not success:
+            self.setvar("filename", old_filename)
+            self._set_work_dir(old_filename)
+
+        return success
 
     def LoadFromFile(self, filename, sb=None):
         if sb is not None:

@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import wx
 import tarfile
 import os
@@ -6,8 +7,10 @@ import gzip
 import tempfile
 import time
 
-from threading import Lock
+import traceback
+from ifigure.widgets.dialog import showtraceback, message
 
+from threading import Lock
 local_lc = Lock()
 
 from multiprocessing import Process, Lock
@@ -16,34 +19,45 @@ def do_zip(filename, tarname,  d):
     # make .gz file
     #lc.acquire()
     with open(tarname, 'rb') as f_in:
-        with gzip.open(filename,  'wb') as f_out:
-            f_out.writelines(f_in)
+         with gzip.open(filename, 'wb') as f_out:
+             f_out.writelines(f_in)
     os.remove(tarname)
     #lc.release()
 
 class MPTarzip(object):
     worker = None
     #lc = Lock()
-    
+
     def Run(self, filename, d, odir):
+        if not self.isReady():
+            return False
+        
         print("starting tar....(save)")
 
-        tarname = self.make_tar(filename, d)
+        try:
+            tarname = self.make_tar(filename, d)
+        except PermissionError:
+            message(wx.GetApp().TopWindow,
+                    'Permission error', 'Error', 0)
+            return False
+        except:
+            showtraceback(wx.GetApp().TopWindow, txt=traceback.format_exc())
+            return False
+
         print("starting tar.gz....(save)")
-        
         MPTarzip.worker = Process(target=do_zip, args=(filename, tarname, d))
 
         try:
             MPTarzip.worker.start()
         except:
-            import traceback
-            from ifigure.widgets.dialog import showtraceback
             showtraceback(wx.GetApp().TopWindow, txt=traceback.format_exc())
-            local_lc.release()
-            return 
+            return False
+
         self.odir = odir
         self.d = d
         wx.CallLater(100, self.CheckFinished)
+
+        return True
 
     def make_tar(self, filename, d):
         # make tar.gz file
