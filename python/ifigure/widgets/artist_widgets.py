@@ -533,6 +533,7 @@ class artist_panel(wx.Panel):
             nb.SetSizer(wx.BoxSizer(wx.VERTICAL))
 
         i = 0
+
         for list in self.list:
             self.elp[i] = ScrolledEditListPanel(nb, [x[0:4] for x in list])
             # self.elp[i].SetScrollRate(0,5)
