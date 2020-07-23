@@ -235,7 +235,8 @@ class Axes3DMod(Axes3D):
         self._upvec = np.array([0, 0, 1])
         self._ignore_screen_aspect_ratio = True
         self._gl_scale = 1.0
-        self._gl_scale_accum = 1.0        
+        self._gl_scale_accum = 1.0
+        self._zoom_btn = []
 
     @property
     def dist(self):
@@ -1421,7 +1422,19 @@ class Axes3DMod(Axes3D):
     def get_gl_uniforms(self):
         glcanvas = get_glcanvas()
         return glcanvas.get_uniforms()
+    
+    def apply_aspect(self, position=None):
+        '''
+        after MPL 3.3, aspect ratio is force to be one for 3D.
+        we want to void it since our transformation support different
+        aspect ratio
 
+        self._box_aspect = None is needed reproduce the old versions
+        behavior for MPL 3.3
+        '''
+        self._box_aspect = None
+        super(Axes3D, self).apply_aspect(position)
+        
     @allow_rasterization
     def draw(self, renderer):
         #        if self._use_gl and isSupportedRenderer(renderer):
