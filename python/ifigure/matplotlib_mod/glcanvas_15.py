@@ -2140,7 +2140,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     np.uint32, copy=False).flatten()
 
             if len(paths[4][0]) == 4:
-                print('I am here1')
                 idxset0 = idxset0.reshape(-1, 4)
                 idxset = idxset0[:, [0, 1, 2, 2, 3, 0]].flatten()
                 if edge_idx is not None:
