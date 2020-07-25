@@ -386,6 +386,7 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         else:
             return PyScript._image_id[1]
 
+
     def load_classimage(self):
         from ifigure.ifigure_config import icondir as path
         idx1 = cbook.LoadImageFile(path, 'script.png')

@@ -157,6 +157,7 @@ class ArtGL(object):
 
         check, array_id = c.gl_hit_test(evt.x, evt.y,
                                         self, radius=3)
+
         if check:
             shift_down = evt.guiEvent.ShiftDown()
             
