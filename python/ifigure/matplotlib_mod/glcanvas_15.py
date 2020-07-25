@@ -1714,9 +1714,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.setLineWidth(1)
         
         if self.has_pointsprite:
+            glEnable(GL_PROGRAM_POINT_SIZE)
             glEnable(GL_POINT_SPRITE)
-            
-        glEnable(GL_PROGRAM_POINT_SIZE)
+        #
         #glPointParameterf(GL_POINT_SIZE_MAX, 50.)
         #glPointParameterf(GL_POINT_SIZE_MIN, 5.)
         #glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 50.)
@@ -1743,6 +1743,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i, 'uAlphaTest', 0)
 
         if self.has_pointsprite:
+            glDisable(GL_PROGRAM_POINT_SIZE)            
             glDisable(GL_POINT_SPRITE)        
 
         self.set_uniform(glUniform1i, 'uisMarker', 0)
