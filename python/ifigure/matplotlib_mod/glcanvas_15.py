@@ -343,6 +343,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glEnable(GL_MULTISAMPLE)
         #glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST)
 
+        from OpenGL.error import GLError
+        try:
+            glDisable(GL_POINT_SPRITE)
+            self.has_pointsprite = True
+        except GLError:
+            self.has_pointsprite = False
+
     def check_msaa(self):
         iMultiSample = (GLint * 1)()
         iNumSamples = (GLint * 1)()
@@ -1706,7 +1713,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         self.setLineWidth(1)
         
-        glEnable(GL_POINT_SPRITE)        
+        if self.has_pointsprite:
+            glEnable(GL_POINT_SPRITE)
+            
         glEnable(GL_PROGRAM_POINT_SIZE)
         #glPointParameterf(GL_POINT_SIZE_MAX, 50.)
         #glPointParameterf(GL_POINT_SIZE_MIN, 5.)
@@ -1732,7 +1741,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
         self.set_uniform(glUniform1i, 'uAlphaTest', 0)
-        glDisable(GL_POINT_SPRITE)
+
+        if self.has_pointsprite:
+            glDisable(GL_POINT_SPRITE)        
 
         self.set_uniform(glUniform1i, 'uisMarker', 0)
         self.set_uniform(glUniform1i, 'uUseArrayID', 0)
