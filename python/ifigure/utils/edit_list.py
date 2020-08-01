@@ -3337,10 +3337,14 @@ class FilePath(Panel):
 
     def onBrowse(self, evt):
         from ifigure.widgets.dialog import read
+        file = self.GetValue()
+        defaultdir=os.path.dirname(file)
+        defaultfile=file if self.defaultpath == '' else self.defaultpath
         path = read(parent=self,
                     message=self.message,
                     wildcard=self.wildcard,
-                    defaultfile=self.defaultpath)
+                    defaultfile=defaultfile,
+                    defaultdir=defaultdir)
         if path != '':
             self.SetValue(path)
             self.send_event(self, evt)

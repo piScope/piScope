@@ -177,6 +177,12 @@ class ButtonPanel(bp.ButtonPanel):
         bp.ButtonPanel.Clear(self)
 #        self.Thaw()
 
+    def make_all_normal(self):
+        for btn in self._vButtons:
+            if not btn.IsEnabled():
+                continue
+            btn.SetStatus("Normal")
+
 
 class navibar(ButtonPanel):
     def __init__(self, parent, id=-1, text='', *args, **kargs):
@@ -1079,6 +1085,7 @@ class navibar(ButtonPanel):
         self.ProcessEvent(evt1)
         self.ProcessEvent(evt2)
         self.Refresh()
+        wx.CallLater(300, self.make_all_normal)
 
     def _set_zoomcxr(self):
         if self.zoom_up_down == 'up':

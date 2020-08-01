@@ -15,8 +15,11 @@ import os
 from ifigure.utils.wx3to4 import TextEntryDialog, deref_proxy
 
 
-def read(parent=None, message='Select file to read', wildcard='*', defaultfile='',
-         defaultdir = ''):
+def read(parent=None,
+         message='Select file to read',
+         wildcard='*',
+         defaultfile='',
+         defaultdir=''):
 
     open_dlg = wx.FileDialog(parent, message=message,
                              wildcard=wildcard, style=wx.FD_OPEN)
