@@ -1085,7 +1085,7 @@ class navibar(ButtonPanel):
         self.ProcessEvent(evt1)
         self.ProcessEvent(evt2)
         self.Refresh()
-        wx.CallLater(300, self.make_all_normal)
+        wx.CallLater(100, self.make_all_normal)
 
     def _set_zoomcxr(self):
         if self.zoom_up_down == 'up':
