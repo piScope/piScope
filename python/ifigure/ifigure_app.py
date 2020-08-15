@@ -1136,6 +1136,13 @@ class ifigure_app(BookViewerFrame):
 
         opath = self.proj.getvar("filename")
         owdir = self.proj.getvar("wdir")
+
+        odir = os.getcwd()
+        if odir.startswith(owdir):
+            # if current dir is under wdir. we move to home
+            # since saveas will change wdir and wdir will be gone
+            os.chdir(os.getenv("HOME"))
+
         self.save_gui_setting()
 
         try:
@@ -1169,6 +1176,8 @@ class ifigure_app(BookViewerFrame):
                 self.write_recent_files()
         else:
             local_lc.release()
+
+        # if current directory does not exist. move to the home
 
     def onSaveFile(self, e=None, saveas=False):
         self.script_editor.SaveFile(saveas)
