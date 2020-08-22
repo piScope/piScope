@@ -23,6 +23,7 @@ _usage() {
     echo '   -g : (optional) : open off GL'
     echo '   -k : (optional) : use open GL (LIBGL_ALWAYS_SOFTWARE=1)'    
     echo '   -u : (optional) : suppress Gtk-warning'
+    echo '   -X : (optional) : use -Wd option to call python (debug)'
     echo '   file: (optional) : .bfz or .pfz file to open'
     exit 1
 }

@@ -45,7 +45,7 @@ if isMPL2:
 pickle_protocol = 2    
 
 def artist_property_checker(obj, prop, values=None):
-    print('inspecting', obj, prop)
+    #print('inspecting', obj, prop)
     if values is None:
         values = ArtistInspector(obj).get_valid_values(prop)
     matches = re.findall(r"\'(.+?)\'", values)
