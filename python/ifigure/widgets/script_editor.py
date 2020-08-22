@@ -317,7 +317,12 @@ class PythonSTC(stc.StyledTextCtrl):
         self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 #        self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
         self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
-        self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
+        self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown) 
+        #self.Bind(wx.EVT_ENTER_WINDOW, self.onMouseEnter)
+        #self.Bind(wx.EVT_LEAVE_WINDOW, self.onMouseLeave)
+
+        # this suppress default pop up on linux
+        self.UsePopUp(stc.STC_POPUP_NEVER)
 
         self.SetCaretForeground("BLUE")
 
@@ -337,7 +342,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.ctrl_X = False
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
-
+        
     def _exit_search_mode(self):
         self._mark = -1
         self._search = 0
@@ -345,13 +350,24 @@ class PythonSTC(stc.StyledTextCtrl):
         self._search_st = -1
 
     def onSetFocus(self, evt):
+        #print("set focus")                
         evt.Skip()
 
     def onKillFocus(self, evt):
         self._exit_search_mode()
+        #print("kill focus")
         evt.Skip()
-
+        
+    def onMouseEnter(self, evt):
+        #print("mouse enter")        
+        evt.Skip()
+        
+    def onMouseLeave(self, evt):
+        #print("mouse leave")
+        evt.Skip()
+        
     def onLeftDown(self, e):
+        #print("left down")
         self._exit_search_mode()
         e.Skip()
 
@@ -1024,9 +1040,11 @@ class PythonSTC(stc.StyledTextCtrl):
 #        e.Skip()
 
     def onRightDown(self, evt):
+        #print("right down")
         evt.Skip()
 
     def onRightUp(self, evt):
+        #print("right up")
         reload = False
         if self.check_if_in_script_editor():
             app = wx.GetApp().TopWindow
@@ -1039,6 +1057,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.PopupMenu(m,
                        (evt.GetX(), evt.GetY()))
         m.Destroy()
+        evt.Skip()
 
     def ShowDebugMargin(self, enter):
         if enter:
@@ -1141,7 +1160,7 @@ class PythonSTC(stc.StyledTextCtrl):
             l2 = len(lines)-1
             
         for x in range(l1, l2+1):
-            lines[x] = s.join(textwrap.wrap(lines[x]))
+            lines[x] = s.join(textwrap.wrap(lines[x], width=60))
 
         self.SetText(s.join(lines))
         

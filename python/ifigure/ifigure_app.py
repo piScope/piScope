@@ -532,9 +532,6 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.update_widget()
         self.set_accelerator_table()
 
-        from ifigure.widgets.taskbar import TaskBarIcon
-        self.tbicon = TaskBarIcon(self)
-        
     def onUpdateUI(self, evt):
         if evt.GetId() == ID_DETACH_EDITOR:
             if (self.script_editor.GetTopLevelParent() == self and
@@ -1404,7 +1401,7 @@ class ifigure_app(BookViewerFrame):
                 diffwindow.Destroy()
         except PyDeadObjectError:
             pass
-        self.tbicon.Destroy()
+
         self.Destroy()  # is this necessary to make sure app closes??? (2015.10)
         e.Skip()
 

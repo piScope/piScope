@@ -632,9 +632,9 @@ class TaskBarIcon(wxTaskBarIcon):
     TBMENU_OPENED = wx.NewIdRef(count=1)
     TBMENU_CLOSE = wx.NewIdRef(count=1)
 
-    def __init__(self, frame):
+    def __init__(self):
         wxTaskBarIcon.__init__(self, TBI_DOCK)
-        self.frame = frame
+        #self.frame = frame
 
         # Set the image
         icon = self.MakeIcon(app_logo.GetImage())
@@ -645,6 +645,12 @@ class TaskBarIcon(wxTaskBarIcon):
         self.Bind(EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarActivate)
         self.Bind(wx.EVT_MENU, self.OnTaskBarClose, id=self.TBMENU_CLOSE)
 
+    @property
+    def frame(self):
+        import wx
+        app = wx.GetApp()
+        return app.TopWindow
+    
     def CreatePopupMenu(self):
         """
         This method is called by the base class when it needs to popup
