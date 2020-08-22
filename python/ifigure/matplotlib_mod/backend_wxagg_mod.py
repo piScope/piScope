@@ -205,7 +205,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         for a in alist:
             a.draw(self.renderer)
         self._prepare_bitmap()
-        # print 'draw calling gui_repaint'
+
         self.gui_repaint(drawDC=drawDC)
         
     def capture_screen_rgba(self):

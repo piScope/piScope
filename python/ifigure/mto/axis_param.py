@@ -116,9 +116,11 @@ class AxisRangeParam(Memberholder):
         set_auto(False)
         suffix = self.name
         if self.scale == 'log':
-            kargs = {'base'+suffix: self.base}
+            #kargs = {'base'+suffix: self.base}
+            kargs = {'base': self.base}
         elif self.scale == 'symlog':
-            kargs = {'base'+suffix: self.base,
+            #kargs = {'base'+suffix: self.base,
+            kargs = {'base': self.base,
                      'linthresh'+suffix: self.symloglin,
                      'linscale'+suffix: self.symloglinscale}
         else:

@@ -720,6 +720,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     continue
                 if self._artist_mask is not None and not a in self._artist_mask:
                     continue
+
                 if update_id:
                     cid = ((int(current_id) % 256)/255.,
                            (int(current_id)//256 % 256)/255.,

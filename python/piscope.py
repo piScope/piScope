@@ -245,7 +245,11 @@ if __name__ == '__main__':
     # conditions for iptyhon
     ifig_app.set_launcher_file(launcher_file)
 
+    from ifigure.widgets.taskbar import TaskBarIcon
+    tbicon = TaskBarIcon()
+    
     app.MainLoop()
+    
     server = ifigure.server.Server()
     if server.info()[0]:
         server.stop()

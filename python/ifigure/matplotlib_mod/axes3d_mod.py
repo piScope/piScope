@@ -1,4 +1,5 @@
 from __future__ import print_function
+from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 import time
 
@@ -27,10 +28,10 @@ cc = ColorConverter()
 
 # KERNEL for mask bluring
 conv_kernel_size = 11
-x = 1-np.abs(np.linspace(-1., 1., conv_kernel_size))
+x = 1 - np.abs(np.linspace(-1., 1., conv_kernel_size))
 X, Y = np.meshgrid(x, x)
 conv_kernel = np.sqrt(X**2, Y**2)
-conv_kernel = conv_kernel/np.sum(conv_kernel)
+conv_kernel = conv_kernel / np.sum(conv_kernel)
 ###
 
 
@@ -66,42 +67,41 @@ def norm_vec(n):
     if d == 0:
         return np.zeros(len(n))
     else:
-        return n/np.sqrt(d)
+        return n / np.sqrt(d)
 
 
-def arrow3d(base, r1, r2, ort, l, h, m=13, pivot='tail', d1d2 = None):
+def arrow3d(base, r1, r2, ort, l, h, m=13, pivot='tail', d1d2=None):
     ort = norm_vec(ort)
-    th = np.linspace(0, np.pi*2, m).reshape(-1, 1)
-    
+    th = np.linspace(0, np.pi * 2, m).reshape(-1, 1)
+
     if d1d2 is None:
         x = np.array([1., 0., 0.])
         y = np.array([0., 1., 0.])
-        z = np.array([0., 0., 1.])    
-
+        z = np.array([0., 0., 1.])
 
         if np.sum(np.cross(ort, x)**2) == 0:
             if np.sum(np.cross(ort, y)**2) == 0:
                 d1 = norm_vec(np.cross(ort, z))
             else:
-                d1 = norm_vec(np.cross(ort, y))            
+                d1 = norm_vec(np.cross(ort, y))
         else:
             d1 = norm_vec(np.cross(ort, x))
         d2 = np.cross(ort, d1)
     else:
         d1, d2 = d1d2
-    
+
     if pivot == 'tip':
-        base = base - (l+h)*ort
+        base = base - (l + h) * ort
     elif pivot == 'mid':
-        base = base - (l+h)*ort/2.
+        base = base - (l + h) * ort / 2.
     else:
         pass
 
-    p = base + l*r1 * (d1*np.cos(th) + d2*np.sin(th))
-    q = p + l*ort
-    p2 = base + l*r2 * (d1*np.cos(th) + d2*np.sin(th)) + l*ort
-    p3 = base + (l+h)*ort
-    p3 = np.array([p3]*m).reshape(-1, 3)
+    p = base + l * r1 * (d1 * np.cos(th) + d2 * np.sin(th))
+    q = p + l * ort
+    p2 = base + l * r2 * (d1 * np.cos(th) + d2 * np.sin(th)) + l * ort
+    p3 = base + (l + h) * ort
+    p3 = np.array([p3] * m).reshape(-1, 3)
     t1 = np.stack((p[:-1], q[:-1], p[1:]), axis=1)
     t2 = np.stack((p[1:], q[:-1], q[1:]), axis=1)
     t3 = np.stack((p2[:-1], p3[:-1], p2[1:]), axis=1)
@@ -114,11 +114,11 @@ def world_transformation(xmin, xmax,
                          ymin, ymax,
                          zmin, zmax,
                          view_scale=1):
-    dx, dy, dz = (xmax-xmin), (ymax-ymin), (zmax-zmin)
+    dx, dy, dz = (xmax - xmin), (ymax - ymin), (zmax - zmin)
     return np.array([
-        [1.0/dx, 0, 0, -xmin/dx],
-        [0, 1.0/dy, 0, -ymin/dy],
-        [0, 0, 1.0/dz, -zmin/dz],
+        [1.0 / dx, 0, 0, -xmin / dx],
+        [0, 1.0 / dy, 0, -ymin / dy],
+        [0, 0, 1.0 / dz, -zmin / dz],
         [0, 0, 0, 1.0]])
 
 
@@ -143,7 +143,7 @@ def view_transformation(E, R, V):
     Mr = [[u[0], u[1], u[2], 0],
           [v[0], v[1], v[2], 0],
           [n[0], n[1], n[2], 0],
-          [0,   0,   0,   1],
+          [0, 0, 0, 1],
           ]
     #
     Mt = [[1, 0, 0, -E[0]],
@@ -156,8 +156,8 @@ def view_transformation(E, R, V):
 
 
 def persp_transformation(zfront, zback):
-    a = (zfront+zback)/(zfront-zback)
-    b = -2*(zfront*zback)/(zfront-zback)
+    a = (zfront + zback) / (zfront - zback)
+    b = -2 * (zfront * zback) / (zfront - zback)
     from ifigure.matplotlib_mod.canvas_common import view_scale
     return np.array([[view_scale, 0, 0, 0],
                      [0, view_scale, 0, 0],
@@ -165,17 +165,23 @@ def persp_transformation(zfront, zback):
                      [0, 0, -1, 0]
                      ])
 
+
 def rotation_mat(ax, an):
     '''
     matrix to rotate arounc ax by an [rad]
     '''
-    c = np.cos(an); s = np.sin(an)
-    ax = ax/np.sqrt(np.sum(ax**2))
-    R = np.array(
-            [[c + (1-c)*ax[0]**2, ax[0]*ax[1]*(1-c)-ax[2]*s, ax[0]*ax[2]*(1-c)+ax[1]*s],
-             [ax[0]*ax[1]*(1-c)+ax[2]*s, c + (1-c)*ax[1]**2,  ax[1]*ax[2]*(1-c)-ax[0]*s],
-             [ax[0]*ax[2]*(1-c)-ax[1]*s, ax[1]*ax[2]*(1-c)+ax[0]*s, c + (1-c)*ax[2]**2]]
-            )
+    c = np.cos(an)
+    s = np.sin(an)
+    ax = ax / np.sqrt(np.sum(ax**2))
+    R = np.array([[c + (1 - c) * ax[0]**2,
+                   ax[0] * ax[1] * (1 - c) - ax[2] * s,
+                   ax[0] * ax[2] * (1 - c) + ax[1] * s],
+                  [ax[0] * ax[1] * (1 - c) + ax[2] * s,
+                   c + (1 - c) * ax[1]**2,
+                   ax[1] * ax[2] * (1 - c) - ax[0] * s],
+                  [ax[0] * ax[2] * (1 - c) - ax[1] * s,
+                   ax[1] * ax[2] * (1 - c) + ax[0] * s,
+                   c + (1 - c) * ax[2]**2]])
 
     return R
 
@@ -186,7 +192,7 @@ def use_gl_switch(func):
     aritist, either mplot3d or openGL based artist.
 
     note that piScope does not keep track
-    use_gl switch. Manipulating use_gl manually in 
+    use_gl switch. Manipulating use_gl manually in
     piScope makes your plot unreproducible.
     '''
     @wraps(func)
@@ -205,7 +211,6 @@ class ArtGLHighlight(FigureImage):
     def remove(self):
         self.figure.artists.remove(self)
 
-from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 class Axes3DMod(Axes3D):
     pan_sensitivity = 5
@@ -235,15 +240,20 @@ class Axes3DMod(Axes3D):
         self._upvec = np.array([0, 0, 1])
         self._ignore_screen_aspect_ratio = True
         self._gl_scale = 1.0
-        self._gl_scale_accum = 1.0        
+        self._gl_scale_accum = 1.0
+        self._zoom_btn = []
+        self._pan_btn = []
+        self._rotate_btn = []
+        self._drag_mode = ''
 
     @property
     def dist(self):
-        return  camera_distance
+        return camera_distance
+
     @dist.setter
     def dist(self, value):
         pass
-        
+
     def view_init(self, elev=None, azim=None):
         """
         Copied form Axes3D to play with self.dist
@@ -272,15 +282,17 @@ class Axes3DMod(Axes3D):
             return False, None
 
         x0, y0, id_dict, im, imd, im2 = self._gl_id_data
-        x, x0,  y, y0 = int(x), int(x0),  int(y), int(y0)
 
-        d = (im[y-y0-radius:y-y0+radius,
-               x-x0-radius:x-x0+radius]).flatten()
+        x, x0, y, y0 = int(x), int(x0), int(y), int(y0)
 
-        dd = (im2[y-y0-radius:y-y0+radius,
-                  x-x0-radius:x-x0+radius]).flatten()
-        dd_extra = (imd[y-y0-radius:y-y0+radius,
-                        x-x0-radius:x-x0+radius]).flatten()
+        d = (im[y - y0 - radius:y - y0 + radius,
+                x - x0 - radius:x - x0 + radius]).flatten()
+
+        dd = (im2[y - y0 - radius:y - y0 + radius,
+                  x - x0 - radius:x - x0 + radius]).flatten()
+        dd_extra = (imd[y - y0 - radius:y - y0 + radius,
+                        x - x0 - radius:x - x0 + radius]).flatten()
+
         if len(dd) == 0:
             return False, None
 
@@ -300,7 +312,7 @@ class Axes3DMod(Axes3D):
         return False, None
 
     def gl_hit_test_rect(self, rect, artist, check_selected_all_covered=False):
-        # 
+        #
         #     if artist_id is found within raidus from (x, y)
         #     and
         #     if it is the closet artist in the area of checking
@@ -309,36 +321,37 @@ class Axes3DMod(Axes3D):
             return False, False, None
         if not artist._gl_pickable:
             return False, False, None
-        
+
         x0, y0, id_dict, im, imd, im2 = self._gl_id_data
-        
-        x, x0,  y, y0 = int(rect[0]), int(x0),  int(rect[1]), int(y0)
+
+        x, x0, y, y0 = int(rect[0]), int(x0), int(rect[1]), int(y0)
         dx = rect[2]
         dy = rect[3]
 
-        d = (im[y-y0:y-y0+dy, x-x0:x-x0+dx]).flatten()
-        dd_extra = (imd[y-y0:y-y0+dy, x-x0:x-x0+dx]).flatten()
+        d = (im[y - y0:y - y0 + dy, x - x0:x - x0 + dx]).flatten()
+        dd_extra = (imd[y - y0:y - y0 + dy, x - x0:x - x0 + dx]).flatten()
 
         if len(d) == 0:
             return False, False, None
 
         xxx = -1
         for key in id_dict:
-            if id_dict[key]() is None: continue
+            if id_dict[key]() is None:
+                continue
             if id_dict[key]() == artist:
                 xxx = key
                 break
-            
+
         mask = (d == key)
         mask_all = (im == key)
-        all_covered = (np.sum(mask) == np.sum(mask_all))            
-        
+        all_covered = (np.sum(mask) == np.sum(mask_all))
+
         if not any(mask):
             return False, False, None
-        
+
         dd_extra1 = dd_extra[mask]
         dd_extra2 = imd[mask_all]
-        
+
         selected_idx = np.unique(dd_extra1)
 
         if check_selected_all_covered:
@@ -349,7 +362,6 @@ class Axes3DMod(Axes3D):
             selected_idx = all_covered_selected_idx
 
         return True, all_covered, selected_idx
-    
 
     def make_gl_hl_artist(self):
         if self._gl_id_data is None:
@@ -357,6 +369,7 @@ class Axes3DMod(Axes3D):
         self.del_gl_hl_artist()
 
         x0, y0, id_dict, im, imd, im2 = self._gl_id_data
+
         a = ArtGLHighlight(self.figure, offsetx=x0,
                            offsety=y0, origin='lower')
         data = np.ones(im.shape)
@@ -384,15 +397,17 @@ class Axes3DMod(Axes3D):
 
         if self._gl_id_data is None:
             return False
+
         if self._gl_mask_artist is None:
             return False
+
 
         # do not do this when hitest_map is updating..this is when
         # mouse dragging is going on
         if not get_glcanvas()._hittest_map_update:
             return
-        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
 
+        x0, y0, id_dict, im, imd, im2 = self._gl_id_data
         arr = self._gl_mask_artist.get_array()
 
         for k in id_dict:
@@ -419,7 +434,7 @@ class Axes3DMod(Axes3D):
         #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
         #b = fftconvolve(arr[:, :, 3], conv_kernel, mode='same') + arr[:, :, 3]
         from scipy.ndimage import gaussian_filter
-        b = gaussian_filter(arr[:,:,3], sigma=1) + arr[:, :, 3]
+        b = gaussian_filter(arr[:, :, 3], sigma=1) + arr[:, :, 3]
         #b = np.sqrt(b)
         b[b > amask] = amask
 
@@ -444,16 +459,8 @@ class Axes3DMod(Axes3D):
     def set_mouse_button(self, rotate_btn=1, zoom_btn=3, pan_btn=2):
         self._pan_btn = np.atleast_1d(pan_btn)
         self._rotate_btn = np.atleast_1d(rotate_btn)
-        self._zoom_btn = np.atleast_1d(zoom_btn)
-
-#    def mouse_init(self, rotate_btn=1, zoom_btn=3, pan_btn=2):
-#        self.set_mouse_button(rotate_btn=rotate_btn,
-#                              zoom_btn=zoom_btn,
-#                              pan_btn=pan_btn)
-#        self._pan_btn = np.atleast_1d(pan_btn)
-#        self._rotate_btn = np.atleast_1d(rotate_btn)
-#        self._zoom_btn = np.atleast_1d(zoom_btn)
-#        Axes3D.mouse_init(self, rotate_btn=rotate_btn, zoom_btn=zoom_btn)
+        #self._zoom_btn = np.atleast_1d(zoom_btn)
+        self._zoom_btn = []
 
     def _button_press(self, evt):
         self._mouse_hit, extra = self.contains(evt)
@@ -463,18 +470,23 @@ class Axes3DMod(Axes3D):
 #        for obj in fig_axes.walk_tree():
 #            obj.switch_scale('coarse')
         Axes3D._button_press(self, evt)
-        
+
     def _on_move_start(self):
         get_glcanvas()._hittest_map_update = False
-        
+
     def _on_move(self, evt):
         if not self._mouse_hit:
             return
+
         fig_axes = self.figobj
         fig_axes.set_bmp_update(False)
-        #Axes3D._on_move(self, evt)
+
         self._on_move_mod(evt)
         get_glcanvas()._hittest_map_update = False
+
+        if self._drag_mode in ['zoom', 'select']:
+            return
+
         events.SendPVDrawRequest(self.figobj,
                                  w=None, wait_idle=False,
                                  refresh_hl=False,
@@ -486,64 +498,61 @@ class Axes3DMod(Axes3D):
     def calc_range_change_zoom3d(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
         #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
-        #return test(self, xdata, ydata, sxdata, sydata)
-        dx =  - (xdata + sxdata)/2.0
-        dy =  - (ydata + sydata)/2.0
+        # return test(self, xdata, ydata, sxdata, sydata)
+        dx = - (xdata + sxdata) / 2.0
+        dy = - (ydata + sydata) / 2.0
         dp = np.array((dx, dy))
-        
+
         w = self._pseudo_w
         h = self._pseudo_h
 
         # dx, dy : normalized screen coordinate of center of zoom
-        df = max(abs(xdata - sxdata)/w, abs(ydata - sydata)/h, 0.05)
+        df = max(abs(xdata - sxdata) / w, abs(ydata - sydata) / h, 0.05)
         if updown == 'down':
-            df = 1./df
-        # 3D axes range 
+            df = 1. / df
+        # 3D axes range
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-
 
         center_move = self._screen_move_to_3d_move(-dp)
         minp = np.array([minx, miny, minz])
         maxp = np.array([maxx, maxy, maxz])
 
-        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2 + center_move
-        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2 + center_move        
+        r1 = (minp + maxp) / 2.0 - (maxp - minp) * df / 2 + center_move
+        r2 = (minp + maxp) / 2.0 + (maxp - minp) * df / 2 + center_move
 
         return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2]), df
 
     def calc_range_change_wheel(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
         #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
-        #return test(self, xdata, ydata, sxdata, sydata)
+        # return test(self, xdata, ydata, sxdata, sydata)
 
         r = -0.15 if updown == 'down' else 0.15
-        dx =  - (xdata + sxdata)/2.0 * r
-        dy =  - (ydata + sydata)/2.0 * r
+        dx = - (xdata + sxdata) / 2.0 * r
+        dy = - (ydata + sydata) / 2.0 * r
         dp = np.array((dx, dy))
-        
+
         w = self._pseudo_w
         h = self._pseudo_h
 
         # dx, dy : normalized screen coordinate of center of zoom
-        df = 1/0.95 if updown == 'down' else 0.95
-        # 3D axes range 
+        df = 1 / 0.95 if updown == 'down' else 0.95
+        # 3D axes range
         minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-
 
         center_move = self._screen_move_to_3d_move(-dp)
         minp = np.array([minx, miny, minz])
         maxp = np.array([maxx, maxy, maxz])
 
-        r1 = (minp + maxp)/2.0 - (maxp - minp)*df/2 + center_move
-        r2 = (minp + maxp)/2.0 + (maxp - minp)*df/2 + center_move        
+        r1 = (minp + maxp) / 2.0 - (maxp - minp) * df / 2 + center_move
+        r2 = (minp + maxp) / 2.0 + (maxp - minp) * df / 2 + center_move
 
         return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2]), df
-    
+
     def _on_move_mod(self, event):
         """
-        added pan mode 
+        added pan mode
         """
-
         if not self.button_pressed:
             return
 
@@ -566,7 +575,7 @@ class Axes3DMod(Axes3D):
             # get the x and y pixel coords
             if dx == 0 and dy == 0:
                 return
-            relev, razim = np.pi * self.elev/180, np.pi * self.azim/180
+            relev, razim = np.pi * self.elev / 180, np.pi * self.azim / 180
             p1 = np.array((np.cos(razim) * np.cos(relev),
                            np.sin(razim) * np.cos(relev),
                            np.sin(relev)))
@@ -574,24 +583,24 @@ class Axes3DMod(Axes3D):
             #dx = dx/np.sqrt(dx**2 + dy**2)/3.
             #dy = dy/np.sqrt(dx**2 + dy**2)/3.
 
-            newp1 = p1 - (dx/w*rightvec + dy/h*self._upvec) * \
-                Axes3DMod.pan_sensitivity *self._gl_scale_accum
-            
-            newp1 = newp1/np.sqrt(np.sum(newp1**2))
-            self._upvec = self._upvec - newp1*np.sum(newp1*self._upvec)
-            self._upvec = self._upvec/np.sqrt(np.sum(self._upvec**2))
+            newp1 = p1 - (dx / w * rightvec + dy / h * self._upvec) * \
+                Axes3DMod.pan_sensitivity * self._gl_scale_accum
+
+            newp1 = newp1 / np.sqrt(np.sum(newp1**2))
+            self._upvec = self._upvec - newp1 * np.sum(newp1 * self._upvec)
+            self._upvec = self._upvec / np.sqrt(np.sum(self._upvec**2))
             self.elev = np.arctan2(newp1[2], np.sqrt(
-                newp1[0]**2+newp1[1]**2))*180/np.pi
-            self.azim = np.arctan2(newp1[1], newp1[0])*180/np.pi
+                newp1[0]**2 + newp1[1]**2)) * 180 / np.pi
+            self.azim = np.arctan2(newp1[1], newp1[0]) * 180 / np.pi
 #            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
 #            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
             # self.get_proj()
             # self.figure.canvas.draw_idle()
 
         elif self.button_pressed in self._pan_btn:
-            dx = 1-((w - dx)/w)
-            dy = 1-((h - dy)/h)
-            relev, razim = np.pi * self.elev/180, np.pi * self.azim/180
+            dx = 1 - ((w - dx) / w)
+            dy = 1 - ((h - dy) / h)
+            relev, razim = np.pi * self.elev / 180, np.pi * self.azim / 180
             p1 = np.array((np.cos(razim) * np.cos(relev),
                            np.sin(razim) * np.cos(relev),
                            np.sin(relev)))
@@ -602,9 +611,9 @@ class Axes3DMod(Axes3D):
             #dx, dy, dz = p2*dx + p3*dy
             dx, dy, dz = -rightvec * dx - self._upvec * dy
             minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-            dx = (maxx-minx)*dx
-            dy = (maxy-miny)*dy
-            dz = (maxz-minz)*dz
+            dx = (maxx - minx) * dx
+            dy = (maxy - miny) * dy
+            dz = (maxz - minz) * dz
 
             self.set_xlim3d(minx + dx, maxx + dx)
             self.set_ylim3d(miny + dy, maxy + dy)
@@ -619,14 +628,15 @@ class Axes3DMod(Axes3D):
 
         # Zoom
         elif self.button_pressed in self._zoom_btn:
+            #print("in zoom")
             # zoom view
             # hmmm..this needs some help from clipping....
             # this section not used..?
             minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-            df = 1-((h - dy)/h)
-            dx = (maxx-minx)*df
-            dy = (maxy-miny)*df
-            dz = (maxz-minz)*df
+            df = 1 - ((h - dy) / h)
+            dx = (maxx - minx) * df
+            dy = (maxy - miny) * df
+            dz = (maxz - minz) * df
             self.set_xlim3d(minx - dx, maxx + dx)
             self.set_ylim3d(miny - dy, maxy + dy)
             self.set_zlim3d(minz - dz, maxz + dz)
@@ -640,7 +650,13 @@ class Axes3DMod(Axes3D):
         fig_axes = self.figobj
         fig_axes.set_bmp_update(False)
         Axes3D._button_release(self, evt)
-        # events.SendPVDrawRequest(self.figobj,
+        self._pan_btn = []
+        self._rotate_btn = []
+        self._zoom_btn = []
+        self._mouse_hit = False
+        get_glcanvas()._hittest_map_update = True
+        
+        #events.SendPVDrawRequest(self.figobj,
         #                         w=None, wait_idle=False,
         #                         refresh_hl=False,
         #                         caller = '_on_release')
@@ -689,7 +705,7 @@ class Axes3DMod(Axes3D):
 
     def cz_plot(self, x, y, z, c, **kywds):
         from ifigure.matplotlib_mod.art3d_gl import Line3DCollectionGL
-        a = Line3DCollectionGL([], c_data=c, gl_lighting=False,  **kywds)
+        a = Line3DCollectionGL([], c_data=c, gl_lighting=False, **kywds)
         a._segments3d = (np.transpose(
             np.vstack((np.array(x), np.array(y), np.array(z)))),)
         a.convert_2dpath_to_3dpath()
@@ -708,11 +724,11 @@ class Axes3DMod(Axes3D):
             linec.do_stencil_test = True
             if offset is not None:
                 if zdir == 'x':
-                    linec._gl_offset = (z*0.001, 0, 0)
+                    linec._gl_offset = (z * 0.001, 0, 0)
                 elif zdir == 'y':
-                    linec._gl_offset = (0, z*0.001, 0)
+                    linec._gl_offset = (0, z * 0.001, 0)
                 else:
-                    linec._gl_offset = (0, 0, z*0.001)
+                    linec._gl_offset = (0, 0, z * 0.001)
         return cset
 
     def imshow(self, *args, **kwargs):
@@ -726,7 +742,7 @@ class Axes3DMod(Axes3D):
             extent = (min(args[0]), max(args[0]), min(args[1]), max(args[0]))
             im.set_extent(extent)
         im.set_3dpath(im_center, im_axes)
-        
+
         return im
 
     def contourf(self, *args, **kwargs):
@@ -741,17 +757,17 @@ class Axes3DMod(Axes3D):
             linec.do_stencil_test = True
             if offset is not None:
                 if zdir == 'x':
-                    linec._gl_offset = (z*0.001, 0, 0)
+                    linec._gl_offset = (z * 0.001, 0, 0)
                 elif zdir == 'y':
-                    linec._gl_offset = (0, z*0.001, 0)
+                    linec._gl_offset = (0, z * 0.001, 0)
                 else:
-                    linec._gl_offset = (0, 0, z*0.001)
+                    linec._gl_offset = (0, 0, z * 0.001)
             linec.set_edgecolor((edgecolor,))
         return cset
 
     def quiver(self, *args, **kwargs):
         '''
-         quiver(x, y, z, u, v, w, length=0.1, normalize = True, **kwargs)  
+         quiver(x, y, z, u, v, w, length=0.1, normalize = True, **kwargs)
 
             kwargs: facecolor
                     edgecolor
@@ -807,11 +823,11 @@ class Axes3DMod(Axes3D):
         XYZ = XYZ[mask]
         ORT = UVW[mask] / norm.reshape((-1, 1))
         if normalize:
-            norm = np.array([length]*len(ORT))
+            norm = np.array([length] * len(ORT))
         else:
-            norm = norm/np.max(norm)*length
+            norm = norm / np.max(norm) * length
 
-        h = np.max(norm)*arrow_length_ratio
+        h = np.max(norm) * arrow_length_ratio
         r1 = kwargs.pop('shaftsize', 0.05)
         r2 = kwargs.pop('headsize', 0.25)
 
@@ -823,45 +839,45 @@ class Axes3DMod(Axes3D):
         cdata = kwargs.pop('facecolordata', None)
         if cdata is not None:
             cdata = np.transpose(
-                np.vstack([cdata.flatten()]*sample_len)).flatten()
+                np.vstack([cdata.flatten()] * sample_len)).flatten()
             kwargs['facecolordata'] = cdata
 
         return self.plot_solid(v, **kwargs)
 
-    def plot_revolve(self, R, Z,  *args, **kwargs):
+    def plot_revolve(self, R, Z, *args, **kwargs):
         '''
         revolve
 
         '''
-        raxis = np.array(kwargs.pop('raxis', (0,  1)))
-        rtheta = kwargs.pop('rtheta', (0, np.pi*2))
+        raxis = np.array(kwargs.pop('raxis', (0, 1)))
+        rtheta = kwargs.pop('rtheta', (0, np.pi * 2))
         rmesh = kwargs.pop('rmesh', 30)
         rcenter = np.array(kwargs.pop('rcenter', [0, 0]))
         theta = np.linspace(rtheta[0], rtheta[1], rmesh)
 
-        pos = np.vstack((R-rcenter[0], Z-rcenter[1]))
-        nraxis = raxis/np.sqrt(np.sum(raxis**2))
-        nraxis = np.hstack([nraxis.reshape(2, -1)]*len(R))
-        nc = np.hstack([rcenter.reshape(2, -1)]*len(R))
-        dcos = np.sum(pos*nraxis, 0)
+        pos = np.vstack((R - rcenter[0], Z - rcenter[1]))
+        nraxis = raxis / np.sqrt(np.sum(raxis**2))
+        nraxis = np.hstack([nraxis.reshape(2, -1)] * len(R))
+        nc = np.hstack([rcenter.reshape(2, -1)] * len(R))
+        dcos = np.sum(pos * nraxis, 0)
         newz = nc + dcos  # center of rotation
-        dsin = pos[0, :]*nraxis[1, :] - pos[1, :]*nraxis[0, :]
+        dsin = pos[0, :] * nraxis[1, :] - pos[1, :] * nraxis[0, :]
 
 #        Theta, R = np.meshgrid(theta, np.abs(dsin))
 #        void, Z = np.meshgrid(theta, dcos)
         R, Theta = np.meshgrid(np.abs(dsin), theta)
         Z, void = np.meshgrid(dcos, theta)
 
-        X = R*np.cos(Theta)
-        Y = R*np.sin(Theta)
+        X = R * np.cos(Theta)
+        Y = R * np.sin(Theta)
 
-        tt = np.pi/2-np.arctan2(raxis[1], raxis[0])
+        tt = np.pi / 2 - np.arctan2(raxis[1], raxis[0])
         m = np.array([[np.cos(tt), 0, -np.sin(tt)],
                       [0, 1, 0],
                       [np.sin(tt), 0, np.cos(tt)], ])
 
         dd = np.dot(np.dstack((X, Y, Z)), m)
-        X = dd[:, :, 0]+rcenter[0]
+        X = dd[:, :, 0] + rcenter[0]
         Y = dd[:, :, 1]
         Z = dd[:, :, 2] + rcenter[1]
 
@@ -917,8 +933,8 @@ class Axes3DMod(Axes3D):
         *X*, *Y*, *Z* Data values as 2D arrays
         *edgecolor*   Color of the surface patches (default 'k')
         *facecolor*   Color of the surface patches (default None: use cmap)
-        *rstride*     Reduce data 
-        *cstride*     Reduce data 
+        *rstride*     Reduce data
+        *cstride*     Reduce data
         *cmap*        A colormap for the surface patches.
         *shade*       Whether to shade the facecolors
         ============= ================================================
@@ -953,8 +969,8 @@ class Axes3DMod(Axes3D):
         l_r = len(r)
         l_c = len(c)
 #        offset = np.array([0, 1, l_c+1, l_c, 0])
-        offset = np.array([0, 1, l_c+1, l_c])
-        base = np.arange(l_r*l_c).reshape(l_r, l_c)
+        offset = np.array([0, 1, l_c + 1, l_c])
+        base = np.arange(l_r * l_c).reshape(l_r, l_c)
         base = base[:-1, :-1].flatten()
 
         idxset = np.array([x + offset for x in base], 'H')
@@ -1068,13 +1084,13 @@ class Axes3DMod(Axes3D):
             kwargs['facecolordata'] = cdata
         return args, kwargs
 
-    def plot_solid(self, *args,  **kwargs):
+    def plot_solid(self, *args, **kwargs):
         '''
         plot_solid(v)  or plot_solid(v, idx)
 
         v [element_index, points_in_element, xyz]
 
-        or 
+        or
 
         v [vertex_index, xyz]
         idx = [element_idx, point_in_element]
@@ -1090,7 +1106,7 @@ class Axes3DMod(Axes3D):
             vv = v.reshape(-1, v.shape[-1])  # vertex
             nv = len(v[:, :, 2].flatten())
             idxset = np.arange(nv, dtype=int).reshape(v.shape[0], v.shape[1])
-            nverts = v.shape[0]*v.shape[1]
+            nverts = v.shape[0] * v.shape[1]
             ncounts = v.shape[1]
             nele = v.shape[0]
         else:
@@ -1114,7 +1130,7 @@ class Axes3DMod(Axes3D):
                 n1a = np.cross(p0, p1)
                 da = np.atleast_2d(np.linalg.norm(n1a, axis=1)).transpose()
                 da[da == 0.0] = 1.
-                n1a = -n1a/da
+                n1a = -n1a / da
             else:
                 da = np.zeros(idxset.shape[0])
                 n1a = np.zeros((nverts, 3), dtype=np.float32)  # weight
@@ -1130,7 +1146,7 @@ class Axes3DMod(Axes3D):
                 norms = n1a
             else:
                 #print("doing this")
-                #print(time.perf_counter())
+                # print(time.perf_counter())
                 data = np.ones(idxset.flatten().shape[0])
                 jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
                 ii = idxset.transpose().flatten()
@@ -1151,10 +1167,10 @@ class Axes3DMod(Axes3D):
                         #norms[i, :] = [1,0,0]
                 '''
                 norms = table.dot(n1a)
-                #print(time.perf_counter())
+                # print(time.perf_counter())
             nn = np.atleast_2d(np.linalg.norm(norms, axis=1)).transpose()
             nn[nn == 0.0] = 1.
-            norms = norms/nn
+            norms = norms / nn
 
         kwargs['gl_3dpath'] = [v[..., 0].flatten(),
                                v[..., 1].flatten(),
@@ -1181,18 +1197,18 @@ class Axes3DMod(Axes3D):
     def rotate_view_90deg(self, flip=False):
         self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
         if flip:
-            M = rotation_mat(self.vvec, np.pi/2)
+            M = rotation_mat(self.vvec, np.pi / 2)
         else:
-            M = rotation_mat(self.vvec, -np.pi/2)            
+            M = rotation_mat(self.vvec, -np.pi / 2)
         self._upvec = np.dot(M, self._upvec)
-        
+
     def get_proj2(self):
         '''
         based on mplot3d::get_proj()
         it exposes matries used to compose projection matrix,
         and supports orthogonal projection.
         '''
-        relev, razim = np.pi * self.elev/180, np.pi * self.azim/180
+        relev, razim = np.pi * self.elev / 180, np.pi * self.azim / 180
 
         xmin, xmax = self.get_xlim3d()
         ymin, ymax = self.get_ylim3d()
@@ -1214,25 +1230,25 @@ class Axes3DMod(Axes3D):
         self.vvec = R - E
         self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
 
-        if abs(relev) > np.pi/2:
+        if abs(relev) > np.pi / 2:
             V = np.array((0, 0, -1))
         else:
             V = np.array((0, 0, 1))
         V = self._upvec
         viewM = view_transformation(E, R, V)
-        
+
         zfront, zback = -self.dist, self.dist
         #zfront, zback = self.dist-1, self.dist+1
 
         if self._use_frustum:
             perspM = persp_transformation(zfront, zback)
         else:
-            a = (zfront+zback)/(zfront-zback)
-            b = -2*(zfront*zback)/(zfront-zback)
+            a = (zfront + zback) / (zfront - zback)
+            b = -2 * (zfront * zback) / (zfront - zback)
             perspM = np.array([[1, 0, 0, 0],
                                [0, 1, 0, 0],
                                [0, 0, b, a],
-                               [0, 0, 0, self.dist]                               
+                               [0, 0, 0, self.dist]
                                ###[0, 0, -1/10000., self.dist]
                                ])
 
@@ -1241,9 +1257,9 @@ class Axes3DMod(Axes3D):
                           [0, 0, 1, 0], [0, 0, 0, 1]])
         else:
             bb = self.get_window_extent()
-            r = abs((bb.x1-bb.x0)/(bb.y1-bb.y0))
+            r = abs((bb.x1 - bb.x0) / (bb.y1 - bb.y0))
             if r >= 1:
-                M = np.array([[1./r, 0, 0, 0], [0, 1, 0, 0],
+                M = np.array([[1. / r, 0, 0, 0], [0, 1, 0, 0],
                               [0, 0, 1, 0], [0, 0, 0, 1]])
             else:
                 M = np.array([[1, 0, 0, 0], [0, r, 0, 0],
@@ -1251,7 +1267,7 @@ class Axes3DMod(Axes3D):
         self._matrix_cache_extra = M
 
         perspM = np.dot(M, perspM)
-        
+
         M0 = np.dot(viewM, worldM)
         M = np.dot(perspM, M0)
 
@@ -1277,101 +1293,119 @@ class Axes3DMod(Axes3D):
         self._show_3d_axes = value
 
     def _find_3d_loc_for_axis(self):
-        
-        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()        
+
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
         vmax = np.array((maxx, maxy, maxz))
         vmin = np.array((minx, miny, minz))
-        vrange = vmax-vmin
-        vmid =  (vmax + vmin)/2.0
-        
+        vrange = vmax - vmin
+        vmid = (vmax + vmin) / 2.0
+
         from ifigure.utils.geom import transform_point
         x0s, y0s = transform_point(
-                 self.transAxes, 0.1, 0.1)
+            self.transAxes, 0.1, 0.1)
         x0, y0 = transform_point(
-                     self.transData.inverted(), x0s, y0s)
-        
+            self.transData.inverted(), x0s, y0s)
+
         x1s, y1s = transform_point(
-                 self.transAxes, 0.5, 0.5)
+            self.transAxes, 0.5, 0.5)
         x1, y1 = transform_point(
-                     self.transData.inverted(), x1s, y1s)
-        
+            self.transData.inverted(), x1s, y1s)
+
         #print("position here", x0, y0, x1, y1)
-        ## dd is the screen space move I want to make
-        dd = np.array([-x1+x0, -y1+y0])
+        # dd is the screen space move I want to make
+        dd = np.array([-x1 + x0, -y1 + y0])
 
         center_move = self._screen_move_to_3d_move(dd)
         base = vmid + center_move
 
-        dds =  np.array([-x0s+x1s, -y0s+y1s])
+        dds = np.array([-x0s + x1s, -y0s + y1s])
         return base, vrange, dds
 
-
     def remove_3daxes_artists(self):
-        if self._3d_axes_icon is None: return
+        if self._3d_axes_icon is None:
+            return
         self._3d_axes_icon[0]().remove()
         self._3d_axes_icon[1]().remove()
-        self._3d_axes_icon[2]().remove()         
+        self._3d_axes_icon[2]().remove()
         self.texts.remove(self._3d_axes_icon[3]())
         self.texts.remove(self._3d_axes_icon[4]())
         self.texts.remove(self._3d_axes_icon[5]())
         self._3d_axes_icon = None
-        
+
     def draw_3d_axes(self):
         M = self._matrix_cache_combined
         # M = self.get_proj()
 
-        def ptf2(x, dx):        
+        def ptf2(x, dx):
             #xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
             #xx1 = xvec[:2]/xvec[3]
-            xvec = np.dot(M, np.array([x[0]+dx[0], x[1]+dx[1], x[2]+dx[2], 1]))
-            xx2 = xvec[:2]/xvec[3]
+            xvec = np.dot(M, np.array(
+                [x[0] + dx[0], x[1] + dx[1], x[2] + dx[2], 1]))
+            xx2 = xvec[:2] / xvec[3]
             return xx2
 
-        
         if self._3d_axes_icon is None:
             base, lbase, dd = self._find_3d_loc_for_axis()
 
             # 35 ia an arbiray limit to keep the arrow from getting too big.
-            scale = 0.1 if dd[0]*0.1 < 35 else 35./dd[0]
-            
+            scale = 0.1 if dd[0] * 0.1 < 35 else 35. / dd[0]
+
             vecx = np.array([1, 0, 0.])
             vecy = np.array([0, 1, 0.])
-            vecz = np.array([0, 0, 1.])            
+            vecz = np.array([0, 0, 1.])
 
-            pt1 = ptf2(base, vecx*2*lbase[0]*scale)
-            v = np.vstack([arrow3d(base, 0.05/lbase[0], 0.25/lbase[0], vecx,
-                                   lbase[0]*scale, lbase[0]*scale*0.8, m=13,
-                                   d1d2 = (vecy*lbase[1], vecz*lbase[2]) )])
+            pt1 = ptf2(base, vecx * 2 * lbase[0] * scale)
+            v = np.vstack([arrow3d(base,
+                                   0.05 / lbase[0],
+                                   0.25 / lbase[0],
+                                   vecx,
+                                   lbase[0] * scale,
+                                   lbase[0] * scale * 0.8,
+                                   m=13,
+                                   d1d2=(vecy * lbase[1],
+                                         vecz * lbase[2]))])
 
-            kwargs = {'facecolor': 'r', 'edgecolor': 'r', 'linewidth':0}
+            kwargs = {'facecolor': 'r', 'edgecolor': 'r', 'linewidth': 0}
             a1 = self.plot_solid(v, **kwargs)
             a1._gl_always_noclip = True
             a1._gl_isArrow = True
             a1._gl_repr_name = 'x arrow'
             a1._gl_isLast = True
-            
-            pt2 = ptf2(base, vecy*2*lbase[1]*scale)
-            v = np.vstack([arrow3d(base, 0.05/lbase[1], 0.25/lbase[1], vecy,
-                                   lbase[1]*scale, lbase[1]*scale*0.8, m=13,
-                                   d1d2 = (vecx*lbase[0], vecz*lbase[2]) )])            
-            kwargs = {'facecolor': 'g', 'edgecolor': 'g', 'linewidth':0}           
+
+            pt2 = ptf2(base, vecy * 2 * lbase[1] * scale)
+            v = np.vstack([arrow3d(base,
+                                   0.05 / lbase[1],
+                                   0.25 / lbase[1],
+                                   vecy,
+                                   lbase[1] * scale,
+                                   lbase[1] * scale * 0.8,
+                                   m=13,
+                                   d1d2=(vecx * lbase[0],
+                                         vecz * lbase[2]))])
+            kwargs = {'facecolor': 'g', 'edgecolor': 'g', 'linewidth': 0}
             a2 = self.plot_solid(v, **kwargs)
             a2._gl_always_noclip = True
-            a2._gl_isArrow = True            
+            a2._gl_isArrow = True
             a2._gl_repr_name = 'y arrow'
-            a2._gl_isLast = True            
-            
-            pt3 = ptf2(base, vecz*2*lbase[2]*scale)
-            v = np.vstack([arrow3d(base, 0.05/lbase[2], 0.25/lbase[2], vecz,
-                                   lbase[2]*scale, lbase[2]*scale*0.8, m=13,
-                                   d1d2 = (vecx*lbase[0], vecy*lbase[1]) )])                        
-            kwargs = {'facecolor': 'b', 'edgecolor': 'b', 'linewidth':0}
+            a2._gl_isLast = True
+
+            pt3 = ptf2(base, vecz * 2 * lbase[2] * scale)
+            v = np.vstack([arrow3d(base,
+                                   0.05 / lbase[2],
+                                   0.25 / lbase[2],
+                                   vecz,
+                                   lbase[2] * scale,
+                                   lbase[2] * scale * 0.8,
+                                   m=13,
+                                   d1d2=(vecx * lbase[0],
+                                         vecy * lbase[1]))])
+            kwargs = {'facecolor': 'b', 'edgecolor': 'b', 'linewidth': 0}
             a3 = self.plot_solid(v, **kwargs)
             a3._gl_always_noclip = True
-            a3._gl_isArrow = True                        
+            a3._gl_isArrow = True
             a3._gl_repr_name = 'z arrow'
-            a3._gl_isLast = True                        
-            
+            a3._gl_isLast = True
+
             a4 = Text(pt1[0], pt1[1], 'X', color='r',
                       axes=self, figure=self.figure,
                       transform=self.transData,
@@ -1401,20 +1435,20 @@ class Axes3DMod(Axes3D):
                                   weakref.ref(a6)]
         else:
             p0, p1, pt = ptf(xvec)
-            #self._3d_axes_icon[0]().set_xdata(p0)
-            #self._3d_axes_icon[0]().set_ydata(p1)
+            # self._3d_axes_icon[0]().set_xdata(p0)
+            # self._3d_axes_icon[0]().set_ydata(p1)
             self._3d_axes_icon[3]().set_x(pt[0])
             self._3d_axes_icon[3]().set_y(pt[1])
 
             p0, p1, pt = ptf(yvec)
-            #self._3d_axes_icon[1]().set_xdata(p0)
-            #self._3d_axes_icon[1]().set_ydata(p1)
+            # self._3d_axes_icon[1]().set_xdata(p0)
+            # self._3d_axes_icon[1]().set_ydata(p1)
             self._3d_axes_icon[4]().set_x(pt[0])
             self._3d_axes_icon[4]().set_y(pt[1])
 
             p0, p1, pt = ptf(zvec)
-            #self._3d_axes_icon[2]().set_xdata(p0)
-            #self._3d_axes_icon[2]().set_ydata(p1)
+            # self._3d_axes_icon[2]().set_xdata(p0)
+            # self._3d_axes_icon[2]().set_ydata(p1)
             self._3d_axes_icon[5]().set_x(pt[0])
             self._3d_axes_icon[5]().set_y(pt[1])
 
@@ -1422,20 +1456,32 @@ class Axes3DMod(Axes3D):
         glcanvas = get_glcanvas()
         return glcanvas.get_uniforms()
 
+    def apply_aspect(self, position=None):
+        '''
+        after MPL 3.3, aspect ratio is force to be one for 3D.
+        we want to void it since our transformation support different
+        aspect ratio
+
+        self._box_aspect = None is needed reproduce the old versions
+        behavior for MPL 3.3
+        '''
+        self._box_aspect = None
+        super(Axes3D, self).apply_aspect(position)
+
     @allow_rasterization
     def draw(self, renderer):
         #        if self._use_gl and isSupportedRenderer(renderer):
         gl_len = 0
-        
+
         if isSupportedRenderer(renderer):
             self._matrix_cache = self.get_proj2()
 
             if self._show_3d_axes:
-                self.remove_3daxes_artists()            
+                self.remove_3daxes_artists()
                 self.draw_3d_axes()
             else:
                 self.remove_3daxes_artists()
-            
+
             artists = []
 
             artists.extend(self.images)
@@ -1447,9 +1493,10 @@ class Axes3DMod(Axes3D):
 
             if self._show_3d_axes:
                 zorder = max([a.get_zorder() for a in artists])
-                for a in self._3d_axes_icon[3:]:a().set_zorder(zorder+5)
+                for a in self._3d_axes_icon[3:]:
+                    a().set_zorder(zorder + 5)
             #zorder = max([a.get_zorder() for a in artists])
-            #print(zorder)
+            # print(zorder)
 
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
 
@@ -1466,7 +1513,7 @@ class Axes3DMod(Axes3D):
             renderer._k_globj = 0
         else:
             assert False, "Unsupported Renderer"
-            
+
         # axes3D seems to change frameon status....
         frameon = self.get_frame_on()
         self.set_frame_on(False)
@@ -1476,15 +1523,15 @@ class Axes3DMod(Axes3D):
             xmin, xmax = self.get_xlim3d()
             ymin, ymax = self.get_ylim3d()
             zmin, zmax = self.get_zlim3d()
-            dx = (xmax - xmin)/self._gl_scale/2.
-            dy = (ymax - ymin)/self._gl_scale/2.
-            dz = (zmax - zmin)/self._gl_scale/2.
-            xmid = (xmax + xmin)/2.
-            ymid = (ymax + ymin)/2.
-            zmid = (zmax + zmin)/2.
-            self.set_xlim3d([xmid-dx, xmid+dx])
-            self.set_ylim3d([ymid-dy, ymid+dy])
-            self.set_zlim3d([zmid-dz, zmid+dz])
+            dx = (xmax - xmin) / self._gl_scale / 2.
+            dy = (ymax - ymin) / self._gl_scale / 2.
+            dz = (zmax - zmin) / self._gl_scale / 2.
+            xmid = (xmax + xmin) / 2.
+            ymid = (ymax + ymin) / 2.
+            zmid = (zmax + zmin) / 2.
+            self.set_xlim3d([xmid - dx, xmid + dx])
+            self.set_ylim3d([ymid - dy, ymid + dy])
+            self.set_zlim3d([zmid - dz, zmid + dz])
 
         val = Axes3D.draw(self, renderer)
 
@@ -1495,7 +1542,6 @@ class Axes3DMod(Axes3D):
 
         self.set_frame_on(frameon)
         return val
-
 
     def _screen_move_to_3d_move(self, delta_in_axesnorm):
         #
@@ -1508,19 +1554,19 @@ class Axes3DMod(Axes3D):
 
         vmax = np.array((maxx, maxy, maxz))
         vmin = np.array((minx, miny, minz))
-        vrange = vmax-vmin
-        vmid =  (vmax + vmin)/2.0
+        vrange = vmax - vmin
+        vmid = (vmax + vmin) / 2.0
         midx, midy, midz = vmid
-        
+
         M = self._matrix_cache_combined
 
         def vec2sc(vec):
             x = np.dot(M, (vec[0], vec[1], vec[2], 1))
-            return x[0:2]/x[-1]
-        
+            return x[0:2] / x[-1]
+
         xx = vec2sc((maxx, midy, midz,)) - vec2sc((minx, midy, midz,))
         yy = vec2sc((midx, maxy, midz,)) - vec2sc((midx, miny, midz,))
-        zz = vec2sc((midx, midy, maxz,)) - vec2sc((midx, midy, minz,))        
+        zz = vec2sc((midx, midy, maxz,)) - vec2sc((midx, midy, minz,))
 
         from scipy.optimize import nnls
         from scipy.linalg import null_space
@@ -1528,45 +1574,44 @@ class Axes3DMod(Axes3D):
 
         x = (null_space(A)).flatten()
         nx = norm_vec(x)
-        
-        v1 = np.cross(nx, [1, 0, 0])*vrange
-        v2 = np.cross(nx, [0, 1, 0])*vrange
-        v3 = np.cross(nx, [0, 0, 1])*vrange
+
+        v1 = np.cross(nx, [1, 0, 0]) * vrange
+        v2 = np.cross(nx, [0, 1, 0]) * vrange
+        v3 = np.cross(nx, [0, 0, 1]) * vrange
         #print("v1, v2, v3", v1,  v2, v3)
-        
+
         def screen_diff(vv):
-            return (vec2sc((midx+vv[0], midy+vv[1], midz+vv[2])) -
-                    vec2sc((midx-vv[0], midy-vv[1], midz-vv[2])))/2.0
+            return (vec2sc((midx + vv[0], midy + vv[1], midz + vv[2])) -
+                    vec2sc((midx - vv[0], midy - vv[1], midz - vv[2]))) / 2.0
         d1 = screen_diff(v1)
         d2 = screen_diff(v2)
         d3 = screen_diff(v3)
-        
+
         #print(d1, d2, d3)
         c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
         c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
         c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
         #print("c1, c2, c3", c1,  c2, c3)
         vv = [v1, v2, v3]
-        dd = [d1, d2, d3]        
+        dd = [d1, d2, d3]
 
-        ii = np.argsort([c1,c2,c3])
-        iii = ((1,2), (0, 2), (0, 1))[ii[-1]]
+        ii = np.argsort([c1, c2, c3])
+        iii = ((1, 2), (0, 2), (0, 1))[ii[-1]]
 
         v1 = vv[iii[1]]
         v2 = vv[iii[0]]
         d1 = dd[iii[1]]
-        d2 = dd[iii[0]]        
+        d2 = dd[iii[0]]
 
         A = np.vstack((d1, d2)).transpose()
 
         sol = np.dot(np.linalg.inv(A), delta_in_axesnorm)
-        center_move = (v1*sol[0]+ v2*sol[1])
+        center_move = (v1 * sol[0] + v2 * sol[1])
 
         return center_move
-                                
+
     def set_gl_scale_accum(self, value):
         self._gl_scale_accum = value
-        
+
     def get_gl_scale_accum(self):
         return self._gl_scale_accum
-    

@@ -9,6 +9,7 @@ import weakref
 import array
 import gc
 import traceback
+from distutils.version import LooseVersion
 
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
@@ -42,15 +43,23 @@ class MyGLCanvas(glcanvas.GLCanvas):
     context = None
 
     def __init__(self, parent):
-        attribs = [glcanvas.WX_GL_CORE_PROFILE,
-                   glcanvas.WX_GL_MAJOR_VERSION, 3,
-                   glcanvas.WX_GL_MINOR_VERSION, 2, -1]
-
-        glcanvas.GLCanvas.__init__(self, parent, -1,
-                                   attribList=attribs)
         self.init = False
+        
+        if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
+            #dispAttrs = wx.glcanvas.GLAttributes()
+            #dispAttrs.PlatformDefaults().EndList()
+            #dispAttrs.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).EndList()
+            #glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
+            glcanvas.GLCanvas.__init__(self, parent)
+        else:
+            attribs = [glcanvas.WX_GL_CORE_PROFILE,
+                       glcanvas.WX_GL_MAJOR_VERSION, 3,
+                       glcanvas.WX_GL_MINOR_VERSION, 2, -1]
+            glcanvas.GLCanvas.__init__(self, parent, -1, attribs)
+            
         if MyGLCanvas.context is None:
-            MyGLCanvas.context = glcanvas.GLContext(self)
+             MyGLCanvas.context = glcanvas.GLContext(self)
+            
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.size = None
@@ -71,6 +80,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._use_frustum = True
         self._attrib_loc = {}
         self._hittest_map_update = True
+
+        
         self._alpha_blend = True
         self._current_uniform = {}
         #self._no_smooth = False
@@ -88,6 +99,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self._merge_check = 1
 
+        
     def gc_artist_data(self):
         keys = list(self.artists_data.keys())
         for aa in keys:
@@ -330,6 +342,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glEnable(GL_MULTISAMPLE)
         #glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST)
+
+        from OpenGL.error import GLError
+        try:
+            glDisable(GL_POINT_SPRITE)
+            self.has_pointsprite = True
+        except GLError:
+            self.has_pointsprite = False
 
     def check_msaa(self):
         iMultiSample = (GLint * 1)()
@@ -1693,6 +1712,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         self.setLineWidth(1)
+        
+        if self.has_pointsprite:
+            glEnable(GL_PROGRAM_POINT_SIZE)
+            glEnable(GL_POINT_SPRITE)
+        #
+        #glPointParameterf(GL_POINT_SIZE_MAX, 50.)
+        #glPointParameterf(GL_POINT_SIZE_MIN, 5.)
+        #glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, 50.)
         glPointSize(marker_size * 2 * multisample + 1)
 
         self.set_uniform(glUniform1i, 'uAlphaTest', 1)
@@ -1714,7 +1741,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
         self.set_uniform(glUniform1i, 'uAlphaTest', 0)
-        # glDisable(GL_POINT_SPRITE)
+
+        if self.has_pointsprite:
+            glDisable(GL_PROGRAM_POINT_SIZE)            
+            glDisable(GL_POINT_SPRITE)        
 
         self.set_uniform(glUniform1i, 'uisMarker', 0)
         self.set_uniform(glUniform1i, 'uUseArrayID', 0)
@@ -2140,7 +2170,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     np.uint32, copy=False).flatten()
 
             if len(paths[4][0]) == 4:
-                print('I am here1')
                 idxset0 = idxset0.reshape(-1, 4)
                 idxset = idxset0[:, [0, 1, 2, 2, 3, 0]].flatten()
                 if edge_idx is not None:

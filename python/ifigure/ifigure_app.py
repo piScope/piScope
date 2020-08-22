@@ -532,9 +532,6 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.update_widget()
         self.set_accelerator_table()
 
-        from ifigure.widgets.taskbar import TaskBarIcon
-        self.tbicon = TaskBarIcon(self)
-        
     def onUpdateUI(self, evt):
         if evt.GetId() == ID_DETACH_EDITOR:
             if (self.script_editor.GetTopLevelParent() == self and
@@ -1136,6 +1133,13 @@ class ifigure_app(BookViewerFrame):
 
         opath = self.proj.getvar("filename")
         owdir = self.proj.getvar("wdir")
+
+        odir = os.getcwd()
+        if odir.startswith(owdir):
+            # if current dir is under wdir. we move to home
+            # since saveas will change wdir and wdir will be gone
+            os.chdir(os.getenv("HOME"))
+
         self.save_gui_setting()
 
         try:
@@ -1169,6 +1173,8 @@ class ifigure_app(BookViewerFrame):
                 self.write_recent_files()
         else:
             local_lc.release()
+
+        # if current directory does not exist. move to the home
 
     def onSaveFile(self, e=None, saveas=False):
         self.script_editor.SaveFile(saveas)
@@ -1395,7 +1401,7 @@ class ifigure_app(BookViewerFrame):
                 diffwindow.Destroy()
         except PyDeadObjectError:
             pass
-        self.tbicon.Destroy()
+
         self.Destroy()  # is this necessary to make sure app closes??? (2015.10)
         e.Skip()
 

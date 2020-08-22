@@ -189,6 +189,7 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         FigureCanvasWxAggMod._onPaint(self, evt)
 
     def _onSize(self, evt=None, nocheck=False):
+        FigureCanvasWxAggModGL.glcanvas._hittest_map_update = True
         FigureCanvasWxAggMod._onSize(self, evt=evt, nocheck=nocheck)
         # self.glcanvas.SetSize(self.bitmap.GetSize())
 

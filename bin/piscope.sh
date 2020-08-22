@@ -22,7 +22,8 @@ _usage() {
     echo '   -n : (optional) : no main window'
     echo '   -g : (optional) : open off GL'
     echo '   -k : (optional) : use open GL (LIBGL_ALWAYS_SOFTWARE=1)'    
-    echo '   -u : (optional) : unsuppress Gtk-warning'
+    echo '   -u : (optional) : suppress Gtk-warning'
+    echo '   -X : (optional) : use -Wd option to call python (debug)'
     echo '   file: (optional) : .bfz or .pfz file to open'
     exit 1
 }
@@ -55,7 +56,7 @@ do
          ;;
       k) export LIBGL_ALWAYS_SOFTWARE=1
          ;;
-      u) UNSUPPRESS_GTK=1	     
+      u) SUPPRESS_GTK=1	     
          ;;
       h) _usage;;
       :|\?) _usage;;
@@ -95,12 +96,14 @@ if [ ! "${PY_DEBUG}" = '' ]; then
     echo "PY DEBUG option" $PY_DEBUG
 fi
 
-if ! [ -x "$(command -v unbeffer)" ]; then
-   $INTERPRETER -x $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+UNBUFFER=$(command -v unbuffer)
+
+if ! [ -x "$UNBUFFER" ]; then
+    $INTERPRETER -x $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
 else
-   if [ -z ${UNSUPPRESS_GTK+x} ];then
+    if ! [ -z ${SUPPRESS_GTK+x} ];then
        unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
-   else
+    else
        $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
    fi
 fi

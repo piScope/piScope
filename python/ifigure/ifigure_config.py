@@ -45,12 +45,12 @@ if isMPL2:
 pickle_protocol = 2    
 
 def artist_property_checker(obj, prop, values=None):
-    #    print 'inspecting', obj, prop
+    #print('inspecting', obj, prop)
     if values is None:
         values = ArtistInspector(obj).get_valid_values(prop)
     matches = re.findall(r"\'(.+?)\'", values)
-#    print 'inspector returns ', values
-#    print 'checking ...', matches
+    #print('inspector returns ', values)
+    #print('checking ...', matches)
     setter = getattr(obj, 'set_'+prop)
     getter = getattr(obj, 'get_'+prop)
 
@@ -65,7 +65,7 @@ def artist_property_checker(obj, prop, values=None):
         except:
             dprint2(str(obj)+'do not know how to set ' +
                     prop + ' to ' + p.__repr__())
-#    print  'object returns...', values
+    #print('object returns...', values)
     return matches_ans, values
 
 
@@ -267,9 +267,11 @@ colormaplist = sum([x[1] for x in colormap_from_reference],[])
 #  matplotlib is organized in this aspect.
 
 obj = PathCollection(Path.unit_rectangle())
-plinestylelist, plinestyle_rlist = artist_property_checker(obj, 'linestyle')
+#plinestylelist, plinestyle_rlist = artist_property_checker(obj, 'linestyle')
 pedgecolorlist, pedgecolor_rlist = artist_property_checker(
     obj, 'edgecolor', values="'"+"','".join(collist)+"'")
+plinestylelist = ['solid', 'dotted', 'dashed', 'dashdot']
+plinestyle_rlist = ['solid', 'dotted', 'dashed', 'dashdot']
 if isMPL2:
     plinestylelist = plinestylelist[:4]
     plinestyle_rlist = plinestyle_rlist[:4]
