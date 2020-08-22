@@ -21,7 +21,7 @@ and for the above purposes, &pi;Scope is equipped with
 Requirements
 *  Python >3.6
 *  wxPython 4
-*  matplotlib 
+*  matplotlib 3.3
 *  PyOpenGL
 *  ... and others.
 
@@ -38,6 +38,7 @@ Typical pip command list...
  pip install PyPDF2
  pip install pdfrw
  pip install h5py
+ pip install autopep8
 ```
 
 Wiki page : http://piscope.psfc.mit.edu/
