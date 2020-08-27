@@ -125,7 +125,7 @@ class FrameWithWindowList(wx.Frame):
     
     def onActivate(self, evt):
         if evt.GetActive():
-            wx.GetApp().process_child_focus(self)
+            wx.CallAfter(wx.GetApp().process_child_focus, self)
 
             from ifigure.utils.cbook import get_current_display_size
             
