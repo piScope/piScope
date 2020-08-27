@@ -322,7 +322,8 @@ class PythonSTC(stc.StyledTextCtrl):
         #self.Bind(wx.EVT_LEAVE_WINDOW, self.onMouseLeave)
 
         # this suppress default pop up on linux
-        self.UsePopUp(stc.STC_POPUP_NEVER)
+        if hasattr(stc, "STC_POPUP_NEVER"):
+            self.UsePopUp(stc.STC_POPUP_NEVER)
 
         self.SetCaretForeground("BLUE")
 
