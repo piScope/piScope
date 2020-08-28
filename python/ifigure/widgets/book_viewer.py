@@ -125,7 +125,7 @@ class FrameWithWindowList(wx.Frame):
     
     def onActivate(self, evt):
         if evt.GetActive():
-            wx.CallAfter(wx.GetApp().process_child_focus, self)
+            wx.GetApp().process_child_focus(self)
 
             from ifigure.utils.cbook import get_current_display_size
             
@@ -157,6 +157,10 @@ class FrameWithWindowList(wx.Frame):
                 dprint2("adjusting window position", (w, h))
                 #self.SetPosition((w1, h1))
                 self.SetPosition((10, 10))
+
+        #if hasattr(self, 'canvas'):
+        #    self.canvas.activate_canvas(evt.GetActive())
+                
         evt.Skip()
 
     def onChildFocus(self, evt):
