@@ -2185,7 +2185,7 @@ class MyApp(wx.App):
                         continue
                     try:
                         x.Show()
-                        x.Raise()
+                        #x.Raise()
                     except BaseException:
                         pass
             else:

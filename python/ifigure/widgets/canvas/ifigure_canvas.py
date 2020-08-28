@@ -273,6 +273,8 @@ class draghandler_rb_d(object):
         x, y = self._calc_xy(evt)
         self._show_box(x, y)
         self.dragging = True
+        
+        #self.panel.mpl_connect(mode='normal')
 
     def dodrag(self, evt):
         if evt is None:
@@ -323,7 +325,15 @@ class draghandler_rb_d(object):
         self._y = y
         return x, y
 
-
+    '''
+    def dragdone_killfocus(self):
+        self.unbind_mpl()
+        print(self.rb)
+        if self.rb is not None:
+            self.panel._figure.lines.remove(self.rb)
+            self.rb = None
+    '''
+    
 class draghandler_line_d(object):
     '''
     set of methods to add line drawing in device coords.
@@ -1676,16 +1686,20 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self._hold_once = value
 
     def onCanvasFocus(self, e):
-        # print 'get focus', self._figure.figobj
+        #print('get focus')
         if self.canvas is not None:
             self.mpl_connect(mode=self._mpl_mode)
         e.Skip()
 
     def onCanvasKillFocus(self, e):
-        # print 'kill focus'
+        #print('kill focus')
         #       self.mpl_connect(mode = self._mpl_mode)
         if self.canvas is not None:
             self.mpl_disconnect()
+
+        #if hasattr(self.draghandler, "dragdone_killfocus"):
+        #    self.draghandler.dragdone_killfocus()
+        self.draghandler.unbind_mpl()            
         e.Skip()
 
     def enter_layout_mode(self):
@@ -1765,6 +1779,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def mpl_connect(self, mode='normal'):
         self.mpl_disconnect()
         self._mpl_mode = mode
+        #print("setting mode", mode)
         if mode == 'normal':
             self._mplc = [self.canvas.mpl_connect('button_press_event',
                                                   self.buttonpress),
