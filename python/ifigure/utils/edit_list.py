@@ -4520,9 +4520,11 @@ class EditListDialog(wx.Dialog):
     def __init__(self, parent, id, title='', list=None,
                  style=wx.DEFAULT_DIALOG_STYLE,
                  tip=None, pos=(-1, -1), size=(-1, -1), nobutton=False,
-                 add_palette=False):
+                 add_palette=False,
+                 endmodal_value=None):
         wx.Dialog.__init__(self, parent, id=id, title=title, pos=pos,
                            size=size, style=style)
+        self.endmodal_value = endmodal_value 
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -4555,7 +4557,10 @@ class EditListDialog(wx.Dialog):
         value = self.elp.GetValue()
         if self.nobutton:
             self.EndModal(wx.ID_OK)
-
+        if (self.endmodal_value is not None and
+            self.endmodal_value == value[-1]):
+                self.EndModal(wx.ID_OK)
+            
     def _myRefresh(self, size=(-1, -1)):
         win = self.GetTopLevelParent()
 #        win.SetSizeHints(win)

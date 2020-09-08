@@ -1699,7 +1699,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         #if hasattr(self.draghandler, "dragdone_killfocus"):
         #    self.draghandler.dragdone_killfocus()
-        self.draghandler.unbind_mpl()            
+        if self.draghandler is not None:
+            self.draghandler.unbind_mpl()            
         e.Skip()
 
     def enter_layout_mode(self):
