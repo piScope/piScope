@@ -1103,8 +1103,8 @@ class ProjTreeViewer(wx.Panel):
         vbox.Add(hbox2, 1, wx.EXPAND | wx.ALL, 1)
 
         self.elp = EditListPanel(self.panel, list)
-        hbox2.Add(self.elp, 1, wx.EXPAND |
-                  wx.ALIGN_CENTER | wx.RIGHT | wx.LEFT, 1)
+        hbox2.Add(self.elp, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 1)
+
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         button = wx.Button(self.panel, wx.ID_ANY, "Cancel")
         button2 = wx.Button(self.panel, wx.ID_ANY, "Apply")
@@ -1141,7 +1141,7 @@ class ProjTreeViewer(wx.Panel):
     def onPanelClean(self, ref):
         if self.panel is not None:
             self.ClosePanel()
-            print('panel clean')
+            #print('panel clean')
 
     def ClosePanel(self):
         #        self.GetSizer().Remove(self.panel)

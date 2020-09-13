@@ -58,7 +58,7 @@ class FigPlotPhasor(FigPlot):
         y_complex = self.getvar('y')
         if angle is not None:
             new_y = (y_complex * np.exp(1j*angle))[:len(y)]
-            new_y = new_y.astype(float)
+            new_y = new_y.real
         else:
             new_y = np.absolute(y_complex[:len(y)])
         self._artists[0].set_ydata(new_y)

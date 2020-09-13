@@ -1058,7 +1058,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.PopupMenu(m,
                        (evt.GetX(), evt.GetY()))
         m.Destroy()
-        evt.Skip()
+        #evt.Skip()
 
     def ShowDebugMargin(self, enter):
         if enter:

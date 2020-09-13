@@ -86,7 +86,10 @@ def convert_ndarray(v, name):
             return v
     if np.iscomplex(v[name]).any():
         return v
-    v[name] = v[name].astype(np.float)
+    if np.iscomplexobj(v[name]):
+        v[name] = v[name].real
+    else:
+        v[name] = v[name].astype(np.float)
     return v
 
 

@@ -130,24 +130,33 @@ def textentry(parent=None, message='', title='', def_string='', center=False,
 
 def textselect(parent=None, message='', title='', def_string='',
                center=False, choices=[''],
-               center_on_screen=False):
+               center_on_screen=False,
+               endmodal_on_lastvalue=False):
     s = {"style": wx.CB_DROPDOWN | wx.TE_PROCESS_ENTER,
          "choices": choices}
+
+    if def_string == '':
+        def_string = choices[0]
     if message != '':
         ll = [[None, message, 2, None],
-              ['Selection', choices[0],  104,  s], ]
+              ['Selection', def_string,  104,  s], ]
     else:
-        ll = [['Selection', choices[0],  104,  s], ]
+        ll = [['Selection', def_string,  104,  s], ]
     from ifigure.utils.edit_list import EditListDialog
 
-    dlg = EditListDialog(parent, wx.ID_ANY, title, ll)
+    if endmodal_on_lastvalue:
+        endmodal_lastvalue=endmodal_on_lastvalue
+    else:
+        endmodal_lastvalue=None        
+    dlg = EditListDialog(parent, wx.ID_ANY, title, ll,
+                         endmodal_value=endmodal_lastvalue)
     if center:
         dlg.Centre()
     if center_on_screen:
         dlg.CentreOnScreen()        
     val = dlg.ShowModal()
     value = dlg.GetValue()
-    print(val, wx.ID_OK)
+    #print(val, wx.ID_OK)
     if val == wx.ID_OK:
         dlg.Destroy()
         return True, value[-1]
