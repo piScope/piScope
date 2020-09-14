@@ -2670,18 +2670,31 @@ class ComboBoxCompact(wx.ComboBox):
 
 class ComboBox(ComboBoxCompact):
     def __init__(self, *args, **kargs):
+        self.choices_cb=kargs.pop("choices_cb", None)
         super(ComboBox, self).__init__(*args, **kargs)
-#        self.SetSize((80,-1))
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
+        
+        if self.choices_cb is not None:
+            self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
 
     def onHit(self, evt):
         self.GetParent().send_event(self, evt)
 
-    def SetChoices(self, ch):
+    def onDropDown(self, evt):
+        n = self.GetSelection()
+        sel = self.GetString(n)
+        ch = self.choices_cb()
+        if sel in ch:
+            idx = ch.index(sel)
+        else:
+            idx = 0
+        self.SetChoices(ch, index=idx)
+        
+    def SetChoices(self, ch, index=0):
         self.Clear()
         for c in ch:
             self.Append(c)
-        self.SetSelection(0)
+        self.SetSelection(index)
 
 
 class ComboBox_Float(ComboBoxCompact):
@@ -3936,9 +3949,11 @@ class EditListCore(object):
                         setting["style"] = wx.TE_PROCESS_ENTER
                 else:
                     setting = {"style": wx.CB_READONLY,
-                               "choices": ["ok", "cancel"]}
+                               "choices": ["ok", "cancel"],}
+                choices_cb = setting.pop("choices_cb", None)
                 w = ComboBox(self, wx.ID_ANY, style=setting["style"],
-                             choices=setting["choices"])
+                             choices=setting["choices"],
+                             choices_cb=choices_cb)
                 w.SetValue(val[1])
                 p = w
 #              noexpand = True
