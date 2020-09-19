@@ -748,8 +748,15 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                    scale='linear'):
 
         x, y, z = self._eval_xyz()
+        
         if np.iscomplex(z).any():
             z = z.astype(np.float)
+
+        if self.get_figaxes().get_3d():
+            crange = self._update_range(crange,
+                                        (np.amin(z), np.amax(z)))
+            return crange
+            
         if (xrange[0] is not None and
             xrange[1] is not None and
             yrange[0] is not None and
