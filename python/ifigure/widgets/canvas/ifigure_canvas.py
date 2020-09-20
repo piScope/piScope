@@ -597,7 +597,8 @@ class ifigure_canvas_draghandler(draghandler_base):
     def dodrag(self, evt):
         if not self.dragging:
             return
-#        print 'dodrag'
+        if self.a is None:
+            return
         redraw = False
         scale = None
         alist = []
@@ -630,7 +631,9 @@ class ifigure_canvas_draghandler(draghandler_base):
         self.st_event = None
         redraw = False
         scale = None
-
+        
+        if self.a is None:
+            return        
         for a in self.a:
             if not a.figobj.isDraggable():
                 continue
