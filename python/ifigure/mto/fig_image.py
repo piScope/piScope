@@ -711,24 +711,34 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 #
 #   range
 #
+    def _get_3d_placement(self):
+        if 'im_center' in self._var["kywds"]:
+            im_center = np.array(self._var["kywds"]['im_center'])
+        else:
+            im_center = np.array([0,0,0])
+        if 'im_axes' in self._var["kywds"]:
+            ax1 = np.array(self._var["kywds"]['im_axes'][0])
+            ax2 = np.array(self._var["kywds"]['im_axes'][1])
+        else:
+            ax1 = np.array([1, 0, 0])
+            ax2 = np.array([1, 0, 0])
+
+        return im_center, ax1, ax2
+
     def get_xrange(self, xrange=[None, None], scale='linear'):
         x, y, z = self._eval_xyz()
         if x is None:
             return xrange
-        if scale == 'log':
-            x = mask_negative(x)
-        return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])
-
-#        de = self.get_data_extent()
-#        if de is None:
-#            print 'data_extent not found!!!'
-#            return xrange
-#        if scale == 'log':
-#            x = self.getp('x')
-#            data = x[np.where(x>0)[0]]
-#            return self._update_range(xrange, (np.nanmin(data), np.nanmax(data)))
-#        else:
-#            return self._update_range(xrange, (de[0],de[1]))
+        if not self.get_figaxes().get_3d():
+            if scale == 'log':
+                x = mask_negative(x)
+            return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])
+        else:
+            im_center, ax1, ax2 = self._get_3d_placement()
+            data = np.hstack([im_center[0] + ax1[0]*x, im_center[0] + ax2[0]*y])
+            xrange = self._update_range(xrange,
+                                       (np.nanmin(data), np.nanmax(data)))
+            return xrange
 
     def get_yrange(self, yrange=[None, None],
                    xrange=[None, None], scale='linear'):
@@ -738,9 +748,33 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             return yrange
         if y is None:
             return yrange
-        if scale == 'log':
-            y = mask_negative(y)
-        return self._update_range(yrange, (np.nanmin(y), np.nanmax(y)))
+        if not self.get_figaxes().get_3d():        
+            if scale == 'log':
+                y = mask_negative(y)
+            return self._update_range(yrange, (np.nanmin(y), np.nanmax(y)))
+        else:
+            im_center, ax1, ax2 = self._get_3d_placement()
+            data = np.hstack([im_center[1] + ax1[1]*x, im_center[0] + ax2[1]*y])
+            yrange = self._update_range(yrange,
+                                       (np.nanmin(data), np.nanmax(data)))
+            return yrange
+
+    def get_zrange(self, zrange=[None, None],
+                   xrange=[None, None],
+                   yrange=[None, None],
+                   scale='linear'):
+        if not self.get_figaxes().get_3d():
+            return zrange
+        
+        x, y, z = self._eval_xyz()
+        im_center, ax1, ax2 = self._get_3d_placement()
+
+        data = np.hstack([im_center[2] + ax1[2]*x, im_center[0] + ax2[2]*y])
+        zrange = self._update_range(zrange,
+                                    (np.nanmin(data), np.nanmax(data)))
+
+        return zrange
+    
 
     def get_crange(self, crange=[None, None],
                    xrange=[None, None],
