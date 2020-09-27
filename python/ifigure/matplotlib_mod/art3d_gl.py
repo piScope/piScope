@@ -453,9 +453,10 @@ class AxesImageGL(ArtGL, AxesImage):
              im_center+x1*np.array(im_axes[0]) + +y2*np.array(im_axes[1]), ]
 
         n = np.cross(im_axes[0], im_axes[1])
-        x = np.array([pp[0] for pp in p]).flatten()
-        y = np.array([pp[1] for pp in p]).flatten()
-        z = np.array([pp[2] for pp in p]).flatten()
+        p = np.array(p)
+        x = p[..., 0].flatten()
+        y = p[..., 1].flatten()
+        z = p[..., 2].flatten()        
         self._gl_3dpath = (x, y, z, np.hstack([n]*len(x)),
                            np.arange(len(x)).astype(np.int))
 

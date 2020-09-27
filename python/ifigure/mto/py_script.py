@@ -197,7 +197,8 @@ class AbsScript(object):
 
             print('Failed to compile script '+file)
             print(traceback.format_exc())
-
+            return traceback.format_exc()
+        return ''
 
 #  this decorator
 class doc_decorator(object):
@@ -971,9 +972,10 @@ class PyScript(PyCode, FileHolder, AnsHolder):
 
     def load_script(self, file):
         self.set_path_pathmode(file)
-        self._script.load_script(file)
+        err = self._script.load_script(file)
         if self._script._script_co is not None:
             self.set_doc(file)
+        return err
 
     def set_doc(self, file):
         fid = open(file, 'r')
@@ -1021,7 +1023,8 @@ class PyScript(PyCode, FileHolder, AnsHolder):
 #        print file
         if (file != '' and
                 os.path.exists(file)):
-            self.load_script(file)
+            return self.load_script(file)
+        return ''
 
     def onProjTreeActivate(self, e):
         self.onEditScript(e)
