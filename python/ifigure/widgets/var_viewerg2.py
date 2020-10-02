@@ -687,10 +687,11 @@ class VarViewerG(wx.Panel):
             name = str(self.grid.GetRowLabelValue(idx[0]))
             self.GetTopLevelParent().set_status_text('Copy ' + name, timeout=3000)
             try:
-                fid = open(vv_scratch, 'wb')
-                data = {name: obj.getvar(name)}
-                pickle.dump(data, fid)
-                fid.close()
+                if os.path.exists(vv_scratch):
+                    fid = open(vv_scratch, 'wb')
+                    data = {name: obj.getvar(name)}
+                    pickle.dump(data, fid)
+                    fid.close()
             except:
                 dialog.showtraceback(parent=self,
                                      txt='Failed to copy',

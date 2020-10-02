@@ -69,7 +69,7 @@ s_markersize = {"style": wx.CB_DROPDOWN | wx.TE_PROCESS_ENTER,
 s_markeredgewidth = {"style": wx.CB_DROPDOWN | wx.TE_PROCESS_ENTER,
                      "choices": ["0.5", "1", "2", "3", "4", "5"]}
 s_imageinterp = {"style": wx.CB_READONLY,
-                 "choices": ["nearest", "linear", "cubic", "quintic"]}
+                 "choices": ["nearest", "linear", "cubic"]}
 s_shading = {"style": wx.CB_READONLY,
              "choices": ["flat", "gouraud"]}
 s_axxpos = {"style": wx.CB_READONLY, "choices": ["bottom", "top"]}
