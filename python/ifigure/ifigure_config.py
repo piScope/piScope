@@ -37,6 +37,8 @@ dprint1, dprint2, dprint3 = debug.init_dprints('ifiure_config')
 
 
 isMPL2 = LooseVersion(matplotlib.__version__) >= LooseVersion("2.0")
+isMPL33 = LooseVersion(matplotlib.__version__) >= LooseVersion("3.3")
+
 if isMPL2:
     # let's use classic for now.
     import matplotlib.pyplot

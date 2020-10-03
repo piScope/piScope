@@ -697,6 +697,12 @@ class VarViewerG(wx.Panel):
                                      title='Failed to copy',
                                      traceback=traceback.format_exc())
         elif mode == 'paste':
+            if not os.path.exists(vv_scratch):
+                dialog.showtraceback(parent=self,
+                                     txt='paste data does not exists',
+                                     title='Failed to paste',
+                                     traceback='')
+                return
             fid = open(vv_scratch, 'rb')
             data = pickle.load(fid)
             fid.close()

@@ -265,7 +265,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
                 kywds["aspect"] = aspect
                 kywds["origin"] = 'lower'
-                kywds["interpolation"] = self.getp("interp")
+                if self.getp("interp") == 'linear':
+                    kywds["interpolation"] = 'bilinear'
+                elif self.getp("interp") == 'cubic':
+                    kywds["interpolation"] = 'bicubic'
+                else:
+                    kywds["interpolation"] = self.getp("interp")
+
                 self.set_artist(container.imshow(*args,
                                                  #                            picker=cpicker.Picker,
                                                  extent=extent,  **kywds))
@@ -337,8 +343,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     kywds['im_axes'] = self._var["kywds"]['im_axes']
                     
                 kywds['alpha'] = self.getp('alpha')
-                kywds["interpolation"] = self.getp("interp")
-#                  print lp[0]
+                if self.getp("interp") == 'linear':
+                    kywds["interpolation"] = 'bilinear'
+                elif self.getp("interp") == 'cubic':
+                    kywds["interpolation"] = 'bicubic'
+                else:
+                    kywds["interpolation"] = self.getp("interp")
+
                 if cax.scale == 'linear':
                     args.append(zp)
                     kywds["vmin"] = crange[0]
@@ -846,6 +857,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
     def set_interp(self, value, a):
         self.setp('interp', value)
+        if value == 'cubic':
+            avalue = 'bicubic'
+        elif value == 'linear':
+            avalue = 'bilinear'
+        else:
+            avalue = value
+            
         x, y, z = self.getp(("x", "y", "z"))
 
         if (x.size*y.size != z.size and
@@ -859,6 +877,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             xp, yp, zp = self.interp_image(x, y, z)
             a.set_array(zp)
             setattr(a.get_array(), '_xyp', (xp, yp))
+        a.set_interpolation(avalue)
 
     def get_interp(self, a):
         return self.getp('interp')

@@ -5,7 +5,7 @@ import ifigure
 from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
 import matplotlib.ticker as mticker
 from ifigure.utils.cbook import isiterable
-
+from ifigure.ifigure_config import isMPL33
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('AxisParam')
 
@@ -116,13 +116,19 @@ class AxisRangeParam(Memberholder):
         set_auto(False)
         suffix = self.name
         if self.scale == 'log':
-            #kargs = {'base'+suffix: self.base}
-            kargs = {'base': self.base}
+            if isMPL33:
+                kargs = {'base': self.base}
+            else:
+                kargs = {'base' + suffix: self.base}
         elif self.scale == 'symlog':
-            #kargs = {'base'+suffix: self.base,
-            kargs = {'base': self.base,
-                     'linthresh'+suffix: self.symloglin,
-                     'linscale'+suffix: self.symloglinscale}
+            if isMPL33:
+                kargs = {'base': self.base,
+                         'linthresh': self.symloglin,
+                         'linscale': self.symloglinscale}
+            else:
+                kargs = {'base' + suffix: self.base,
+                         'linthresh' + suffix: self.symloglin,
+                         'linscale' + suffix: self.symloglinscale}
         else:
             kargs = {}
 
@@ -240,9 +246,16 @@ class AxisVisualParam(object):
                     a.set_major_locator(mticker.LogLocator(self.base))
                 elif self.scale == 'symlog':
                     from matplotlib.scale import SymmetricalLogScale
-                    scale = SymmetricalLogScale(a, basex=self.base,
-                                                linthreshx=self.symloglin,
-                                                linscalex=self.symloglinscale)
+                    if isMPL33:
+                        scale = SymmetricalLogScale(a,
+                                                    base=self.base,
+                                                    linthresh=self.symloglin,
+                                                    linscale=self.symloglinscale)
+                    else:
+                        scale = SymmetricalLogScale(a,
+                                                    basex=self.base,
+                                                    linthreshx=self.symloglin,
+                                                    linscalex=self.symloglinscale)
                     a.set_major_locator(
                         mticker.SymmetricalLogLocator(scale.get_transform()))
 #                    scale.set_default_locators_and_formatters(a)
@@ -267,7 +280,7 @@ class AxisVisualParam(object):
                     # this works onlyfor MaxNLocator
                     #a.get_axes().locator_params(self.name[0], nbins = value)
                     a.axes.locator_params(self.name[0], nbins=value)
-                except:
+                except BaseException:
                     # for Symlog and LogLocator
                     a.get_major_locator().numticks = value
             else:
@@ -300,7 +313,7 @@ class AxisVisualParam(object):
                 a.set_major_formatter(mticker.NullFormatter())
             else:
                 a.set_major_formatter(mticker.FormatStrFormatter(self.format))
-        except:
+        except BaseException:
             import traceback
             traceback.print_exc()
 
@@ -615,7 +628,7 @@ class AxisCParam(AxisParam):
         if self.clip[1][0]:
             cm.set_over(self.clip[1][1])
         else:
-            cm.set_over(cm(cm.N-1))
+            cm.set_over(cm(cm.N - 1))
         a2.set_cmap(cm)
 
         if self.scale == 'linear':
@@ -639,7 +652,7 @@ class AxisCParam(AxisParam):
             ichild = figaxes.add_colorbar()
             cb = figaxes.get_child(ichild)
             anchor = cb.getp("inset_anchor")
-            anchor = (anchor[0]+offset, anchor[1])
+            anchor = (anchor[0] + offset, anchor[1])
             cb.setp("inset_anchor", anchor)
             cb.set_caxis_param(self)
             cb.realize()
