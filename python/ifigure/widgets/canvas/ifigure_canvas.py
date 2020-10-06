@@ -2562,7 +2562,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         set_pmode = False
         if self.draghandler is not None:
             if self.draghandler.dragging:
-            drag_happend = True
+                drag_happend = True
                 self.draghandler.dragdone(event)
                 if (self.toolbar.mode == 'cursor' or
                     self.toolbar.mode == 'zoom' or
