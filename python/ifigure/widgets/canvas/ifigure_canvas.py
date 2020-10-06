@@ -2560,17 +2560,18 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         drag_happend = False
         set_pmode = False
-        if self.draghandler.dragging:
+        if self.draghandler is not None:
+            if self.draghandler.dragging:
             drag_happend = True
-            self.draghandler.dragdone(event)
-            if (self.toolbar.mode == 'cursor' or
-                self.toolbar.mode == 'zoom' or
-                    self.toolbar.mode == 'pan'):
-                if event.button == 2:
-                    set_pmode = True
-                event.button = 1
-
-        self.draghandler.unbind_mpl()
+                self.draghandler.dragdone(event)
+                if (self.toolbar.mode == 'cursor' or
+                    self.toolbar.mode == 'zoom' or
+                        self.toolbar.mode == 'pan'):
+                    if event.button == 2:
+                        set_pmode = True
+                    event.button = 1
+            self.draghandler.unbind_mpl()
+            
         if self._insert_mode:
             dprint2('toolbar mode ' + self.toolbar.mode)
             self.insert_figobj(event)
