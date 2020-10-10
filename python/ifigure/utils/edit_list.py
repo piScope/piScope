@@ -2673,6 +2673,7 @@ class ComboBox(ComboBoxCompact):
         self.choices_cb=kargs.pop("choices_cb", None)
         super(ComboBox, self).__init__(*args, **kargs)
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
+        self.Bind(wx.EVT_TEXT_ENTER, self.onHit)
         
         if self.choices_cb is not None:
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
@@ -2681,8 +2682,7 @@ class ComboBox(ComboBoxCompact):
         self.GetParent().send_event(self, evt)
 
     def onDropDown(self, evt):
-        n = self.GetSelection()
-        sel = self.GetString(n)
+        sel = self.GetValue()
         ch = self.choices_cb()
         if sel in ch:
             idx = ch.index(sel)
@@ -2693,6 +2693,7 @@ class ComboBox(ComboBoxCompact):
     def SetChoices(self, ch, index=0):
         self.Clear()
         for c in ch:
+            if len(c) == 0: continue
             self.Append(c)
         self.SetSelection(index)
 
@@ -4369,7 +4370,7 @@ class EditListCore(object):
 
             w.Fit()
             if UpdateUI is not None:
-                print("setting update event")
+                #print("setting update event")
                 w.Bind(wx.EVT_UPDATE_UI, UpdateUI)
 
             self.widgets.append((w, txt))
