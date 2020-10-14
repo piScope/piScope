@@ -31,6 +31,8 @@ import matplotlib.transforms as transforms
 from scipy.interpolate import griddata
 import matplotlib.ticker as mticker
 
+
+
 import ifigure
 
 from ifigure.mto.fig_obj import FigObj
@@ -38,8 +40,8 @@ from ifigure.mto.fig_plot import FigPlot
 from ifigure.mto.fig_contour import FigContour
 from ifigure.mto.fig_image import FigImage
 from ifigure.mto.axis_param import AxisXParam, AxisYParam, AxisZParam, AxisCParam
-from ifigure.widgets.axes_range_subs import AdjustableRangeHolderCbar
-from ifigure.widgets.axes_range_subs import AdjustableRangeHolder
+from ifigure.widgets.axes_range_subs import (AdjustableRangeHolderCbar,
+                                             AdjustableRangeHolder)
 
 from ifigure.widgets.canvas.file_structure import *
 import ifigure.widgets.canvas.custom_picker as cpicker
@@ -49,11 +51,14 @@ from ifigure.utils.geom import scale_rect
 
 import ifigure.utils.pickle_wrapper as pickle
 import ifigure.utils.cbook as cbook
-from ifigure.widgets.undo_redo_history import GlobalHistory
-from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjProperty
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
-from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists
+
+from ifigure.ifigure_config import isMPL33
+
+from ifigure.widgets.undo_redo_history import (GlobalHistory,
+                                               UndoRedoArtistProperty,
+                                               UndoRedoFigobjProperty,
+                                               UndoRedoFigobjMethod,
+                                               UndoRedoAddRemoveArtists)
 
 from ifigure.utils.edit_list import DialogEditListTab, DialogEditList
 
@@ -2364,10 +2369,16 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
 
             if self.getp('cdir') == 'v':
                 a.set_ylim(range)
-                a.set_yscale('symlog', linthreshy=th)
+                if isMPL33:
+                    a.set_yscale('symlog', linthresh=th)
+                else:
+                    a.set_yscale('symlog', linthreshy=th)                    
             else:
                 a.set_xlim(range)
-                a.set_xscale('symlog', linthreshx=th)
+                if isMPL33:
+                    a.set_xscale('symlog', linthresh=th)
+                else:
+                    a.set_xscale('symlog', linthreshx=th)                    
         if self.getp('cdir') == 'v':
             p = self.get_axis_param('y')
         else:

@@ -35,8 +35,9 @@ class AxesMod(Axes):
         self._nomargin_mode = mode
         if True:
             ay = self.get_yaxis()
-            yt = ay.get_major_ticks()[0]
-            self._ypad = yt.get_pad()
+            if len(ay.get_major_ticks()) > 0:
+                yt = ay.get_major_ticks()[0]
+                self._ypad = yt.get_pad()
 
     def get_nomargin_mode(self):
         return self._nomargin_mode
@@ -174,7 +175,7 @@ class AxesMod(Axes):
                 xtick.label1.set_verticalalignment('top')
                 xtick.label2.set_verticalalignment('bottom')
             for ytick in yticks:
-                if self._ypad is not None:
+                if self._ypad is None:
                     self._ypad = 4
                 ytick.set_pad(self._ypad)
                 ytick.label1.set_horizontalalignment('right')
