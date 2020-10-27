@@ -50,6 +50,7 @@ class CutPlaneBar(bp.ButtonPanel):
         self.Bind(wx.EVT_KEY_DOWN, self._onKeyDown)
         self.Bind(wx.EVT_KEY_UP, self._onKeyUp)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)        
         self.Bind(wx.EVT_SET_FOCUS, self._onFocus)
         
         self.place_bottoms()
@@ -57,18 +58,19 @@ class CutPlaneBar(bp.ButtonPanel):
         self._shift_down = False
 
     def _onKeyDown(self, evt):
-        if (self._mouse_inside and
-            evt.GetKeyCode() == wx.WXK_SHIFT):
+        if evt.GetKeyCode() == wx.WXK_SHIFT:
             self._shift_down = True
-            return 
+            if self._mouse_inside:
+                return
+            
         wx.PostEvent(self.GetParent(), evt)
 
     def _onKeyUp(self, evt):
-        if (self._mouse_inside and
-            evt.GetKeyCode() == wx.WXK_SHIFT):
+        if evt.GetKeyCode() == wx.WXK_SHIFT:
             self._shift_down = False
-            return 
-
+            if self._mouse_inside:
+                return
+            
         wx.PostEvent(self.GetParent(), evt)
 
     def _onFocus(self, evt):
@@ -155,6 +157,10 @@ class CutPlaneBar(bp.ButtonPanel):
         
     def OnLeave(self, evt):
         self._mouse_inside = False
+        evt.Skip()
+        
+    def OnEnter(self, evt):
+        self._mouse_inside = True
         evt.Skip()
         
     def timed_event(self, btask, canvas, ax):

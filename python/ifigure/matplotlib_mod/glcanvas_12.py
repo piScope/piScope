@@ -60,7 +60,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._depth_mask = True
         self._artist_mask = None
         self._use_shadow_map = True
-        self._use_clip = True
+        self._use_clip = 1
         self._use_frustum = True
         self._attrib_loc = {}
         self._hittest_map_update = True
@@ -173,8 +173,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i,  'uisImage', 0)
         self.set_uniform(glUniform1i,  'uUseClip', 1)
         self.set_uniform(glUniform1i,  'uHasHL', 0)
-        self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (0, 0, 0))
-        self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (1, 1, 1))
+        self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (1, 0, 0))
+        self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (0, 1, 0))
         self.set_uniform(glUniform1i,  'uUseArrayID', 0)
         self.set_uniform(glUniform4fv, 'uHLColor', 1, (0, 0, 0., 0.65))
 
@@ -541,11 +541,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         M = np.dot(projM, M)  # projM * viewM * worldM
         # glLoadMatrixf(np.transpose(M).flatten())
 
-        if self._use_clip:
-            self.set_uniform(glUniform1i,  'uUseClip', 1)
-        else:
-            self.set_uniform(glUniform1i,  'uUseClip', 0)
-
+        self.set_uniform(glUniform1i,  'uUseClip', self._use_clip)
+        
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
 
@@ -618,10 +615,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
-        if self._use_clip:
-            self.set_uniform(glUniform1i,  'uUseClip', 1)
-        else:
-            self.set_uniform(glUniform1i,  'uUseClip', 0)
+
+        self.set_uniform(glUniform1i,  'uUseClip', self._use_clip)
 
         M = np.dot(self.M[1], self.M[0])  # viewM * worldM
         M = np.dot(self.projM, M)  # projM * viewM * worldM
@@ -1842,7 +1837,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform4fv, 'uWorldOffset', 1, (0, 0, 0, 0.))
         
         if self._use_clip and always_noclip:
-            self.set_uniform(glUniform1i,  'uUseClip', 1)
+            self.set_uniform(glUniform1i,  'uUseClip', self._use_clip)
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
                                   edgecolor, *args,  **kwargs):
