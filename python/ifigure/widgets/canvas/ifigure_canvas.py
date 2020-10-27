@@ -91,12 +91,13 @@ import ifigure.events
 
 from ifigure.widgets.axes_range_subs import RangeRequestMaker
 
-from ifigure.widgets.undo_redo_history import GlobalHistory
-from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjProperty
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
-from ifigure.widgets.undo_redo_history import UndoRedoGroupUngroupFigobj
-from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists
+from ifigure.widgets.undo_redo_history import (GlobalHistory,
+                                               UndoRedoArtistProperty,
+                                               UndoRedoFigobjProperty,
+                                               UndoRedoFigobjMethod,
+                                               UndoRedoGroupUngroupFigobj,
+                                               UndoRedoAddRemoveArtists)
+
 # uncomment the following to use wx rather than wxagg
 # matplotlib.use('WX')
 #from ifigure.matplotlib_mod.backend_wx_mod import FigureCanvasWxMod as Canvas
@@ -1126,10 +1127,15 @@ class ifigure_popup(wx.Menu):
                     else:
                         menus.append(('Use Frustum', self.on3DFrustum, None))
 
-                    if parent.axes_selection()._use_clip:
+                    if parent.axes_selection()._use_clip & 1:                        
                         menus.append(('Clip off', self.on3DClipOff, None))
                     else:
                         menus.append(('Clip on', self.on3DClipOn, None))
+
+                    if parent.axes_selection()._use_clip & 2:
+                        menus.append(('CutPlane off', self.on3DCutPlaneOff, None))
+                    else:
+                        menus.append(('CutPlaen on', self.on3DCutPlaneOn, None))                        
 
                     if parent.axes_selection()._show_3d_axes:
                         menus.append(
@@ -1281,7 +1287,26 @@ class ifigure_popup(wx.Menu):
     def on3DClipOff(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('noclip')
-
+        
+    def on3DCutPlaneOn(self, e):
+        from ifigure.widgets.cutplane_buttons import add_cutplane_btns
+        
+        canvas = e.GetEventObject()
+        win = canvas.GetTopLevelParent()
+        win.view('cp')
+        
+        if canvas._cutplane_btns is None:
+            canvas._cutplane_btns = add_cutplane_btns(win)
+            
+    def on3DCutPlaneOff(self, e):
+        canvas = e.GetEventObject()
+        win = canvas.GetTopLevelParent()
+        win.view('nocp')
+        
+        if canvas._cutplane_btns is not None:
+            canvas._cutplane_btns.Destroy()
+        canvas._cutplane_btns = None
+        
     def on3DAxesIconOff(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('noaxesicon')
@@ -1578,6 +1603,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._skip_blur_hl = False  # on during drag
         self.dblclick_occured = False  # double click
 
+        self._cutplane_btns = None
+
         self.selection = []
         self.axes_selection = cbook.WeakNone()
 
@@ -1843,6 +1870,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                           self.canvas.mpl_connect('draw_event', self.onDraw), ]
 
     def mpl_disconnect(self):
+        #print("mpi_disconnect")
         if self._mplc is None:
             return
         for id in self._mplc:

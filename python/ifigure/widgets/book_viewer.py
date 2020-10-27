@@ -427,6 +427,10 @@ class FramePlus(FrameWithWindowList):
                 wx.CallLater(100, self.resize_idle)
             self._bind_idle = True
             self.write_canvas_size_to_status_bar()
+
+        if self.canvas._cutplane_btns is not None:
+            self.canvas._cutplane_btns.place_bottoms()
+
         evt.Skip()
 
     def resize_idle(self):
@@ -442,10 +446,14 @@ class FramePlus(FrameWithWindowList):
     def call_draw_after_resize(self):
         if self.canvas._figure is None:
             return
+        
         if self.book._screen_ratio_lock is not None:
             self.set_canvas_ratio(self.book._screen_ratio_lock)
             self.write_canvas_size_to_status_bar()
 
+        if self.canvas._cutplane_btns is not None:
+            self.canvas._cutplane_btns.place_bottoms()
+            
         fig_page = self.canvas._figure.figobj
         fig_page.reset_axesbmp_update()
         # fig_page.onResize(None)
