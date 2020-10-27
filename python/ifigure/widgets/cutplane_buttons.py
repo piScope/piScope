@@ -15,17 +15,16 @@ from ifigure.utils.wx3to4 import wxCursorFromImage
 
 from ifigure.utils.wx3to4 import evt_GetPosition
 
-btasks0 = [('plus_theta', 'arrow_firstpage.png', 0, '+ polar angle'),
-           ('minus_theta',   'arrow_revplay.png', 0, '- polar angle'),
-           ('plus_phi',   'arrow_revstep.png', 0, '+ azimuthal angle'),
-           ('minus_phi',  'stop_play.png', 0, '- azimuthal angle'),
-           ('plus_offset',   'arrow_fwdstep.png', 0, '+ offset'),
-           ('minus_offset',   'arrow_fwdplay.png', 0, '- offset'),
-           ('xy_plane',  'arrow_lastpage.png', 0, 'XY plane'),                      
-           ('yz_plane',  'arrow_lastpage.png', 0, 'YZ plane'),
-           ('xz_plane',  'arrow_lastpage.png', 0, 'XZ plane'),
-           ('flip_sign',    'cog.png', 0, 'flip side'), 
-           ('reset_cp',    'cog.png', 0, 'reset cp setting'), ]
+btasks0 = [('plus_theta', 'shift_theta.png', 0, '+ polar angle (shift-key: reserse direction)'),
+#           ('minus_theta',   'minus_theta.png', 0, '- polar angle'),
+           ('plus_phi',   'shift_phi.png', 0, '+ azimuthal angle (shift-key: reserse direction)'),
+#           ('minus_phi',  'minus_phi.png', 0, '- azimuthal angle'),
+           ('plus_offset',   'shift_cp.png', 0, '+/- offset (shift-key: reserse direction)'),
+           ('yz_plane',  'yz_plane.png', 0, 'YZ plane'),
+           ('xz_plane',  'xz_plane.png', 0, 'XZ plane'),           
+           ('xy_plane',  'xy_plane.png', 0, 'XY plane'),                      
+           ('flip_sign',    'flip_cp_side.png', 0, 'flip side'), 
+           ('reset_cp',    'reset.png', 0, 'reset cp setting'), ]
 
 # step size
 delta_z = 0.05
@@ -55,11 +54,21 @@ class CutPlaneBar(bp.ButtonPanel):
         
         self.place_bottoms()
         self._mouse_inside = False
+        self._shift_down = False
 
     def _onKeyDown(self, evt):
+        if (self._mouse_inside and
+            evt.GetKeyCode() == wx.WXK_SHIFT):
+            self._shift_down = True
+            return 
         wx.PostEvent(self.GetParent(), evt)
 
     def _onKeyUp(self, evt):
+        if (self._mouse_inside and
+            evt.GetKeyCode() == wx.WXK_SHIFT):
+            self._shift_down = False
+            return 
+
         wx.PostEvent(self.GetParent(), evt)
 
     def _onFocus(self, evt):
@@ -171,40 +180,52 @@ class CutPlaneBar(bp.ButtonPanel):
 
         if btask == 'plus_offset':
             limit2 = ax._lighting['clip_limit2']
-            limit2[0] = limit2[0] + delta_z
+            if self._shift_down:
+                limit2[0] = limit2[0] + delta_z
+            else:
+                limit2[0] = limit2[0] - delta_z                
             ax._lighting['clip_limit2'] = limit2
-        elif btask == 'minus_offset':
-            limit2 = ax._lighting['clip_limit2']
-            limit2[0] = limit2[0] - delta_z
-            ax._lighting['clip_limit2'] = limit2
+        #elif btask == 'minus_offset':
+        #    limit2 = ax._lighting['clip_limit2']
+        #    limit2[0] = limit2[0] - delta_z
+        #    ax._lighting['clip_limit2'] = limit2
         elif btask == 'plus_phi':
             th, ph = get_angles(ax._lighting['clip_limit1'])
-            ph = ph  + delta_a/180*np.pi
+            if self._shift_down:
+                ph = ph  - delta_a/180*np.pi
+            else:
+                ph = ph  + delta_a/180*np.pi
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
-        elif btask == 'minus_phi':
-            th, ph = get_angles(ax._lighting['clip_limit1'])
-            ph = ph  - delta_a/180*np.pi
-            vec = get_norm(th, ph)
-            ax._lighting['clip_limit1'] = vec
+        #elif btask == 'minus_phi':
+        #    th, ph = get_angles(ax._lighting['clip_limit1'])
+        #    ph = ph  - delta_a/180*np.pi
+        #    vec = get_norm(th, ph)
+        #    ax._lighting['clip_limit1'] = vec
         elif btask == 'plus_theta':
             th, ph = get_angles(ax._lighting['clip_limit1'])
-            th = th  + delta_a/180*np.pi            
-            if th > np.pi:
-                limit2 = ax._lighting['clip_limit2']
-                limit2[1] = -limit2[1]
-                ax._lighting['clip_limit2'] = limit2
+            limit2 = ax._lighting['clip_limit2']            
+            if self._shift_down:
+                th = th  + delta_a/180*np.pi            
+                if th > np.pi:
+                    limit2[1] = -limit2[1]
+            else:
+                th = th  - delta_a/180*np.pi
+                if th < 0:
+                    limit2[1] = -limit2[1]
+                
+            ax._lighting['clip_limit2'] = limit2
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
-        elif btask == 'minus_theta':
-            th, ph = get_angles(ax._lighting['clip_limit1'])
-            th = th  - delta_a/180*np.pi
-            if th < 0:
-                limit2 = ax._lighting['clip_limit2']
-                limit2[1] = -limit2[1]
-                ax._lighting['clip_limit2'] = limit2
-            vec = get_norm(th, ph)
-            ax._lighting['clip_limit1'] = vec
+        #elif btask == 'minus_theta':
+        #    th, ph = get_angles(ax._lighting['clip_limit1'])
+        #    th = th  - delta_a/180*np.pi
+        #    if th < 0:
+        #        limit2 = ax._lighting['clip_limit2']
+        #        limit2[1] = -limit2[1]
+        #        ax._lighting['clip_limit2'] = limit2
+        #    vec = get_norm(th, ph)
+        #    ax._lighting['clip_limit1'] = vec
         else:
             pass
         
