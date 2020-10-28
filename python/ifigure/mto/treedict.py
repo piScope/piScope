@@ -2158,7 +2158,7 @@ class TopTreeDict(TreeDict):
 
         if not success:
             self.setvar("filename", old_filename)
-            self._set_work_dir(old_filename)
+            self.getvar("wdir", old_wdir)            
 
         return success
 

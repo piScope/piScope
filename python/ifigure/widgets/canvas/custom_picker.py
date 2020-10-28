@@ -293,6 +293,9 @@ def CheckLineHit(x, y, x0, y0, trans=None, itrans=None):
     except:
         return False, 0
 
+    if len(x) == 1:
+        return False, 0
+
     ans = True
     if ic != len(x)-1:
         x1d, y1d = trans((x[ic], y[ic]))
