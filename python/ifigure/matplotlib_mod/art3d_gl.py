@@ -522,7 +522,8 @@ class AxesImageGL(ArtGL, AxesImage):
                             x['im_update'] = True
                 renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
                                        np.transpose(self._im_cache, (1, 0, 2)),
-                                       interp=self._gl_interp)
+                                       interp=self._gl_interp,
+                                       always_noclip=self._gl_always_noclip)                
                 self._gl_rgbacache_id = id(self._rgbacache)
                 gc.restore()
             else:

@@ -1611,7 +1611,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(0)
         return vbos
 
-    def draw_image(self, vbos, gc, path, trans, im, interp='nearest'):
+    def draw_image(self, vbos, gc, path, trans, im,
+                   interp='nearest',
+                   always_noclip=False):
+
+        if always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', 0)
+        
         self.select_shader(self.lshader)
         self.select_shader(self.shader)
         glBindVertexArray(vbos['vao'])
@@ -1641,9 +1647,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
         vbos['uv'].unbind()
         self.DisableVertexAttrib('inTexCoord')
 
+        if self._use_clip and always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
+        
         glBindVertexArray(0)
 
-    def makevbo_image(self, vbos, gc, path, trans, im, interp='nearest'):
+    def makevbo_image(self, vbos, gc, path, trans, im,
+                      interp='nearest',
+                      always_noclip=False):
         if vbos is None:
             vbos = vbos_dict({'v': None, 'count': None, 'n': None, 'im': None,
                               'uv': None, 'im_update': False})
