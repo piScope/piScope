@@ -155,6 +155,7 @@ class FigObj(TreeDict, MetadataHolder):
         self.setp('zorder', zorder)
         self.setp('rasterized', rasterized)
         self.setp('frameart', False)
+        self.setp('noclip3d', False)        
         self.setp("args", args)
         if len(args) != 0:
             logging.warning(
@@ -260,7 +261,7 @@ class FigObj(TreeDict, MetadataHolder):
 
     @classmethod  # define _attr values to be saved
     def attr_in_file(self):
-        return ['zorder', 'use_var', 'rasterized', 'frameart']
+        return ['zorder', 'use_var', 'rasterized', 'frameart', 'noclip3d']
 
     @classmethod
     def can_have_child(self, child=None):

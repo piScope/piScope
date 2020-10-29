@@ -273,9 +273,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     kywds["interpolation"] = self.getp("interp")
 
                 self.set_artist(container.imshow(*args,
-                                                 #                            picker=cpicker.Picker,
+                                                 #picker=cpicker.Picker,
                                                  extent=extent,  **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
+
                 setattr(self._artists[0].get_array(), '_xyp', (xp, yp))
             else:
                 #print('drawing tri image')

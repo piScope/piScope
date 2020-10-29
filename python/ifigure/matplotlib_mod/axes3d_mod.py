@@ -1499,6 +1499,9 @@ class Axes3DMod(Axes3D):
             # print(zorder)
 
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
+            for a in artists:
+                if hasattr(a, 'figobj'):
+                    a._gl_always_noclip = a.figobj.getp("noclip3d")
 
             gl_len = len(gl_obj)
             if gl_len > 0:
