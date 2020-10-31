@@ -20,11 +20,10 @@ class GLCompound(object):
     @property
     def shown_component(self):
         h = self._hidden_component
-        array_idx = list(np.unique(self.getvar('array_idx')))
-        for x in h:
-            if x in array_idx:
-                array_idx.remove(x)
-        return array_idx
+        array_idx = np.unique(self.getvar('array_idx'))
+        idx = array_idx[np.in1d(array_idx, h, invert=True)]
+
+        return list(idx)
 
     def hide_component(self, idx, inverse=False):
         '''
@@ -34,11 +33,9 @@ class GLCompound(object):
             return
 
         if inverse:
-            array_idx = list(np.unique(self.getvar('array_idx')))
-            for x in idx:
-                if x in array_idx:
-                    array_idx.remove(x)
-            idx = array_idx
+            array_idx = np.unique(self.getvar('array_idx'))
+            idx = array_idx[np.in1d(array_idx, idx, invert=True)]
+            idx = list(idx)
 
         self._hidden_component = idx
         if len(self._artists) == 0:
