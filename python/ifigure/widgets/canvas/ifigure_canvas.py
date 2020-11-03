@@ -1135,7 +1135,7 @@ class ifigure_popup(wx.Menu):
                     if parent.axes_selection()._use_clip & 2:
                         menus.append(('CutPlane off', self.on3DCutPlaneOff, None))
                     else:
-                        menus.append(('CutPlaen on', self.on3DCutPlaneOn, None))                        
+                        menus.append(('CutPlane on', self.on3DCutPlaneOn, None))
 
                     if parent.axes_selection()._show_3d_axes:
                         menus.append(
