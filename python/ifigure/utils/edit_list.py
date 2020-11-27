@@ -2690,18 +2690,24 @@ class ComboBox(ComboBoxCompact):
             idx = 0
         self.SetChoices(ch, index=idx)
         
-    def SetChoices(self, ch, index=0):
+    def SetChoices(self, ch, index=-1):
+        sel = self.GetValue()
         self.Clear()
         for c in ch:
-            if len(c) == 0: continue
+            #if len(c) == 0: continue
             self.Append(c)
-        self.SetSelection(index)
+
+        if index != -1:
+            self.SetSelection(index)
+        else:
+            if sel in c:
+                index = c.index(sel)  
+                self.SetSelection(index)              
 
 class ComboBoxWithNew(ComboBoxCompact):
     def __init__(self, *args, **kargs):
         self.choices_cb=kargs.pop("choices_cb", None)
         self.new_choice_message = kargs.pop("new_choice_msg", "Enger new choice")
-        print("here", kargs)
         super(ComboBoxWithNew, self).__init__(*args, **kargs)
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
         self.Bind(wx.EVT_TEXT_ENTER, self.onHit)

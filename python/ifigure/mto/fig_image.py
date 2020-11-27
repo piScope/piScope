@@ -139,7 +139,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
     @classmethod
     def property_in_palette(self):
-        return (['image'], [["image_interp", "alpha_2", "caxis"], ])
+        return (['image'], [["image_interp", "alpha_2", "caxis", "noclip3d"], ])
 
     @classmethod  # define _attr values to be saved
     def attr_in_file(self):

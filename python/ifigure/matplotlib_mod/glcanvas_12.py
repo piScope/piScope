@@ -1340,7 +1340,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
             vbos['v'].need_update = False
         return vbos
 
-    def draw_image(self, vbos, gc, path, trans, im, interp='nearest'):
+    def draw_image(self, vbos, gc, path, trans, im,
+                   interp='nearest',
+                   always_noclip=False):
+        
+        if always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', 0)
+        
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
         glVertexPointer(3, GL_FLOAT, 0, None)
@@ -1369,9 +1375,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_TEXTURE_COORD_ARRAY)
-#        glDeleteTextures(image_tex)
 
-    def makevbo_image(self, vbos, gc, path, trans, im, interp='nearest'):
+        if self._use_clip and always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
+        
+    def makevbo_image(self, vbos, gc, path, trans, im,
+                      interp='nearest',
+                      always_noclip=False):
+        
         if vbos is None:
             vbos = vbos_dict({'v': None, 'count': None, 'n': None, 'im': None,
                               'uv': None, 'im_update': False})
