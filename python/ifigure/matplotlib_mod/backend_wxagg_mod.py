@@ -523,3 +523,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
             bp = self.GetTopLevelParent()._playerbtn
             if bp is not None:
                 bp.Refresh()
+        if hasattr(self.Parent, "_cutplane_btns"):
+            bp = self.Parent._cutplane_btns
+            if bp is not None:
+                bp.Refresh()
+                

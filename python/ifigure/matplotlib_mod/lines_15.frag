@@ -70,7 +70,8 @@ int dotted[32] = int[32](0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
 
 void main() {
      /* just to make sure to write this variable */
-     float bias = 0.001;     
+     float bias = 0.001;
+     /*
      if (uUseClip == 1){     
      if (gClipDistance[0] < uClipLimit1[0]-bias){
         discard;
@@ -90,6 +91,42 @@ void main() {
      if (gClipDistance[2] > uClipLimit2[2]+bias){
         discard;
      }
+     }
+     */
+     // squre box clipping
+     if ((uUseClip == 1) || (uUseClip == 3)){
+        if (gClipDistance[0] < 0.0-bias){
+           discard;
+        }
+        if (gClipDistance[1] < 0.0-bias){
+           discard;
+        }
+        if (gClipDistance[2] < 0.0-bias){
+           discard;
+        }
+        if (gClipDistance[0] > 1.0+bias){
+           discard;
+        }
+        if (gClipDistance[1] > 1.0+bias){
+           discard;
+        }
+        if (gClipDistance[2] > 1.0+bias){
+           discard;
+        }
+     }
+
+     // clip plane
+     if ((uUseClip == 2) || (uUseClip == 3)){
+        float dd_clip = ((gClipDistance[0]-0.5) * uClipLimit1[0] +
+                      	 (gClipDistance[1]-0.5) * uClipLimit1[1] +
+                 	 (gClipDistance[2]-0.5) * uClipLimit1[2] -
+			 uClipLimit2[0]);
+ 	if ((uClipLimit2[1] > 0) && (dd_clip > bias)){
+           discard;	
+	}
+ 	if ((uClipLimit2[1] <= 0) && (dd_clip < bias)){	
+           discard;	
+	}
      }
 
      if (uLineStyle == 0){

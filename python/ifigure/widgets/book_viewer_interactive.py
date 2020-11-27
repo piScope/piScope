@@ -1526,10 +1526,16 @@ class BookViewerInteractive(object):
                 ax._use_frustum = True
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'noclip':
-                ax._use_clip = False
+                ax._use_clip =  ax._use_clip & 2
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'clip':
-                ax._use_clip = True
+                ax._use_clip =  ax._use_clip | 1                
+                fig_axes.set_bmp_update(False)
+            elif args[0] == 'nocp':
+                ax._use_clip =  ax._use_clip & 1
+                fig_axes.set_bmp_update(False)
+            elif args[0] == 'cp':
+                ax._use_clip =  ax._use_clip | 2                
                 fig_axes.set_bmp_update(False)
 
             elif args[0] == 'auto':

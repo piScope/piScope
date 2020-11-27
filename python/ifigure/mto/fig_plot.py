@@ -123,8 +123,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         #            return (["linewidth", "linestyle", "alpha"] +
         #                    super(FigPlot, self).property_in_file())
         #        else:
-        props = (["linestyle",
-                  "linewidth", "marker", "markersize",
+        props = (["linestyle", "linewidth", "marker", "markersize",
                   "markeredgecolor", "markerfacecolor",
                   "markeredgewidth", "alpha"] +
                  super(FigPlot, self).property_in_file())

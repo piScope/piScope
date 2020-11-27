@@ -2690,14 +2690,77 @@ class ComboBox(ComboBoxCompact):
             idx = 0
         self.SetChoices(ch, index=idx)
         
+    def SetChoices(self, ch, index=-1):
+        sel = self.GetValue()
+        self.Clear()
+        for c in ch:
+            #if len(c) == 0: continue
+            self.Append(c)
+
+        if index != -1:
+            self.SetSelection(index)
+        else:
+            if sel in c:
+                index = c.index(sel)  
+                self.SetSelection(index)              
+
+class ComboBoxWithNew(ComboBoxCompact):
+    def __init__(self, *args, **kargs):
+        self.choices_cb=kargs.pop("choices_cb", None)
+        self.new_choice_message = kargs.pop("new_choice_msg", "Enger new choice")
+        super(ComboBoxWithNew, self).__init__(*args, **kargs)
+        self.Bind(wx.EVT_COMBOBOX, self.onHit)
+        self.Bind(wx.EVT_TEXT_ENTER, self.onHit)
+        
+        if self.choices_cb is not None:
+            self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
+        
+    def onHit(self, evt):
+        sel = self.GetValue()
+        if sel == 'New...':
+            from ifigure.widgets.dialog import textentry
+            flag, txt = textentry(self,
+                                  self.new_choice_message,
+                                  def_string=self._current_value,
+                                  center=True)
+            choices = [self.GetString(n) for n in range(self.GetCount())]
+            if flag: 
+                choices = choices[:-1]
+                choices.append(txt)
+                index = choices.index(txt)
+                self.SetChoices(choices, index)
+                wx.CallAfter(self.GetParent().send_event, self, evt)
+            else:
+                index = choices.index(self._current_value)
+                self.SetChoices(choices, index)
+                wx.CallAfter(self.GetParent().send_event, self, evt)
+        else:
+            self._current_value = sel
+            self.GetParent().send_event(self, evt)
+        evt.Skip()
+        
+    def onDropDown(self, evt):
+        sel = self.GetValue()
+        self._current_value = sel
+        
+        ch = self.choices_cb()
+        if sel in ch:
+            idx = ch.index(sel)
+        else:
+            idx = 0
+        self.SetChoices(ch, index=idx)
+        
     def SetChoices(self, ch, index=0):
         self.Clear()
+        ch = [x for x in ch if x != 'New...']        
+        ch = ch + ['New...']        
         for c in ch:
             if len(c) == 0: continue
             self.Append(c)
+        index = min(index, len(ch)-1)
+        #print("setting index", index)
         self.SetSelection(index)
-
-
+    
 class ComboBox_Float(ComboBoxCompact):
     def __init__(self, *args, **kargs):
         super(ComboBox_Float, self).__init__(*args, **kargs)
@@ -3945,7 +4008,7 @@ class EditListCore(object):
             elif val[2] == 4:
                 if len(val) == 4:
                     setting = val[3]
-                    if ("style" in setting) is False:
+                    if "style" not in setting:
                         #                    setting["style"]=wx.CB_DROPDOWN
                         setting["style"] = wx.TE_PROCESS_ENTER
                 else:
@@ -3984,6 +4047,24 @@ class EditListCore(object):
                 w = ComboBoxPrefListDirectory(self, wx.ID_ANY, setting=val[3])
                 w.SetValue(val[1])
                 p = w
+            elif val[2] == 504:
+                if len(val) == 4:
+                    setting = val[3]
+                    if "style" not in setting:
+                        setting["style"] = wx.CB_READONLY
+                else:
+                    setting = {"style": wx.CB_READONLY,
+                               "choices": ["ok", "cancel"],}
+                s = setting["choices"]
+                s = [x for x in s if x != 'New...']
+                s = s + ['New...']
+                choices_cb = setting.pop("choices_cb", None)
+                w = ComboBoxWithNew(self, wx.ID_ANY, style=setting["style"],
+                                    choices=s,
+                                    choices_cb=choices_cb,)
+                w.SetValue(val[1])
+                p = w
+
             elif val[2] == 5:
                 if len(val) == 4:
                     setting = val[3]

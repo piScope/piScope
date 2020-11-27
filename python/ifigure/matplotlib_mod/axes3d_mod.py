@@ -225,12 +225,12 @@ class Axes3DMod(Axes3D):
                           'light_direction': (1., 0, 1, 0),
                           'light_color': (1., 1., 1),
                           'wireframe': 0,
-                          'clip_limit1': [0., 0., 0.],
-                          'clip_limit2': [1., 1., 1.],
+                          'clip_limit1': [1., 0., 0.],
+                          'clip_limit2': [0., 1., 1.],
                           'shadowmap': False}
         self._use_gl = kargs.pop('use_gl', True)
         self._use_frustum = kargs.pop('use_frustum', True)
-        self._use_clip = kargs.pop('use_clip', True)
+        self._use_clip = kargs.pop('use_clip', 1)
         super(Axes3DMod, self).__init__(*args, **kargs)
         self.patch.set_alpha(0)
         self._gl_id_data = None
@@ -1499,6 +1499,9 @@ class Axes3DMod(Axes3D):
             # print(zorder)
 
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
+            for a in artists:
+                if hasattr(a, 'figobj'):
+                    a._gl_always_noclip = a.figobj.getp("noclip3d")
 
             gl_len = len(gl_obj)
             if gl_len > 0:

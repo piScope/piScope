@@ -76,7 +76,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._depth_mask = True
         self._artist_mask = None
         self._use_shadow_map = True
-        self._use_clip = True
+        self._use_clip = 1   # 0 no clip, 1 clip box, 2, CP, 3 CP + clip box
         self._use_frustum = True
         self._attrib_loc = {}
         self._hittest_map_update = True
@@ -99,7 +99,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         self._merge_check = 1
 
-        
     def gc_artist_data(self):
         keys = list(self.artists_data.keys())
         for aa in keys:
@@ -143,9 +142,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if name not in self._p_uniform_loc:
             return
         loc = glGetUniformLocation(self._p_shader, name)
-        #loc = self._p_uniform_loc[name]
         self._current_uniform[name] = (func, args, kwargs)
-        #print('set_uniform', name, args)
+
+
+        '''            
+        if name == 'uUseClip':
+            print("Setting Clip", args, kwargs)
+        if name == 'uClipLimit1':
+            print("Clip1", args, kwargs)
+        if name == 'uAmbient':            
+            print("uAmbient", args, kwargs)              
+        '''
         func(loc, *args, **kwargs)
 
     def select_shader(self, shader):
@@ -205,7 +212,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                   'uArtistID', 'uClipLimit1',
                   'uClipLimit2',
                   'uisMarker', 'uMarkerTex', 'uisImage', 'uImageTex',
-                  'uUseClip', 'uHasHL', 'uUseArrayID', 'nearZ', 'farZ',
+                  'uUseClip',
+                  'uHasHL', 'uUseArrayID', 'nearZ', 'farZ',
                   'isFrust', 'uHLColor', 'uAlphaTest', 'uAlphaLimit',
                   'uUseSolidColor', 'uColor']
         names = names0
@@ -217,8 +225,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.set_uniform(glUniform1i, 'uisImage', 0)
         self.set_uniform(glUniform1i, 'uUseClip', 1)
         self.set_uniform(glUniform1i, 'uHasHL', 0)
-        self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (0, 0, 0))
-        self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (1, 1, 1))
+        self.set_uniform(glUniform3fv, 'uClipLimit1', 1, (1, 0, 0))
+        self.set_uniform(glUniform3fv, 'uClipLimit2', 1, (0.0, 1, 1))
         self.set_uniform(glUniform1i, 'uUseArrayID', 0)
         self.set_uniform(glUniform1i, 'uAlphaTest', 0)
         self.set_uniform(glUniform1f, 'uAlphaLimit', 0.0)
@@ -397,16 +405,17 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return
         if self._p_shader != self.shader:
             return
-        #print('set_lighting', light)
+        
+        #print('set_lighting', light, clip_limit1)
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                      (ambient, ambient, ambient, 1.0))
-
+        
+        self.set_uniform(glUniform3fv, 'uClipLimit1', 1, clip_limit1)
+        self.set_uniform(glUniform3fv, 'uClipLimit2', 1, clip_limit2)
         glUniform4fv(self.shader.uniform_loc['uLightDir'], 1, light_direction)
         glUniform3fv(self.shader.uniform_loc['uLightColor'], 1, light_color)
         glUniform1fv(self.shader.uniform_loc['uLightPow'], 1, light)
         glUniform1fv(self.shader.uniform_loc['uLightPowSpec'], 1, specular)
-        glUniform3fv(self.shader.uniform_loc['uClipLimit1'], 1, clip_limit1)
-        glUniform3fv(self.shader.uniform_loc['uClipLimit2'], 1, clip_limit2)
 
         self._wireframe = wireframe
         self._light_direction = light_direction
@@ -414,7 +423,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # print 'light power', self.shader, light
 
     def set_lighting_off(self):
-        print('set_lighting_off')
+        #print('set_lighting_off')
         if self._p_shader != self.shader:
             return
 
@@ -663,11 +672,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         M = np.dot(projM, M)  # projM * viewM * worldM
         # glLoadMatrixf(np.transpose(M).flatten())
 
+        '''
         if self._use_clip:
             self.set_uniform(glUniform1i, 'uUseClip', 1)
         else:
             self.set_uniform(glUniform1i, 'uUseClip', 0)
-
+        ''' 
+        self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
 
@@ -734,10 +745,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                               GL_COLOR_ATTACHMENT1])
-            if self._use_clip:
-                self.set_uniform(glUniform1i, 'uUseClip', 1)
-            else:
-                self.set_uniform(glUniform1i, 'uUseClip', 0)
+
+            self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
 
             M = np.dot(self.M[1], self.M[0])  # viewM * worldM
             M = np.dot(self.projM, M)  # projM * viewM * worldM
@@ -1602,7 +1611,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(0)
         return vbos
 
-    def draw_image(self, vbos, gc, path, trans, im, interp='nearest'):
+    def draw_image(self, vbos, gc, path, trans, im,
+                   interp='nearest',
+                   always_noclip=False):
+
+        if always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', 0)
+        
         self.select_shader(self.lshader)
         self.select_shader(self.shader)
         glBindVertexArray(vbos['vao'])
@@ -1632,9 +1647,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
         vbos['uv'].unbind()
         self.DisableVertexAttrib('inTexCoord')
 
+        if self._use_clip and always_noclip:
+            self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
+        
         glBindVertexArray(0)
 
-    def makevbo_image(self, vbos, gc, path, trans, im, interp='nearest'):
+    def makevbo_image(self, vbos, gc, path, trans, im,
+                      interp='nearest',
+                      always_noclip=False):
         if vbos is None:
             vbos = vbos_dict({'v': None, 'count': None, 'n': None, 'im': None,
                               'uv': None, 'im_update': False})
@@ -1968,7 +1988,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                                       view_offset=view_offset,
                                       array_idx=array_idx)
             if self._use_clip and always_noclip:
-                self.set_uniform(glUniform1i, 'uUseClip', 1)
+                self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
 
             return
         nindex, nindexe, counts = vbos['nindex'], vbos['nindexe'], vbos['counts']
@@ -2027,15 +2047,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
         # if not(linewidth[0] > 0.0 and not self._shadow): return
         if self._shadow:
             if self._use_clip and always_noclip:
-                self.set_uniform(glUniform1i, 'uUseClip', 1)
+                self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
             return
 
         if vbos['primitive'] is not None:
             if linewidth[0] == 0.0:
                 if self._use_clip and always_noclip:
-                    self.set_uniform(glUniform1i, 'uUseClip', 1)
+                    self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
                 return
-
+        
         if vbos['eprimitive'] == GL_TRIANGLES:
             self.select_shader(self.tshader)
         else:
@@ -2118,7 +2138,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.shader)
 
         if self._use_clip and always_noclip:
-            self.set_uniform(glUniform1i, 'uUseClip', 1)
+            self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
 
     def makevbo_path_collection_e(self, vbos, gc, paths, facecolor,
                                   edgecolor, *args, **kwargs):

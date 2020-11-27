@@ -99,7 +99,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
     @classmethod
     def property_in_palette(self):
         return ["facecolor_2", "edgecolor_2", "linewidthz",
-                "solid_shade", "alpha_2"]
+                "solid_shade", "alpha_2", "noclip3d"]
 
     @classmethod
     def attr_in_file(self):

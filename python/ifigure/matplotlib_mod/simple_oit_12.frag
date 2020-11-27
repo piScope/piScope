@@ -149,27 +149,44 @@ void main() {
 /*         gl_FragData[0] = vec4(gl_FragCoord.x, 0, 0, 1);	 */
          return;
      }
+     
      float bias = 0.001;
-     if (uUseClip == 1){     
-     if (ClipDistance0[0] < uClipLimit1[0]-bias){
-        discard;
+     // squre box clipping
+     if ((uUseClip == 1) || (uUseClip == 3)){
+        if (ClipDistance0[0] < 0.0-bias){
+           discard;
+        }
+        if (ClipDistance0[1] < 0.0-bias){
+           discard;
+        }
+        if (ClipDistance0[2] < 0.0-bias){
+           discard;
+        }
+        if (ClipDistance0[0] > 1.0+bias){
+           discard;
+        }
+        if (ClipDistance0[1] > 1.0+bias){
+           discard;
+        }
+        if (ClipDistance0[2] > 1.0+bias){
+           discard;
+        }
      }
-     if (ClipDistance0[1] < uClipLimit1[1]-bias){
-        discard;
+
+     // clip plane
+     if ((uUseClip == 2) || (uUseClip == 3)){
+        float dd_clip = ((ClipDistance0[0]-0.5) * uClipLimit1[0] +
+                      	 (ClipDistance0[1]-0.5) * uClipLimit1[1] +
+                 	 (ClipDistance0[2]-0.5) * uClipLimit1[2] -
+			 uClipLimit2[0]);
+ 	if ((uClipLimit2[1] > 0) && (dd_clip > bias)){
+           discard;	
+	}
+ 	if ((uClipLimit2[1] <= 0) && (dd_clip < bias)){	
+           discard;	
+	}
      }
-     if (ClipDistance0[2] < uClipLimit1[2]-bias){
-        discard;
-     }
-     if (ClipDistance0[0] > uClipLimit2[0]+bias){
-        discard;
-     }
-     if (ClipDistance0[1] > uClipLimit2[1]+bias){
-        discard;
-     }
-     if (ClipDistance0[2] > uClipLimit2[2]+bias){
-        discard;
-     }
-     }
+     
      vec3 n = normalize(normal);
      vec3 l = normalize(light_dir);
      vec3 c = normalize(camera_dir);
