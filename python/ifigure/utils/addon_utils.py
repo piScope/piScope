@@ -176,14 +176,23 @@ def onLoadFile(td, message="Select File",
     # nl_file is the file to be edited
     if copy_file:
         nl_file = os.path.join(od, os.path.basename(file))
+        print(nl_file)
         try:
             # this may fail if owndir does not exist
-            samefile = os.path.samefile(file, nl_file)
+            if os.path.exists(nl_file):
+                samefile = os.path.samefile(file, nl_file)
+            else:
+                samefile = True
         except BaseException:
+            import traceback
+            traceback.print_exc()
             samefile = False
         if not samefile:
-            td.remove_ownitem(items=[pathname])
-            shutil.copyfile(file, nl_file)
+            print("not the same file")
+            #td.remove_ownitem(items=[pathname])
+            sss = nl_file.split('.')
+            nl_file = '.'.join(sss[:-1])+'1.'+sss[-1]
+        shutil.copyfile(file, nl_file)
         td.set_path_pathmode(nl_file, modename, pathname, extname)
     else:
         td.remove_ownitem(items=[pathname])

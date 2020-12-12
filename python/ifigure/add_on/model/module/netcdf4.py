@@ -254,8 +254,13 @@ def onUpdateFile(self, e=None):
                              pathname=pathname)
     if file == '':
         return
-    format = load_file(file, check_format=True)    
-    write_file(self.td, filename=file, format=format)    
+    
+    file2 = os.path.join(os.path.dirname(file),
+                         '_tmp_'+os.path.basename(file))
+    format = load_file(file, check_format=True)
+    write_file(self.td, filename=file2, format=format)
+    os.rename(file2, file)
+    
 
 def onLoadFile(self, e=None, file=''):
     from ifigure.utils.addon_utils import onLoadFile
