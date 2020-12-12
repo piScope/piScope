@@ -293,3 +293,11 @@ def onExportFile(self, evt=None):
 def init_after_load(self, olist, nlist):
     obj = self.td
     load_netcdf_file(obj)
+
+
+def set_contents(self, *args):
+    obj = self[:]
+    for x in args[:-1]:
+        obj = obj[x]
+    obj._data_loaded = True
+    obj._data = args[-1]

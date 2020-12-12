@@ -396,3 +396,11 @@ class PyModule(py_code.PyCode, FileHolder):
             import traceback
             print(traceback.format_exc())
             return ''
+
+    def set_contents(self, *args):
+        if hasattr(self._obj._m_co, 'set_contents'):
+            m = self._obj._m_co.set_contents
+            return m(self, *args)
+        else:
+            return py_code.PyCode.set_contents(self, *args)
+            
