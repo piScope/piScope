@@ -51,10 +51,11 @@ class_name = 'netCDF'
 menu = [("Import...",   "onLoadFile", True),
         ("Export...",   "onExportFile", False),
         ("Update Tree", "onUpdateTree", True),
+        ("Update File", "onUpdateFile", True),        
         ("Check NC Format", "onCheckFormat", True),
         ("Write NC File", "onWriteNCFile", True), ]
-method = ['onLoadFile', 'onUpdateTree', 'onExportFile',
-          'onWriteNCFile', 'onCheckFormat',
+method = ['onLoadFile', 'onUpdateTree', 'onUpdateFile',
+          'onExportFile', 'onWriteNCFile', 'onCheckFormat',
           'init', 'init_after_load']
 icon = 'data.png'
 can_have_child = False
@@ -246,7 +247,15 @@ def onCheckFormat(self, e=None):
 def onUpdateTree(self, e=None):
     obj = self.td
     load_netcdf_file(obj)
-
+    
+def onUpdateFile(self, e=None):
+    obj = self.td
+    file = obj.path2fullpath(modename=modename,
+                             pathname=pathname)
+    if file == '':
+        return
+    format = load_file(file, check_format=True)    
+    write_file(self.td, filename=file, format=format)    
 
 def onLoadFile(self, e=None, file=''):
     from ifigure.utils.addon_utils import onLoadFile
