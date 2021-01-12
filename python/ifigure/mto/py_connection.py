@@ -86,6 +86,8 @@ class PyConnection(TreeDict):
         self.setvar('verbose', True)
         self.setvar('queue_type', 'sbatch')
         self.setvar('nocheck', False)
+        self.setvar('multiplex', True)
+        self.setvar('persist', 600)        
 
     @classmethod
     def isPyConnection(self):
@@ -101,6 +103,17 @@ class PyConnection(TreeDict):
         idx1 = LoadImageFile(path, 'world_link.png')
         return [idx1]
 
+    def get_multiplex_opts(self):
+        multiplex, persist = self.getvar('multiplex', 'persist')
+
+        if multiplex:
+            opts = ["-oControlMaster=auto",
+                    "-oControlPersist="+str(persist),
+                    "-oControlPath=~/.ssh/cm-%r@%h:%p-"+str(os.getpid())]
+        else:
+            opts = ["-oControlMaster=no",]
+        return opts
+                   
     def tree_viewer_menu(self):
         # return MenuString, Handler, MenuImage
         menu = [('Setting...', self.onSetting, None),
@@ -113,14 +126,19 @@ class PyConnection(TreeDict):
         self.setvar('port', int(value[1][1][1]))
         self.setvar('user', str(value[1][1][2]))
         self.setvar('queue_type', str(value[2]))
-        self.setvar('nocheck', not bool(value[3]))        
+        self.setvar('multiplex', bool(value[3]))
+        self.setvar('persist', int(value[4]))
+        self.setvar('nocheck', not bool(value[5]))
+
 
     def onSetting(self, evt=None):
-        server, port, user, use_ssh, queue_type, nocheck = self.getvar('server', 'port',
-                                                              'user',
-                                                              'use_ssh',
-                                                                       'queue_type',
-                                                                        'nocheck' )
+        server, port, user, use_ssh, queue_type, multiplex, persist, nocheck = self.getvar('server', 'port',
+                                                                                           'user',
+                                                                                           'use_ssh',
+                                                                                           'queue_type',
+                                                                                           'multiplex',
+                                                                                           'persist',
+                                                                                           'nocheck', )
         if use_ssh is None:
             use_ssh = True
         if server is None:
@@ -133,7 +151,11 @@ class PyConnection(TreeDict):
             queue_type = 'sbatch'  # os.getnev('USER')
         if nocheck is None:
             nocheck = False
-
+        if multiplex is None:
+            multiplex = True
+        if persist is None:
+            persist = 600
+            
         s_queue = {"style": wx.CB_DROPDOWN,
                    "choices": ["sbatch", "qsub"]}
         l2 = [["server", str(server), 0],
@@ -143,7 +165,9 @@ class PyConnection(TreeDict):
         l1 = [["", "SSH connection", 2],
               [None, (use_ssh, [server, str(port), user]), 27,
                ({'text': 'use SSH'}, {'elp': l2})],
-              ["queue type", str(queue_type), 4, s_queue], 
+              ["queue type", str(queue_type), 4, s_queue],
+              [None, multiplex, 3, {"text":"use connection ultiplexing"}], 
+              ["control persist (s)", int(persist), 400, {}],
               [None, not nocheck, 3, {"text":"connection check/retry"}], ]        
         proj_tree_viewer = wx.GetApp().TopWindow.proj_tree_viewer
         proj_tree_viewer.OpenPanel(l1, self, 'setSetting',
@@ -160,7 +184,8 @@ class PyConnection(TreeDict):
         if nocheck is None:  nocheck = False
 
         if use_ssh:
-            command = 'scp -P '+str(port) + ' ' + src + \
+            opts = ' '.join(self.get_multiplex_opts())
+            command = 'scp ' + opts + ' -P '+str(port) + ' ' + src + \
                 ' ' + user + '@' + server+':' + dest
             args = shlex.split(command)
             args = command
@@ -172,7 +197,7 @@ class PyConnection(TreeDict):
 
         verbose=self.getvar('verbose')
         
-        if verbose: print(command)        
+        if verbose: print(command)
         if nowait:
             p = run_ssh_no_retry(args, kargs, verbose=verbose)
         elif nocheck:
@@ -188,9 +213,11 @@ class PyConnection(TreeDict):
         '''
         server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
                                                    'user', 'use_ssh', 'nocheck')
-        if nocheck is None:  nocheck = False
+        if nocheck is None:
+            nocheck = False
         if use_ssh:
-            command = 'scp -P '+str(port) + ' ' + user + \
+            opts = ' '.join(self.get_multiplex_opts())
+            command = 'scp '+ opts + ' -P '+str(port) + ' ' + user + \
                 '@'+server+':'+src + ' ' + dest
             args = shlex.split(command)
             kargs = {}
@@ -219,11 +246,13 @@ class PyConnection(TreeDict):
         '''
         server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
                                                    'user', 'use_ssh', 'nocheck')
-        if nocheck is None:  nocheck = False
+        if nocheck is None:
+            nocheck = False
         src = '\{'+ ','.join(srcs) + '\}'
         
         if use_ssh:
-            command = 'scp -P '+str(port) + ' ' + user + \
+            opts = ' '.join(self.get_multiplex_opts())
+            command = 'scp ' + opts + ' -P '+str(port) + ' ' + user + \
                 '@'+server+':'+src + ' ' + dest_dir
             args = shlex.split(command)
             kargs = {}
@@ -243,9 +272,11 @@ class PyConnection(TreeDict):
     def Execute(self, command, nowait=False, nocheck=False, force_ssh=False):
         server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
                                                    'user', 'use_ssh', 'nocheck')
-        if nocheck is None:  nocheck = False
+        if nocheck is None:
+            nocheck = False
         if use_ssh or force_ssh:
-            command = 'ssh -x -p '+str(port)+' ' + \
+            opts = ' '.join(self.get_multiplex_opts())
+            command = 'ssh '+ opts + '-x -p '+str(port)+' ' + \
                 user+'@'+server + " '" + command + "'"
             args = shlex.split(command)
             kargs = {}
