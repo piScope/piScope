@@ -166,7 +166,7 @@ class PyConnection(TreeDict):
               [None, (use_ssh, [server, str(port), user]), 27,
                ({'text': 'use SSH'}, {'elp': l2})],
               ["queue type", str(queue_type), 4, s_queue],
-              [None, multiplex, 3, {"text":"use connection ultiplexing"}], 
+              [None, multiplex, 3, {"text":"use connection multiplexing"}], 
               ["control persist (s)", int(persist), 400, {}],
               [None, not nocheck, 3, {"text":"connection check/retry"}], ]        
         proj_tree_viewer = wx.GetApp().TopWindow.proj_tree_viewer
@@ -276,7 +276,7 @@ class PyConnection(TreeDict):
             nocheck = False
         if use_ssh or force_ssh:
             opts = ' '.join(self.get_multiplex_opts())
-            command = 'ssh '+ opts + '-x -p '+str(port)+' ' + \
+            command = 'ssh '+ opts + ' -x -p '+str(port)+' ' + \
                 user+'@'+server + " '" + command + "'"
             args = shlex.split(command)
             kargs = {}
