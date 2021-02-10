@@ -988,7 +988,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         figure_image = canvas.figure_image[0]
         h, w, d = figure_image.shape
         image = wxEmptyImage(w, h)
-        image.SetData(figure_image[:, :, 0:3].tostring())
+        image.SetData(figure_image[:, :, 0:3].tobytes())
         image_SetAlpha(image, figure_image[:, :, 3])
         bmp = wxBitmapFromImage(image)
         canvas.Copy_to_Clipboard_mod(pgbar=True,

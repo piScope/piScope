@@ -164,7 +164,7 @@ class EditorPanel(wx.Panel):
 ID_DETACH_EDITOR = wx.NewIdRef(count=1)
 ID_SAVEDOC = wx.NewIdRef(count=1)
 ID_SAVEASDOC = wx.NewIdRef(count=1)
-ID_RECENT = wx.NewIdRef(count=1)
+ID_RECENT = -1
 
 RECENT_FILE = deque([''] * 10, 10)
 
@@ -379,8 +379,12 @@ class ifigure_app(BookViewerFrame):
                       "File...", "Open File",
                       self.onOpenFile)
         self._recentmenu = wx.Menu()
-        menu_Append(self.filemenu, ID_RECENT,
-                    "Open Recent", self._recentmenu)
+        #menu_Append(self.filemenu, ID_RECENT,
+        #            "Open Recent", self._recentmenu)
+        m = self.filemenu.AppendSubMenu(self._recentmenu,
+                                        "Open Recent")
+        globals()['ID_RECENT'] = m.GetId()
+        
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         self.add_menu(self.filemenu, ID_SAVEDOC,
@@ -551,6 +555,7 @@ class ifigure_app(BookViewerFrame):
                     continue
 
                 def dummy(evt, file=item):
+                    print("recent menu", file)
                     self.onOpen(None, path=file)
                     evt.Skip()
                 mm.append((  # os.path.basename(item),

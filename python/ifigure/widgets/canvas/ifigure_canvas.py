@@ -2159,6 +2159,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         return
 
     def mousescroll(self, event):
+        if self.toolbar.mode != '': return        
         frame = cbook.FindFrame(self)
         if event.step < 0:
             frame.onNextPage(event.guiEvent)
@@ -2750,6 +2751,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             wx.CallLater(2, self.set_pmode)
 
     def on_mouse_wheel(self, event):
+        if self.toolbar.mode != 'zoom': return
         axes = self.axes_selection()
         if axes is None:
             return
@@ -4642,9 +4644,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         f = self.selection[0]().figobj.get_parent()
         flag = True
         for s in self.selection:
+            if s() is None:
+                flag = False
+                continue
             if not s().figobj.get_parent() is f:
                 flag = False
         for s in self.selection:
+            if s() is None:
+                flag = False
+                continue            
             if isinstance(s().figobj, FigAxes):
                 flag = False
         return flag

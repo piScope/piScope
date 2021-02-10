@@ -91,9 +91,9 @@ def image_GetAlpha(image):
 
 def image_SetAlpha(image, array):
     if isWX3:
-        return image.SetAlphaData(array.tostring())
+        return image.SetAlphaData(array.tobytes())
     else:
-        return image.SetAlpha(array.tostring())
+        return image.SetAlpha(array.tobytes())
 
 
 def tree_InsertItemBefore(tree, pitem, pos, label, image=-1, selImage=-1, data=None):
@@ -138,12 +138,17 @@ def evt_GetPosition(evt, *args, **kwargs):
 @wrap_method('AppendMenu', 'Append')
 def menu_Append(menu, *args, **kwargs):
     return args, kwargs
-
-
+'''
+def menu_Append(menu, *args, **kwargs):
+    if isWX3:
+        return menu.Append(*args, **kwargs)
+    else:
+        print(args)
+        return menu.AppendSubMenu(args[2], args[1],  **kwargs)
+'''
 @wrap_method('AppendItem', 'Append')
 def menu_AppendItem(menu, *args, **kwargs):
     return args, kwargs
-
 
 @wrap_method('RemoveItem', 'Remove')
 def menu_RemoveItem(menu, *args, **kwargs):

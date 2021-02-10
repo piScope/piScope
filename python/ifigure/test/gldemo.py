@@ -21,8 +21,8 @@ except ImportError:
 
 
 buttonDefs = {
-    wx.NewId(): ('CubeCanvas',      'Cube'),
-    wx.NewId(): ('ConeCanvas',      'Cone'),
+    wx.NewIdRef(count=1): ('CubeCanvas',      'Cube'),
+    wx.NewIdRef(count=1): ('ConeCanvas',      'Cone'),
 }
 
 

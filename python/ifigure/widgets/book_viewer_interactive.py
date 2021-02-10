@@ -890,7 +890,9 @@ class BookViewerInteractive(object):
         try:
             obj = cls(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            traceback.print_exc()            
+            if hasattr(x, 'message'):
+                print(x.message)
             return
 
         x = convert_2_real_array(obj.getvar('x'))

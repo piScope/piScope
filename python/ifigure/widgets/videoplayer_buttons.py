@@ -75,7 +75,6 @@ class VideoplayerBar(bp.ButtonPanel):
                     im.ConvertAlphaToMask()
                 crs = wxCursorFromImage(im)
             # image.SetSize((8,8))
-#           btnl = ButtonInfo(self, wx.NewId(), image)
             btnl = ButtonInfo(self, wx.ID_ANY, image)
             btnl.custom_cursor = crs
             btnl.btask = btask

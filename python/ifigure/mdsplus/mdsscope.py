@@ -114,7 +114,7 @@ bitmap_names = ['resetrange_all.png']
 bitmaps = {}
 
 # data for recent items
-ID_RECENT = wx.NewId()
+ID_RECENT = wx.NewIdRef(count=1)
 RECENT_FILE = deque(['']*10, 10)
 
 
@@ -1135,9 +1135,9 @@ class ScopeEngine(object):
 
 
 class MDSScope(BookViewerFrame, ScopeEngine):
-    ID_LISTENEVENT = wx.NewId()
-    ID_EXPORTBOOK_AS_NODATA = wx.NewId()
-    ID_EXPORTBOOK_NODATA = wx.NewId()
+    ID_LISTENEVENT = wx.NewIdRef(count=1)
+    ID_EXPORTBOOK_AS_NODATA = wx.NewIdRef(count=1)
+    ID_EXPORTBOOK_NODATA = wx.NewIdRef(count=1)
 
     def __init__(self, *args, **kargs):
         parent = args[0]

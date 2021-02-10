@@ -663,7 +663,7 @@ class BitmapButtons(wx.Panel):
             array[:, -2:, 2] = 0
 
             image = wxEmptyImage(h, w)
-            image.SetData(array.tostring())
+            image.SetData(array.tobytes())
             bitmap2 = image.ConvertToBitmap()
             btn = wx.BitmapButton(self, bitmap=bitmap)
             self._btn[i] = btn
@@ -887,7 +887,7 @@ def colorbutton_bitmap(data):
     w, h = bitmap_size
     array = np.array([v, ]*w*h, dtype=np.uint8).reshape((w, h, -1))
     image = wxEmptyImage(w, h)
-    image.SetData(array.tostring())
+    image.SetData(array.tobytes())
     bitmap = image.ConvertToBitmap()
     return bitmap
 

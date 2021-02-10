@@ -211,8 +211,9 @@ class PyConnection(TreeDict):
         '''
         get a file in a remote server
         '''
-        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
-                                                   'user', 'use_ssh', 'nocheck')
+        server, port, user, use_ssh, nocheck = self.getvar('server', 'port',
+                                                           'user', 'use_ssh',
+                                                           'nocheck')
         if nocheck is None:
             nocheck = False
         if use_ssh:
@@ -244,8 +245,9 @@ class PyConnection(TreeDict):
         '''
         get multiple files to a directory
         '''
-        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
-                                                   'user', 'use_ssh', 'nocheck')
+        server, port, user, use_ssh, nocheck = self.getvar('server', 'port',
+                                                           'user', 'use_ssh',
+                                                           'nocheck')
         if nocheck is None:
             nocheck = False
         src = '\{'+ ','.join(srcs) + '\}'
@@ -270,8 +272,9 @@ class PyConnection(TreeDict):
         p.wait()
     
     def Execute(self, command, nowait=False, nocheck=False, force_ssh=False):
-        server, port, user,  use_ssh, nocheck = self.getvar('server', 'port',
-                                                   'user', 'use_ssh', 'nocheck')
+        server, port, user, use_ssh, nocheck = self.getvar('server', 'port',
+                                                           'user', 'use_ssh',
+                                                           'nocheck')
         if nocheck is None:
             nocheck = False
         if use_ssh or force_ssh:

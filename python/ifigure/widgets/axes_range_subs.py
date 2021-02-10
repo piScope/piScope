@@ -557,7 +557,7 @@ class AdjustableRangeHolder(object):
                         range[1] is None):
                     range = (0, 1)
                 if (range[0] == range[1]):
-                    range = (range[0]-0.5, range[0]+0.5)
+                    range = (range[0]-abs(range[0])/10, range[0]+abs(range[0])/10)
             p = [base, auto, range, scale, symloglin, symscale, ] + list(mode)
             data.append((ac.name, p))
         return data

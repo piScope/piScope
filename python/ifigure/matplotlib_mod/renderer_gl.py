@@ -62,7 +62,7 @@ class RendererGLCore(object):
         pass
 
     def buffer_rgba(self):
-        return self.buf.tostring()
+        return self.buf.tobytes()
 
 
 class RendererGL(RendererBase):
