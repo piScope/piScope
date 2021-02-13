@@ -800,7 +800,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             continue
         elif s[0] == '+':
             new_base = wx.Menu()
-            menu_Append(base, id, s[1:], new_base)
+            mmi = base.AppendSubMenu(new_base, s[1:])
             base = new_base
             isTop = True
             mmm = base
@@ -843,7 +843,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             base.Bind(wx.EVT_MENU, func, mmi)
             mmm = mmi.GetMenu()
         if id != wx.ID_ANY:
-            ret[id] = mmm
+            ret[id] = (mmm, mmi)
     return ret
 
 

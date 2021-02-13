@@ -21,7 +21,11 @@ __maintainer__ = "S. Shiraiwa"
 __email__ = "shiraiwa@psfc.mit.edu"
 __status__ = "beta"
 
-from ifigure.utils.wx3to4 import wxEmptyImage, menu_Append, image_SetAlpha, wxBitmapFromImage
+from ifigure.utils.wx3to4 import (wxEmptyImage,
+                                  menu_Append,
+                                  menu_AppendSubMenu,
+                                  image_SetAlpha,
+                                  wxBitmapFromImage)
 import wx
 import sys
 import os
@@ -80,6 +84,7 @@ class FrameWithWindowList(wx.Frame):
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
 
         self.menuBar = wx.MenuBar()
+        self.ID_WINDOWS = -1
         
         self.SetMenuBar(self.menuBar)
         tw = wx.GetApp().TopWindow
@@ -181,7 +186,7 @@ class FrameWithWindowList(wx.Frame):
                 evt.Enable(True)
                 evt.Check(self.book._keep_data_in_tree)
 #            evt.GetEventObject().Check(True)
-        elif evt.GetId() == ID_WINDOWS:
+        elif evt.GetId() == self.ID_WINDOWS:
             m = self._windowmenu
             for item in m.GetMenuItems():
                 m.DestroyItem(item)
@@ -303,7 +308,13 @@ class FrameWithWindowList(wx.Frame):
                       "Bring previous window forward",
                       self.onPrevWindow)
         self._windowmenu = wx.Menu()
-        menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
+        item = helpmenu.AppendSubMenu(self._windowmenu, 'Viewers...')
+        self.ID_WINDOWS = item.GetId()
+        #item = wx.MenuItem(helpmenu, ID_WINDOWS, 'Viewers...', subMenu=self._windowmenu)
+        #helpmenu.Append(item)
+        #menu_AppendSubMenu(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
+       
+        #menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, ID_HIDEAPP,
                       "Hide App",
@@ -560,6 +571,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
         self.isattachable = kargs.pop('isattachable', True)
         self.isinteractivetarget = kargs.pop('isinteractivetarget', True)
+        self.isismultipage = kargs.pop('ismultipage', True)
 
         self.ipage = 0
         self._del_book_from_proj = 0
@@ -688,22 +700,20 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def add_bookmenus(self, editmenu, viewmenu):
         subm = wx.Menu()
-        menu_Append(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
-#        self.add_menu(editmenu, wx.ID_ANY,
-#                     "Add Page",  "add a new page",  self.onAddPage)
-        self.add_menu(subm, BookViewerFrame.ID_PM[1],
+        #menu_AppendSubMenu(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
+        if self.isismultipage:
+            menu_AppendSubMenu(editmenu, wx.ID_ANY, 'Add Page', subm)
+            self.add_menu(subm, BookViewerFrame.ID_PM[1],
                       "Before Current Page",
                       "add a new page before the current page", self.onAddPageB)
-        self.add_menu(subm, BookViewerFrame.ID_PM[2],
+            self.add_menu(subm, BookViewerFrame.ID_PM[2],
                       "After Current Page",
                       "add a new page after the current page",  self.onAddPage)
 
-#        self.add_menu(editmenu, wx.ID_ANY,
-#                     "Copy Page",  "copy current page",  self.onCopyPage)
-        self.add_menu(editmenu, BookViewerFrame.ID_PM[3],
+            self.add_menu(editmenu, BookViewerFrame.ID_PM[3],
                       "Delete Page", "delete current page",
-                      self.onDelPage)
-        editmenu.AppendSeparator()
+                       self.onDelPage)
+            editmenu.AppendSeparator()
         self.add_menu(editmenu, ID_KEEPDATA,
                       "Keep Book in Tree",
                       "Book data is kept in tree when this window is closed",
@@ -763,7 +773,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def append_screen_ratio_menu(self, viewmenu):
         ratiomenu = wx.Menu()
-        menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
+        viewmenu.AppendSubMenu(ratiomenu, 'Canvas Size')
+        #menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
         self.add_menu(ratiomenu, wx.ID_ANY,
                       "Aspect = 3:4", "set canvas x y ratio to 3:4",
                       self.onCanvasRatio3_4)
@@ -1227,6 +1238,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             id = self
         ifigure.events.SendChangedEvent(np, None, True)
         ifigure.events.SendShowPageEvent(np, id)
+        self.deffered_force_layout()
 
     def onDelPage(self, e):
         pbook = self.book
@@ -1414,7 +1426,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
 
-        self.SendSizeEvent()
+        wx.CallAfter(self.SendSizeEvent)
         # self.deffered_force_layout()
 
     def new_page(self):
@@ -1969,7 +1981,8 @@ class BookViewer(BookViewerFrame):
                       "New Figure", "Create Book",
                       self.onNewBook)
         openmenu = wx.Menu()
-        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        self.filemenu.AppendSubMenu(openmenu, 'Open')
+        #menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                       "Book...",
                       "Import Book file (.bfz). Current book is deleted from project",
@@ -1981,7 +1994,8 @@ class BookViewer(BookViewerFrame):
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         exportmenu = wx.Menu()
-        menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
+        self.filemenu.AppendSubMenu(exportmenu, 'Export...')
+        #menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
         self.export_book_menu = self.add_menu(exportmenu,
                                               BookViewerFrame.ID_EXPORTBOOK,
                                               "Export Book", "Export Book",

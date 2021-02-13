@@ -121,7 +121,7 @@ popup_style_default = 0
 popup_skip_2d = 1
 
 # double click interval in two unit ;D
-dcinterval_ms = 200.
+dcinterval_ms = 200
 dcinterval = 0.2
 # single click threshold (less than this time, drag is ignored)
 scinterval_th = 0.1

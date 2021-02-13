@@ -92,7 +92,9 @@ from ifigure.mdsplus.event_listener import MDSSCOPE_EVT_MDSEVENT
 from ifigure.widgets.at_wxthread import at_wxthread
 
 from .utils import parse_server_string
-from ifigure.utils.wx3to4 import menu_Append, menu_AppendItem
+from ifigure.utils.wx3to4 import (menu_Append,
+                                  menu_AppendSubMenu,
+                                  menu_AppendItem)
 
 #
 #  debug setting
@@ -114,9 +116,7 @@ bitmap_names = ['resetrange_all.png']
 bitmaps = {}
 
 # data for recent items
-ID_RECENT = wx.NewIdRef(count=1)
 RECENT_FILE = deque(['']*10, 10)
-
 
 def print_threaderror(txt):
     for line in txt:
@@ -1185,6 +1185,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self._mds_exit_status = 0
         self._figmds_list = []
         self._nticks = (10, 10)    # global ticks
+        self._ID_RECENT=-1
         self.mpanalysis = False
         self._mpanalysis_mode = True
 #        self.parallel_page = True
@@ -1344,7 +1345,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                       "Import DWSscope...", "Import DWScope file",
                       self.onImportDW)
         openmenu = wx.Menu()
-        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        menu_AppendSubMenu(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                       "Book...",
                       "Import Book file (.bfz). Current book is deleted from project",
@@ -1357,8 +1358,10 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                       "Import DWSscope...", "Import DWScope file",
                       self.onImportDW)
         self._recentmenu = wx.Menu()
-        menu_Append(openmenu, ID_RECENT,
-                    "Recent Import...", self._recentmenu)
+        item = openmenu.AppendSubMenu(self._recentmenu, "Recent Import...")
+        self._ID_RECENT = item.GetId()
+        #menu_Append(openmenu, ID_RECENT,
+        #            "Recent Import...", self._recentmenu)
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         self.export_book_menu = self.add_menu(self.filemenu, BookViewerFrame.ID_EXPORTBOOK,
@@ -1406,12 +1409,12 @@ class MDSScope(BookViewerFrame, ScopeEngine):
         self.scopemenu = wx.Menu()
         self.menuBar.Append(self.scopemenu, "Scope")
         toolmenu = wx.Menu()
-        menu_Append(self.scopemenu, wx.ID_ANY, 'Tools', toolmenu)
+        menu_AppendSubMenu(self.scopemenu, wx.ID_ANY, 'Tools', toolmenu)
         self.add_menu(toolmenu, wx.ID_ANY,
                       "Generate multiple pages...", "Generate multiple pages from current page",
                       self.onGenerateMultipage)
         self.commonvar_menu = wx.Menu()
-        menu_Append(toolmenu, wx.ID_ANY,
+        menu_AppendSubMenu(toolmenu, wx.ID_ANY,
                     "Edit common variabls", self.commonvar_menu)
         self.add_menu(toolmenu, wx.ID_ANY,
                       "Reset MDSplus Workers", "Reset MDS session workers",
@@ -1499,7 +1502,7 @@ class MDSScope(BookViewerFrame, ScopeEngine):
                     evt.Enable(False)
             else:
                 evt.Enable(False)
-        elif evt.GetId() == ID_RECENT:
+        elif evt.GetId() == self._ID_RECENT:
             m = self._recentmenu
             for item in m.GetMenuItems():
                 m.DestroyItem(item)

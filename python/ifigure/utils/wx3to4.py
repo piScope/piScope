@@ -138,14 +138,27 @@ def evt_GetPosition(evt, *args, **kwargs):
 @wrap_method('AppendMenu', 'Append')
 def menu_Append(menu, *args, **kwargs):
     return args, kwargs
-'''
-def menu_Append(menu, *args, **kwargs):
+
+menuitems = {}
+def menu_AppendSubMenu(menu, *args, **kwargs):
     if isWX3:
         return menu.Append(*args, **kwargs)
     else:
-        print(args)
-        return menu.AppendSubMenu(args[2], args[1],  **kwargs)
-'''
+        # this one replaces the following....
+        #   menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
+        if isinstance(args[0], wx.WindowIDRef):# and not args[0] in menuitems:
+            assert False, "This does not work anymore, change your code"
+            '''
+            if args[0] not in menuitems:
+                item = wx.MenuItem(menu, id=args[0], text=args[1], subMenu=args[2])
+                menuitems[args[0]] = (item, args[2])
+            else:
+                item = menuitems[args[0]][0]
+            return menu.Append(item)
+            '''
+        else:
+            return menu.AppendSubMenu(args[2], args[1])
+
 @wrap_method('AppendItem', 'Append')
 def menu_AppendItem(menu, *args, **kwargs):
     return args, kwargs
