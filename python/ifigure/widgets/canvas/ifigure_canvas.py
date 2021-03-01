@@ -2751,7 +2751,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             wx.CallLater(2, self.set_pmode)
 
     def on_mouse_wheel(self, event):
-        if self.toolbar.mode != 'zoom': return
+        if (self.toolbar.mode != 'zoom' and 
+            self.toolbar.mode != 'pan' and
+            self.toolbar.mode != '3dzoom'): return
         axes = self.axes_selection()
         if axes is None:
             return
