@@ -1425,9 +1425,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self._rebuild_ifigure_canvas()
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
-
+   
         wx.CallAfter(self.SendSizeEvent)
-        # self.deffered_force_layout()
+        #self.deffered_force_layout()
 
     def new_page(self):
         new_page = FigPage()
@@ -1644,7 +1644,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.show_page(ipage)
         self.canvas.exit_layout_mode()
         self.property_editor.onTD_ShowPage(evt)
-
+        
+        self.deffered_force_layout()
+        
         f_page = self.get_page(ipage)
         ifigure.events.SendPageShownEvent(f_page)
 

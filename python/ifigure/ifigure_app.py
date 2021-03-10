@@ -1956,7 +1956,6 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.set_td_selection(td)
 
     def onTD_ShowPage(self, evt):
-        #        print 'here', 'ifigure'
         super(ifigure_app, self).onTD_ShowPage(evt)
         return
 
