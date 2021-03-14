@@ -1644,8 +1644,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.show_page(ipage)
         self.canvas.exit_layout_mode()
         self.property_editor.onTD_ShowPage(evt)
-        
-        self.deffered_force_layout()
+
+        bmp_w, bmp_h = (self.canvas.canvas.figure_image[0].shape[0],
+                    self.canvas.canvas.figure_image[0].shape[1])
+        canvas_h, canvas_w = self.canvas.canvas.GetSize()
+        if bmp_h != canvas_h or bmp_w != canvas_w:
+            self.deffered_force_layout()
         
         f_page = self.get_page(ipage)
         ifigure.events.SendPageShownEvent(f_page)

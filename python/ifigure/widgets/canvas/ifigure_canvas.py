@@ -2966,7 +2966,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                         requests[ax.figobj][0][1][1] = False
                         requests[ax.figobj][1][1][1] = False
                         requests[ax.figobj][2][1][1] = False
-
+                requests = self.expand_requests(requests)
                 self.send_range_action(requests, 'range')
 
     def refresh_hl_fast(self, alist=None):
