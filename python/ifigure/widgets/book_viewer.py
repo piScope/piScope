@@ -742,7 +742,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             plotmenu, BookViewerFrame.ID_PM[12], 'All same Y scale', "", self.onSameY)
         plotmenu.AppendSeparator()
         self._use_samerange_mni = self.add_menu(plotmenu, BookViewerFrame.ID_PM[13],
-                                                'Use the same range in all pages', "",
+                                                'Use same range in all pages', "",
                                                 self.onSameRange, kind=wx.ITEM_CHECK)
         self._use_samerange_mni.Check(self._use_samerange)
         # self._lock_scale_mni = self.add_menu(plotmenu, BookViewerFrame.ID_LOCKSCALE,
