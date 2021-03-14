@@ -55,7 +55,7 @@ def make_bitmap_with_bluebox(bitmap):
     alpha[-2, 1] = 127
     alpha[-2, -2] = 127
     image = wxEmptyImage(h, w)
-    image.SetData(array.tostring())
+    image.SetData(array.tobytes())
     image_SetAlpha(image, alpha)
     bitmap2 = image.ConvertToBitmap()
 
@@ -163,8 +163,7 @@ class ButtonInfo(bp.ButtonInfo):
     def GetBestSize(self):
         size = self.GetBitmap().GetSize()
         h = 26
-        return ((h - size[1]) / 2 + size[0], h)
-
+        return (int((h - size[1]) / 2 + size[0]), int(h))
 
 class ButtonPanel(bp.ButtonPanel):
     def DoGetBestSize(self):
@@ -350,7 +349,6 @@ class navibar(ButtonPanel):
                     im.ConvertAlphaToMask()
                 crs = wxCursorFromImage(im)
 
-#           btnl = ButtonInfo(self, wx.NewId(), image)
             btnl = ButtonInfo(self, wx.ID_ANY, image)
             btnl.custom_cursor = crs
             btnl.btask = btask

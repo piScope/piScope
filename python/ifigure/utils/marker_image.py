@@ -39,7 +39,7 @@ def marker_image(path, size, trans,
     canvas = FigureCanvasAgg(fig)
     buff, size = canvas.print_to_buffer()
 
-    im = np.fromstring(buff, np.uint8).reshape(size[1], size[0], -1)
+    im = np.frombuffer(buff, np.uint8).reshape(size[1], size[0], -1)
     #idx = np.where(im[:,:,-1] == 0)
     #im[:,:,0][idx] = 0
     #im[:,:,1][idx] = 0

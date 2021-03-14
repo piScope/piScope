@@ -51,11 +51,10 @@ class FigTripcolorPhasor(FigTripcolor):
                 C = z[tri].mean(axis=1)
         self._artists[0].set_array(C)
 
-
 class FigPlotPhasor(FigPlot):
     def set_phasor(self, angle=None):
         y = self._artists[0].get_ydata()
-        y_complex = self.getvar('y')
+        y_complex = self.getvar('complex_y')
         if angle is not None:
             new_y = (y_complex * np.exp(1j*angle))[:len(y)]
             new_y = new_y.real
@@ -63,7 +62,6 @@ class FigPlotPhasor(FigPlot):
             new_y = np.absolute(y_complex[:len(y)])
         self._artists[0].set_ydata(new_y)
         self.setp('y', new_y)
-
 
 class FigQuiverPhasor(FigQuiver):
     def set_phasor(self, angle=None):
@@ -194,7 +192,9 @@ class WaveViewer(VideoBookPlayer):
         o = BookViewer.plot(self, *args, **kwargs)
         if o is None:
             return
-        if o.getvar('y').dtype.name.startswith('complex'):
+        y = args[1]
+        if y.dtype.name.startswith('complex'):
+            o.setvar('complex_y', y)
             convert_figobj(o)
             self.add_video_obj(o)
         return o

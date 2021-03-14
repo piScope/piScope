@@ -124,7 +124,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             h, w, d = figure_image.shape
             bitmapw, bitmaph = bitmap.GetSize()
             image = wxEmptyImage(w, h)
-            image.SetData(figure_image[:, :, 0:3].tostring())
+            image.SetData(figure_image[:, :, 0:3].tobytes())
             image_SetAlpha(image, figure_image[:, :, 3])
             return image.Scale(csize[0], csize[1]).ConvertToBitmap()
 

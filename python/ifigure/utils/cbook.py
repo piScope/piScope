@@ -150,8 +150,8 @@ def pil_to_image(pil, alpha=True):
     """ Method will convert PIL Image to wx.Image """
     if alpha:
         image = wxEmptyImage(*pil.size)
-        image.SetData(pil.convert("RGB").tostring())
-        image.SetAlphaData(pil.convert("RGBA").tostring()[3::4])
+        image.SetData(pil.convert("RGB").tobytes())
+        image.SetAlphaData(pil.convert("RGBA").tobytes()[3::4])
     else:
         image = wxEmptyImage(pil.size[0], pil.size[1])
         new_image = pil.convert('RGB')
@@ -259,7 +259,7 @@ class ImageFiles(object):
             w = array.shape[0]
             h = array.shape[1]
             im = wxEmptyImage(h, w)
-            im.SetData(array.tostring())
+            im.SetData(array.tobytes())
             image_SetAlpha(im, alpha)
             return im.ConvertToBitmap()
 
@@ -800,7 +800,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             continue
         elif s[0] == '+':
             new_base = wx.Menu()
-            menu_Append(base, id, s[1:], new_base)
+            mmi = base.AppendSubMenu(new_base, s[1:])
             base = new_base
             isTop = True
             mmm = base
@@ -843,7 +843,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             base.Bind(wx.EVT_MENU, func, mmi)
             mmm = mmi.GetMenu()
         if id != wx.ID_ANY:
-            ret[id] = mmm
+            ret[id] = (mmm, mmi)
     return ret
 
 

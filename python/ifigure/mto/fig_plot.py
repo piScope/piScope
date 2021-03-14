@@ -253,12 +253,19 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                                 self._is_decimate = True
                                 self.handle_axes_change()
                             else:
+                                if np.iscomplexobj(x):
+                                    x = np.array(x, copy=False).real
+                                if np.iscomplexobj(y):
+                                    y = np.array(y, copy=False).real
                                 args = [x, y]
                                 self._is_decimate = False
                                 axes = self.get_figaxes()
                                 if axes.get_3d():
                                     if z is None:
                                         z = np.array([0]*len(x))
+                                    else:
+                                        if np.iscomplexobj(z):
+                                            z = np.array(z, copy=False).real
                                     args.append(z)
                                     kywds['array_idx'] = self.getvar(
                                         'array_idx')

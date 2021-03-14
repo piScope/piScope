@@ -22,7 +22,7 @@ from .videoplayer_buttons import VideoplayerButtons, add_player_btn
 
 
 class VideoViewerMode(object):
-    ID_PLAYERBUTTON = wx.NewId()
+    ID_PLAYERBUTTON = wx.NewIdRef(count=1)
 
     def __init__(self, *args, **kwargs):
         self._video_obj = weakref.WeakSet()

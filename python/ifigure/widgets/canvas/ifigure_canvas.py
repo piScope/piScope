@@ -121,7 +121,7 @@ popup_style_default = 0
 popup_skip_2d = 1
 
 # double click interval in two unit ;D
-dcinterval_ms = 200.
+dcinterval_ms = 200
 dcinterval = 0.2
 # single click threshold (less than this time, drag is ignored)
 scinterval_th = 0.1
@@ -2159,6 +2159,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         return
 
     def mousescroll(self, event):
+        if self.toolbar.mode != '': return        
         frame = cbook.FindFrame(self)
         if event.step < 0:
             frame.onNextPage(event.guiEvent)
@@ -2750,6 +2751,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             wx.CallLater(2, self.set_pmode)
 
     def on_mouse_wheel(self, event):
+        if (self.toolbar.mode != 'zoom' and 
+            self.toolbar.mode != 'pan' and
+            self.toolbar.mode != '3dzoom'): return
         axes = self.axes_selection()
         if axes is None:
             return
@@ -2962,7 +2966,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                         requests[ax.figobj][0][1][1] = False
                         requests[ax.figobj][1][1][1] = False
                         requests[ax.figobj][2][1][1] = False
-
+                requests = self.expand_requests(requests)
                 self.send_range_action(requests, 'range')
 
     def refresh_hl_fast(self, alist=None):
@@ -4642,9 +4646,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         f = self.selection[0]().figobj.get_parent()
         flag = True
         for s in self.selection:
+            if s() is None:
+                flag = False
+                continue
             if not s().figobj.get_parent() is f:
                 flag = False
         for s in self.selection:
+            if s() is None:
+                flag = False
+                continue            
             if isinstance(s().figobj, FigAxes):
                 flag = False
         return flag

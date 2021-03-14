@@ -16,7 +16,9 @@ import time
 import weakref
 from ifigure.widgets.undo_redo_history import GlobalHistory, UndoRedoHistory
 from collections import deque
-from ifigure.utils.wx3to4 import PyDeadObjectError, menu_Append
+from ifigure.utils.wx3to4 import (PyDeadObjectError,
+                                  menu_Append,
+                                  menu_AppendSubMenu)
 import ifigure.server
 import ifigure.utils.cbook as cbook
 from ifigure.widgets.appearance_config import AppearanceConfig
@@ -164,7 +166,6 @@ class EditorPanel(wx.Panel):
 ID_DETACH_EDITOR = wx.NewIdRef(count=1)
 ID_SAVEDOC = wx.NewIdRef(count=1)
 ID_SAVEASDOC = wx.NewIdRef(count=1)
-ID_RECENT = wx.NewIdRef(count=1)
 
 RECENT_FILE = deque([''] * 10, 10)
 
@@ -184,6 +185,7 @@ class ifigure_app(BookViewerFrame):
                                           wx.CLIP_CHILDREN)
 
         self._launcher_file = launcher_file
+        self._ID_RECENT = -1
         logging.basicConfig(level=logging.DEBUG)
         self.stdfiles = (sys.stdout, sys.stderr)
         self._text_clip = ''
@@ -337,7 +339,8 @@ class ifigure_app(BookViewerFrame):
 
         # File Menu
         newmenu = wx.Menu()
-        menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
+        menu_AppendSubMenu(self.filemenu, wx.ID_ANY, 'New', newmenu)
+        #menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
         self.add_menu(newmenu, wx.ID_ANY,
                       "piScope", "Start new piScope application",
                       self.onNewApp)
@@ -357,7 +360,8 @@ class ifigure_app(BookViewerFrame):
                       "non-project Text", "Create new untitled text (file is not stored in project)",
                       self.onNewDoc)
         openmenu = wx.Menu()
-        menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        menu_AppendSubMenu(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        #menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_ANY,
                       "Project...", "Open an existing project",
                       self.onOpen)
@@ -379,8 +383,14 @@ class ifigure_app(BookViewerFrame):
                       "File...", "Open File",
                       self.onOpenFile)
         self._recentmenu = wx.Menu()
-        menu_Append(self.filemenu, ID_RECENT,
-                    "Open Recent", self._recentmenu)
+        item = self.filemenu.AppendSubMenu(self._recentmenu, "Open Recent")
+        self._ID_RECENT = item.GetId()
+        #menu_AppendSubMenu(self.filemenu, ID_RECENT,
+        #            "Open Recent", self._recentmenu)
+        #m = self.filemenu.AppendSubMenu(self._recentmenu,
+        #                                "Open Recent")
+        #globals()['ID_RECENT'] = m.GetId()
+        
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         self.add_menu(self.filemenu, ID_SAVEDOC,
@@ -435,7 +445,8 @@ class ifigure_app(BookViewerFrame):
         self.add_cutpaste_menu(self.editmenu)
 
         panelmenu = wx.Menu()
-        menu_Append(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
+        menu_AppendSubMenu(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
+        #menu_Append(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
         self.gui_tree.append_menu(panelmenu)
         self.viewmenu.AppendSeparator()
         self.gui_tree.update_check()
@@ -539,7 +550,7 @@ class ifigure_app(BookViewerFrame):
                 evt.Enable(True)
             else:
                 evt.Enable(False)
-        elif evt.GetId() == ID_RECENT:
+        elif evt.GetId() == self._ID_RECENT:
             m = self._recentmenu
             for item in m.GetMenuItems():
                 m.DestroyItem(item)
@@ -551,6 +562,7 @@ class ifigure_app(BookViewerFrame):
                     continue
 
                 def dummy(evt, file=item):
+                    print("recent menu", file)
                     self.onOpen(None, path=file)
                     evt.Skip()
                 mm.append((  # os.path.basename(item),
@@ -1944,7 +1956,6 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.set_td_selection(td)
 
     def onTD_ShowPage(self, evt):
-        #        print 'here', 'ifigure'
         super(ifigure_app, self).onTD_ShowPage(evt)
         return
 

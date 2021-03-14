@@ -1124,7 +1124,7 @@ class PythonSTC(stc.StyledTextCtrl):
         file = sc.file_list[ipage]
 
         fid = open(file)
-        txt = open(file).read()
+        txt = fid.read()
         fid.close()
         mtime = os.path.getmtime(file)
         self.SetText(txt)
@@ -1347,7 +1347,7 @@ class ScriptEditor(wx.Panel):
                 del self.page_list[idx]
         try:
             fid = open(file)
-            txt = open(file).read()
+            txt = fid.read()
             fid.close()
             mtime = os.path.getmtime(file)
         except Exception:
@@ -1627,7 +1627,9 @@ class ScriptEditor(wx.Panel):
                                                   file=file)
             else:
                 try:
-                    txt = open(file).read()
+                    fid = open(file)
+                    txt = fid.read()
+                    fid.close()
                 except Exception:
                     logging.exception("File Open Error"+file)
                     continue
