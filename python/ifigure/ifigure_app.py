@@ -202,6 +202,7 @@ class ifigure_app(BookViewerFrame):
         self.BindTreeDictEvents()
         self.BindPVCVEvents()
 #       self.Bind(ifigure.events.TD_EVT_NEWHISTORY, self.onNewHistory)
+        self.Bind(wx.EVT_CLOSE, lambda evt: wx.GetApp().ExitMainLoop())
 
         self.shell.set_proj(self.proj)
 
