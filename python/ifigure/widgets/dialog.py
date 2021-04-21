@@ -34,7 +34,8 @@ def read(parent=None,
     if open_dlg.ShowModal() == wx.ID_OK:
         path = open_dlg.GetPath()
         open_dlg.Destroy()
-    open_dlg.Destroy()
+    else:
+        open_dlg.Destroy()
     return path
 
 
@@ -49,7 +50,8 @@ def readdir(parent=None, message='Select directory to read', wildcard='*', defau
     if open_dlg.ShowModal() == wx.ID_OK:
         path = open_dlg.GetPath()
         open_dlg.Destroy()
-    open_dlg.Destroy()
+    else:    
+        open_dlg.Destroy()
     return path
 
 
@@ -76,7 +78,8 @@ def write(parent=None, defaultfile='',
         path = open_dlg.GetPath()
         wc = open_dlg.GetFilterIndex()
         open_dlg.Destroy()
-    open_dlg.Destroy()
+    else:
+        open_dlg.Destroy()
     if return_filterindex:
         return path, wc
     else:

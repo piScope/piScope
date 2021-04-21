@@ -132,3 +132,9 @@ def help(*args):
                 print('help is not available for ' + f.__repr__())
         else:
             print(('help is not available for ', f))
+            
+# change the prompt for a fun..
+import sys
+sys.ps1='\u03c0Scope> '
+sys.ps2='........'
+#

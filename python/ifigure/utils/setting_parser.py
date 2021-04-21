@@ -205,6 +205,7 @@ class iFigureSettingParser(SettingParser):
 
     def read_setting(self, mname, fromDefault=False):
         def_file, user_file = self.mname2file(mname)
+        print(def_file, user_file)
 #        print def_file
 #        print user_file
 
