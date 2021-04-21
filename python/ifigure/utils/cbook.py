@@ -786,8 +786,6 @@ def BuildPopUpMenu(base, menus, eventobj=None,
      if eventobj is set to widget, events returned
      from the popup has the widget as eventobj
     '''
-    from sys import platform
-
     isTop = True
     base0 = base
     ret = {}
@@ -805,7 +803,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             new_base = wx.Menu()
             mmi = base.AppendSubMenu(new_base, s[1:])
             base = new_base
-            if platform >= "win":
+            if "wxMSW" in wx.PlatformInfo:
                 pass
             else:
                 base0 = base
@@ -813,7 +811,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             mmm = base
         elif s[0] == '!':
             base = base.GetParent()
-            if platform >= "win":
+            if "wxMSW" in wx.PlatformInfo:
                 pass
             else:
                 base0 = base
