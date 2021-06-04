@@ -24,6 +24,7 @@ import logging
 import weakref
 import shutil
 import threading
+import numpy as np
 import ifigure.utils.pickle_wrapper as pickle
 import ifigure
 import ifigure.utils.cbook as cbook
@@ -559,6 +560,8 @@ class PyParametric(BaseSolver):
         self._pvalue = None
         self._num_worker = 2
         self._expand_itertools_product = False
+        self._expand_lhs = False
+        self._expand_lhs_parmas = [10, "center"]
         self._use_def_merger = False
         self.setvar("param name", ("name1", "name2"))
         self.setvar("param value", ((1, 1), (1, 2), (2, 1), (2, 2)))
@@ -749,17 +752,67 @@ class PyParametric(BaseSolver):
 #        pgb.Update(i)
 #        pgb.Destroy()
 
+    def get_expand_setting_value(self):
+        expand = 'Expand...'
+        if self._expand_itertools_product:
+            expand = 'Product'
+        if self._expand_lhs:
+            expand = 'LatinHyperCube'
+        data = [expand,
+                [None,],
+                [None,],
+                [None, str(self._expand_lhs_parmas[0]), self._expand_lhs_parmas[1]],]
+        return data
+    
+    def call_lhs(self, params, xlimits):
+        num = int(params[0])
+        method = params[1]
+        
+        from smt.sampling_methods import LHS
+
+        try:
+            xlimits = np.array(list(xlimits))            
+            sampling = LHS(xlimits=xlimits, criterion=method)            
+            x = sampling(num)
+            
+        except BaseException:
+            import traceback
+            traceback.print_exc()
+
+            print("Error!")
+            print("LHS was called with following parameters...")
+            print(num, method, xlimits)
+            return []
+        ## I need to transform it to tuple...;D
+        return tuple([tuple(xx) for xx in x])
+
     def onSetting(self, e):
         list = onSettingList(self)
         txt1 = str(self.getvar("param name"))
         txt2 = str(self.getvar("param value"))
         shellvar = self.get_root_parent().app.shell.lvar
 
+        expand_values = self.get_expand_setting_value()
+        print("value here", expand_values)
+        ss1 = {"style": wx.CB_READONLY,
+               "choices":["center", "maximin", "centermaximin", "correlation",
+                          "c", "m", "cm", "corr", "ese"]}
         list = list + [
             ["Parameter Names", txt1, 100, {'ns': shellvar}],
             ["Parameter Values", txt2, 100, {'ns': shellvar}],
-            [None,  self._expand_itertools_product, 3,
-             {"text": "Expand parameters by itertool.product", "expand": True}],
+            [None,  expand_values, 34, [{'text': "",
+                                'call_fit': False, 
+                                'choices': ['Expand...',
+                                            'Product',
+                                            'LatinHyperCube',],},
+                     {'elp':[(None, "Parameters are used As-Is", 2, None)]},
+                     {'elp':[(None, "Parameters are expanded using Itertools.product", 2, None)]},
+                     {'elp':[(None, "Parameters are expanded using smt.sampling_methods.LHS", 2, None),
+                             ("#points", "10", 0, None),
+                             ("method", "center", 4, ss1)
+                      ]},]],
+            #[None,  self._expand_itertools_product, 3,
+            # {"text": "Expand parameters by itertool.product", "expand": True}],
             [None,  self._use_def_merger, 3,
              {"text": "Use standard merger", "expand": True}],
             [None,  self._num_worker > 0, 3,
@@ -767,7 +820,12 @@ class PyParametric(BaseSolver):
             ["Number of workers", str(abs(self._num_worker)), 0], ]
 #                ["Use multiple thread", txt3, 1 ]]
         app = wx.GetApp().TopWindow
-        app.proj_tree_viewer.OpenPanel(list, self, 'setSetting')
+
+        style = app.proj_tree_viewer.get_defaultpanelstyle()
+        style = wx.RESIZE_BORDER|style
+        app.proj_tree_viewer.OpenPanel(list, self, 'setSetting',
+                                       title='Parametric sweep',
+                                       style=style)
 
     def setSetting(self, value):
         setSetting(self, value)
@@ -775,12 +833,20 @@ class PyParametric(BaseSolver):
         self.setvar("param value", str(value[5][0]))
 
         self._pname = value[4][1]
-        if value[6]:
+
+        self._expand_itertools_product = False
+        self._expand_lhs = False
+        
+        if value[6][0] == 'Product':
             import itertools
             self._expand_itertools_product = True
             self._pvalue = tuple(itertools.product(*(value[5][1])))
+        elif value[6][0] == 'LatinHyperCube':
+            import itertools
+            self._expand_lhs = True
+            self._expand_lhs_parmas = value[6][3][1:]
+            self._pvalue = self.call_lhs(value[6][3][1:], value[5][1])
         else:
-            self._expand_itertools_product = False
             self._pvalue = value[5][1]
         self._num_worker = abs(
             int(value[9])) if value[8] else -abs(int(value[8]))

@@ -24,6 +24,7 @@ _usage() {
     echo '   -k : (optional) : use open GL (LIBGL_ALWAYS_SOFTWARE=1)'    
     echo '   -u : (optional) : suppress Gtk-warning'
     echo '   -X : (optional) : use -Wd option to call python (debug)'
+    echo '   -Y : (optional) : use -X faulthandler'
     echo '   file: (optional) : .bfz or .pfz file to open'
     exit 1
 }
@@ -33,7 +34,7 @@ EXTRA2=''
 EXTRA3=''
 EXTRA4=''
 PY_DEBUG=''
-while getopts "r:e:f:sdchpngkuX" opts
+while getopts "r:e:f:sdchpngkuXY" opts
 do 
    case $opts in
       e) INTERPRETER=$OPTARG
@@ -44,7 +45,9 @@ do
          ;;
       d) EXTRA2='-d'
          ;;
-      X) PY_DEBUG='-Wd'
+      X) PY_DEBUG='-X dev'
+         ;;
+      Y) PY_DEBUG='-X faulthandler'
          ;;
       c) EXTRA2='-c'
          ;;
@@ -85,11 +88,10 @@ VERMAJOR=$($INTERPRETER -c "import sys;print(sys.version_info.major)")
 VERMINOR=$($INTERPRETER -c "import sys;print(sys.version_info.minor)")
 
 if [ $VERMAJOR = 2 ]; then
-   PY_DEBUG=''
-else
-    if [ $VERMINOR -gt 6 -a ! "${PY_DEBUG}" = '' ]; then
-	PY_DEBUG='-X dev'
-    fi
+    PY_DEBUG=''
+fi
+if [ $VERMINOR -le 6 ]; then
+   PY_DEBUG=''       
 fi
 
 if [ ! "${PY_DEBUG}" = '' ]; then
@@ -109,3 +111,4 @@ else
 fi
 
  
+
