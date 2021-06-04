@@ -1151,6 +1151,9 @@ class ProjTreeViewer(wx.Panel):
         #        self.GetSizer().Remove(self.panel)
         #        self.panel.Destroy()
 
+        if self.panel.IsBeingDeleted():
+            self.panel = None
+            return
         p = self.panel.GetTopLevelParent()
         if not p.IsBeingDeleted():
             # p.GetSizer().Remove(p)
