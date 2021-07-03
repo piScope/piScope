@@ -2309,7 +2309,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
                 facecolor is not None):
             counts = vbos['counts']
-            # print 'facecolor', facecolor.shape, paths[0].shape, len(paths[4])
+            #print('facecolor', facecolor.shape, paths[0].shape, len(paths[4]))
             if len(facecolor) == 0:
                 facecolor = np.array([[1, 1, 1, 0]])
             if facecolor.ndim == 3:
@@ -2320,9 +2320,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 # index array/linear
                 col = [facecolor]
                 col = np.hstack(col).astype(np.float32)
-            elif len(facecolor) == len(paths[4]):
+            elif len(facecolor)*paths[4].shape[1]  == len(paths[0]):
                 # non index array/flat
-                c = len(paths[0]) // len(paths[4])
+                c = paths[4].shape[1]
                 col = np.array(facecolor, copy=False).astype(
                     np.float32, copy=False)
                 col = np.hstack([col] * c)
@@ -2359,12 +2359,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()
+
                 if array_idx.shape[0] == nverts:
                     pass
                 elif array_idx.shape[0] == l:
                     array_idx = [array_idx] * counts
                 else:
-                    assert False, "array_idx length should be the same as the number of vertex"
+                    assert False, "array_idx length should be the same as the number of vertex:" + str(array_idx.shape) + " : "  + str(nverts) + " : " + str(l)
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
                                      copy=False).transpose().flatten()
