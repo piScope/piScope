@@ -72,20 +72,24 @@ def define_attrib(shader, name):
 
 
 def check_framebuffer(message, mode=GL_FRAMEBUFFER):
-    if (glCheckFramebufferStatus(mode) !=
-            GL_FRAMEBUFFER_COMPLETE):
-        print('Framebuffer imcomplete (' + message + ')')
-        print(str(glCheckFramebufferStatus(GL_FRAMEBUFFER)))
-        print(str(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
-        print(str(GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS))
-        print(str(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT))
-        print(str(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE))
-        print(str(GL_FRAMEBUFFER_UNSUPPORTED))
+    # list up possible errors
+    attrs = [GL_FRAMEBUFFER_COMPLETE, GL_FRAMEBUFFER_UNSUPPORTED, GL_INVALID_ENUM]
+    for x in dir(OpenGL.GL):
+        if x.startswith('GL_FRAMEBUFFER_INCOMPLETE'):
+            attrs.append(getattr(OpenGL.GL,x))
+    #for a in attrs:
+    #    print(a, int(a))
 
+    check = glCheckFramebufferStatus(mode)
+    if int(check) != int(attrs[0]):
+        print('Framebuffer imcomplete (' + message + ')')
+        for x in attrs:
+            if int(check) == int(x):
+                print(x)
         return False
+
     # print "test sample", glGetIntegerv(GL_SAMPLE_BUFFERS)
     return True
-
 
 def frustum(left, right, bottom, top, zNear, zFar, view_scale=1):
     dx = right - left

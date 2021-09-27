@@ -46,11 +46,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.init = False
         
         if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
-            #dispAttrs = wx.glcanvas.GLAttributes()
-            #dispAttrs.PlatformDefaults().EndList()
+            dispAttrs = wx.glcanvas.GLAttributes()
+            dispAttrs.PlatformDefaults().EndList()
             #dispAttrs.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).EndList()
-            #glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
-            glcanvas.GLCanvas.__init__(self, parent)
+            glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
+            #glcanvas.GLCanvas.__init__(self, parent)
         else:
             attribs = [glcanvas.WX_GL_CORE_PROFILE,
                        glcanvas.WX_GL_MAJOR_VERSION, 3,
@@ -58,8 +58,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glcanvas.GLCanvas.__init__(self, parent, -1, attribs)
             
         if MyGLCanvas.context is None:
-             MyGLCanvas.context = glcanvas.GLContext(self)
-            
+            if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
+                ctxAttrs = wx.glcanvas.GLContextAttrs()
+                ctxAttrs.CoreProfile().OGLVersion(4, 1).Robust().ResetIsolation().EndList()
+                MyGLCanvas.context = glcanvas.GLContext(self, other=None, ctxAttrs=ctxAttrs)
+                assert MyGLCanvas.context.IsOK(), "OpenGL Context is not OK"
+            else:
+                MyGLCanvas.context = glcanvas.GLContext(self)
+
+        self.SetCurrent(MyGLCanvas.context)
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.size = None
@@ -482,7 +490,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.bufs = []
 
     def get_newframe(self, w, h):
-
         def gen_tex(w, h, internal_format, format, data_type):
             tex = glGenTextures(1)
             glBindTexture(GL_TEXTURE_2D, tex)
@@ -515,7 +522,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         buf = gen_renderbuffer(w, h, depth_stencil_format)
         dbuf = gen_renderbuffer(w, h, depth_stencil_format)
-
 
 #        if not check_framebuffer('creating new frame buffer'): return [None]*4
 
