@@ -83,7 +83,7 @@ class Logwindow(wx.MiniFrame):
     def start_thread(self):
         c = 0
         for t, td, log, status in self.threadlist:
-            if t.isAlive():
+            if t.is_alive():
                 c = c+1
         if c > self.GetParent().aconfig.setting['max_thread']:
             return
@@ -108,7 +108,7 @@ class Logwindow(wx.MiniFrame):
         waiting = False
         num_run = 0
         for t, td, log, status in self.threadlist:
-            if t.isAlive() or status == 0:
+            if t.is_alive() or status == 0:
                 if status == 0:
                     waiting = True
                 else:

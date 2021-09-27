@@ -1808,6 +1808,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             p = p.GetParent()
 
     def mpl_connect(self, mode='normal'):
+        if self.canvas.figure is None:
+            return
         self.mpl_disconnect()
         self._mpl_mode = mode
         #print("setting mode", mode)
@@ -1872,6 +1874,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def mpl_disconnect(self):
         #print("mpi_disconnect")
         if self._mplc is None:
+            return
+        if self.canvas.figure is None:
             return
         for id in self._mplc:
             self.canvas.mpl_disconnect(id)

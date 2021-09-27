@@ -9,6 +9,7 @@ import weakref
 import array
 import gc
 import traceback
+import platform
 from distutils.version import LooseVersion
 
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
@@ -47,10 +48,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
         
         if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
             dispAttrs = wx.glcanvas.GLAttributes()
-            dispAttrs.PlatformDefaults().EndList()
+
+            if platform.system() == 'Darwin':
+                dispAttrs.PlatformDefaults().RGBA().EndList()
+            elif platform.system() == 'Linux':
+                dispAttrs.PlatformDefaults().RGBA().EndList()
+            else:
+                ## this is not tested..
+                dispAttrs.PlatformDefaults().EndList()
+
+            # this is from sample but does not work..
             #dispAttrs.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).EndList()
             glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
-            #glcanvas.GLCanvas.__init__(self, parent)
         else:
             attribs = [glcanvas.WX_GL_CORE_PROFILE,
                        glcanvas.WX_GL_MAJOR_VERSION, 3,
@@ -60,13 +69,18 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if MyGLCanvas.context is None:
             if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
                 ctxAttrs = wx.glcanvas.GLContextAttrs()
-                ctxAttrs.CoreProfile().OGLVersion(4, 1).Robust().ResetIsolation().EndList()
+                if platform.system() == 'Darwin':
+                    ctxAttrs.CoreProfile().OGLVersion(4, 1).Robust().ResetIsolation().EndList()
+                elif platform.system() == 'Linux':
+                    ctxAttrs.PlatformDefaults().EndList()
+                else:
+                    ## this is not tested..
+                    ctxAttrs.PlatformDefaults().EndList()
+
                 MyGLCanvas.context = glcanvas.GLContext(self, other=None, ctxAttrs=ctxAttrs)
                 assert MyGLCanvas.context.IsOK(), "OpenGL Context is not OK"
             else:
                 MyGLCanvas.context = glcanvas.GLContext(self)
-
-        self.SetCurrent(MyGLCanvas.context)
 
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -89,7 +103,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._attrib_loc = {}
         self._hittest_map_update = True
 
-        
         self._alpha_blend = True
         self._current_uniform = {}
         #self._no_smooth = False
@@ -462,7 +475,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def OnPaint(self, event):
         # print  self._do_draw_mpl_artists
         #dc = wx.PaintDC(self)
+
         self.SetCurrent(MyGLCanvas.context)
+
 #        fbo = glGenRenderbuffers(1)
         if not self.init:
             self.InitGL()
@@ -480,7 +495,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if MyGLCanvas.offscreen:
             return
         size = self.size = self.GetClientSize()
-        self.SetCurrent(self.context)
+
+        self.SetCurrent(MyGLCanvas.context)
+
         glViewport(0, 0, size.width, size.height)
 
     def del_frame(self):
@@ -490,6 +507,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.bufs = []
 
     def get_newframe(self, w, h):
+        self.SetCurrent(MyGLCanvas.context)
+
         def gen_tex(w, h, internal_format, format, data_type):
             tex = glGenTextures(1)
             glBindTexture(GL_TEXTURE_2D, tex)
