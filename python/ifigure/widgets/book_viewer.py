@@ -85,7 +85,7 @@ class FrameWithWindowList(wx.Frame):
         self.ID_WINDOWS = -1
         
         parent = args[0]
-        print("parent", parent)
+
         if sys.platform == 'darwin' and parent is None:
             wx.MenuBar.MacSetCommonMenuBar(self.menuBar)
         else:
