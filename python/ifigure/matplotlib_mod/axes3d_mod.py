@@ -1,8 +1,12 @@
 from __future__ import print_function
+
+from distutils.version import LooseVersion
+
 from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 import time
 
+import matplotlib
 from matplotlib.image import FigureImage
 from functools import wraps
 from ifigure.matplotlib_mod.is_supported_renderer import isSupportedRenderer
@@ -232,9 +236,13 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip = kargs.pop('use_clip', 1)
 
-        kargs['auto_add_to_figure'] = False
-        super(Axes3DMod, self).__init__(*args, **kargs)
-        args[0].add_axes(self)
+
+        if LooseVersion(matplotlib.__version__) > LooseVersion("3.3")
+            kargs['auto_add_to_figure'] = False
+            super(Axes3DMod, self).__init__(*args, **kargs)
+            args[0].add_axes(self)
+        else:
+            super(Axes3DMod, self).__init__(*args, **kargs)            
 
         self.patch.set_alpha(0)
         self._gl_id_data = None
