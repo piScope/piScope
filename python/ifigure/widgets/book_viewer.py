@@ -86,10 +86,10 @@ class FrameWithWindowList(wx.Frame):
         
         parent = args[0]
 
-        if sys.platform == 'darwin' and parent is None:
-            wx.MenuBar.MacSetCommonMenuBar(self.menuBar)
-        else:
-            self.SetMenuBar(self.menuBar)
+        #if sys.platform == 'darwin' and parent is None:
+        #    wx.CallAfter(self.SetMenuBar, self.menuBar)            
+        #else:
+        #    self.SetMenuBar(self.menuBar)
 
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
@@ -1960,6 +1960,8 @@ class BookViewer(BookViewerFrame):
         self.adjust_frame_size()
         self.SetPosition((50, 50))
         self.nobookdelete = False
+
+        self.SetMenuBar(self.menuBar)
 
     def InitUI(self, parent, title, show_prop, hide_window=False):
         # A Statusbar in the bottom of the window
