@@ -237,7 +237,7 @@ class Axes3DMod(Axes3D):
         self._use_clip = kargs.pop('use_clip', 1)
 
 
-        if LooseVersion(matplotlib.__version__) > LooseVersion("3.3")
+        if LooseVersion(matplotlib.__version__) > LooseVersion("3.3"):
             kargs['auto_add_to_figure'] = False
             super(Axes3DMod, self).__init__(*args, **kargs)
             args[0].add_axes(self)
