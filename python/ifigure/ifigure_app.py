@@ -176,6 +176,9 @@ class ifigure_app(BookViewerFrame):
 
         self.windowlist = WindowList()
         self.appearanceconfig = AppearanceConfig()
+        
+        mb = wx.MenuBar()
+        wx.MenuBar.MacSetCommonMenuBar(mb)
 
         super(ifigure_app, self).__init__(parent,
                                           title=title, size=(10, 10),
@@ -227,6 +230,8 @@ class ifigure_app(BookViewerFrame):
         self.helper = HelperApp()
         self.aconfig = AdvancedConfig()
         self.aconfig.add_user_path()
+
+        self.SetMenuBar(self.menuBar)
 
         self.Layout()
 
@@ -679,6 +684,7 @@ class ifigure_app(BookViewerFrame):
         local_lc.release()
 
         if path is None:
+            print("doing this")
             path = dialog.read(parent=self,
                                message="Select project (.pfz) to open",
                                wildcard='*.pfz',
