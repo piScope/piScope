@@ -474,6 +474,7 @@ class ProjTreeViewer(wx.Panel):
 
         # panel1 (tree)
         p = wx.Panel(self.nb)
+        p.SetBackgroundColour(wxNamedColour('White'))
         p.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self._move_mode = False
         self.tree = TreeCtrl(p, wx.ID_ANY,

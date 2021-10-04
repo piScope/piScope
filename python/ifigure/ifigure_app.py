@@ -183,7 +183,6 @@ class ifigure_app(BookViewerFrame):
                                           wx.RESIZE_BORDER | wx.SYSTEM_MENU |
                                           wx.CAPTION | wx.CLOSE_BOX |
                                           wx.CLIP_CHILDREN)
-
         self._launcher_file = launcher_file
         self._ID_RECENT = -1
         logging.basicConfig(level=logging.DEBUG)
