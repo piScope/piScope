@@ -1224,6 +1224,7 @@ class ifigure_popup(wx.Menu):
             else:
                 menus = menus + [('Set FrameArt', self.onSetFrameArt, None)]
         frame = cbook.FindFrame(parent)
+
         menus = frame.viewer_canvasmenu() + menus
         self._menus = len(menus)
         if len(menus) != 0:
@@ -1808,6 +1809,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             p = p.GetParent()
 
     def mpl_connect(self, mode='normal'):
+        if self._figure is None:
+            return
         if self.canvas.figure is None:
             return
         self.mpl_disconnect()
@@ -2163,8 +2166,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         return
 
     def mousescroll(self, event):
-        if self.toolbar.mode != '': return        
-        frame = cbook.FindFrame(self)
+        if self.toolbar.mode != '': return
+        frame = self.GetTopLevelParent()
+        if frame is None:
+            return 
+        #frame = cbook.FindFrame(self)
         if event.step < 0:
             frame.onNextPage(event.guiEvent)
         if event.step > 0:
@@ -2336,11 +2342,16 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         #print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)
         event.guiEvent = evt
-        self.draghandler.unbind_mpl()
+
+        if self.draghandler is not None:
+            self.draghandler.unbind_mpl()
+
         self._click_interval = time.time() - self._previous_lclick
         wx.CallLater(dcinterval_ms, self.run_buttonrelease0, event)
 
     def run_buttonrelease0(self, event):
+        if self._figure is None: return
+
         if self.dblclick_occured:
             self.dblclick_occured = False
             self._previous_lclick = time.time()
@@ -2348,10 +2359,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.buttonrelease0(event)
 
     def buttonpress0(self, event):
-        # print("buttonpress0")
+        if self._figure is None: return
+
         self._alt_shift_hit = False
 
-        self.draghandler.clean(None)
+        if self.draghandler is not None:
+            self.draghandler.clean(None)
+
         if self.toolbar.mode == '':
             hit = 0
             if (abs(self._a_mode_scale_anchor[0] - event.x) < 10 and
@@ -2979,6 +2993,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def refresh_hl(self, alist=None):
         #       import traceback
         #       traceback.print_stack()
+        if self.canvas is None:
+            return
         if alist is None:
             alist = []
         if turn_on_gl:

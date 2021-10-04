@@ -231,7 +231,11 @@ class Axes3DMod(Axes3D):
         self._use_gl = kargs.pop('use_gl', True)
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip = kargs.pop('use_clip', 1)
+
+        kargs['auto_add_to_figure'] = False
         super(Axes3DMod, self).__init__(*args, **kargs)
+        args[0].add_axes(self)
+
         self.patch.set_alpha(0)
         self._gl_id_data = None
         self._gl_mask_artist = None

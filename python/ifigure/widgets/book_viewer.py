@@ -86,11 +86,6 @@ class FrameWithWindowList(wx.Frame):
         
         parent = args[0]
 
-        #if sys.platform == 'darwin' and parent is None:
-        #    wx.CallAfter(self.SetMenuBar, self.menuBar)            
-        #else:
-        #    self.SetMenuBar(self.menuBar)
-
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
 
