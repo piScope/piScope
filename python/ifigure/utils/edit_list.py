@@ -1570,8 +1570,27 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             controlDown = event.RawControlDown()
         else:
             controlDown = event.ControlDown()
-
+        shiftDown = event.ShiftDown()
         altDown = event.AltDown()
+
+        if key == wx.WXK_LEFT:
+            if shiftDown:
+                a, b = self.GetSelection()
+                if a > 0: 
+                    a = a - 1
+                self.SetSelection(a, b)
+            else:
+                self.SetInsertionPoint(self.GetInsertionPoint()-1)
+        if key == wx.WXK_RIGHT:
+            if shiftDown:
+                a, b = self.GetSelection()
+                if b != self.GetLastPosition():
+                    b = b + 1
+                self.SetSelection(a, b)
+            else:
+                self.SetInsertionPoint(self.GetInsertionPoint()+1)
+
+        if key > 127: return
 
         if key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
@@ -1608,12 +1627,28 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                               self.GetLastPosition())
             self.Cut()
             return
-        if key == 8:
+        if key == wx.WXK_BACK:
             ### works only for single line ###
-            ptx = self.GetInsertionPoint()
-            if ptx > 0:
-               self.Remove(ptx-1, ptx)
-            return
+            a, b = self.GetSelection()
+            if a != b:
+                self.Remove(a, b)
+                return
+            else:
+                ptx = self.GetInsertionPoint()
+                if ptx > 0:
+                    self.Remove(ptx-1, ptx)
+                return
+        if key == wx.WXK_DELETE:
+            ### works only for single line ###
+            a, b = self.GetSelection()
+            if a != b:
+                self.Remove(a, b)
+                return
+            else:
+                ptx = self.GetInsertionPoint()
+                if ptx < self.GetLastPosition():
+                    self.Remove(ptx, ptx+1)
+                return
 
         event.Skip()
 
