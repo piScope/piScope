@@ -1533,7 +1533,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         wx.TextCtrl.__init__(self, *args, **kargs)
 
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
-        self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
+        #self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
 
         if flag == 0:
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
@@ -1608,6 +1608,13 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                               self.GetLastPosition())
             self.Cut()
             return
+        if key == 8:
+            ### works only for single line ###
+            ptx = self.GetInsertionPoint()
+            if ptx > 0:
+               self.Remove(ptx-1, ptx)
+            return
+
         event.Skip()
 
         if self.changing_event:
