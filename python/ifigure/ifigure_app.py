@@ -176,7 +176,7 @@ class ifigure_app(BookViewerFrame):
 
         self.windowlist = WindowList()
         self.appearanceconfig = AppearanceConfig()
-        
+
         mb = wx.MenuBar()
         wx.MenuBar.MacSetCommonMenuBar(mb)
 
@@ -389,12 +389,12 @@ class ifigure_app(BookViewerFrame):
         self._recentmenu = wx.Menu()
         item = self.filemenu.AppendSubMenu(self._recentmenu, "Open Recent")
         self._ID_RECENT = item.GetId()
-        #menu_AppendSubMenu(self.filemenu, ID_RECENT,
+        # menu_AppendSubMenu(self.filemenu, ID_RECENT,
         #            "Open Recent", self._recentmenu)
-        #m = self.filemenu.AppendSubMenu(self._recentmenu,
+        # m = self.filemenu.AppendSubMenu(self._recentmenu,
         #                                "Open Recent")
         #globals()['ID_RECENT'] = m.GetId()
-        
+
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
         self.add_menu(self.filemenu, ID_SAVEDOC,
@@ -1172,14 +1172,14 @@ class ifigure_app(BookViewerFrame):
             print(("saving to " + path))
             self.proj_tree_viewer.ch.savetofile(filename=os.path.join(
                 self.proj.getvar("wdir"), '.command_history'))
-            
+
             success = self.proj.SaveToFile(path, opath=opath)
         else:
             success = False
 
         if success:
-#           self.update_save_project_menu(True)
-#           self.set_filename_2_window_title()
+            #           self.update_save_project_menu(True)
+            #           self.set_filename_2_window_title()
             nwdir = self.proj.getvar("wdir")
             self.script_editor.switch_wdir(owdir, nwdir)
             self.set_proj_saved(True)
@@ -1268,12 +1268,18 @@ class ifigure_app(BookViewerFrame):
             if isinstance(fc, SimpleShell):
                 fc.Cut()
                 break
-            if isinstance(fc, CommandHistory):
+            elif isinstance(fc, CommandHistory):
                 fc.Cut()
                 break
-            if isinstance(fc, wx.stc.StyledTextCtrl):
+            elif isinstance(fc, wx.stc.StyledTextCtrl):
                 fc.Cut()
                 break
+            elif isinstance(fc, wx.TextCtrl):
+                fc.Cut()
+                break
+            else:
+                pass
+
             fc = fc.GetParent()
 
     def onCopy(self, e):
@@ -1308,6 +1314,12 @@ class ifigure_app(BookViewerFrame):
             elif isinstance(fc, wx.stc.StyledTextCtrl):
                 fc.Copy()
                 break
+            elif isinstance(fc, wx.TextCtrl):
+                fc.Copy()
+                break
+            else:
+                pass
+
             fc = fc.GetParent()
             #        if fc is self.canvas.canvas:
             #           super(ifigure_app, self).onCopy(e)
@@ -1345,6 +1357,12 @@ class ifigure_app(BookViewerFrame):
             elif isinstance(fc, wx.stc.StyledTextCtrl):
                 fc.Paste()
                 break
+            elif isinstance(fc, wx.TextCtrl):
+                fc.Paste()
+                break
+            else:
+                pass
+
             fc = fc.GetParent()
 
     def onAppWindowClose(self, e):
@@ -1402,7 +1420,7 @@ class ifigure_app(BookViewerFrame):
             pass
 
         self.proj.destroy()
-        
+
         import multiprocessing
         children = multiprocessing.active_children()
         if len(children) > 0:
@@ -1410,7 +1428,6 @@ class ifigure_app(BookViewerFrame):
             for x in children:
                 x.terminate()
 
-        
         # close script editor if it is detached
         try:
             from ifigure.mto.hg_support import diffwindow
@@ -2201,7 +2218,7 @@ class MyApp(wx.App):
                         continue
                     try:
                         x.Show()
-                        #x.Raise()
+                        # x.Raise()
                     except BaseException:
                         pass
             else:
