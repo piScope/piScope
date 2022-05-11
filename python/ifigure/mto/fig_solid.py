@@ -235,6 +235,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
 
         if self.getvar('draw_last'):
             self._artists[0]._gl_isLast = True
+
         self.set_pickmask(self._pickmask)
         if len(self.hidden_component) > 0:
             self.hide_component(self.hidden_component)

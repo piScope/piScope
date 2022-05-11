@@ -8,7 +8,8 @@ dprint1, dprint2, dprint3 = debug.init_dprints('GL_COMPOUND')
 class GLCompound(object):
     def isCompound(self):
         if (self.hasvar('array_idx') and
-            self._var['array_idx'] is not None): return True
+                self._var['array_idx'] is not None):
+            return True
         return False
 
     @property
@@ -43,13 +44,26 @@ class GLCompound(object):
 
         a = self._artists[0]
         array_idx = self.getvar('array_idx')
-        mask = np.in1d(array_idx, self._hidden_component)
-        
+        flat_mode = array_idx.shape != a._gl_array_idx.shape
+
         if self.hasvar('idxset'):
             idxset = self.getvar('idxset')
 
-            mask2 = np.logical_not(np.any(mask[idxset], axis=1))
-            a.update_idxset(idxset[mask2])
+            if flat_mode:
+                mask = np.logical_not(
+                    np.in1d(
+                        np.abs(
+                            a._gl_array_idx),
+                        self._hidden_component))
+                new_idxset = np.arange(len(a._gl_array_idx), dtype=int)
+                new_idxset = new_idxset[mask].reshape(-1, idxset.shape[1])
+
+            else:
+                mask = np.in1d(array_idx, self._hidden_component)
+                mask2 = np.logical_not(np.any(mask[idxset], axis=1))
+                new_idxset = idxset[mask2]
+
+            a.update_idxset(new_idxset)
             self.setSelectedIndex([])
 
             if self.hasvar('edge_idx') and self.getvar('edge_idx') is not None:
@@ -91,7 +105,7 @@ class GLCompound(object):
             idxset = self.getvar('edge_idx')
             mask2 = np.array([all(mask[iv]) for iv in idxset], copy=False)
             s2 = idxset[mask2]
-            mapper = {x:k for k, x in enumerate(ii)}
+            mapper = {x: k for k, x in enumerate(ii)}
             ss2 = np.array([mapper[x] for x in s2.flatten()])
             s2 = ss2.reshape(s2.shape)
             return v, idx, cdata, s2
@@ -99,7 +113,7 @@ class GLCompound(object):
         return v, idx, cdata
 
     def isSelected(self):
-        # this is called to check if click hit this object 
+        # this is called to check if click hit this object
         return (len(self._artists[0]._gl_hit_array_id_new) > 0)
 
     def getSelectedIndex(self):
@@ -114,17 +128,23 @@ class GLCompound(object):
         array_idx[mask] *= -1
         for a in self._artists:
             a._gl_hit_array_id = list(ll)
-            a._gl_array_idx = array_idx
+            if a._gl_array_idx.shape == array_idx.shape:
+                a._gl_array_idx = array_idx
+            else:
+                array_idx = np.abs(a._gl_array_idx)
+                mask = np.isin(array_idx, np.array(ll, copy=False))
+                array_idx[mask] *= -1
+                a._gl_array_idx = array_idx
             a._update_a = True
-            
+
     def addSelectedIndex(self, ll):
         ll = list(ll) + self.getSelectedIndex()
         ll = list(np.unique(ll))
         self.setSelectedIndex(ll)
-        
+
     def set_pickmask(self, value):
         '''
-        mask = True :: not pickable 
+        mask = True :: not pickable
         '''
         self._pickmask = value
         for a in self._artists:
@@ -147,7 +167,7 @@ class GLCompound(object):
     def onHidePickedComponent(self, evt):
         idx = self.getSelectedIndex()
         hidx = self.hidden_component
-        self.hide_component(idx+hidx)
+        self.hide_component(idx + hidx)
         self.set_bmp_update(False)
         evt.GetEventObject().unselect_all()
         ifigure.events.SendPVDrawRequest(self, w=evt.GetEventObject(),
@@ -178,7 +198,7 @@ class GLCompound(object):
             m.append(("Hide selected", self.onHidePickedComponent, None))
             m.append(("Show selected only", self.onShowPickedOnly, None))
             if len(self.hidden_component) > 0:
-                m.append(("Show all",  self.onShowAllComponent, None))
+                m.append(("Show all", self.onShowAllComponent, None))
             m.append(("Pick as object", self.onUnpickComponent, None))
 
         return m
@@ -192,5 +212,3 @@ class GLCompound(object):
         hit, all_covered, selected_idx = ax.gl_hit_test_rect(rect, a,
                                                              check_selected_all_covered=check_selected_all_covered)
         return hit, a, all_covered, selected_idx
-        
-

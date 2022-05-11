@@ -877,7 +877,7 @@ def onPlotEq(self, e=None, viewer=None):
     plt.xlabel('flux index')
     plt.update(True)
 
-    if not no_lim_b:
+    if no_lim_b:
         return
     from python_lib.analysis.efit_tools import flux_average, npsi2psi, npsi2npsit
 
@@ -887,7 +887,7 @@ def onPlotEq(self, e=None, viewer=None):
     jtor = [flux_average(x, y, z, rmaxis, zmaxis, jtrz, psi)
             for psi in psis]
     plt.isec(3)
-    plt.plot(npsis, jtor)
-    plt.title('f_pol')
+    plt.plot(sqrt_npsit, jtor)
+    plt.title('j_tor')
     plt.xlabel('sqrt_toroidal_flux')
     plt.update(True)

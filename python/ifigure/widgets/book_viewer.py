@@ -80,13 +80,12 @@ class FrameWithWindowList(wx.Frame):
         kargs['size'] = (50, 50)
 
         super(FrameWithWindowList, self).__init__(*args, **kargs)
-        # Creating the menubar.
-#        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
 
         self.menuBar = wx.MenuBar()
         self.ID_WINDOWS = -1
         
-        self.SetMenuBar(self.menuBar)
+        parent = args[0]
+
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
 
@@ -1938,7 +1937,7 @@ class BookViewer(BookViewerFrame):
 
         # this is added not to have windows "always on parent"
         args2 = [x for x in args]
-        args2[0] = None
+        #args2[0] = None
         args = tuple(args2)
         ###
         super(BookViewer, self).__init__(*args, **kargs)
@@ -1956,6 +1955,8 @@ class BookViewer(BookViewerFrame):
         self.adjust_frame_size()
         self.SetPosition((50, 50))
         self.nobookdelete = False
+
+        self.SetMenuBar(self.menuBar)
 
     def InitUI(self, parent, title, show_prop, hide_window=False):
         # A Statusbar in the bottom of the window

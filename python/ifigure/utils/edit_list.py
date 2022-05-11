@@ -19,6 +19,7 @@ from wx import ScrolledWindow as SP
 from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 import ifigure.utils.debug as debug
 import wx
+import sys
 import six
 import os
 import ifigure
@@ -636,7 +637,7 @@ class BitmapButtons(wx.Panel):
                                          ftitle+'_'+str(ffname)+'.png')
 
                 if not os.path.exists(imageFile):
-                    ffname = b64encode('other'.encode('latin-1')).decode()                                  
+                    ffname = b64encode('other'.encode('latin-1')).decode()
                     imageFile = os.path.join(icondir, 'image',
                                              'color_' + ffname + '.png')
                     print('Cannot find bitmap for ' + ftitle + '=' + fname)
@@ -900,9 +901,9 @@ class ColorSelector(wx.BitmapButton):
         dirname = os.path.dirname(ifigure.__file__)
         self.imageFiles = {}
         for name in self.color_list:
-            nname = b64encode(name.encode('latin-1')).decode()                                  
+            nname = b64encode(name.encode('latin-1')).decode()
             self.imageFiles[name] = os.path.join(icondir, 'image',
-                                                 'color_' + nname +'.png')
+                                                 'color_' + nname + '.png')
         wx.BitmapButton.__init__(
             self, *args, bitmap=wx.Bitmap(self.imageFiles['blue']))
         self.value = 'blue'
@@ -1512,10 +1513,10 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self._use_escape = True
         nlines = 1
         flag = 0
-        
+
         if not 'style' in kargs:
             kargs['style'] = 0
-            
+
         changing_event = kargs.pop('changing_event', False)
         setfocus_event = kargs.pop('setfocus_event', False)
         self._validator = kargs.pop('validator', None)
@@ -1525,18 +1526,18 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         if 'nlines' in kargs:
             nlines = kargs['nlines']
             del kargs['nlines']
-            
+
         if flag == 0:
-            kargs['style'] = kargs['style'] |  wx.TE_PROCESS_ENTER
-            
+            kargs['style'] = kargs['style'] | wx.TE_PROCESS_ENTER
+
         wx.TextCtrl.__init__(self, *args, **kargs)
-        
+
         self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
-        self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
-        
+        #self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
+
         if flag == 0:
             self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
-            
+
         dt1 = TextDropTarget(self)
         self.SetDropTarget(dt1)
         if len(args) > 2:
@@ -1557,16 +1558,39 @@ class TextCtrlCopyPaste(wx.TextCtrl):
 
         self._wxval = None
 
-        #    def Paste(self):
-#        print 'paste called'
-#        wx.TextCtrl.Paste(self)
+    '''
+    def Paste(self):
+        print('paste called')
+        wx.TextCtrl.Paste(self)
+    '''
+
     def onKeyPressed(self, event):
         key = event.GetKeyCode()
         if hasattr(event, 'RawControlDown'):
             controlDown = event.RawControlDown()
         else:
             controlDown = event.ControlDown()
+        shiftDown = event.ShiftDown()
         altDown = event.AltDown()
+
+        if key == wx.WXK_LEFT:
+            if shiftDown:
+                a, b = self.GetSelection()
+                if a > 0: 
+                    a = a - 1
+                self.SetSelection(a, b)
+            else:
+                self.SetInsertionPoint(self.GetInsertionPoint()-1)
+        if key == wx.WXK_RIGHT:
+            if shiftDown:
+                a, b = self.GetSelection()
+                if b != self.GetLastPosition():
+                    b = b + 1
+                self.SetSelection(a, b)
+            else:
+                self.SetInsertionPoint(self.GetInsertionPoint()+1)
+
+        if key > 127: return
 
         if key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
@@ -1603,6 +1627,29 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                               self.GetLastPosition())
             self.Cut()
             return
+        if key == wx.WXK_BACK:
+            ### works only for single line ###
+            a, b = self.GetSelection()
+            if a != b:
+                self.Remove(a, b)
+                return
+            else:
+                ptx = self.GetInsertionPoint()
+                if ptx > 0:
+                    self.Remove(ptx-1, ptx)
+                return
+        if key == wx.WXK_DELETE:
+            ### works only for single line ###
+            a, b = self.GetSelection()
+            if a != b:
+                self.Remove(a, b)
+                return
+            else:
+                ptx = self.GetInsertionPoint()
+                if ptx < self.GetLastPosition():
+                    self.Remove(ptx, ptx+1)
+                return
+
         event.Skip()
 
         if self.changing_event:
@@ -1670,7 +1717,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                 ord(u'\u2018'): "'",
                 ord(u'\u2019'): "'",
             }
-            
+
         try:
             wxval = wx.TextCtrl.GetValue(self)
             val = str(wxval)
@@ -1690,8 +1737,9 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             if six.PY2:
                 return val.decode('string_escape')
             else:
-                if isinstance(val, str): val = val.encode()
-                return val.decode('unicode_escape')                
+                if isinstance(val, str):
+                    val = val.encode()
+                return val.decode('unicode_escape')
         else:
             return val
 
@@ -1704,7 +1752,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             if six.PY2:
                 wx.TextCtrl.SetValue(self, value.encode('string_escape'))
             else:
-                wx.TextCtrl.SetValue(self, value.encode('unicode_escape'))                
+                wx.TextCtrl.SetValue(self, value.encode('unicode_escape'))
         else:
             wx.TextCtrl.SetValue(self, value)
 
@@ -2175,7 +2223,7 @@ class CSliderWithCB(Panel):
         self.cb = ComboBox_Float(self,  wx.ID_ANY, **setting)
         self.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
         self.GetSizer().Add(self.cb, 0, wx.ALIGN_CENTER)
-        self.GetSizer().Add(self.sl, 1, wx.EXPAND )
+        self.GetSizer().Add(self.sl, 1, wx.EXPAND)
         self.Bind(EVT_CDS_CHANGED, self.onCDS_Event)
         self._use_float = True
 
@@ -2421,10 +2469,10 @@ class SelectableELP(Panel):
 #        self.show_elp(self.elp)
         for elp in self.elps:
             self.csizer.Add(elp, 1, wx.EXPAND | wx.ALL, 5)
-            
+
         self.cb.SetValue(setting[0]['choices'][0])
         self.SetFFShowHide()
-        
+
     def SetFFShowHide(self):
         idx = self.cb.GetSelection()
         for k, elp in enumerate(self.elps):
@@ -2670,11 +2718,11 @@ class ComboBoxCompact(wx.ComboBox):
 
 class ComboBox(ComboBoxCompact):
     def __init__(self, *args, **kargs):
-        self.choices_cb=kargs.pop("choices_cb", None)
+        self.choices_cb = kargs.pop("choices_cb", None)
         super(ComboBox, self).__init__(*args, **kargs)
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
         self.Bind(wx.EVT_TEXT_ENTER, self.onHit)
-        
+
         if self.choices_cb is not None:
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
 
@@ -2689,32 +2737,34 @@ class ComboBox(ComboBoxCompact):
         else:
             idx = 0
         self.SetChoices(ch, index=idx)
-        
+
     def SetChoices(self, ch, index=-1):
         sel = self.GetValue()
         self.Clear()
         for c in ch:
-            #if len(c) == 0: continue
+            # if len(c) == 0: continue
             self.Append(c)
 
         if index != -1:
             self.SetSelection(index)
         else:
             if sel in c:
-                index = c.index(sel)  
-                self.SetSelection(index)              
+                index = c.index(sel)
+                self.SetSelection(index)
+
 
 class ComboBoxWithNew(ComboBoxCompact):
     def __init__(self, *args, **kargs):
-        self.choices_cb=kargs.pop("choices_cb", None)
-        self.new_choice_message = kargs.pop("new_choice_msg", "Enger new choice")
+        self.choices_cb = kargs.pop("choices_cb", None)
+        self.new_choice_message = kargs.pop(
+            "new_choice_msg", "Enger new choice")
         super(ComboBoxWithNew, self).__init__(*args, **kargs)
         self.Bind(wx.EVT_COMBOBOX, self.onHit)
         self.Bind(wx.EVT_TEXT_ENTER, self.onHit)
-        
+
         if self.choices_cb is not None:
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
-        
+
     def onHit(self, evt):
         sel = self.GetValue()
         if sel == 'New...':
@@ -2724,7 +2774,7 @@ class ComboBoxWithNew(ComboBoxCompact):
                                   def_string=self._current_value,
                                   center=True)
             choices = [self.GetString(n) for n in range(self.GetCount())]
-            if flag: 
+            if flag:
                 choices = choices[:-1]
                 choices.append(txt)
                 index = choices.index(txt)
@@ -2738,29 +2788,31 @@ class ComboBoxWithNew(ComboBoxCompact):
             self._current_value = sel
             self.GetParent().send_event(self, evt)
         evt.Skip()
-        
+
     def onDropDown(self, evt):
         sel = self.GetValue()
         self._current_value = sel
-        
+
         ch = self.choices_cb()
         if sel in ch:
             idx = ch.index(sel)
         else:
             idx = 0
         self.SetChoices(ch, index=idx)
-        
+
     def SetChoices(self, ch, index=0):
         self.Clear()
-        ch = [x for x in ch if x != 'New...']        
-        ch = ch + ['New...']        
+        ch = [x for x in ch if x != 'New...']
+        ch = ch + ['New...']
         for c in ch:
-            if len(c) == 0: continue
+            if len(c) == 0:
+                continue
             self.Append(c)
         index = min(index, len(ch)-1)
         #print("setting index", index)
         self.SetSelection(index)
-    
+
+
 class ComboBox_Float(ComboBoxCompact):
     def __init__(self, *args, **kargs):
         super(ComboBox_Float, self).__init__(*args, **kargs)
@@ -3073,9 +3125,9 @@ class ArrowStyleCombobox(wxBitmapComboBox):
                                                  '', (-1, -1), (150, -1),  **kargs)
         for name, style in self.choice_list:
             dirname = os.path.dirname(ifigure.__file__)
-            nname = b64encode(name.encode('latin-1')).decode()                                              
+            nname = b64encode(name.encode('latin-1')).decode()
             imageFile = os.path.join(icondir, 'image',
-                                     'arrow_'+ nname +'.png')
+                                     'arrow_' + nname + '.png')
             bitmap = wx.Bitmap(imageFile)
             super(ArrowStyleCombobox, self).Append(name, bitmap, name)
         self.SetSelection(3)
@@ -3415,8 +3467,8 @@ class FilePath(Panel):
     def onBrowse(self, evt):
         from ifigure.widgets.dialog import read
         file = self.GetValue()
-        defaultdir=os.path.dirname(file)
-        defaultfile=file if self.defaultpath == '' else self.defaultpath
+        defaultdir = os.path.dirname(file)
+        defaultfile = file if self.defaultpath == '' else self.defaultpath
         path = read(parent=self,
                     message=self.message,
                     wildcard=self.wildcard,
@@ -3586,9 +3638,9 @@ class MDSSource0(wx.Panel):
 #            if not mod: p.SetSavePoint()
         except UnicodeDecodeError:
             if six.PY2:
-                 p.SetText(unicode(txt, errors='ignore'))
+                p.SetText(unicode(txt, errors='ignore'))
             else:
-                 assert False, "_set_stc_txt got unicode error"
+                assert False, "_set_stc_txt got unicode error"
 #            if not mod: p.SetSavePoint()
 
     def onHitAlways(self, evt):
@@ -3690,13 +3742,14 @@ class MDSSource(wx.Panel):
                 sessions = [child for name, child in ax.get_children()
                             if isinstance(child, FigMds)]
                 sessions[ichild].onDataSetting(evt)
-                
+
             if six.PY2:
                 ll = l.decode('string_escape')
             else:
-                if isinstance(l, str): l = l.encode()                
+                if isinstance(l, str):
+                    l = l.encode()
                 ll = l.decode('unicode_escape')
-                
+
             l4.append([ll, None, 141, {"label": "Edit...",
                                        'func': handler,
                                        'noexpand': True,
@@ -4013,7 +4066,7 @@ class EditListCore(object):
                         setting["style"] = wx.TE_PROCESS_ENTER
                 else:
                     setting = {"style": wx.CB_READONLY,
-                               "choices": ["ok", "cancel"],}
+                               "choices": ["ok", "cancel"], }
                 choices_cb = setting.pop("choices_cb", None)
                 w = ComboBox(self, wx.ID_ANY, style=setting["style"],
                              choices=setting["choices"],
@@ -4054,7 +4107,7 @@ class EditListCore(object):
                         setting["style"] = wx.CB_READONLY
                 else:
                     setting = {"style": wx.CB_READONLY,
-                               "choices": ["ok", "cancel"],}
+                               "choices": ["ok", "cancel"], }
                 s = setting["choices"]
                 s = [x for x in s if x != 'New...']
                 s = s + ['New...']
@@ -4621,7 +4674,7 @@ class EditListDialog(wx.Dialog):
                  endmodal_value=None):
         wx.Dialog.__init__(self, parent, id=id, title=title, pos=pos,
                            size=size, style=style)
-        self.endmodal_value = endmodal_value 
+        self.endmodal_value = endmodal_value
         self.nobutton = nobutton
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
@@ -4655,9 +4708,9 @@ class EditListDialog(wx.Dialog):
         if self.nobutton:
             self.EndModal(wx.ID_OK)
         if (self.endmodal_value is not None and
-            self.endmodal_value == value[-1]):
-                self.EndModal(wx.ID_OK)
-            
+                self.endmodal_value == value[-1]):
+            self.EndModal(wx.ID_OK)
+
     def _myRefresh(self, size=(-1, -1)):
         win = self.GetTopLevelParent()
 #        win.SetSizeHints(win)
@@ -4984,23 +5037,23 @@ class EditListMiniFrame(wx.MiniFrame):
         self.nobutton = nobutton
         self.callback = callback
         self.close_callback = close_callback
-        self.ok_callback = ok_callback        
+        self.ok_callback = ok_callback
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         self.elp = EditListPanel(self, list, tip=tip)
         self.elp.Layout()
         vbox.Add(self.elp, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 10)
         if not self.nobutton:
-            sizer = wx.BoxSizer(wx.HORIZONTAL)            
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
             okbutton = wx.Button(self, wx.ID_OK, "OK")
             cancelbutton = wx.Button(self, wx.ID_CANCEL, "Cancel")
             sizer.AddStretchSpacer()
-            sizer.Add(okbutton, 0, wx.ALIGN_CENTER | wx.ALL, 1)            
+            sizer.Add(okbutton, 0, wx.ALIGN_CENTER | wx.ALL, 1)
             sizer.Add(cancelbutton, 0, wx.ALIGN_CENTER | wx.ALL, 1)
-            sizer.AddStretchSpacer()            
+            sizer.AddStretchSpacer()
             okbutton.Bind(wx.EVT_BUTTON, self.onOK)
-            cancelbutton.Bind(wx.EVT_BUTTON, self.onCancel)            
-            vbox.Add(sizer, 0, wx.EXPAND|wx.ALL, 5)
+            cancelbutton.Bind(wx.EVT_BUTTON, self.onCancel)
+            vbox.Add(sizer, 0, wx.EXPAND | wx.ALL, 5)
 #        self.Fit()
         self.Layout()
         if pos is None:
@@ -5029,16 +5082,16 @@ class EditListMiniFrame(wx.MiniFrame):
             value = self.GetValue()
             self.close_callback(value)
         evt.Skip()
-        
+
     def onOK(self, evt):
         if self.ok_callback is not None:
             value = self.GetValue()
-            self.ok_callback(value)            
+            self.ok_callback(value)
         self.Close()
-        
+
     def onCancel(self, evt):
         self.Close()
-        
+
     def _myRefresh(self):
         win = self.GetTopLevelParent()
 #        win.SetSizeHints(win)

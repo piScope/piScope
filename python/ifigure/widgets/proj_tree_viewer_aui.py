@@ -474,6 +474,7 @@ class ProjTreeViewer(wx.Panel):
 
         # panel1 (tree)
         p = wx.Panel(self.nb)
+        p.SetBackgroundColour(wxNamedColour('White'))
         p.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self._move_mode = False
         self.tree = TreeCtrl(p, wx.ID_ANY,
@@ -1088,14 +1089,18 @@ class ProjTreeViewer(wx.Panel):
 #        self.Delete(old)
 #        self.InsertItem(parent, new, text)
 
+    def get_defaultpanelstyle(self):
+        return wx.STAY_ON_TOP|wx.DEFAULT_DIALOG_STYLE
+    
     def OpenPanel(self, list, obj=None, callback=None, title='title',
+                  style=None,
                   **kargs):
         if self.panel is not None:
             self.ClosePanel()
 
 #        self.panel = wx.Panel(self, wx.ID_ANY)
-        self.panel = wx.Dialog(self, wx.ID_ANY, title,
-                               style=wx.STAY_ON_TOP | wx.DEFAULT_DIALOG_STYLE)
+        style = style if style is not None else self.get_defaultpanelstyle()
+        self.panel = wx.Dialog(self, wx.ID_ANY, title, style=style)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -1147,11 +1152,17 @@ class ProjTreeViewer(wx.Panel):
         #        self.GetSizer().Remove(self.panel)
         #        self.panel.Destroy()
 
+        if self.panel.IsBeingDeleted():
+            self.panel = None
+            return
         p = self.panel.GetTopLevelParent()
-        if p is not None:
+        if not p.IsBeingDeleted():
             # p.GetSizer().Remove(p)
             p.Destroy()
-            self.GetTopLevelParent()._force_layout()
+            if not self.IsBeingDeleted():
+               pp = self.GetTopLevelParent()
+               if not pp.IsBeingDeleted():
+                   pp._force_layout()
         self.panel = None
 
     def set_td_selection(self, t0):

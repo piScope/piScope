@@ -1681,7 +1681,8 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
     def onToggle3D(self, evt):
         if self.get_3d():
             if sum([len(x._member) for x in self._zaxis]) != 0:
-                dialog.message(self, 'panel has 3D plot', 'error')
+                from ifigure.widgets.dialog import message
+                message(self, 'panel has 3D plot', 'error')
                 return
             self.set_3d(False)
         else:

@@ -9,6 +9,7 @@ import weakref
 import array
 import gc
 import traceback
+import platform
 from distutils.version import LooseVersion
 
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
@@ -46,11 +47,19 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.init = False
         
         if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
-            #dispAttrs = wx.glcanvas.GLAttributes()
-            #dispAttrs.PlatformDefaults().EndList()
+            dispAttrs = wx.glcanvas.GLAttributes()
+
+            if platform.system() == 'Darwin':
+                dispAttrs.PlatformDefaults().RGBA().EndList()
+            elif platform.system() == 'Linux':
+                dispAttrs.PlatformDefaults().RGBA().EndList()
+            else:
+                ## this is not tested..
+                dispAttrs.PlatformDefaults().EndList()
+
+            # this is from sample but does not work..
             #dispAttrs.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(32).EndList()
-            #glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
-            glcanvas.GLCanvas.__init__(self, parent)
+            glcanvas.GLCanvas.__init__(self, parent, dispAttrs, -1)
         else:
             attribs = [glcanvas.WX_GL_CORE_PROFILE,
                        glcanvas.WX_GL_MAJOR_VERSION, 3,
@@ -58,8 +67,21 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glcanvas.GLCanvas.__init__(self, parent, -1, attribs)
             
         if MyGLCanvas.context is None:
-             MyGLCanvas.context = glcanvas.GLContext(self)
-            
+            if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
+                ctxAttrs = wx.glcanvas.GLContextAttrs()
+                if platform.system() == 'Darwin':
+                    ctxAttrs.CoreProfile().OGLVersion(4, 1).Robust().ResetIsolation().EndList()
+                elif platform.system() == 'Linux':
+                    ctxAttrs.PlatformDefaults().EndList()
+                else:
+                    ## this is not tested..
+                    ctxAttrs.PlatformDefaults().EndList()
+
+                MyGLCanvas.context = glcanvas.GLContext(self, other=None, ctxAttrs=ctxAttrs)
+                assert MyGLCanvas.context.IsOK(), "OpenGL Context is not OK"
+            else:
+                MyGLCanvas.context = glcanvas.GLContext(self)
+
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.size = None
@@ -81,7 +103,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._attrib_loc = {}
         self._hittest_map_update = True
 
-        
         self._alpha_blend = True
         self._current_uniform = {}
         #self._no_smooth = False
@@ -454,7 +475,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def OnPaint(self, event):
         # print  self._do_draw_mpl_artists
         #dc = wx.PaintDC(self)
+
         self.SetCurrent(MyGLCanvas.context)
+
 #        fbo = glGenRenderbuffers(1)
         if not self.init:
             self.InitGL()
@@ -472,7 +495,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if MyGLCanvas.offscreen:
             return
         size = self.size = self.GetClientSize()
-        self.SetCurrent(self.context)
+
+        self.SetCurrent(MyGLCanvas.context)
+
         glViewport(0, 0, size.width, size.height)
 
     def del_frame(self):
@@ -482,6 +507,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.bufs = []
 
     def get_newframe(self, w, h):
+        self.SetCurrent(MyGLCanvas.context)
 
         def gen_tex(w, h, internal_format, format, data_type):
             tex = glGenTextures(1)
@@ -515,7 +541,6 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         buf = gen_renderbuffer(w, h, depth_stencil_format)
         dbuf = gen_renderbuffer(w, h, depth_stencil_format)
-
 
 #        if not check_framebuffer('creating new frame buffer'): return [None]*4
 
@@ -2309,7 +2334,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if ((vbos['fc'] is None or vbos['fc'].need_update) and
                 facecolor is not None):
             counts = vbos['counts']
-            # print 'facecolor', facecolor.shape, paths[0].shape, len(paths[4])
+            #print('facecolor', facecolor.shape, paths[0].shape, len(paths[4]))
             if len(facecolor) == 0:
                 facecolor = np.array([[1, 1, 1, 0]])
             if facecolor.ndim == 3:
@@ -2320,9 +2345,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 # index array/linear
                 col = [facecolor]
                 col = np.hstack(col).astype(np.float32)
-            elif len(facecolor) == len(paths[4]):
+            elif len(facecolor)*paths[4].shape[1]  == len(paths[0]):
                 # non index array/flat
-                c = len(paths[0]) // len(paths[4])
+                c = paths[4].shape[1]
                 col = np.array(facecolor, copy=False).astype(
                     np.float32, copy=False)
                 col = np.hstack([col] * c)
@@ -2359,12 +2384,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             if array_idx is not None:
                 array_idx = np.array(array_idx, copy=False).flatten()
+
                 if array_idx.shape[0] == nverts:
                     pass
                 elif array_idx.shape[0] == l:
                     array_idx = [array_idx] * counts
                 else:
-                    assert False, "array_idx length should be the same as the number of vertex"
+                    assert False, "array_idx length should be the same as the number of vertex:" + str(array_idx.shape) + " : "  + str(nverts) + " : " + str(l)
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
                                      copy=False).transpose().flatten()

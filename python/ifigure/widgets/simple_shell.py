@@ -108,6 +108,21 @@ class ShellBase(wx.py.shell.Shell):
         builtins.exit = builtins.quit = \
             self.quit
 
+    def Paste(self):
+
+        if sys.platform == 'darwin':
+            import wx
+            data = wx.TextDataObject()
+            if wx.TheClipboard.Open():
+                wx.TheClipboard.GetData(data)
+                txt =  data.GetText()
+                wx.TheClipboard.Close()
+            else:
+                txt = ''
+            self.write(txt)
+        else:
+            return super(ShellBase, self).Paste()
+
     def OnKeyDown(self, evt):
 
         if evt.GetKeyCode() == wx.WXK_UP:
