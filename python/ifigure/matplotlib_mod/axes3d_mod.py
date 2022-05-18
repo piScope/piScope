@@ -753,7 +753,7 @@ class Axes3DMod(Axes3D):
         if len(args) > 2:
             extent = (min(args[0]), max(args[0]), min(args[1]), max(args[0]))
             im.set_extent(extent)
-        im.set_3dpath(im_center, im_axes)
+        im.set_im3dpath(im_center, im_axes)
 
         return im
 

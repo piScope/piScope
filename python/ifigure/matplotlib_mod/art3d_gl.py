@@ -426,7 +426,6 @@ def line_3d_to_gl(obj):
     ArtGL.__init__(obj)
     return obj
 
-
 class AxesImageGL(ArtGL, AxesImage):
     def __init__(self, *args, **kargs):
         ArtGL.__init__(self)
@@ -438,7 +437,7 @@ class AxesImageGL(ArtGL, AxesImage):
     def __repr__(self):
         return 'ImageGL'
 
-    def set_3dpath(self, im_center, im_axes):
+    def set_im3dpath(self, im_center, im_axes):
         '''
              p2---p3
          (y) |    |

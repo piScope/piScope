@@ -13,7 +13,7 @@ class FigureMod(Figure):
     #    def __init__(self, *args, **kargs):
     #        self._frameDrown = False
     #        Figure.__init__(self,*args, **kargs)
-    @allow_rasterization
+    #@allow_rasterization
     def draw_others(self, renderer, dsu=None):
 
         #if self.frameon: self.patch.draw(renderer)
@@ -100,7 +100,7 @@ class FigureMod(Figure):
             for zorder, func, args in dsu:
                 func(*args)
 
-    @allow_rasterization
+    #@allow_rasterization
     def draw_axes(self, renderer, axes, noframe=False):
         def walk_children(a):
             yield a
