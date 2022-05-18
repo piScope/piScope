@@ -283,7 +283,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             if obj.get_figaxes() is None:
                 continue
             if obj._floating and not obj.get_figaxes()._floating:
-                dsu2.extend([(a.get_zorder(), a.draw, [self.renderer])
+                dsu2.extend([(a.get_zorder(), a, a.draw, self.renderer)
                              for a in obj._artists])
         self.iothers = self.make_buffer_image(
             self.figure.draw_others, dsu=dsu2)
