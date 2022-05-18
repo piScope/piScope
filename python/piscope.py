@@ -43,7 +43,8 @@ if __name__ == '__main__':
     site.USER_SITE = os.path.join(
         home, '.ifigure_rc', '.local', 'site-packages')
     site.USER_BASE = os.path.join(home, '.ifigure_rc', '.local')
-    redirect_std = False
+    redirect_std = True
+    use_console = True
     file = None
     start_server = False
     show_file_open_error = False
@@ -85,8 +86,8 @@ if __name__ == '__main__':
                 print('ifigure          : start a new project')
                 print('ifigure <file>   : open an existing project')
                 print('-s               : start server thread')
-                print('-d               : suppress redirect')
-                print('-c               : use console redirect')
+                print('-d               : suppress console redirect')
+                print('-c               : completely suppress redirect')
                 print('-n               : no main window')
                 print('-p               : call profiler')
                 print('-r <command>     : run command')
@@ -103,12 +104,13 @@ if __name__ == '__main__':
                 server.start()
                 continue
             elif p == '-d':
+                use_console = False
                 redirect_std = False
-                print('debug mode (redirect is suppressed)')
+                print('debug mode (console is suppressed. all redirect is off')
                 continue
             elif p == '-c':
-                redirect_std = True
-                print('consol redirect is on')
+                use_console = False
+                print('debug mode (console is suppressed, but thread log  window is on)')
                 continue
             elif p == '-n':
                 hide_main = True
@@ -165,6 +167,7 @@ if __name__ == '__main__':
         print('No 3D plot (OpenGL turned off)')
 
     ifigure.ifigure_app.redirect_std = redirect_std
+    ifigure.ifigure_app.use_console = use_console
 #   from ifigure.utils.rollback_importer import RollbackImporter as RI
     from ifigure.mto.treedict import fill_td_name_space
 

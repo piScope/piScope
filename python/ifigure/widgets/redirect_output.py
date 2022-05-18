@@ -21,6 +21,10 @@ class RedirectOutput(object):
             sys.stdout = self
             sys.stderr = self
 
+    def turn_force_on(self):
+        sys.stdout = self
+        sys.stderr = self
+
     def turn_off(self):
         sys.stdout = self.sys_stdout
         sys.stderr = self.sys_stderr

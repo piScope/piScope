@@ -84,6 +84,7 @@ ifigure._visual_config = {}
 ifigure._cursor_book = None  # specail book for slice cursor
 
 redirect_std = False
+use_console = False
 #
 #  debug setting
 #
@@ -214,14 +215,18 @@ class ifigure_app(BookViewerFrame):
         self.shell.set_tipw(self.tipw)
         self.hdf_export_window = None
 
-        if redirect_std:
+
+        if use_console:
             self.redirector = RedirectOutput(self.proj_tree_viewer.consol.log,
                                              self.proj_tree_viewer.consol.log)
 #           sys.stdout = redirector
 #           sys.stderr = redirector
         else:
             self.redirector = RedirectOutput(sys.stdout, sys.stderr)
-        self.redirector.turn_on()  # doesn't do anything if not redirect_std
+        if redirect_std:
+            self.redirector.turn_force_on()        # doesn't do anything if not redirect_std
+        else:
+            self.redirector.turn_on()  # redirect anyway
         self.logw.set_redirector(self.redirector)
 
         # these are preference components

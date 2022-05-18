@@ -145,13 +145,16 @@ class Logwindow(wx.MiniFrame):
         l = [True]*n
         for ipage in reversed(range(n)):
             p = self.nb.GetPage(ipage)
+
             keep = False
             for x in self.threadlist:
                 if x[2] == p:
                     keep = True
             if not keep:
-                p.Destroy()
+
                 self.nb.RemovePage(ipage)
+                p.Destroy()
+
         return
 
     def onActivate(self, e):
