@@ -266,7 +266,7 @@ class Axes3DMod(Axes3D):
     def dist(self, value):
         pass
 
-    def view_init(self, elev=None, azim=None):
+    def view_init(self, elev=None, azim=None, vertical_axis="z"):
         """
         Copied form Axes3D to play with self.dist
         """
@@ -282,6 +282,11 @@ class Axes3DMod(Axes3D):
             self.azim = self.initial_azim
         else:
             self.azim = azim
+
+        from matplotlib import _api
+        self._vertical_axis = _api.check_getitem(
+            dict(x=0, y=1, z=2), vertical_axis=vertical_axis
+        )
 
     def gl_hit_test(self, x, y, artist, radius=3):
         #
