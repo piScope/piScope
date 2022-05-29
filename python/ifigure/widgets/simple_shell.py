@@ -328,9 +328,15 @@ class SimpleShell(ShellBase):
         self.ch = panel
 
     def quit(self):
+        '''
+        exit piscope
+        '''
         self.GetTopLevelParent().onQuit()
 
     def forcequit(self):
+        '''
+        Terminate piScope (kill command is called)
+        '''
         import os
         pid = os.getpid()
         os.system('kill '+str(pid))
