@@ -64,10 +64,11 @@ if platform.system() == 'Darwin':
     def internal_idl(obj):
         if wx.UpdateUIEvent.CanUpdate(obj) and obj._menu_open:
             obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
-else:            
+else:
     def internal_idl(obj):
         if wx.UpdateUIEvent.CanUpdate(obj):
             obj.UpdateWindowUI(wx.UPDATE_UI_FROMIDLE)
+
 
 class FrameWithWindowList(wx.Frame):
     def __init__(self, *args, **kargs):
@@ -83,13 +84,13 @@ class FrameWithWindowList(wx.Frame):
 
         self.menuBar = wx.MenuBar()
         self.ID_WINDOWS = -1
-        
+
         parent = args[0]
 
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
 
-        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)        
+        self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
 
         if platform.system() == 'Darwin':
@@ -99,23 +100,23 @@ class FrameWithWindowList(wx.Frame):
             #   events for menubar items are only sent when the menu is about to be shown, and not
             #   in idle time
             #
-            # On MaOSX, we see too many UpdateWindowUI call. This reduces the 
+            # On MaOSX, we see too many UpdateWindowUI call. This reduces the
             # call of UpdateWindowUI from OnInternalild
             #
             self.Bind(wx.EVT_MENU_OPEN, self.onMenuOpen)
-            self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)        
+            self.Bind(wx.EVT_MENU_CLOSE, self.onMenuClose)
             self._menu_open = False
 
         wx.CallAfter(self.UpdateWindowUI)
 
     def OnInternalIdle(self):
         internal_idl(self)
-        
+
     def onMenuOpen(self, evt):
         self._menu_open = True
-        
+
     def onMenuClose(self, evt):
-        self._menu_open = False        
+        self._menu_open = False
 
     '''
     def turn_on_updateui_event(self):
@@ -126,13 +127,13 @@ class FrameWithWindowList(wx.Frame):
         pass
         #self.Unbind(wx.EVT_UPDATE_UI)
     '''
-    
+
     def onActivate(self, evt):
         if evt.GetActive():
             wx.GetApp().process_child_focus(self)
 
             from ifigure.utils.cbook import get_current_display_size
-            
+
             w, h = self.GetPosition()
             w1 = w
             h1 = h
@@ -148,13 +149,13 @@ class FrameWithWindowList(wx.Frame):
                 xm = 10
                 ym = 25
                 do_set = False
-                if w > x0 + xm and w <= x0 + xd -xm and h > y0 + ym and h < y0 + yd - ym:
+                if w > x0 + xm and w <= x0 + xd - xm and h > y0 + ym and h < y0 + yd - ym:
                     check[0] = True
-                if w + sw> x0 + xm and w +sw <= x0 + xd -xm and h > y0 + ym and h < y0 + yd - ym:
+                if w + sw > x0 + xm and w + sw <= x0 + xd - xm and h > y0 + ym and h < y0 + yd - ym:
                     check[1] = True
-                if w > x0 + xm and w <= x0 + xd -xm and h + sh> y0 + ym and h + sh < y0 + yd - ym:
+                if w > x0 + xm and w <= x0 + xd - xm and h + sh > y0 + ym and h + sh < y0 + yd - ym:
                     check[2] = True
-                if w + sw > x0 + xm and w + sw <= x0 + xd -xm and h + sh> y0 + ym and h + sh < y0 + yd - ym:
+                if w + sw > x0 + xm and w + sw <= x0 + xd - xm and h + sh > y0 + ym and h + sh < y0 + yd - ym:
                     check[3] = True
 
             if not any(check):
@@ -162,9 +163,9 @@ class FrameWithWindowList(wx.Frame):
                 #self.SetPosition((w1, h1))
                 self.SetPosition((10, 10))
 
-        #if hasattr(self, 'canvas'):
+        # if hasattr(self, 'canvas'):
         #    self.canvas.activate_canvas(evt.GetActive())
-                
+
         evt.Skip()
 
     def onChildFocus(self, evt):
@@ -310,9 +311,9 @@ class FrameWithWindowList(wx.Frame):
         item = helpmenu.AppendSubMenu(self._windowmenu, 'Viewers...')
         self.ID_WINDOWS = item.GetId()
         #item = wx.MenuItem(helpmenu, ID_WINDOWS, 'Viewers...', subMenu=self._windowmenu)
-        #helpmenu.Append(item)
+        # helpmenu.Append(item)
         #menu_AppendSubMenu(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
-       
+
         #menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, ID_HIDEAPP,
@@ -456,14 +457,14 @@ class FramePlus(FrameWithWindowList):
     def call_draw_after_resize(self):
         if self.canvas._figure is None:
             return
-        
+
         if self.book._screen_ratio_lock is not None:
             self.set_canvas_ratio(self.book._screen_ratio_lock)
             self.write_canvas_size_to_status_bar()
 
         if self.canvas._cutplane_btns is not None:
             self.canvas._cutplane_btns.place_bottoms()
-            
+
         fig_page = self.canvas._figure.figobj
         fig_page.reset_axesbmp_update()
         # fig_page.onResize(None)
@@ -547,6 +548,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     ID_SAVEPROJ = wx.NewIdRef(count=1)
     ID_LOCKSCALE = wx.NewIdRef(count=1)
     ID_SCREENRATIOLOCK = wx.NewIdRef(count=1)
+
     def __init__(self, *args, **kargs):
 
         # hisotry mode 0 : global history stack
@@ -703,15 +705,15 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         if self.isismultipage:
             menu_AppendSubMenu(editmenu, wx.ID_ANY, 'Add Page', subm)
             self.add_menu(subm, BookViewerFrame.ID_PM[1],
-                      "Before Current Page",
-                      "add a new page before the current page", self.onAddPageB)
+                          "Before Current Page",
+                          "add a new page before the current page", self.onAddPageB)
             self.add_menu(subm, BookViewerFrame.ID_PM[2],
-                      "After Current Page",
-                      "add a new page after the current page",  self.onAddPage)
+                          "After Current Page",
+                          "add a new page after the current page",  self.onAddPage)
 
             self.add_menu(editmenu, BookViewerFrame.ID_PM[3],
-                      "Delete Page", "delete current page",
-                       self.onDelPage)
+                          "Delete Page", "delete current page",
+                          self.onDelPage)
             editmenu.AppendSeparator()
         self.add_menu(editmenu, ID_KEEPDATA,
                       "Keep Book in Tree",
@@ -983,7 +985,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         from ifigure.ifigure_config import scratch as cs
         areas = self.canvas._figure.figobj.get_area()
         data = {"mode": 'area', "areas": areas}
-        
+
         fid = open(cs+'_area', 'wb')
         pickle.dump(data, fid)
         fid.close()
@@ -1080,6 +1082,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 if status is not None:
                     hist.extend(h)
                     finish_action.extend(f)
+            if len(hist) == 0:
+                return
+
             window = self.GetTopLevelParent()
             GlobalHistory().get_history(window).make_entry(hist,
                                                            finish_action=finish_action, menu_name='paste all')
@@ -1424,9 +1429,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self._rebuild_ifigure_canvas()
         self._link_canvas_property_editor()
         self.gui_tree.primary_client(self.canvas)
-   
+
         wx.CallAfter(self.SendSizeEvent)
-        #self.deffered_force_layout()
+        # self.deffered_force_layout()
 
     def new_page(self):
         new_page = FigPage()
@@ -1605,7 +1610,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         td = evt.GetTreeDict()
         name = td.name
         self.set_status_text(name, timeout=5000)
-        
+
     def onTD_Replace(self, evt):
         #        print 'replace event, bookviewer'
         self.canvas.onTD_Replace(evt)
@@ -1645,11 +1650,11 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.property_editor.onTD_ShowPage(evt)
 
         bmp_w, bmp_h = (self.canvas.canvas.figure_image[0].shape[0],
-                    self.canvas.canvas.figure_image[0].shape[1])
+                        self.canvas.canvas.figure_image[0].shape[1])
         canvas_h, canvas_w = self.canvas.canvas.GetSize()
         if bmp_h != canvas_h or bmp_w != canvas_w:
             self.deffered_force_layout()
-        
+
         f_page = self.get_page(ipage)
         ifigure.events.SendPageShownEvent(f_page)
 
@@ -1727,7 +1732,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book.show_page(k)
                 book.draw()
                 time.sleep(0.1)
-                
+
         from ifigure.utils.edit_list import DialogEditList
         l = [
             ["Frame Speed(s/frame)", str(0.5),
@@ -1760,7 +1765,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book.show_page(k)
                 book.draw()
                 time.sleep(0.1)
-                
+
         from ifigure.utils.edit_list import DialogEditList
         l = [
             ["Frame Speed(s/frame)", str(0.5),
@@ -1778,8 +1783,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             param.append((k, self))
         from ifigure.utils.png_animation import save_animation
         print('saveing png animation...'+filename)
-        save_animation(show_page, param, self.canvas, filename=filename, duration=speed)
-        
+        save_animation(show_page, param, self.canvas,
+                       filename=filename, duration=speed)
+
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):
         if show_page is None:
@@ -1891,7 +1897,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             evt.Skip()
 
         self.canvas.close()
-        
+
 #    def close_figurebook(self):
 #        self.onWindowClose()
     def install_toolbar_palette(self, name, tasks,  mode='2D', refresh=None):

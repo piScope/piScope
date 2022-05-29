@@ -1486,10 +1486,11 @@ class BookViewerInteractive(object):
             return
         ax = fig_axes._artists[0]
         if len(args) == 0 and len(kargs) == 0:
-            return ax.elev, ax.azim
-        elif len(args) == 2:
+            return ax.elev, ax.azim, ax._upvec
+        elif len(args) == 3:
             ax.elev = args[0]
             ax.azim = args[1]
+            ax._upvec = args[2]
             fig_axes.set_bmp_update(False)
         elif len(args) == 1:
             if args[0] == 'xy':

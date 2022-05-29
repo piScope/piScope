@@ -1149,7 +1149,7 @@ def view(*args, **kwargs):
     '''
        set 3D view
           view() : return current setting
-          view(elev, azim)
+          view(elev, azim, upvec)
           view('xy')
           view('yx')
           view('xz')

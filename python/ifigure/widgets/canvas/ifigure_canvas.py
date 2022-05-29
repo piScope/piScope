@@ -1100,10 +1100,12 @@ class ifigure_popup(wx.Menu):
                     if len(fig_axes._caxis) > 0:
                         menus = menus + \
                             [('Autoscale C', self.onCAuto, None), ]
-                    if parent.axes_selection().figobj.get_3d():
+
+                    if a.figobj.get_3d():
                         sameall = self.onSameXYZ
                     else:
                         sameall = self.onSameXY
+
                     menus = menus + \
                         [('All same scale', sameall, None),
                          ('All same X scale', self.onSameX,
@@ -1113,6 +1115,10 @@ class ifigure_popup(wx.Menu):
                     if len(fig_axes._caxis) > 0:
                         menus = menus + \
                             [('All same C scale', self.onSameC, None), ]
+                    if a.figobj.get_3d():
+                        menus = menus + \
+                            [('All same 3D view', self.onSameView, None), ]
+
                 menus.extend(
                     parent.GetTopLevelParent().extra_canvas_range_menu())
             try:
@@ -1374,6 +1380,10 @@ class ifigure_popup(wx.Menu):
     def onCAuto(self, e):
         canvas = e.GetEventObject()
         canvas.set_cauto()
+
+    def onSameView(self, e):
+        canvas = e.GetEventObject()
+        canvas.set_sameview()
 
     def onForward(self, e):
         canvas = e.GetEventObject()
@@ -3381,12 +3391,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                  usetar=False)
             shutil.move(tmpdir + '_bk', tmpdir)
 #           obj, ol, nl=p.paste_tree(fid)
+            dprint2('mode: ', header["mode"])
+
             if header["mode"] == 'page':
                 idx = p.i_child(obj)
                 p.move_child(idx, i_page + 1)
                 objs.append(obj)
             elif header["mode"] == 'axes':
-                dprint1('axes mode ', f_axes)
                 if f_axes is not None:
                     if obj.num_child() == 0:
                         ret = dialog.message(
@@ -3484,6 +3495,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             if (header["mode"] == 'axesobj'):
                 if not len(obj.get_figaxes()._artists) > obj._container_idx:
                     obj.set_container_idx(0)
+
             obj.realize()
             if (header["mode"] == 'axesobj' or
                     header["mode"] == 'pageobj'):
@@ -3493,10 +3505,19 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         ifigure.events.SendSelectionEvent(p, self, self.selection)
 
         # registor paste action to history
+        check = len(objs)
+        objs = [x for x in objs if len(x._artists) > 0]
+        if len(objs) != check:
+            print("Some objects did not generate aritsts.")
         artists = [weakref.ref(obj._artists[0]) for obj in objs]
         ret = [obj.get_full_path() for obj in objs]
         if header["mode"] == 'page':
             return ret
+        if len(artists) == 0:
+            if return_history:
+                return None, None, None
+            else:
+                return ret
         actions.append(UndoRedoAddRemoveArtists(artists=artists,
                                                 mode=0))
         f = []
@@ -3787,6 +3808,41 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         requests = self.expand_requests(requests)
         self.send_range_action(requests, 'range')
         ifigure.events.SendSelectionEvent(ax, self, self.selection)
+
+    def set_sameview(self):
+        window = self.GetTopLevelParent()
+        if self._figure.figobj.num_axes() == 1:
+            return
+        if self.axes_selection is None:
+            return
+        if self.axes_selection() is None:
+            return
+
+        axes = self.axes_selection()
+        f_ax_org = axes.figobj
+        new_value = f_ax_org.get_axes3d_viewparam(axes)
+        f_page = f_ax_org.get_parent()
+
+        actions = []
+        for f_ax in f_page.walk_axes():
+            if f_ax is f_ax_org:
+                continue
+            if not f_ax.get_3d():
+                continue
+            aa = f_ax._artists[0]
+            old_value = f_ax.get_axes3d_viewparam(aa)
+            actions.append(UndoRedoFigobjMethod(aa,
+                                                'axes3d_viewparam',
+                                                new_value,
+                                                old_value=old_value, figobj=f_ax))
+
+        if len(actions) == 0:
+            return
+        window = self.GetTopLevelParent()
+
+        GlobalHistory().get_history(window).make_entry(actions,
+                                                       menu_name='3D view(all)')
+        ifigure.events.SendSelectionEvent(f_ax_org, self, self.selection)
 
     def set_samex(self):
         self._set_samexy('x', mode=1)
@@ -4722,6 +4778,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
+
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

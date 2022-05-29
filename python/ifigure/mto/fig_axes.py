@@ -32,7 +32,6 @@ from scipy.interpolate import griddata
 import matplotlib.ticker as mticker
 
 
-
 import ifigure
 
 from ifigure.mto.fig_obj import FigObj
@@ -595,7 +594,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
                                                     book)
             else:
                 viewer = app.find_bookviewer(book)
-                    
+
 #            data1, data2 = target.figobj.get_slice(x, y)
             data1, data2 = target.figobj.get_slice(evt.x, evt.y)
             if data1 is None:
@@ -1247,6 +1246,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
 #   menu in tree viewer
 #
 
+
     def tree_viewer_menu(self):
         # return MenuString, Handler, MenuImage
         #  m=('Add Plot',     self.onAddPlot, None),
@@ -1768,6 +1768,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         a.azim = azim
         if not no_proj:
             a.get_proj()
+        self.set_bmp_update(False)
 
     def get_axes3d_viewparam(self, ax):
         return ax.elev, ax.azim, ax._upvec
@@ -2373,13 +2374,13 @@ class FigColorBar(FigInsetAxes, AdjustableRangeHolderCbar):
                 if isMPL33:
                     a.set_yscale('symlog', linthresh=th)
                 else:
-                    a.set_yscale('symlog', linthreshy=th)                    
+                    a.set_yscale('symlog', linthreshy=th)
             else:
                 a.set_xlim(range)
                 if isMPL33:
                     a.set_xscale('symlog', linthresh=th)
                 else:
-                    a.set_xscale('symlog', linthreshx=th)                    
+                    a.set_xscale('symlog', linthreshx=th)
         if self.getp('cdir') == 'v':
             p = self.get_axis_param('y')
         else:
