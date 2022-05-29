@@ -1,4 +1,5 @@
 from __future__ import print_function
+from six.moves.queue import Queue, Empty
 import wx.py.shell  # (wx4 removed this) wx.lib.shell
 from threading import Timer, Thread
 import time
@@ -26,8 +27,6 @@ except:
 
 dprint1, dprint2, dprint3 = debug.init_dprints('SimpleShell')
 
-
-from six.moves.queue import Queue, Empty
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
@@ -100,14 +99,6 @@ def sx(strin=''):
 
 
 class ShellBase(wx.py.shell.Shell):
-    def setBuiltinKeywords(self):
-        '''
-        this overwrite the origial setBuiltinKeywords
-        '''
-        from six.moves import builtins 
-        builtins.exit = builtins.quit = \
-            self.quit
-
     def Paste(self):
 
         if sys.platform == 'darwin':
@@ -115,7 +106,7 @@ class ShellBase(wx.py.shell.Shell):
             data = wx.TextDataObject()
             if wx.TheClipboard.Open():
                 wx.TheClipboard.GetData(data)
-                txt =  data.GetText()
+                txt = data.GetText()
                 wx.TheClipboard.Close()
             else:
                 txt = ''
@@ -301,7 +292,7 @@ class SimpleShell(ShellBase):
             import traceback
             traceback.print_exc()
             print("Can not load command history file")
-            
+
         if self.history[-1] != '#end of history':
             self.history.append('#end of history')
 
@@ -309,7 +300,7 @@ class SimpleShell(ShellBase):
         self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
         self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)        
+        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
         self.st = ''  # search txt
         self.st_flag = False
 
@@ -319,15 +310,18 @@ class SimpleShell(ShellBase):
         evt.Skip()
 
     def onKillFocus(self, evt):
-        evt.Skip()        
+        evt.Skip()
 
     def setBuiltinKeywords(self):
         '''
         this overwrite the origial setBuiltinKeywords
         '''
-        from six.moves import builtins 
+        from six.moves import builtins
         builtins.exit = builtins.quit = \
             self.quit
+        builtins.forceexit = builtins.forcequit = \
+            self.forcequit
+
         builtins.sx = sx
 
     def set_command_history(self, panel):
@@ -335,6 +329,11 @@ class SimpleShell(ShellBase):
 
     def quit(self):
         self.GetTopLevelParent().onQuit()
+
+    def forcequit(self):
+        import os
+        pid = os.getpid()
+        os.system('kill '+str(pid))
 
     def set_proj(self, proj):
         self.lvar["proj"] = proj
@@ -496,7 +495,7 @@ class SimpleShell(ShellBase):
         import types
 
         llist = []
-        #tlist = {getattr(types, name):
+        # tlist = {getattr(types, name):
         #         str(getattr(types, name)).split("'")[1]
         #         for name in dir(types) if not name.startswith('_')}
 
@@ -511,7 +510,7 @@ class SimpleShell(ShellBase):
                     import traceback
                     traceback.print_exc()
                     hasshape = False
-                
+
                 if hasshape:
                     llist.append((key, t0, text, str(val.shape)))
                 else:

@@ -1100,8 +1100,12 @@ class ifigure_popup(wx.Menu):
                     if len(fig_axes._caxis) > 0:
                         menus = menus + \
                             [('Autoscale C', self.onCAuto, None), ]
+                    if parent.axes_selection().figobj.get_3d():
+                        sameall = self.onSameXYZ
+                    else:
+                        sameall = self.onSameXY
                     menus = menus + \
-                        [('All same scale', self.onSameXY, None),
+                        [('All same scale', sameall, None),
                          ('All same X scale', self.onSameX,
                           None, bitmaps['samex']),
                             ('All same X (Y auto)', self.onSameX_autoY, None),
@@ -1322,6 +1326,10 @@ class ifigure_popup(wx.Menu):
     def onSameXY(self, e):
         canvas = e.GetEventObject()
         canvas.set_samexy()
+
+    def onSameXYZ(self, e):
+        canvas = e.GetEventObject()
+        canvas.set_samexyz()
 
     def onSameX(self, e):
         canvas = e.GetEventObject()
@@ -3788,6 +3796,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def set_samexy(self):
         self._set_samexy('xy', mode=1)
+
+    def set_samexyz(self):
+        self._set_samexy('xyz', mode=1)
 
     def set_xauto_all(self):
         self._set_samexy('x', auto=True, mode=2)
