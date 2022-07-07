@@ -1,5 +1,7 @@
 ## &pi;Scope
 &pi;Scope is a python based workbench for data analysis and modeling.
+(S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
+
 Goal of piScope includes
 * Data browsing (scope) application for MDSplus data system (www.mdsplus.org)
 * Lego blocks for gluing up large simulation codes using python
