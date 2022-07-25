@@ -19,7 +19,7 @@ from ifigure.utils.cbook import EraseBitMap
 from operator import itemgetter
 
 import ifigure.utils.debug as debug
-dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas15')
+dprint1, dprint2, dprint3 = debug.init_dprints('GLCanvas12')
 
 
 attribList = [glcanvas.WX_GL_SAMPLES,
