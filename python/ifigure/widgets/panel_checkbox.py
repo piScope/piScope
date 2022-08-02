@@ -29,6 +29,9 @@ class PanelCheckbox(object):
 
     def onUpdateUI(self, evt):
         for pinfo, c in self.walk_tree():
+            if "menu" not in pinfo:
+                print(pinfo)
+                continue
             if pinfo["menu"].GetId() == evt.GetId():
                 if pinfo["toggle_menu"]:
                     evt.Enable(True)

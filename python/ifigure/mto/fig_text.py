@@ -244,6 +244,8 @@ class FigText(FigObjGPHolder):
         self.refresh_artist()
 
     def make_newartist(self, s='', **kywds):
+        print(self.get_figpage())
+        print(self.get_figpage()._artists)        
         self.check_loaded_gp_data()
         container = self.get_container()
         xd, yd = self.get_device_point(0)
@@ -277,14 +279,16 @@ class FigText(FigObjGPHolder):
             bbox = mpltransforms.Bbox.from_extents(
                 container.get_window_extent().extents)
             try:
-                self._artists[0].set_clip_box(bbox)
-                self._artists[0].set_clip_on(True)
-                self._artists[0]._bbox_patch.set_clip_box(bbox)
-                self._artists[0]._bbox_patch.set_clip_on(True)
+                #self._artists[0].set_clip_box(bbox)
+                #self._artists[0].set_clip_on(True)
+                #self._artists[0]._bbox_patch.set_clip_box(bbox)
+                #self._artists[0]._bbox_patch.set_clip_on(True)
+                pass
             except:
                 pass
 
         self.delp("loaded_property")
+        print(self._artists[0])
         return self._artists[0]
 
     def refresh_artist(self):
@@ -346,7 +350,10 @@ class FigText(FigObjGPHolder):
         else:
             alist = artist
 
-        container = self.get_container()
+        page = self.get_figpage()
+        figure = page._artists[0]
+        container = figure
+        #container = self.get_container()
 
         if container is None:
             return
@@ -362,6 +369,8 @@ class FigText(FigObjGPHolder):
                     xd, yd = self.get_device_point(0)
                     x = [xd, xd+3, xd+3, xd, xd]
                     y = [yd, yd, yd+3, yd+3, yd]
+
+                print(container)
                 hl = matplotlib.lines.Line2D(x, y, marker='s',
                                              color='k', linestyle='None',
                                              markerfacecolor='None',

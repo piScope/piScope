@@ -371,6 +371,7 @@ class GenericPoint(object):
         self.x = x
         self.y = y
         self.trans = trans  # 'figure', 'axes', 'points'
+
         self.set_figpage(figpage)
         self.set_figaxes(figaxes)
 
@@ -406,6 +407,7 @@ class GenericPoint(object):
 
             for td in holder.get_figpage().walk_tree():
                 if isinstance(td, FigAxes):
+                    if len(td._artists) == 0: continue  # inset axis (color bar) may not have axis artist yet
                     rect.append((td, td.get_rect()))
 
             # set reference axes to the closest axes
@@ -484,6 +486,7 @@ class GenericPoint(object):
         get transform of genericpoint
         '''
         def get_transform(figaxes, figpage, n):
+            print("here", type(self.figaxes), figaxes, figpage, n)
             if figaxes is None:
                 t = figpage._artists[0].transFigure
             elif n == 'data':
@@ -561,6 +564,7 @@ class GenericPoint(object):
         return m
 
     def get_device_point(self):
+        print("get_device_point", self)
         t = self.get_gp_transform(dir='both')
         x1, y1 = self.convert_trans_p((self.x, self.y), t, None)
         return int(x1), int(y1)
