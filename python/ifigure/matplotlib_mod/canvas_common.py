@@ -19,7 +19,7 @@ try:
     # The Python OpenGL package can be found at
     # http://PyOpenGL.sourceforge.net/
     from OpenGL.GL import *
-    from OpenGL.GLUT import *
+    #from OpenGL.GLUT import *
     from OpenGL.GLU import *
     from OpenGL.GL import shaders
     from OpenGL.arrays import vbo

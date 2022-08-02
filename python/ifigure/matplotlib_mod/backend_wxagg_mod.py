@@ -88,24 +88,24 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def __del__(self):
         dprint2("FigureCanvasWxAggMod __del__")
-        
+
     def onMouseWheel(self, evt):
         rot = evt.GetWheelRotation()
         x = evt.GetX()
-        y = self.figure.bbox.height - evt.GetY()        
+        y = self.figure.bbox.height - evt.GetY()
 
         if rot != 0 and self._pre_rot == 0:
             # start wheel
-            event = {'guiEvent': evt, 'start': True, 'x': x, 'y':y,
+            event = {'guiEvent': evt, 'start': True, 'x': x, 'y': y,
                      'end': False, 'direction': rot > 0}
         elif rot == 0 and self._pre_rot != 0:
             # end  wheel
-            event = {'guiEvent': evt, 'start': False, 'x': x, 'y':y,
+            event = {'guiEvent': evt, 'start': False, 'x': x, 'y': y,
                      'end': True, 'direction': rot > 0}
         elif rot == 0:
             event = None
         else:
-            event = {'guiEvent': evt, 'start': False, 'x': x, 'y':y,
+            event = {'guiEvent': evt, 'start': False, 'x': x, 'y': y,
                      'end': False, 'direction': rot > 0}
         self._pre_rot = rot
         try:
@@ -149,7 +149,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         return
 
     def draw(self, drawDC=None, nogui_reprint=False):
-
+        #print("draw here")
         if self.figure is None:
             return
         if self.figure.figobj is None:
@@ -165,7 +165,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             self.figure.draw_from_bitmap(self.renderer)
             self._isDrawn = True
             if not nogui_reprint:
-                # print 'draw calling gui_repaint'
+                #print('draw calling gui_repaint')
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
@@ -207,13 +207,13 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._prepare_bitmap()
 
         self.gui_repaint(drawDC=drawDC)
-        
+
     def capture_screen_rgba(self):
         img = self.bitmap.ConvertToImage()
         w, h = self.bitmap.GetSize()
         rgb = np.asarray(img.GetDataBuffer()).reshape(h, w, -1)
         a = np.asarray(img.GetAlphaBuffer()).reshape(h, w, -1)
-        rgba = np.dstack((rgb, a)) 
+        rgba = np.dstack((rgb, a))
         return rgba
 
     def copy_figure_image(self):
@@ -223,12 +223,12 @@ class FigureCanvasWxAggMod(CanvasAgg):
         b = self.figure_image
         self.figure_image = figure_image
         return b
-    
+
     def swap_bitmap(self, bitmap):
         b = self.bitmap
         self.bitmap = bitmap
         return b
-        
+
     def Copy_to_Clipboard_mod(self, event=None, bmp=None, pgbar=False):
         '''
          It does the same thing as Copy_to_Clipboard.
@@ -346,7 +346,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         prepare renderer.bitmap 
         '''
         self.renderer.clear()
-        
+
         try:
             func(self.renderer, **kargs)
         except:
@@ -451,10 +451,10 @@ class FigureCanvasWxAggMod(CanvasAgg):
                 img = np.asarray(obj, np.uint8).copy()
             else:
                 img = np.fromstring(obj, np.uint8)
-                
+
         # print h, w
         img = img.reshape((int(h), int(w), 4))
-        
+
         if box is not None:
             a = int(max((np.floor(h-box[3]), 0)))
             b = int(min((np.floor(h-box[1])+2, h-1)))
@@ -519,6 +519,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def gui_repaint(self, *args, **kwargs):
         super(FigureCanvasWxAggMod, self).gui_repaint(*args, **kwargs)
+        self.Refresh()
+
         if hasattr(self.GetTopLevelParent(), "_playerbtn"):
             bp = self.GetTopLevelParent()._playerbtn
             if bp is not None:
@@ -527,4 +529,3 @@ class FigureCanvasWxAggMod(CanvasAgg):
             bp = self.Parent._cutplane_btns
             if bp is not None:
                 bp.Refresh()
-                

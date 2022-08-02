@@ -2189,6 +2189,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def mousescroll(self, event):
         if self.toolbar.mode != '':
             return
+        if not bool(self):
+            return
         frame = self.GetTopLevelParent()
         if frame is None:
             return
