@@ -244,9 +244,8 @@ class FigText(FigObjGPHolder):
         self.refresh_artist()
 
     def make_newartist(self, s='', **kywds):
-        print(self.get_figpage())
-        print(self.get_figpage()._artists)        
         self.check_loaded_gp_data()
+        
         container = self.get_container()
         xd, yd = self.get_device_point(0)
         # print xd, yd, self.get_gp(0).x, self.get_gp(0).y
@@ -288,7 +287,7 @@ class FigText(FigObjGPHolder):
                 pass
 
         self.delp("loaded_property")
-        print(self._artists[0])
+
         return self._artists[0]
 
     def refresh_artist(self):

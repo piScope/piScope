@@ -394,7 +394,8 @@ class GenericPoint(object):
         self.x = d["x"]
         self.y = d["y"]
         self.trans = d["trans"]
-        if d["ax"] is None:
+
+        if d["ax"] is None and d['trans'][0] == 'figure' and d['trans'][1] == 'figure':
             self.set_figaxes(None)
         else:
             rect = []
@@ -411,12 +412,17 @@ class GenericPoint(object):
                     rect.append((td, td.get_rect()))
 
             # set reference axes to the closest axes
-            area = [abs((xy[1][2]-xy[1][0])*(xy[1][3]-xy[1][1]))
+
+            if d["ax"] is not None:
+                area = [abs((xy[1][2]-xy[1][0])*(xy[1][3]-xy[1][1]))
                     for xy in rect]
-            idx = [x[0] for x in sorted(enumerate(area), key=lambda x:x[1])]
-            dist = [np.sqrt((d["ax"][0] - (rect[i][1][0] + rect[i][1][2])/2.)**2 +
+                idx = [x[0] for x in sorted(enumerate(area), key=lambda x:x[1])]
+                dist = [np.sqrt((d["ax"][0] - (rect[i][1][0] + rect[i][1][2])/2.)**2 +
                             (d["ax"][1] - (rect[i][1][1] + rect[i][1][3])/2.)**2) for i in idx]
-            i = np.argmin(dist)
+                i = np.argmin(dist)
+            else:
+                i = 0
+                
             holder.set_gp_figaxes(self, rect[i][0])
             self.x = d["x"]
             self.y = d["y"]
@@ -486,7 +492,6 @@ class GenericPoint(object):
         get transform of genericpoint
         '''
         def get_transform(figaxes, figpage, n):
-            print("here", type(self.figaxes), figaxes, figpage, n)
             if figaxes is None:
                 t = figpage._artists[0].transFigure
             elif n == 'data':
@@ -564,7 +569,6 @@ class GenericPoint(object):
         return m
 
     def get_device_point(self):
-        print("get_device_point", self)
         t = self.get_gp_transform(dir='both')
         x1, y1 = self.convert_trans_p((self.x, self.y), t, None)
         return int(x1), int(y1)

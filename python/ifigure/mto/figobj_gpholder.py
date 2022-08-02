@@ -21,6 +21,13 @@ class FigObjGPHolder(FigObj, GenericPointsHolder):
             del self._loaded_gp_data
 #            print hasattr(self, '_loaded_gp_data')
 
+        figpage = self.get_figpage()
+        figaxes = self.get_figaxes()
+
+        for k, gp in enumerate(self._gp_points):        
+            gp.set_figpage(figpage)
+            gp.set_figaxes(figaxes)
+
     def set_parent(self, parent):
         FigObj.set_parent(self, parent)
         GenericPointsHolder.set_parent(self, parent)
