@@ -278,11 +278,10 @@ class FigText(FigObjGPHolder):
             bbox = mpltransforms.Bbox.from_extents(
                 container.get_window_extent().extents)
             try:
-                # self._artists[0].set_clip_box(bbox)
-                # self._artists[0].set_clip_on(True)
-                # self._artists[0]._bbox_patch.set_clip_box(bbox)
-                # self._artists[0]._bbox_patch.set_clip_on(True)
-                pass
+                self._artists[0].set_clip_box(bbox)
+                self._artists[0].set_clip_on(True)
+                self._artists[0]._bbox_patch.set_clip_box(bbox)
+                self._artists[0]._bbox_patch.set_clip_on(True)
             except:
                 pass
 
