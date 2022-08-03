@@ -842,11 +842,11 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     set_facecolors = set_facecolor
 
     def get_facecolors(self):
-        return self._facecolors3d
+        return self._facecolor3d
     get_facecolor = get_facecolors
 
     def get_edgecolors(self):
-        return self._edgecolors3d
+        return self._edgecolor3d
     get_edgecolor = get_edgecolors
 
     def set_facecolordata(self, data):

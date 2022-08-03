@@ -371,6 +371,7 @@ class GenericPoint(object):
         self.x = x
         self.y = y
         self.trans = trans  # 'figure', 'axes', 'points'
+
         self.set_figpage(figpage)
         self.set_figaxes(figaxes)
 
@@ -393,6 +394,8 @@ class GenericPoint(object):
         self.x = d["x"]
         self.y = d["y"]
         self.trans = d["trans"]
+
+        # and d['trans'][0] == 'figure' and d['trans'][1] == 'figure':
         if d["ax"] is None:
             self.set_figaxes(None)
         else:
@@ -406,6 +409,9 @@ class GenericPoint(object):
 
             for td in holder.get_figpage().walk_tree():
                 if isinstance(td, FigAxes):
+                    if len(td._artists) == 0:
+                        # inset axis (color bar) may not have axis artist yet
+                        continue
                     rect.append((td, td.get_rect()))
 
             # set reference axes to the closest axes
@@ -415,6 +421,7 @@ class GenericPoint(object):
             dist = [np.sqrt((d["ax"][0] - (rect[i][1][0] + rect[i][1][2])/2.)**2 +
                             (d["ax"][1] - (rect[i][1][1] + rect[i][1][3])/2.)**2) for i in idx]
             i = np.argmin(dist)
+
             holder.set_gp_figaxes(self, rect[i][0])
             self.x = d["x"]
             self.y = d["y"]

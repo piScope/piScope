@@ -1651,7 +1651,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         # idle time cpu load
         self.spacer2 = spacer_panel(self).set_color([0, 0, 0])
         #      self.canvas.Bind(wx.EVT_LEFT_DCLICK, self.onLeftDClick)
-        self.canvas.SetSizeHints(minW=30, minH=30)
+        self.canvas.SetSizeHints(minW=100, minH=100)
         self.mpl_connect()
         self._layout_mode = False
         self.layout_editor = layout_editor(self)
