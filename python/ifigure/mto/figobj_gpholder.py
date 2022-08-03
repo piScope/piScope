@@ -11,22 +11,21 @@ class FigObjGPHolder(FigObj, GenericPointsHolder):
         FigObj.destroy(self, clean_owndir=clean_owndir)
 
     def check_loaded_gp_data(self):
-        #        import traceback
-        #        traceback.print_stack()
-        #        print self, hasattr(self, '_loaded_gp_data')
-        if hasattr(self, '_loaded_gp_data'):
-            for k, gp in enumerate(self._gp_points):
-                gp.dict_to_gp(self._loaded_gp_data[k], self)
-#            print hasattr(self, '_loaded_gp_data')
-            del self._loaded_gp_data
-#            print hasattr(self, '_loaded_gp_data')
-
         figpage = self.get_figpage()
         figaxes = self.get_figaxes()
 
-        for k, gp in enumerate(self._gp_points):        
+        for k, gp in enumerate(self._gp_points):
             gp.set_figpage(figpage)
-            gp.set_figaxes(figaxes)
+
+        if hasattr(self, '_loaded_gp_data'):
+            for k, gp in enumerate(self._gp_points):
+                gp.set_figpage(figpage)
+                gp.dict_to_gp(self._loaded_gp_data[k], self)
+            del self._loaded_gp_data
+
+        for k, gp in enumerate(self._gp_points):
+            if figaxes is not None:
+                gp.set_figaxes(figaxes)
 
     def set_parent(self, parent):
         FigObj.set_parent(self, parent)

@@ -245,7 +245,7 @@ class FigText(FigObjGPHolder):
 
     def make_newartist(self, s='', **kywds):
         self.check_loaded_gp_data()
-        
+
         container = self.get_container()
         xd, yd = self.get_device_point(0)
         # print xd, yd, self.get_gp(0).x, self.get_gp(0).y
@@ -278,10 +278,10 @@ class FigText(FigObjGPHolder):
             bbox = mpltransforms.Bbox.from_extents(
                 container.get_window_extent().extents)
             try:
-                #self._artists[0].set_clip_box(bbox)
-                #self._artists[0].set_clip_on(True)
-                #self._artists[0]._bbox_patch.set_clip_box(bbox)
-                #self._artists[0]._bbox_patch.set_clip_on(True)
+                # self._artists[0].set_clip_box(bbox)
+                # self._artists[0].set_clip_on(True)
+                # self._artists[0]._bbox_patch.set_clip_box(bbox)
+                # self._artists[0]._bbox_patch.set_clip_on(True)
                 pass
             except:
                 pass
@@ -369,7 +369,6 @@ class FigText(FigObjGPHolder):
                     x = [xd, xd+3, xd+3, xd, xd]
                     y = [yd, yd, yd+3, yd+3, yd]
 
-                print(container)
                 hl = matplotlib.lines.Line2D(x, y, marker='s',
                                              color='k', linestyle='None',
                                              markerfacecolor='None',
