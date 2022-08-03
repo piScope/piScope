@@ -1,6 +1,6 @@
 import ifigure.utils.cbook as cbook
 import ifigure.events
-from ifigure.mto.fig_axes import FigAxes
+from ifigure.mto.fig_axes import FigAxes, FigInsetAxes
 from ifigure.widgets.canvas.custom_picker import linehit_test, abs_d
 from ifigure.widgets.undo_redo_history import GlobalHistory, UndoRedoArtistProperty, UndoRedoFigobjProperty, UndoRedoFigobjMethod
 import weakref
@@ -395,7 +395,6 @@ class GenericPoint(object):
         self.y = d["y"]
         self.trans = d["trans"]
 
-        # and d['trans'][0] == 'figure' and d['trans'][1] == 'figure':
         if d["ax"] is None:
             self.set_figaxes(None)
         else:
@@ -409,31 +408,22 @@ class GenericPoint(object):
 
             for td in holder.get_figpage().walk_tree():
                 if isinstance(td, FigAxes):
-                    if len(td._artists) == 0:
-                        # inset axis (color bar) may not have axis artist yet
-                        continue
                     rect.append((td, td.get_rect()))
 
             # set reference axes to the closest axes
             area = [abs((xy[1][2]-xy[1][0])*(xy[1][3]-xy[1][1]))
                     for xy in rect]
+
             idx = [x[0] for x in sorted(enumerate(area), key=lambda x:x[1])]
             dist = [np.sqrt((d["ax"][0] - (rect[i][1][0] + rect[i][1][2])/2.)**2 +
                             (d["ax"][1] - (rect[i][1][1] + rect[i][1][3])/2.)**2) for i in idx]
+
             i = np.argmin(dist)
 
-            holder.set_gp_figaxes(self, rect[i][0])
+            holder.set_gp_figaxes(self, rect[idx[i]][0])
             self.x = d["x"]
             self.y = d["y"]
-#            for i in idx:
-#                dd = 0.03
-#                if ((d["ax"][0]-dd < (rect[i][1][0] + rect[i][1][2])/2 < d["ax"][0]+dd) and
-#                    (d["ax"][1]-dd < (rect[i][1][1] + rect[i][1][3])/2 < d["ax"][1]+dd)):
-#                    if len(rect[i][0]._artists) == 0: return
-#                    holder.set_gp_figaxes(self, rect[i][0])
-#                    self.x=d["x"]
-#                    self.y=d["y"]
-#                    break
+
             if hasattr(self, '_d_bk'):
                 del self._d_bk
         return self
