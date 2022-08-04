@@ -142,19 +142,25 @@ class FigPage(FigObj):
                 figobj.realize()
 
     def realize_children(self):
-        from ifigure.mto.figobj_gpholder import FigObjGPHolder
+        for objname, figobj in self.get_children():
+            figobj.realize(realize_gpholder=False)
 
-        not_gp_holder = [figobj for objname, figobj in self.get_children()
-                         if not isinstance(figobj, FigObjGPHolder)]
+        for objname, figobj in self.get_children():
+            figobj.realize(realize_gpholder=True)
 
-        gp_holder = [figobj for objname, figobj in self.get_children()
-                     if isinstance(figobj, FigObjGPHolder)]
+        #from ifigure.mto.figobj_gpholder import FigObjGPHolder
 
-        for figobj in not_gp_holder:
-            figobj.realize()
+        # not_gp_holder = [figobj for objname, figobj in self.get_children()
+        #                 if not isinstance(figobj, FigObjGPHolder)]
 
-        for figobj in gp_holder:
-            figobj.realize()
+        # gp_holder = [figobj for objname, figobj in self.get_children()
+        #             if isinstance(figobj, FigObjGPHolder)]
+
+        # for figobj in not_gp_holder:
+        #    figobj.realize()
+
+        # for figobj in gp_holder:
+        #    figobj.realize()
 
     def generate_artist(self):
         # this method generate artist
