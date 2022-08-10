@@ -667,14 +667,14 @@ class FigObj(TreeDict, MetadataHolder):
             return []
         return [UndoRedoFigobjMethod(self._artists[0], 'rasterized', value)]
 
-    def realize(self, realize_gpholder=False):
+    def realize(self, realize_gpholder='both'):
         from ifigure.mto.figobj_gpholder import FigObjGPHolder
 
         do_generate = True
 
-        if realize_gpholder and not isinstance(self, FigObjGPHolder):
+        if realize_gpholder=='gp' and not isinstance(self, FigObjGPHolder):
             do_generate = False
-        if not realize_gpholder and isinstance(self, FigObjGPHolder):
+        if realize_gpholder=='non_gp' and isinstance(self, FigObjGPHolder):
             do_generate = False
 
         if not self._suppress:

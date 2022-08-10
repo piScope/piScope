@@ -143,10 +143,10 @@ class FigPage(FigObj):
 
     def realize_children(self):
         for objname, figobj in self.get_children():
-            figobj.realize(realize_gpholder=False)
+            figobj.realize(realize_gpholder='non_gp')
 
         for objname, figobj in self.get_children():
-            figobj.realize(realize_gpholder=True)
+            figobj.realize(realize_gpholder='gp')
 
         #from ifigure.mto.figobj_gpholder import FigObjGPHolder
 
