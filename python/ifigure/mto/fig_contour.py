@@ -89,6 +89,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             obj = FigObj.__new__(cls, *args, **kywds)
             obj = set_hidden_vars(obj)
             return obj
+
         p = ArgsParser()
         p.add_opt('x', None, ['numbers|nonstr', 'dynamic'])
         p.add_opt('y', None, ['numbers|nonstr', 'dynamic'])
@@ -98,7 +99,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         p.add_opt('v', None, ['numbers|nonstr', 'dynamic'])
 
         p.set_default_list(default_kargs)
-        p.add_key2(("FillMode", "alpha"))
+        p.add_key2(("FillMode", "alpha", "use_tri"))
         p.add_key2('interp', 'str')
         p.add_key2('cmap', 'str')
         p.add_key('offset', None)
@@ -110,7 +111,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         p.set_squeeze_minimum_1D("x", "y", "z")
 
         v, kywds, d, flag = p.process(*args, **kywds)
-        dprint2(d)
+        dprint2(v)
 
         if not flag:
             raise ValueError('Failed when processing argument')
@@ -122,7 +123,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         obj._set_expression_vars(v['v'])
         for name in ('x', 'y', 'z'):
             obj.setvar(name, v[name])
-        for name in ('FillMode', 'alpha', 'n', 'v', "cmap", "offset", "zdir"):
+        for name in ('FillMode', 'alpha', 'n', 'v', "cmap", "offset", "zdir", "use_tri"):
             obj.setvar(name, v[name])
 
         if v['cmap'] is not None:
@@ -262,12 +263,13 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         kywds = self.getvar('kywds')
         kywds['alpha'] = self.getp('alpha')
 
-        if self.getp('use_tri'):
+        if self.getvar('use_tri'):
             x = x.flatten()
             y = y.flatten()
             z = z.flatten()
             args, self._tri = tri_args(x, y, self._tri)
-            print(args)
+            args = [args[0], args[1], z]
+            kywds['triangles'] = self._tri
         else:
             args = []
             if x is not None:
@@ -296,7 +298,8 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 kywds['zdir'] = self.getvar('zdir')
         except:
             pass
-        if self.getp('use_tri'):
+
+        if self.getvar('use_tri'):
             if FillMode:
                 method = container.tricontourf
             else:
@@ -307,6 +310,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 method = container.contour
         try:
+            print(method, args[0].shape, args[1].shape, args[2].shape)
             self._mappable = method(*args, **kywds)
             self._artists = self._mappable.collections[:]
             self.set_rasterized()
@@ -773,6 +777,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                    xrange=[None, None],
                    yrange=[None, None], scale='linear'):
 
+        print(crange, xrange, yrange)
         x, y, z = self._eval_xyz()
         if (x is None or
                 y is None):
@@ -787,14 +792,19 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
               yrange[0] is not None and
               yrange[1] is not None):
             zt = np.ma.masked_array(z)
-            if y.ndim == 1:
-                zt[(y < yrange[0]) | (y > yrange[1]), :] = np.ma.masked
+            if zt.ndim == 2:
+                if y.ndim == 1:
+                    zt[(y < yrange[0]) | (y > yrange[1]), :] = np.ma.masked
+                else:
+                    zt[(y < yrange[0]) | (y > yrange[1])] = np.ma.masked
+                if x.ndim == 1:
+                    zt[:, (x < xrange[0]) | (x > xrange[1])] = np.ma.masked
+                else:
+                    zt[(x < xrange[0]) | (x > xrange[1])] = np.ma.masked
             else:
                 zt[(y < yrange[0]) | (y > yrange[1])] = np.ma.masked
-            if x.ndim == 1:
-                zt[:, (x < xrange[0]) | (x > xrange[1])] = np.ma.masked
-            else:
                 zt[(x < xrange[0]) | (x > xrange[1])] = np.ma.masked
+
             if scale == 'log':
                 zt[z <= 0] = np.ma.masked
             crange = self._update_range(crange, (np.amin(zt), np.amax(zt)))
