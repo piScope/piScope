@@ -310,7 +310,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 method = container.contour
         try:
-            print(method, args[0].shape, args[1].shape, args[2].shape)
             self._mappable = method(*args, **kywds)
             self._artists = self._mappable.collections[:]
             self.set_rasterized()
