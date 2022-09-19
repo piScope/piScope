@@ -1420,8 +1420,11 @@ class FigObj(TreeDict, MetadataHolder):
                     rec[3] = evt.y
 
             if shift and self._picker_a_type != 'area':
-                d = (float(self._st_extent[3]-self._st_extent[2]) /
-                     float(self._st_extent[1]-self._st_extent[0]))
+                if self._st_extent[1]-self._st_extent[0] != 0:
+                    d = (float(self._st_extent[3]-self._st_extent[2]) /
+                         float(self._st_extent[1]-self._st_extent[0]))
+                else:
+                    d = 1
                 dy = float(rec[1]-rec[0])*d
                 if ((loc & 4) != 0):
                     rec[2] = int(rec[3]-dy)

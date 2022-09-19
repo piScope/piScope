@@ -66,8 +66,8 @@ class _PropertyGrid(wx.grid.Grid):
             return self.tableRef()
         else:
             return self.tableRef
-        
-    #def OnPaint(self, evt):
+
+    # def OnPaint(self, evt):
     #    print("Here")
 
 
@@ -657,9 +657,9 @@ class VarViewerG(wx.Panel):
         # this allows to select row always...
         try:
             self.grid.SetSelectionMode(wx.grid.Grid.wxGridSelectRows)
-        except: #wxPython 4.1.0
+        except:  # wxPython 4.1.0
             self.grid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
-            
+
     def onGridLClick(self, evt):
         row = evt.GetRow()
         self._startrow = row
@@ -685,10 +685,14 @@ class VarViewerG(wx.Panel):
 
         if mode == 'copy':
             name = str(self.grid.GetRowLabelValue(idx[0]))
-            self.GetTopLevelParent().set_status_text('Copy ' + name, timeout=3000)
+            names = [str(self.grid.GetRowLabelValue(d)) for d in idx]
+
+            self.GetTopLevelParent().set_status_text(
+                'Copy ' + ', '.join(names), timeout=3000)
             try:
                 fid = open(vv_scratch, 'wb')
-                data = {name: obj.getvar(name)}
+                #data = {name: obj.getvar(name)}
+                data = {n: obj.getvar(n) for n in names}
                 pickle.dump(data, fid)
                 fid.close()
             except:
@@ -722,16 +726,20 @@ class VarViewerG(wx.Panel):
             self.update()
         elif mode == 'trash':
             name = str(self.grid.GetRowLabelValue(idx[0]))
+            names = [str(self.grid.GetRowLabelValue(d)) for d in idx]
             dlg = wx.MessageDialog(None,
-                                   'Do you want to delete ' + name + '?',
+                                   'Do you want to delete ' +
+                                   ', '.join(names) + '?',
                                    'Deleting variable',
                                    wx.OK | wx.CANCEL)
             ret = dlg.ShowModal()
             dlg.Destroy()
             if ret == wx.ID_OK:
-                obj.delvar(name)
+                for n in names:
+                    obj.delvar(n)
                 obj._var_changed = True
-                self.GetTopLevelParent().set_status_text('Deltete '+name, timeout=3000)
+                self.GetTopLevelParent().set_status_text('Deltete ' +
+                                                         ', '.join(names), timeout=3000)
                 wx.CallAfter(self.update)
 
 #        text = obj.get_drag_text2(name)
