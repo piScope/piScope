@@ -88,7 +88,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cmap', 'jet')
 
         v, kywds, d, flag = p.process(*args, **kywds)
-        
+
         if not flag:
             raise ValueError('Failed when processing argument')
 
@@ -273,7 +273,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     kywds["interpolation"] = self.getp("interp")
 
                 self.set_artist(container.imshow(*args,
-                                                 #picker=cpicker.Picker,
+                                                 # picker=cpicker.Picker,
                                                  extent=extent,  **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
 
@@ -293,11 +293,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 kywds = self._var["kywds"]
                 kywds['alpha'] = self.getp('alpha')
                 if cax.scale == 'linear':
-                    args.append(z.flatten().astype(float))
+                    # args.append(z.flatten().astype(float))
+                    args.append(np.real(z.flatten()))
                     kywds["clim"] = (crange[0], crange[1])
                 else:
                     # args.append(np.log10(z))
-                    args.append(z.flatten().astype(float))
+                    # args.append(z.flatten().astype(float))
+                    args.append(np.real(z.flatten()))
                     kywds["clim"] = [np.log10(max((crange[0], 1e-16))),
                                      np.log10(max((crange[1], 1e-16)))]
                 kywds['shading'] = self.getp('shading')
@@ -342,7 +344,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     kywds['im_center'] = self._var["kywds"]['im_center']
                 if 'im_axes' in self._var["kywds"]:
                     kywds['im_axes'] = self._var["kywds"]['im_axes']
-                    
+
                 kywds['alpha'] = self.getp('alpha')
                 if self.getp("interp") == 'linear':
                     kywds["interpolation"] = 'bilinear'
@@ -727,7 +729,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         if 'im_center' in self._var["kywds"]:
             im_center = np.array(self._var["kywds"]['im_center'])
         else:
-            im_center = np.array([0,0,0])
+            im_center = np.array([0, 0, 0])
         if 'im_axes' in self._var["kywds"]:
             ax1 = np.array(self._var["kywds"]['im_axes'][0])
             ax2 = np.array(self._var["kywds"]['im_axes'][1])
@@ -747,9 +749,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             return self._update_range(xrange, [np.nanmin(x), np.nanmax(x)])
         else:
             im_center, ax1, ax2 = self._get_3d_placement()
-            data = np.hstack([im_center[0] + ax1[0]*x, im_center[0] + ax2[0]*y])
+            data = np.hstack(
+                [im_center[0] + ax1[0]*x, im_center[0] + ax2[0]*y])
             xrange = self._update_range(xrange,
-                                       (np.nanmin(data), np.nanmax(data)))
+                                        (np.nanmin(data), np.nanmax(data)))
             return xrange
 
     def get_yrange(self, yrange=[None, None],
@@ -760,15 +763,16 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             return yrange
         if y is None:
             return yrange
-        if not self.get_figaxes().get_3d():        
+        if not self.get_figaxes().get_3d():
             if scale == 'log':
                 y = mask_negative(y)
             return self._update_range(yrange, (np.nanmin(y), np.nanmax(y)))
         else:
             im_center, ax1, ax2 = self._get_3d_placement()
-            data = np.hstack([im_center[1] + ax1[1]*x, im_center[0] + ax2[1]*y])
+            data = np.hstack(
+                [im_center[1] + ax1[1]*x, im_center[0] + ax2[1]*y])
             yrange = self._update_range(yrange,
-                                       (np.nanmin(data), np.nanmax(data)))
+                                        (np.nanmin(data), np.nanmax(data)))
             return yrange
 
     def get_zrange(self, zrange=[None, None],
@@ -777,7 +781,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                    scale='linear'):
         if not self.get_figaxes().get_3d():
             return zrange
-        
+
         x, y, z = self._eval_xyz()
         im_center, ax1, ax2 = self._get_3d_placement()
 
@@ -786,7 +790,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                                     (np.nanmin(data), np.nanmax(data)))
 
         return zrange
-    
 
     def get_crange(self, crange=[None, None],
                    xrange=[None, None],
@@ -794,15 +797,15 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                    scale='linear'):
 
         x, y, z = self._eval_xyz()
-        
-        if np.iscomplex(z).any():
-            z = z.astype(np.float)
+
+        if np.iscomplexobj(z):
+            z = z.real
 
         if self.get_figaxes().get_3d():
             crange = self._update_range(crange,
                                         (np.amin(z), np.amax(z)))
             return crange
-            
+
         if (xrange[0] is not None and
             xrange[1] is not None and
             yrange[0] is not None and
@@ -864,7 +867,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             avalue = 'bilinear'
         else:
             avalue = value
-            
+
         x, y, z = self.getp(("x", "y", "z"))
 
         if (x.size*y.size != z.size and
