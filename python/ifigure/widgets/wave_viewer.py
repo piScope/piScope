@@ -143,8 +143,6 @@ class FigSurfacePhasor(FigSurface):
 
 def convert_figobj(obj):
     if obj.__class__ == FigTripcolor:
-        if obj.getvar('cdata') is None:
-            return
         obj.__class__ = FigTripcolorPhasor
     elif obj.__class__ == FigPlot:
         obj.__class__ = FigPlotPhasor
