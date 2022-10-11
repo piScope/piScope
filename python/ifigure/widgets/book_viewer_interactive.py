@@ -1,4 +1,19 @@
 from __future__ import print_function
+import warnings
+import matplotlib.colors as mcolors
+import six
+import logging
+import numpy as np
+import ifigure
+from ifigure.utils.cbook import ProcessKeywords
+from collections import OrderedDict
+from functools import wraps
+from ifigure.widgets.undo_redo_history import GlobalHistory
+from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
+from ifigure.widgets.undo_redo_history import UndoRedoFigobjProperty
+from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
+import ifigure.utils.debug as debug
+import traceback
 '''
    BookViewrInteractive
 
@@ -34,21 +49,6 @@ from __future__ import print_function
 '''
 
 
-import traceback
-import ifigure.utils.debug as debug
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
-from ifigure.widgets.undo_redo_history import UndoRedoFigobjProperty
-from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
-from ifigure.widgets.undo_redo_history import GlobalHistory
-from functools import wraps
-from collections import OrderedDict
-from ifigure.utils.cbook import ProcessKeywords
-import ifigure
-import numpy as np
-import logging
-import six
-import matplotlib.colors as mcolors
-import warnings
 _type_numbers = ['int8', 'int16', 'int32', 'int64', 'uint8', 'uint16', 'uint32',
                  'uint64', 'float16', 'float32', 'float64', 'complex64', 'complex128', 'complex256', ]
 _dtype_numbers = []
@@ -81,7 +81,7 @@ def has_plot(figaxes):
             not isinstance(obj, FigText) and
             not isinstance(obj, FigBox) and
                 not isinstance(obj, FigCircle)):
-                return True
+            return True
     return False
 
 
@@ -890,7 +890,7 @@ class BookViewerInteractive(object):
         try:
             obj = cls(*args, **kargs)
         except ValueError as x:
-            traceback.print_exc()            
+            traceback.print_exc()
             if hasattr(x, 'message'):
                 print(x.message)
             return
@@ -1336,6 +1336,23 @@ class BookViewerInteractive(object):
             kargs["container_idx"] = 1 if kargs["axes2"] else 0
             del kargs["axes2"]
 
+        f_page = self.get_page()
+        if f_page is None:
+            return None
+        f_axes = f_page.get_axes(self.isec())
+        for name, obj in f_axes.get_children():
+            if isinstance(obj, FigLegend):
+                labels = obj.getvar('legendlabel')
+                for arg in args:
+                    labels = sum((labels, arg), ())
+                obj.setvar('legendlabel', labels)
+                obj.setp('legendlabel', labels)
+                obj.refresh_artist()
+                ifigure.events.SendChangedEvent(
+                    self.book, w=self, useProcessEvent=True)
+                ifigure.events.SendPVDrawRequest(
+                    self.book, wait_idle=True, refresh_hl=False)
+                return
         #kargs['autonext'] = False
         obj = FigLegend(*args, **kargs)
         return obj
@@ -1469,10 +1486,11 @@ class BookViewerInteractive(object):
             return
         ax = fig_axes._artists[0]
         if len(args) == 0 and len(kargs) == 0:
-            return ax.elev, ax.azim
-        elif len(args) == 2:
+            return ax.elev, ax.azim, ax._upvec
+        elif len(args) == 3:
             ax.elev = args[0]
             ax.azim = args[1]
+            ax._upvec = args[2]
             fig_axes.set_bmp_update(False)
         elif len(args) == 1:
             if args[0] == 'xy':
@@ -1528,16 +1546,16 @@ class BookViewerInteractive(object):
                 ax._use_frustum = True
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'noclip':
-                ax._use_clip =  ax._use_clip & 2
+                ax._use_clip = ax._use_clip & 2
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'clip':
-                ax._use_clip =  ax._use_clip | 1                
+                ax._use_clip = ax._use_clip | 1
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'nocp':
-                ax._use_clip =  ax._use_clip & 1
+                ax._use_clip = ax._use_clip & 1
                 fig_axes.set_bmp_update(False)
             elif args[0] == 'cp':
-                ax._use_clip =  ax._use_clip | 2                
+                ax._use_clip = ax._use_clip | 2
                 fig_axes.set_bmp_update(False)
 
             elif args[0] == 'auto':

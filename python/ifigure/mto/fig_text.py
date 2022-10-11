@@ -245,6 +245,7 @@ class FigText(FigObjGPHolder):
 
     def make_newartist(self, s='', **kywds):
         self.check_loaded_gp_data()
+
         container = self.get_container()
         xd, yd = self.get_device_point(0)
         # print xd, yd, self.get_gp(0).x, self.get_gp(0).y
@@ -285,6 +286,7 @@ class FigText(FigObjGPHolder):
                 pass
 
         self.delp("loaded_property")
+
         return self._artists[0]
 
     def refresh_artist(self):
@@ -346,7 +348,10 @@ class FigText(FigObjGPHolder):
         else:
             alist = artist
 
-        container = self.get_container()
+        page = self.get_figpage()
+        figure = page._artists[0]
+        container = figure
+        #container = self.get_container()
 
         if container is None:
             return
@@ -362,6 +367,7 @@ class FigText(FigObjGPHolder):
                     xd, yd = self.get_device_point(0)
                     x = [xd, xd+3, xd+3, xd, xd]
                     y = [yd, yd, yd+3, yd+3, yd]
+
                 hl = matplotlib.lines.Line2D(x, y, marker='s',
                                              color='k', linestyle='None',
                                              markerfacecolor='None',

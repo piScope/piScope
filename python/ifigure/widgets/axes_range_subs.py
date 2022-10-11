@@ -184,7 +184,7 @@ class RangeRequestMaker(object):
             for i, g in enumerate(axparams):
                 p = g.get_rangeparam()
                 if i < len(ranges):
-                    r = ranges[i]
+                     r = ranges[i]
                 else:
                     r = ranges[-1]
                 p[1] = auto

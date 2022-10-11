@@ -426,7 +426,6 @@ def line_3d_to_gl(obj):
     ArtGL.__init__(obj)
     return obj
 
-
 class AxesImageGL(ArtGL, AxesImage):
     def __init__(self, *args, **kargs):
         ArtGL.__init__(self)
@@ -438,7 +437,7 @@ class AxesImageGL(ArtGL, AxesImage):
     def __repr__(self):
         return 'ImageGL'
 
-    def set_3dpath(self, im_center, im_axes):
+    def set_im3dpath(self, im_center, im_axes):
         '''
              p2---p3
          (y) |    |
@@ -843,11 +842,11 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     set_facecolors = set_facecolor
 
     def get_facecolors(self):
-        return self._facecolors3d
+        return self._facecolor3d
     get_facecolor = get_facecolors
 
     def get_edgecolors(self):
-        return self._edgecolors3d
+        return self._edgecolor3d
     get_edgecolor = get_edgecolors
 
     def set_facecolordata(self, data):

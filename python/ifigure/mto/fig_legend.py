@@ -247,6 +247,7 @@ class FigLegend(FigObjGPHolder):
 
         kwargs['title'] = self.getvar('title')
         kwargs['shadow'] = self.getvar('shadow')
+
         a = c.legend(*args, **kwargs)
         self.apply_fbprop(a.legendPatch)
         if self.getp('draggable'):

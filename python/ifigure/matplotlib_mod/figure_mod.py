@@ -13,7 +13,13 @@ class FigureMod(Figure):
     #    def __init__(self, *args, **kargs):
     #        self._frameDrown = False
     #        Figure.__init__(self,*args, **kargs)
-    @allow_rasterization
+
+    def _call_draw(self, aa, draw, renderer):
+        bk = aa.get_rasterized()
+        aa.set_rasterized(self.get_rasterized())
+        draw(renderer)
+        aa.set_rasterized(bk)
+
     def draw_others(self, renderer, dsu=None):
 
         #if self.frameon: self.patch.draw(renderer)
@@ -24,7 +30,7 @@ class FigureMod(Figure):
             # skip if a is  frameart
             if hasattr(a, '_is_frameart') and a._is_frameart:
                 continue
-            dsu.append((a.get_zorder(), a.draw, [renderer]))
+            dsu.append((a.get_zorder(), a, a.draw, renderer))
 
         # override the renderer default if self.suppressComposite
         # is not None
@@ -35,7 +41,7 @@ class FigureMod(Figure):
         if len(self.images) <= 1 or not_composite or \
                 not allequal([im.origin for im in self.images]):
             for a in self.images:
-                dsu.append((a.get_zorder(), a.draw, [renderer]))
+                dsu.append((a.get_zorder(), a, a.draw, renderer))
         else:
             # make a composite image blending alpha
             # list of (_image.Image, ox, oy)
@@ -50,14 +56,15 @@ class FigureMod(Figure):
             im.is_grayscale = False
             l, b, w, h = self.bbox.bounds
 
-            def draw_composite():
+            def draw_composite(_a):
                 gc = renderer.new_gc()
                 gc.set_clip_rectangle(self.bbox)
                 gc.set_clip_path(self.get_clip_path())
                 renderer.draw_image(gc, l, b, im)
                 gc.restore()
 
-            dsu.append((self.images[0].get_zorder(), draw_composite, []))
+            dsu.append((self.images[0].get_zorder(),
+                        self, draw_composite, None))
 
         # render the figure text
         # first apply default to suptitle
@@ -77,16 +84,15 @@ class FigureMod(Figure):
             if tinfo[5] == 'default':
                 title.set_size(tsize)
         for a in self.texts:
-            dsu.append((a.get_zorder(), a.draw, [renderer]))
+            dsu.append((a.get_zorder(), a, a.draw, renderer))
 
         for a in self.legends:
-            dsu.append((a.get_zorder(), a.draw, [renderer]))
+            dsu.append((a.get_zorder(), a, a.draw, renderer))
 
         dsu.sort(key=itemgetter(0))
-        for zorder, func, args in dsu:
-            func(*args)
+        for _zorder, a, draw_func, arg in dsu:
+            self._call_draw(a, draw_func, arg)
 
-    @allow_rasterization
     def draw_frame(self, renderer):
         # draw the figure bounding box, perhaps none for white figure
         #        self.patch.set_facecolor((0.75, 0.75, 0.75, 0.1))
@@ -95,12 +101,11 @@ class FigureMod(Figure):
             dsu = []
             for a in self.patches + self.lines + self.artists:
                 if hasattr(a, '_is_frameart') and a._is_frameart:
-                    dsu.append((a.get_zorder(), a.draw, [renderer]))
+                    dsu.append((a.get_zorder(), a, a.draw, renderer))
             dsu.sort(key=itemgetter(0))
-            for zorder, func, args in dsu:
-                func(*args)
+            for _zorder, a, draw_func, arg in dsu:
+                self._call_draw(a, draw_func, arg)
 
-    @allow_rasterization
     def draw_axes(self, renderer, axes, noframe=False):
         def walk_children(a):
             yield a
@@ -109,7 +114,7 @@ class FigureMod(Figure):
                     yield a3
 
         if self.frameon and not noframe:
-            self.patch.draw(renderer)
+            self._call_draw(self.patch, self.patch.draw, renderer)
 
         #
         #  this is show axis box front ....
@@ -206,7 +211,8 @@ class FigureMod(Figure):
             axes.spines[s].set_linewidth(w)
         w = self.figobj.getp('axestick_width')
         axes.tick_params(axis='both', width=float(w))
-        axes.draw(renderer)
+
+        self._call_draw(axes, axes.draw, renderer)
 
     def draw_from_bitmap(self, renderer):
 

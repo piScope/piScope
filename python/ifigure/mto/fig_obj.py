@@ -155,7 +155,7 @@ class FigObj(TreeDict, MetadataHolder):
         self.setp('zorder', zorder)
         self.setp('rasterized', rasterized)
         self.setp('frameart', False)
-        self.setp('noclip3d', False)        
+        self.setp('noclip3d', False)
         self.setp("args", args)
         if len(args) != 0:
             logging.warning(
@@ -234,6 +234,7 @@ class FigObj(TreeDict, MetadataHolder):
 #    def _property_in_file(self):
 #        ###define artist property read by mpl.getp and saved in file
 #        return ['zorder', 'use_var', 'rasterized']
+
     @classmethod
     def property_in_palette(self):
         # define artist property or _attr shown in palette
@@ -666,16 +667,26 @@ class FigObj(TreeDict, MetadataHolder):
             return []
         return [UndoRedoFigobjMethod(self._artists[0], 'rasterized', value)]
 
-    def realize(self):
+    def realize(self, realize_gpholder='both'):
+        from ifigure.mto.figobj_gpholder import FigObjGPHolder
+
+        do_generate = True
+
+        if realize_gpholder=='gp' and not isinstance(self, FigObjGPHolder):
+            do_generate = False
+        if realize_gpholder=='non_gp' and isinstance(self, FigObjGPHolder):
+            do_generate = False
+
         if not self._suppress:
-            self.generate_artist()
+            if do_generate:
+                self.generate_artist()
             for objname, figobj in self.get_children():
-                figobj.realize()
+                figobj.realize(realize_gpholder=realize_gpholder)
         else:
             if not self.isempty():
                 self.del_artist(delall=True)
             for objname, figobj in self.get_children():
-                figobj.realize()
+                figobj.realize(realize_gpholder=realize_gpholder)
 
     '''
        artist update...
@@ -1032,10 +1043,10 @@ class FigObj(TreeDict, MetadataHolder):
     def getp(self, name=None):
         if name is None:
             return self._attr
-        
+
         from ifigure.utils.cbook import isiterable_not_string
-        
-        if isiterable_not_string(name):        
+
+        if isiterable_not_string(name):
             try:
                 return tuple([self._attr.get(n, None) for n in name])
             except:
@@ -1068,6 +1079,7 @@ class FigObj(TreeDict, MetadataHolder):
 #
 #  tree viewer menu
 #
+
 
     def tree_viewer_menu(self):
      # return MenuString, Handler, MenuImage
@@ -1247,6 +1259,7 @@ class FigObj(TreeDict, MetadataHolder):
 
 
 # Hit test (annotation mode)
+
     @property
     def ispickable_a(self):
         return True
@@ -1407,8 +1420,11 @@ class FigObj(TreeDict, MetadataHolder):
                     rec[3] = evt.y
 
             if shift and self._picker_a_type != 'area':
-                d = (float(self._st_extent[3]-self._st_extent[2]) /
-                     float(self._st_extent[1]-self._st_extent[0]))
+                if self._st_extent[1]-self._st_extent[0] != 0:
+                    d = (float(self._st_extent[3]-self._st_extent[2]) /
+                         float(self._st_extent[1]-self._st_extent[0]))
+                else:
+                    d = 1
                 dy = float(rec[1]-rec[0])*d
                 if ((loc & 4) != 0):
                     rec[2] = int(rec[3]-dy)
@@ -1619,7 +1635,6 @@ class FigObj(TreeDict, MetadataHolder):
 #        if isinstance(self, ZUser): self.get_zaxisparam()
 #        if isinstance(self, CUser): self.get_caxisparam()
 
-
     def get_artist_property(self, a):
         #       plist = properties_in_file_0(self)
         plist = self.property_in_file()
@@ -1670,7 +1685,6 @@ class FigObj(TreeDict, MetadataHolder):
 #
 #   range setting
 #
-
 
     def get_xrange(self, xrange=[None, None], scale='linear'):
         return xrange

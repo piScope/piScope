@@ -104,6 +104,8 @@ def help(*args):
 #       print lnames
 #       print gnames
         txt = ['    ']
+        gnames.append('quit')
+        gnames.append('forcequit')
         gnames = sorted(gnames)
         #gnames = [name for name in gnames if not name in _internal_func]
         flen = max([len(name) for name in gnames])+3
