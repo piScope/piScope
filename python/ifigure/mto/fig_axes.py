@@ -698,7 +698,8 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
             alist.append(ya.get_label())
             alist.append(ya.get_offset_text())
             alist.extend(a.artists)
-            renderer = a.figure._cachedRenderer
+            #renderer = a.figure._cachedRenderer
+            renderer = a.figure.canvas.get_renderer()
 
             for item in alist:
                 # skip this case since it fails

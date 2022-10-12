@@ -1280,7 +1280,8 @@ class FigObj(TreeDict, MetadataHolder):
         coordinate
         '''
         try:
-            box = a.get_window_extent(a.figure._cachedRenderer)
+            #box = a.get_window_extent(a.figure._cachedRenderer)
+            box = a.get_window_extent(a.figure.canvas.get_renderer())
             return box.xmin, box.xmax, box.ymin, box.ymax
         except:
             print(('error in get_artist_extent for ', a))

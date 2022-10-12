@@ -266,12 +266,20 @@ class Axes3DMod(Axes3D):
     def dist(self, value):
         pass
 
-    def view_init(self, elev=None, azim=None, vertical_axis="z"):
+    # after MPL 3.6.1 dist became _dist
+    @property
+    def _dist(self):
+        return camera_distance
+
+    @_dist.setter
+    def _dist(self, value):
+        pass
+
+    def view_init(self, elev=None, azim=None, roll=None, vertical_axis="z"):
         """
         Copied form Axes3D to play with self.dist
         """
-
-        #self.dist = camera_distance
+        #self._dist = camera_distance
 
         if elev is None:
             self.elev = self.initial_elev
@@ -282,6 +290,11 @@ class Axes3DMod(Axes3D):
             self.azim = self.initial_azim
         else:
             self.azim = azim
+
+        if roll is None:
+            self.roll = self.initial_roll
+        else:
+            self.roll = roll
 
         from matplotlib import _api
         self._vertical_axis = _api.check_getitem(

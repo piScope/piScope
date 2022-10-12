@@ -484,7 +484,9 @@ def GetArtistExtent(a, box=None, renderer=None, canvas=None, force=False):
     if hasattr(a, 'get_window_extent'):
         try:
             if renderer is None:
-                renderer = a.figure._cachedRenderer
+                #renderer = a.figure._cachedRenderer
+                renderer = a.figure.canvas.get_renderer()
+
             box1 = a.get_window_extent(renderer).extents
             box = merge_box(box, box1)
         except:
