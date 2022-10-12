@@ -420,8 +420,9 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.figure.frameon = o
 
     def _prepare_bitmap(self):
-        from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
-        self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
+        #from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
+        from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap
+        self.bitmap = _rgba_to_wx_bitmap(self.get_renderer().buffer_rgba())
 
     def _sorted_axes_list(self):
         # a list of (zorder, func_to_call, list_of_args)

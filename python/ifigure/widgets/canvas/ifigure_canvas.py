@@ -3063,7 +3063,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #               len(self.selection)> 1):
             if len(self.selection) > 1:
                 for a in item().figobj_hl:
-                    box = a.get_window_extent(a.figure._cachedRenderer)
+                    #box = a.get_window_extent(a.figure._cachedRenderer)
+                    box = a.get_window_extent(a.figure.canvas.get_renderer())
                     hl_range = [min([box.xmin, hl_range[0]]),
                                 max([box.xmax, hl_range[1]]),
                                 min([box.ymin, hl_range[2]]),
