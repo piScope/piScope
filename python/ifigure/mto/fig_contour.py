@@ -776,7 +776,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                    xrange=[None, None],
                    yrange=[None, None], scale='linear'):
 
-        print(crange, xrange, yrange)
         x, y, z = self._eval_xyz()
         if (x is None or
                 y is None):
