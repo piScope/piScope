@@ -275,6 +275,14 @@ class Axes3DMod(Axes3D):
     def _dist(self, value):
         pass
 
+    # after MPL 3.6.1, initial_roll is defined
+    @property
+    def _initial_roll(self):
+        if hasattr(self, "initial_roll"):
+            return self.initial_roll
+        else:
+            return (0, 0, 1)
+
     def view_init(self, elev=None, azim=None, roll=None, vertical_axis="z"):
         """
         Copied form Axes3D to play with self.dist
@@ -292,7 +300,7 @@ class Axes3DMod(Axes3D):
             self.azim = azim
 
         if roll is None:
-            self.roll = self.initial_roll
+            self.roll = self._initial_roll
         else:
             self.roll = roll
 
