@@ -109,9 +109,10 @@ def export_csvfile(obj, filename):
     import csv
     var = obj.data.getvar()
     names = list(var.keys())
-    with open(filename, 'wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=' ',)
-#                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    with open(filename, 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='|')# quoting=csv.QUOTE_MINIMAL)
+        print(names)
         spamwriter.writerow(names)
         for k in range(len(var[names[0]])):
             data = [var[n][k] for n in names]
