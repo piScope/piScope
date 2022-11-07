@@ -421,7 +421,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def _prepare_bitmap(self):
         try:   # MPL 3.6.1 and after
-            from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap as convert
+            from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap
             self.bitmap = _rgba_to_wx_bitmap(self.get_renderer().buffer_rgba())
         except ImportError:
             from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
