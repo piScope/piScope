@@ -565,13 +565,16 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 return True, {'child_artist': artist}
             else:
                 return False, {}
-        elif isinstance(artist, PathCollection):
-            for path in artist.get_paths():
-                if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
-                    self._hit_path = path
-                    return True, {'child_artist': artist}
-            return False, {}
         else:
+            #if isinstance(artist, PathCollection):
+                #
+                #  For PathCollection, we do this test first
+                #
+            #    for path in artist.get_paths():
+            #        if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
+            #            self._hit_path = path
+            #            return True, {'child_artist': artist}
+
             for path in artist.get_paths():
                 #               for line plot, hit test is done for each path vertices
                 #               path.contains_points does not check if the point is "on the line"
