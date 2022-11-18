@@ -7,14 +7,15 @@ use_mpl_tri = False
 
 def tri_args(x, y, _tri=None):
     #    use_mpl_tri = False
+    print(x.shape, y.shape)
     if use_mpl_tri:
         if _tri is None:
             _tri = Triangulation(x, y)
         args = [x, y, _tri.triangles]
     else:
         if _tri is None:
-            _tri = Delaunay(np.hstack((x.flatten().reshape(-1, 1),
-                                       y.flatten().reshape(-1, 1),))).simplices.copy()
+            _tri = delaunay(x, y)
+
         args = [x.flatten(), y.flatten(), _tri]
 
     return args, _tri
@@ -24,8 +25,24 @@ def delaunay(x, y):
     '''
     tri = delaunay(x, y)
     '''
-    return Delaunay(np.hstack((x.flatten().reshape(-1, 1),
-                               y.flatten().reshape(-1, 1),))).simplices.copy()
+    if len(x.shape) == 1 and len(y.shape) == 1:
+        _tri = Delaunay(np.hstack((x.reshape(-1, 1),
+                                   y.reshape(-1, 1),))).simplices.copy()
+
+    elif len(x.shape) == 2 and len(y.shape) == 2:
+        xx = np.arange(x.shape[1])
+        yy = np.arange(x.shape[0])
+        XX, YY = np.meshgrid(xx, yy)
+        _tri = Delaunay(np.hstack((XX.flatten().reshape(-1, 1),
+                                  YY.flatten().reshape(-1, 1),))).simplices.copy()
+    else:
+        import warning
+        warning.warn(
+            "triangulation input data has ndim > 2 or x and y have differnt ndim. Data is flattened first")
+        _tri = Delaunay(np.hstack((x.flatten().reshape(-1, 1),
+                                   y.flatten().reshape(-1, 1),))).simplices.copy()
+
+    return _tri
 
 
 def mask_inside(x, y, tri, edge, mask=None, op=np.logical_or):

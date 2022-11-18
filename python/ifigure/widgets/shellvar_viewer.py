@@ -353,14 +353,14 @@ class ShellVarViewer(wx.Panel):
             return
         gt = self.grid.GetTable()
         obj = gt._obj
-        print(gt)
 
         if mode == 'copy':
-            name = str(self.grid.GetRowLabelValue(idx[0]))
-            self.GetTopLevelParent().set_status_text('Copy ' + name, timeout=3000)
+            names = [str(self.grid.GetRowLabelValue(d)) for d in idx]
+            self.GetTopLevelParent().set_status_text(
+                'Copy ' + ', '.join(names), timeout=3000)
             try:
                 fid = open(vv_scratch, 'wb')
-                data = {name: self.shell.get_shellvar(name)}
+                data = {n: self.shell.get_shellvar(n) for n in names}
                 pickle.dump(data, fid)
                 fid.close()
             except:
@@ -386,16 +386,19 @@ class ShellVarViewer(wx.Panel):
                 self.shell.set_shellvar(key, data[key])
             self.update()
         elif mode == 'trash':
-            name = str(self.grid.GetRowLabelValue(idx[0]))
+            names = [str(self.grid.GetRowLabelValue(d)) for d in idx]
             dlg = wx.MessageDialog(None,
-                                   'Do you want to delete ' + name + '?',
+                                   'Do you want to delete ' +
+                                   ', '.join(names) + '?',
                                    'Deleting variable',
                                    wx.OK | wx.CANCEL)
             ret = dlg.ShowModal()
             dlg.Destroy()
             if ret == wx.ID_OK:
-                self.shell.del_shellvar(name)
-                self.GetTopLevelParent().set_status_text('Deltete '+name, timeout=3000)
+                for n in names:
+                    self.shell.del_shellvar(n)
+                self.GetTopLevelParent().set_status_text(
+                    'Deltete '+', '.join(names), timeout=3000)
                 wx.CallAfter(self.update)
 
     def onGridSize(self, evt):

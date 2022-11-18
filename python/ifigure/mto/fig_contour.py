@@ -264,12 +264,8 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         kywds['alpha'] = self.getp('alpha')
 
         if self.getvar('use_tri'):
-            x = x.flatten()
-            y = y.flatten()
-            z = z.flatten()
             args, self._tri = tri_args(x, y, self._tri)
-            args = [args[0], args[1], z]
-            kywds['triangles'] = self._tri
+            args.append(np.real(z.flatten()))
         else:
             args = []
             if x is not None:
@@ -566,10 +562,10 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 return False, {}
         else:
-            #if isinstance(artist, PathCollection):
-                #
-                #  For PathCollection, we do this test first
-                #
+            # if isinstance(artist, PathCollection):
+            #
+            #  For PathCollection, we do this test first
+            #
             #    for path in artist.get_paths():
             #        if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
             #            self._hit_path = path

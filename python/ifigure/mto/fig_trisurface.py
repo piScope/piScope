@@ -16,6 +16,9 @@ class FigTrisurface(FigSurface):
             tri = None
         obj = FigSurface.__new__(self, *argc, **kywds)
 
+        if not hasattr(obj, '_tri'):
+            obj._tri = None
+
         return obj
 
     def __init__(self, *argc, **kywds):
@@ -125,10 +128,12 @@ class FigTrisurface(FigSurface):
             'linewidth') is None else self.getp('linewidth')
         kywds['shade'] = self.getvar('shade')
 
-        if self.hasvar('tri'):
-            args = (self.getvar('tri'), z)
-        else:
-            args = (x, y, z)
+        args, self._tri = tri_args(x, y, self._tri)
+        args.append(z.flatten().astype(float))
+        # if self.hasvar('tri'):
+        #    args = (self.getvar('tri'), z)
+        # else:
+        #    args = (x, y, z)
         self._artists = [container.plot_trisurf(*args, **kywds)]
 
         for artist in self._artists:
