@@ -515,7 +515,7 @@ class AxesImageGL(ArtGL, AxesImage):
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
 
-                if self._gl_rgbacache_id != id(self._rgbacache):
+                if self._gl_rgbacache_id != id(self._imcache):
                     if glcanvas.has_vbo_data(self):
                         d = glcanvas.get_vbo_data(self)
                         for x in d:
@@ -523,8 +523,10 @@ class AxesImageGL(ArtGL, AxesImage):
                 renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
                                        np.transpose(self._im_cache, (1, 0, 2)),
                                        interp=self._gl_interp,
-                                       always_noclip=self._gl_always_noclip)                
-                self._gl_rgbacache_id = id(self._rgbacache)
+                                       always_noclip=self._gl_always_noclip)
+
+
+                self._gl_rgbacache_id = id(self._imcache)
                 gc.restore()
             else:
                 pass
