@@ -760,7 +760,8 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         ax._on_move_done()
         figaxes = ax.figobj
         if (canvas.toolbar.mode == 'pan' or
-                canvas.toolbar.mode == 'zoom'):
+            canvas.toolbar.mode == 'zoom' or
+                canvas.toolbar.mode == '3dzoom'):
             req = None
             func = canvas.make_range_request_zoom
             minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
