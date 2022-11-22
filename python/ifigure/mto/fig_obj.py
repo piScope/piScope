@@ -672,9 +672,9 @@ class FigObj(TreeDict, MetadataHolder):
 
         do_generate = True
 
-        if realize_gpholder=='gp' and not isinstance(self, FigObjGPHolder):
+        if realize_gpholder == 'gp' and not isinstance(self, FigObjGPHolder):
             do_generate = False
-        if realize_gpholder=='non_gp' and isinstance(self, FigObjGPHolder):
+        if realize_gpholder == 'non_gp' and isinstance(self, FigObjGPHolder):
             do_generate = False
 
         if not self._suppress:
@@ -1791,3 +1791,35 @@ class FigObj(TreeDict, MetadataHolder):
             return fig_axes._artists[0].transAxes
         elif name == 'figure':
             return fig_page._artists[0].transFigure
+
+#
+# change rotation center in 3D plot
+#
+    def onSetRotCenter(self, evt):
+        canvas = evt.GetEventObject()
+
+        print("here", evt.GetEventObject())
+
+        xx = 0
+        yy = 0
+        zz = 0
+        ll = 0
+        for x in canvas.selection:
+            glartist = x()
+            x, y, z = glartist.get_glverts()
+            l = len(x)
+            ll += l
+            xx += np.mean(x)*l
+            yy += np.mean(y)*l
+            zz += np.mean(z)*l
+            axes = glartist.axes
+
+        xx /= l
+        yy /= l
+        zz /= l
+
+        cc = np.array((xx, yy, zz))
+        axes._gl_rot_center = cc
+        axes._gl_use_rot_center = True
+
+        evt.Skip()
