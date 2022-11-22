@@ -253,6 +253,7 @@ class Axes3DMod(Axes3D):
         self._gl_scale = 1.0
         self._gl_scale_accum = 1.0
         self._gl_rot_center = np.array([0., 0., 0.])
+        self._gl_use_rot_center = False
         self._zoom_btn = []
         self._pan_btn = []
         self._rotate_btn = []
@@ -516,6 +517,9 @@ class Axes3DMod(Axes3D):
             return
 
         fig_axes = self.figobj
+        if fig_axes is None:
+            return
+
         fig_axes.set_bmp_update(False)
 
         self._on_move_mod(evt)
@@ -628,20 +632,15 @@ class Axes3DMod(Axes3D):
                 newp1[0]**2 + newp1[1]**2)) * 180 / np.pi
             self.azim = np.arctan2(newp1[1], newp1[0]) * 180 / np.pi
 
-            # test here
-            Mold = self._matrix_cache_combined
-            self.get_proj2()
-            Mnew = self._matrix_cache_combined
+            if self._gl_use_rot_center:
+                Mold = self._matrix_cache_combined
+                self.get_proj2()
+                Mnew = self._matrix_cache_combined
 
-            #minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
-            #p0 =  np.array((np.mean([minx, maxx]), np.mean([miny, maxy]), np.mean([minz, maxz])))
-            #dp =  np.array((maxx-minx, maxy-miny, maxz-minz))
-            #dd = self._gl_rot_center - p0
-            #delta_in_axesnorm = dd/dp
-            xrange, yrange, zrange = self._screen_shift_3drot(Mold, Mnew)
-            self.set_xlim3d(xrange)
-            self.set_ylim3d(yrange)
-            self.set_zlim3d(zrange)
+                xrange, yrange, zrange = self._screen_shift_3drot(Mold, Mnew)
+                self.set_xlim3d(xrange)
+                self.set_ylim3d(yrange)
+                self.set_zlim3d(zrange)
 
         elif self.button_pressed in self._pan_btn:
             dx = 1 - ((w - dx) / w)
@@ -687,6 +686,9 @@ class Axes3DMod(Axes3D):
             return
 
         fig_axes = self.figobj
+        if fig_axes is None:
+            return
+
         fig_axes.set_bmp_update(False)
         Axes3D._button_release(self, evt)
         self._pan_btn = []

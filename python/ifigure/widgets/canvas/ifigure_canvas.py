@@ -1126,18 +1126,18 @@ class ifigure_popup(wx.Menu):
                 if parent.axes_selection().figobj.get_3d():
                     menus.extend([
                         ('+3D view', None, None),
-                        ('XY Plane', self.on3DXY, None),
-                        ('XZ Plane', self.on3DXZ, None),
-                        ('YZ Plane', self.on3DYZ, None),
+                        ('XY plane', self.on3DXY, None),
+                        ('XZ plane', self.on3DXZ, None),
+                        ('YZ plane', self.on3DYZ, None),
                         ('Rotate 90', self.on3D_Rot90r, None),
                         ('Rotate -90', self.on3D_Rot90, None),
                         ('Flip', self.on3DUpDown, None),
-                        ('Default View', self.on3DDefaultView, None),
+                        ('Default view', self.on3DDefaultView, None),
                         ('---', None, None), ])
                     if parent.axes_selection()._use_frustum:
-                        menus.append(('Use Ortho', self.on3DOrtho, None))
+                        menus.append(('Use ortho', self.on3DOrtho, None))
                     else:
-                        menus.append(('Use Frustum', self.on3DFrustum, None))
+                        menus.append(('Use frustum', self.on3DFrustum, None))
 
                     if parent.axes_selection()._use_clip & 1:
                         menus.append(('Clip off', self.on3DClipOff, None))
@@ -1153,18 +1153,24 @@ class ifigure_popup(wx.Menu):
 
                     if parent.axes_selection()._show_3d_axes:
                         menus.append(
-                            ('Hide Axes Icon', self.on3DAxesIconOff, None))
+                            ('Hide axes icon', self.on3DAxesIconOff, None))
                     else:
                         menus.append(
-                            ('Show Axes Icon', self.on3DAxesIconOn, None))
+                            ('Show axes icon', self.on3DAxesIconOn, None))
 
                     if (parent.axes_selection().figobj.getp('aspect') ==
                             'equal'):
-                        menus.append(('Auto Aspect', self.on3DAutoAspect,
+                        menus.append(('Auto aspect', self.on3DAutoAspect,
                                       None))
                     else:
-                        menus.append(('Equal Aspect', self.on3DEqualAspect,
+                        menus.append(('Equal aspect', self.on3DEqualAspect,
                                       None))
+                    if len(parent.selection) == 1:
+                        method = parent.selection[0]().figobj.onSetRotCenter
+                        menus.append(('Set rotation center', method, None))
+                    else:
+                        menus.append(('Reset rotation center',
+                                     self.onResetRotCenter, None))
                     menus.extend([
                         ('!', None, None), ])
             except BaseException:
@@ -1329,6 +1335,10 @@ class ifigure_popup(wx.Menu):
     def on3DAxesIconOn(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('axesicon')
+
+    def onResetRotCenter(self, e):
+        canvas = e.GetEventObject()
+        canvas.axes_selection()._gl_use_rot_center = False
 
     def onSameXY(self, e):
         canvas = e.GetEventObject()
@@ -4782,7 +4792,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
-
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]
