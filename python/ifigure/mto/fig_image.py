@@ -763,7 +763,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         else:
             im_center, ax1, ax2 = self._get_3d_placement()
             data = np.hstack(
-                [im_center[1] + ax1[1]*x, im_center[0] + ax2[1]*y])
+                [im_center[1] + ax1[1]*x, im_center[1] + ax2[1]*y])
             yrange = self._update_range(yrange,
                                         (np.nanmin(data), np.nanmax(data)))
             return yrange
@@ -778,7 +778,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         x, y, z = self._eval_xyz()
         im_center, ax1, ax2 = self._get_3d_placement()
 
-        data = np.hstack([im_center[2] + ax1[2]*x, im_center[0] + ax2[2]*y])
+        data = np.hstack([im_center[2] + ax1[2]*x, im_center[2] + ax2[2]*y])
         zrange = self._update_range(zrange,
                                     (np.nanmin(data), np.nanmax(data)))
 
