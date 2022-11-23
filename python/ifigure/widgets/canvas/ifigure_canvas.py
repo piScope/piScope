@@ -761,16 +761,25 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         figaxes = ax.figobj
         if (canvas.toolbar.mode == 'pan' or
             canvas.toolbar.mode == 'zoom' or
-                canvas.toolbar.mode == '3dzoom'):
+            canvas.toolbar.mode == '3dzoom'):
             req = None
             func = canvas.make_range_request_zoom
             minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
             req = func(figaxes, 'x', [minx, maxx], False, ax, requests=req)
             req = func(figaxes, 'y', [miny, maxy], False, ax, requests=req)
             req = func(figaxes, 'z', [minz, maxz], False, ax, requests=req)
-            canvas.send_range_action(req, '3D ' + canvas.toolbar.mode)
+
+            if canvas.toolbar.mode == '3dzoom':
+                new_value = ax.elev, ax.azim, ax._upvec
+                extra_actions = [UndoRedoFigobjMethod(ax, 'axes3d_viewparam', new_value,
+                                                      old_value=self._org)]
+            else:
+                extra_actions = None
+            canvas.send_range_action(req,
+                                     '3D ' + canvas.toolbar.mode,
+                                     extra_actions = extra_actions)
         else:
-            new_value = ax.elev, ax.azim
+            new_value = ax.elev, ax.azim, ax._upvec
             actions = [UndoRedoFigobjMethod(ax, 'axes3d_viewparam', new_value,
                                             old_value=self._org)]
             window = canvas.GetTopLevelParent()
