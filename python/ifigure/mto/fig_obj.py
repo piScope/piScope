@@ -1798,8 +1798,6 @@ class FigObj(TreeDict, MetadataHolder):
     def onSetRotCenter(self, evt):
         canvas = evt.GetEventObject()
 
-        print("here", evt.GetEventObject())
-
         xx = 0
         yy = 0
         zz = 0

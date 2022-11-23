@@ -208,11 +208,11 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         # managed by fig_obj tree. Any property
         # internally managed by matplotlib
         # does not change
-            #import inspect
-            # print [(x[1],x[3]) for x in inspect.stack()]
-            # print 'generating plot', self, self._suppress
-            #import traceback
-            # traceback.print_stack()
+        #import inspect
+        # print [(x[1],x[3]) for x in inspect.stack()]
+        # print 'generating plot', self, self._suppress
+        #import traceback
+        # traceback.print_stack()
         container = self.get_container()
         if container is None:
             return
@@ -1129,7 +1129,28 @@ class TimeTrace(FigPlot):
 
 
 class FigPlotGL(GLCompound, FigPlot):
-    pass
+    def onSetRotCenter(self, evt):
+        x, y, z = self.getvar('x', 'y', 'z')
+
+        sel = self.getSelectedIndex()
+        if len(sel) == 0:
+            sel = self.shown_component
+
+        array_idx = self.getvar('array_idx')
+
+        if array_idx is not None and len(sel) > 0:
+            idx = np.in1d(array_idx, sel)
+            vv = np.vstack((x[idx], y[idx], z[idx])).transpose()
+            cc = np.mean(vv, 0)
+        else:
+            cc = np.array([np.mean(x),
+                           np.mean(y),
+                           np.mean(z)])
+
+        axes = self._artists[0].axes
+        axes._gl_rot_center = cc
+        axes._gl_use_rot_center = True
+        evt.Skip()
 
 
 def convert_to_FigPlotGL(obj):
