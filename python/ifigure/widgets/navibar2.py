@@ -165,16 +165,22 @@ class ButtonInfo(bp.ButtonInfo):
         h = 26
         return (int((h - size[1]) / 2 + size[0]), int(h))
 
+
 class ButtonPanel(bp.ButtonPanel):
     def DoGetBestSize(self):
-        s = super(ButtonPanel, self).DoGetBestSize()
+        try:
+            s = super(ButtonPanel, self).DoGetBestSize()
+        except SystemError:
+            #import traceback
+            # traceback.print_stack()
+            return 10, 10
         return s
 
     def Clear(self):
         # this is necessary for wxpython.2.9....
         self.Freeze()
         bp.ButtonPanel.Clear(self)
-#        self.Thaw()
+        # self.Thaw()
 
     def make_all_normal(self):
         for btn in self._vButtons:
@@ -217,7 +223,7 @@ class navibar(ButtonPanel):
 
         from ifigure.ifigure_config import icondir
         from ifigure.utils.cbook import make_crs_list
-        
+
         if zoom_crs is None:
             path1 = os.path.join(icondir, '16x16', 'zoom2.png')
             path2 = os.path.join(icondir, '16x16', 'zoom3minus.png')

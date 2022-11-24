@@ -230,7 +230,7 @@ class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
 
 #    def _onSize(self, evt):
 #        print '!!!! onSize'
-#        super(FigureCanvasWxModAgg, self)._onSize(evt)wp
+#        super(FigureCanvasWxModAgg, self)._onSize(evt)
 
     def draw_all(self, drawDC=None):
         ''' 
@@ -273,15 +273,17 @@ class FigureCanvasWxModAgg(CanvasMod, CanvasAgg):
         dc.DrawBitmap(bitmap, x, y)
         dc.SelectObject(wx.NullBitmap)
 
+#    def _onSize(self, event):
+#        if hasattr(self, "_on_size"):
+#            return self._on_size(event)
+#        else:
+#            return super(FigureCanvasWxModAgg, Canvas)._onSize(event)
+
 
 class FigureCanvasWxMod(CanvasMod, Canvas):
     def __init__(self, *args, **kargs):
         Canvas.__init__(self, *args, **kargs)
         CanvasMod.__init__(self, *args, **kargs)
-
-#    def _onSize(self, evt):
-#        print '!!!! onSize'
-#        super(FigureCanvasWxMod, self)._onSize(evt)wp
 
     def draw_all(self, drawDC=None):
         ''' 
@@ -323,3 +325,9 @@ class FigureCanvasWxMod(CanvasMod, Canvas):
                               bitmap.GetWidth(),
                               bitmap.GetHeight())
         gc.unselect()
+
+#    def _onSize(self, event):
+#        if hasattr(self, "_on_size"):
+#            return self._on_size(event)
+#        else:
+#            return super(FigureCanvasWxMod, Canvas)._onSize(event)

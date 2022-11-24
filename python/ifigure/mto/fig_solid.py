@@ -64,7 +64,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         p.add_key('cdata', None)
         p.add_key('shade', 'linear')
         p.add_key('array_idx', None)
-        p.add_key('edge_idx', None)        
+        p.add_key('edge_idx', None)
         p.add_key('use_pointfill', False)
         p.add_key('draw_last', False)
 
@@ -190,7 +190,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         # if self.getp('alpha') is not None else 1
         kywds['alpha'] = self.getp('alpha')
         kywds['array_idx'] = self.getvar('array_idx')
-        kywds['edge_idx'] = self.getvar('edge_idx')        
+        kywds['edge_idx'] = self.getvar('edge_idx')
         fc = self.getp('facecolor')
         if isinstance(fc, str):
             fc = cc.to_rgba(fc)
@@ -523,3 +523,24 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
         m = FigObj.canvas_menu(self)
         m2 = GLCompound.canvas_menu(self)
         return m[:1]+m2+m[1:]
+
+
+#
+# change rotation center in 3D plot
+#
+
+    def onSetRotCenter(self, evt):
+        sel = self.getSelectedIndex()
+        if len(sel) == 0:
+            sel = self.shown_component
+
+        if len(sel) > 0:
+            vv = self.get_subset(sel)[0]
+
+            cc = np.mean(vv, 0)
+            axes = self._artists[0].axes
+            axes._gl_rot_center = cc
+            axes._gl_use_rot_center = True
+            evt.Skip()
+        else:
+            super(FigSolid, self).onSetRotCenter(evt)
