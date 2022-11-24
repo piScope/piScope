@@ -605,9 +605,6 @@ class ProjTreeViewer(wx.Panel):
             self.update_widget0(no_set_selection=no_set_selection)
 
     def update_widget0(self, no_set_selection=False):
-        #        import traceback
-        #        traceback.print_stack()
-        #        print 'update widget'
         self._update_request = False
         sel = self.tree.GetSelection()
         if sel is not None:
@@ -1052,7 +1049,7 @@ class ProjTreeViewer(wx.Panel):
             data.SetText(t)
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Close()
-            
+
         text = t if six.PY3 else unicode(t)
 
         self._changed_flag = False
@@ -1090,8 +1087,8 @@ class ProjTreeViewer(wx.Panel):
 #        self.InsertItem(parent, new, text)
 
     def get_defaultpanelstyle(self):
-        return wx.STAY_ON_TOP|wx.DEFAULT_DIALOG_STYLE
-    
+        return wx.STAY_ON_TOP | wx.DEFAULT_DIALOG_STYLE
+
     def OpenPanel(self, list, obj=None, callback=None, title='title',
                   style=None,
                   **kargs):
@@ -1160,9 +1157,9 @@ class ProjTreeViewer(wx.Panel):
             # p.GetSizer().Remove(p)
             p.Destroy()
             if not self.IsBeingDeleted():
-               pp = self.GetTopLevelParent()
-               if not pp.IsBeingDeleted():
-                   pp._force_layout()
+                pp = self.GetTopLevelParent()
+                if not pp.IsBeingDeleted():
+                    pp._force_layout()
         self.panel = None
 
     def set_td_selection(self, t0):

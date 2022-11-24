@@ -761,7 +761,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         figaxes = ax.figobj
         if (canvas.toolbar.mode == 'pan' or
             canvas.toolbar.mode == 'zoom' or
-            canvas.toolbar.mode == '3dzoom'):
+                canvas.toolbar.mode == '3dzoom'):
             req = None
             func = canvas.make_range_request_zoom
             minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
@@ -777,7 +777,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
                 extra_actions = None
             canvas.send_range_action(req,
                                      '3D ' + canvas.toolbar.mode,
-                                     extra_actions = extra_actions)
+                                     extra_actions=extra_actions)
         else:
             new_value = ax.elev, ax.azim, ax._upvec
             actions = [UndoRedoFigobjMethod(ax, 'axes3d_viewparam', new_value,
@@ -1179,7 +1179,7 @@ class ifigure_popup(wx.Menu):
                         menus.append(('Set rotation center', method, None))
                     else:
                         menus.append(('Reset rotation center',
-                                     self.onResetRotCenter, None))
+                                      self.onResetRotCenter, None))
                     menus.extend([
                         ('!', None, None), ])
             except BaseException:
@@ -1836,6 +1836,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def HandleResize(self, evt):
         print('canvas handle_resize')
+        print(self.TopLevelParent.GetSize())
 #       if self._figure is not None:
 #           self.canvas._onSize()
         evt.Skip()
@@ -1868,8 +1869,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                                   self.onKey),
                           self.canvas.mpl_connect('key_release_event',
                                                   self.onKey2),
-                          #                 self.canvas.mpl_connect('resize_event',
-                          #                                         self.onResize),
+                          # self.canvas.mpl_connect('resize_event',
+                          #                         self.onResize),
                           self.canvas.mpl_connect('draw_event', self.onDraw),
                           ]
             if self.canvas.HasFocus():
@@ -1956,7 +1957,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.set_3dzoom_mode(False)
         self.unselect_all()
         self.axes_selection = cbook.WeakNone()
+
+        self.mpl_disconnect()
         self.canvas.figure = figure
+        self.mpl_connect()
         self._figure = figure
         try:
             self.set_axes_selection(figure.figobj.get_axes(0)._artists[0])
@@ -1988,7 +1992,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def onResize(self, evt):
         return
-        print('onResize in ifigure_canvas')
+#        print('onResize in ifigure_canvas')
 #       self.draw()
         if self._figure.figobj is not None:
             self._figure.figobj.reset_axesbmp_update()

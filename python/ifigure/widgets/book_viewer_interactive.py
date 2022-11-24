@@ -415,7 +415,7 @@ class BookViewerInteractive(object):
         fig_p = self.get_page(ipage=i)
         fig_b = self.book
         ifigure.events.SendChangedEvent(fig_b, w=self, useProcessEvent=True)
-        ifigure.events.SendShowPageEvent(fig_p)
+        ifigure.events.SendShowPageEvent(fig_p, w=self)
         return fig_p
 
     @share_doc_string
