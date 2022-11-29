@@ -138,7 +138,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         else:
             self._isDrawn = False
 
-        if hasattr(self, "_on_size"):  # newer matplotlib renamed method
+        if hasattr(self,  "_on_paint"):  # newer matplotlib renamed method
             CanvasAgg._on_paint(self, evt)
         else:
             CanvasAgg._onPaint(self, evt)
@@ -147,7 +147,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         if self.figure is None:
             evt.Skip()
             return
-        if hasattr(self, "_on_size"):  # newer matplotlib renamed method
+        if hasattr(CanvasAgg, "_on_size"):  # newer matplotlib renamed method
             CanvasAgg._on_size(self, evt)
         else:
             CanvasAgg._onSize(self, evt)
@@ -157,6 +157,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         if self.figure is None:
             evt.Skip()
             return
+
         CanvasAgg._on_size(self, evt)
 
     def draw(self, drawDC=None, nogui_reprint=False):
