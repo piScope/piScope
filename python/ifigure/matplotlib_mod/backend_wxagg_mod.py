@@ -138,15 +138,27 @@ class FigureCanvasWxAggMod(CanvasAgg):
         else:
             self._isDrawn = False
 
-        CanvasAgg._onPaint(self, evt)
+        if hasattr(self,  "_on_paint"):  # newer matplotlib renamed method
+            CanvasAgg._on_paint(self, evt)
+        else:
+            CanvasAgg._onPaint(self, evt)
 
     def _onSize(self, evt=None, nocheck=False):
-        #        print '_onSize backend_wxagg_mod'
         if self.figure is None:
             evt.Skip()
             return
-        super(FigureCanvasWxAggMod, self)._onSize(evt)
+        if hasattr(CanvasAgg, "_on_size"):  # newer matplotlib renamed method
+            CanvasAgg._on_size(self, evt)
+        else:
+            CanvasAgg._onSize(self, evt)
         return
+
+    def _on_size(self, evt):
+        if self.figure is None:
+            evt.Skip()
+            return
+
+        CanvasAgg._on_size(self, evt)
 
     def draw(self, drawDC=None, nogui_reprint=False):
         #print("draw here")
@@ -185,6 +197,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
         Render the figure using RendererWx instance renderer, or using a
         previously defined renderer if none is specified.
         """
+        if self.figure is None:
+            return
         if alist is None:
             return
         if drawDC is None:
@@ -420,8 +434,12 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.figure.frameon = o
 
     def _prepare_bitmap(self):
-        from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
-        self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
+        try:   # MPL 3.6.1 and after
+            from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap
+            self.bitmap = _rgba_to_wx_bitmap(self.get_renderer().buffer_rgba())
+        except ImportError:
+            from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
+            self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
 
     def _sorted_axes_list(self):
         # a list of (zorder, func_to_call, list_of_args)

@@ -215,7 +215,6 @@ class ifigure_app(BookViewerFrame):
         self.shell.set_tipw(self.tipw)
         self.hdf_export_window = None
 
-
         if use_console:
             self.redirector = RedirectOutput(self.proj_tree_viewer.consol.log,
                                              self.proj_tree_viewer.consol.log)
@@ -1516,7 +1515,7 @@ class ifigure_app(BookViewerFrame):
         else:
             self.aviewer.show_page(ipage=ipage,
                                    last=last, first=first)
-        self.proj_tree_viewer.update_widget()
+        self.proj_tree_viewer.update_widget(no_set_selection=True)
 
     def add_page(self, *args, **kargs):
         if self.aviewer == self:
@@ -1603,12 +1602,14 @@ class ifigure_app(BookViewerFrame):
         self.gui_tree.toggle_panel(self.panel1, True)
         self.proj_tree_viewer.update_widget()
         self.open_book()
-        self.canvas.canvas._onSize()
+
         BookViewerFrame.show_page(self, ipage)
         [x.Enable(True) for x in self._figure_mnis]
         [v.adjust_attach_menu() for v in self.viewers]
         if self.aviewer is None:
             self.aviewer = v
+
+        self.deffered_force_layout()
         self.draw_all()
 
     def make_attached_script_editor(self):
@@ -1983,33 +1984,11 @@ class ifigure_app(BookViewerFrame):
         self.proj_tree_viewer.set_td_selection(td)
 
     def onTD_ShowPage(self, evt):
-        super(ifigure_app, self).onTD_ShowPage(evt)
+        if not evt.BookViewerFrame_Processed:
+            super(ifigure_app, self).onTD_ShowPage(evt)
+            evt.BookViewerFrame_Processed = True
+            evt.SetEventObject(self)
         return
-
-#       this part is removed. bookframe showpage now
-#       trigger pageshown event, which is received
-#       by a main window.
-#
-#        if not evt.BookViewerFrame_Processed:
-#            td = evt.GetTreeDict()
-#            book = td.get_root_figobj()
-#            viewer = self.find_bookviewer(book)
-#            if viewer == self:
-#                super(ifigure_app, self).onTD_ShowPage(evt)
-#                evt.SetEventObject(self)
-#            elif viewer != None:
-#                viewer.onTD_ShowPage(evt)
-#                evt.SetEventObject(viewer)
-#                viewer.Raise()
-#            else:
-#                #book is not open
-#                super(ifigure_app, self).onTD_ShowPage(evt)
-#                evt.SetEventObject(self)
-#            evt.BookViewerFrame_Processed = True
-
-#        bf = evt.GetEventObject()
-#        f_page = bf.book.get_page(bf.ipage)
-#        self.proj_tree_viewer.set_td_selection(f_page)
 
     def onTD_Evt(self, evt):
         if evt.code == 'Rename':

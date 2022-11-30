@@ -149,8 +149,9 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
             self.setp("x", None)
             self.setp("y", None)
             return False
-        self.setp('x', self.getp('x').flatten())
-        self.setp('y', self.getp('y').flatten())
+        #self.setp('x', self.getp('x').flatten())
+        #self.setp('y', self.getp('y').flatten())
+
         return True
 
     def generate_artist(self):
@@ -174,7 +175,8 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
                 self._data_extent = [np.nanmin(x), np.nanmax(x),
                                      np.nanmin(y), np.nanmax(y)]
 
-                if len(y.shape) == 1:
+                # if len(y.shape) == 1:
+                if True:
                     kywds = self._var["kywds"]
                     args, self._tri = tri_args(x, y, self._tri)
                     kywds['mask'] = self.getp('mask')

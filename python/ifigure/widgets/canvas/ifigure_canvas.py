@@ -760,16 +760,26 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
         ax._on_move_done()
         figaxes = ax.figobj
         if (canvas.toolbar.mode == 'pan' or
-                canvas.toolbar.mode == 'zoom'):
+            canvas.toolbar.mode == 'zoom' or
+                canvas.toolbar.mode == '3dzoom'):
             req = None
             func = canvas.make_range_request_zoom
             minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
             req = func(figaxes, 'x', [minx, maxx], False, ax, requests=req)
             req = func(figaxes, 'y', [miny, maxy], False, ax, requests=req)
             req = func(figaxes, 'z', [minz, maxz], False, ax, requests=req)
-            canvas.send_range_action(req, '3D ' + canvas.toolbar.mode)
+
+            if canvas.toolbar.mode == '3dzoom':
+                new_value = ax.elev, ax.azim, ax._upvec
+                extra_actions = [UndoRedoFigobjMethod(ax, 'axes3d_viewparam', new_value,
+                                                      old_value=self._org)]
+            else:
+                extra_actions = None
+            canvas.send_range_action(req,
+                                     '3D ' + canvas.toolbar.mode,
+                                     extra_actions=extra_actions)
         else:
-            new_value = ax.elev, ax.azim
+            new_value = ax.elev, ax.azim, ax._upvec
             actions = [UndoRedoFigobjMethod(ax, 'axes3d_viewparam', new_value,
                                             old_value=self._org)]
             window = canvas.GetTopLevelParent()
@@ -1125,18 +1135,18 @@ class ifigure_popup(wx.Menu):
                 if parent.axes_selection().figobj.get_3d():
                     menus.extend([
                         ('+3D view', None, None),
-                        ('XY Plane', self.on3DXY, None),
-                        ('XZ Plane', self.on3DXZ, None),
-                        ('YZ Plane', self.on3DYZ, None),
+                        ('XY plane', self.on3DXY, None),
+                        ('XZ plane', self.on3DXZ, None),
+                        ('YZ plane', self.on3DYZ, None),
                         ('Rotate 90', self.on3D_Rot90r, None),
                         ('Rotate -90', self.on3D_Rot90, None),
                         ('Flip', self.on3DUpDown, None),
-                        ('Default View', self.on3DDefaultView, None),
+                        ('Default view', self.on3DDefaultView, None),
                         ('---', None, None), ])
                     if parent.axes_selection()._use_frustum:
-                        menus.append(('Use Ortho', self.on3DOrtho, None))
+                        menus.append(('Use ortho', self.on3DOrtho, None))
                     else:
-                        menus.append(('Use Frustum', self.on3DFrustum, None))
+                        menus.append(('Use frustum', self.on3DFrustum, None))
 
                     if parent.axes_selection()._use_clip & 1:
                         menus.append(('Clip off', self.on3DClipOff, None))
@@ -1152,18 +1162,24 @@ class ifigure_popup(wx.Menu):
 
                     if parent.axes_selection()._show_3d_axes:
                         menus.append(
-                            ('Hide Axes Icon', self.on3DAxesIconOff, None))
+                            ('Hide axes icon', self.on3DAxesIconOff, None))
                     else:
                         menus.append(
-                            ('Show Axes Icon', self.on3DAxesIconOn, None))
+                            ('Show axes icon', self.on3DAxesIconOn, None))
 
                     if (parent.axes_selection().figobj.getp('aspect') ==
                             'equal'):
-                        menus.append(('Auto Aspect', self.on3DAutoAspect,
+                        menus.append(('Auto aspect', self.on3DAutoAspect,
                                       None))
                     else:
-                        menus.append(('Equal Aspect', self.on3DEqualAspect,
+                        menus.append(('Equal aspect', self.on3DEqualAspect,
                                       None))
+                    if len(parent.selection) == 1:
+                        method = parent.selection[0]().figobj.onSetRotCenter
+                        menus.append(('Set rotation center', method, None))
+                    else:
+                        menus.append(('Reset rotation center',
+                                      self.onResetRotCenter, None))
                     menus.extend([
                         ('!', None, None), ])
             except BaseException:
@@ -1328,6 +1344,10 @@ class ifigure_popup(wx.Menu):
     def on3DAxesIconOn(self, e):
         canvas = e.GetEventObject()
         canvas.GetTopLevelParent().view('axesicon')
+
+    def onResetRotCenter(self, e):
+        canvas = e.GetEventObject()
+        canvas.axes_selection()._gl_use_rot_center = False
 
     def onSameXY(self, e):
         canvas = e.GetEventObject()
@@ -1816,6 +1836,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def HandleResize(self, evt):
         print('canvas handle_resize')
+        print(self.TopLevelParent.GetSize())
 #       if self._figure is not None:
 #           self.canvas._onSize()
         evt.Skip()
@@ -1848,8 +1869,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                                   self.onKey),
                           self.canvas.mpl_connect('key_release_event',
                                                   self.onKey2),
-                          #                 self.canvas.mpl_connect('resize_event',
-                          #                                         self.onResize),
+                          # self.canvas.mpl_connect('resize_event',
+                          #                         self.onResize),
                           self.canvas.mpl_connect('draw_event', self.onDraw),
                           ]
             if self.canvas.HasFocus():
@@ -1936,7 +1957,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.set_3dzoom_mode(False)
         self.unselect_all()
         self.axes_selection = cbook.WeakNone()
+
+        self.mpl_disconnect()
         self.canvas.figure = figure
+        self.mpl_connect()
         self._figure = figure
         try:
             self.set_axes_selection(figure.figobj.get_axes(0)._artists[0])
@@ -1968,7 +1992,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def onResize(self, evt):
         return
-        print('onResize in ifigure_canvas')
+#        print('onResize in ifigure_canvas')
 #       self.draw()
         if self._figure.figobj is not None:
             self._figure.figobj.reset_axesbmp_update()
@@ -3063,7 +3087,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #               len(self.selection)> 1):
             if len(self.selection) > 1:
                 for a in item().figobj_hl:
-                    box = a.get_window_extent(a.figure._cachedRenderer)
+                    #box = a.get_window_extent(a.figure._cachedRenderer)
+                    box = a.get_window_extent(a.figure.canvas.get_renderer())
                     hl_range = [min([box.xmin, hl_range[0]]),
                                 max([box.xmax, hl_range[1]]),
                                 min([box.ymin, hl_range[2]]),
@@ -4780,7 +4805,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
-
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

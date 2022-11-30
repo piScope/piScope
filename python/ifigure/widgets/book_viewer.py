@@ -517,7 +517,7 @@ class FramePlus(FrameWithWindowList):
         self._force_layout()
 
     def _force_layout(self):
-        dprint1('_force_layout')
+        # dprint1('_force_layout')
         # trick to show graphic... ;D
         # self.Freeze()
         self.canvas.mpl_disconnect()
@@ -1257,15 +1257,10 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             # need to have at least one page
             return
         ipage = self.ipage
-#        new_ipage=min([self.ipage, num_page-2])
-#        self.show_page(new_ipage)
         self.del_page(ipage)
-#        ipage=min([self.ipage, num_page-2])
-#        page = pbook.get_page(ipage)
 
-#        id=e.GetEventObject()
-#        print page, id
         ifigure.events.SendChangedEvent(self.book, None, True)
+        self.deffered_force_layout()
 #        ifigure.events.SendShowPageEvent(page, id)
 
     def num_page(self):
@@ -1622,7 +1617,6 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         pass
 
     def onTD_ShowPage(self, evt):
-        #        print 'here bookframe'
         dt = evt.GetTreeDict()  # dt fig_page
         if isinstance(dt, FigPage):
             self.book.set_open(False)
@@ -1730,6 +1724,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 k = args[0]
                 book = args[1]
                 book.show_page(k)
+                self._force_layout()
                 book.draw()
                 time.sleep(0.1)
 
@@ -1752,6 +1747,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
         from ifigure.utils.gif_animation import save_animation
         print('saveing gif animation...'+filename)
+
         save_animation(show_page, param, self.canvas, filename=filename,
                        duration=duration, dither=dither)
 

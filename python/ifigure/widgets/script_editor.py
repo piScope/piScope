@@ -151,6 +151,7 @@ class PythonSTCPopUp(wx.Menu):
         menus.append((make_label('F77'), self.onSetF77Syntax, None))
         menus.append((make_label('None'), self.onSetNoneSyntax, None))
         menus.append(('!', None, None))
+        menus.append(('Toggle insert/overwrite', self.toggle_overtype, None))        
 
 #                menus = menus + [('--debugger di',   None, None),]
 #       if parent.GetModify():
@@ -176,6 +177,9 @@ class PythonSTCPopUp(wx.Menu):
     def onSetNoneSyntax(self, evt):
         self.parent.set_syntax(syntax='none')
 
+    def toggle_overtype(self, evt):
+        value = not self.parent.GetOvertype()
+        self.parent.SetOvertype(value)
 
 class PythonSTC(stc.StyledTextCtrl):
 

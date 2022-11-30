@@ -281,14 +281,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             else:
                 #print('drawing tri image')
                 if x.size*y.size == z.size:
-                    X, Y = np.meshgrid(x, y)
-                    x = X.flatten()
-                    y = Y.flatten()
-                else:
-                    if len(x.shape) != 1:
-                        x = x.flatten()
-                    if len(y.shape) != 1:
-                        y = y.flatten()
+                    x, y = np.meshgrid(x, y)
+
                 args, self._tri = tri_args(x, y, self._tri)
                 kywds = self._var["kywds"]
                 kywds['alpha'] = self.getp('alpha')
@@ -304,6 +298,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                                      np.log10(max((crange[1], 1e-16)))]
                 kywds['shading'] = self.getp('shading')
                 kywds['mask'] = self.getp('mask')
+
                 self.set_artist(container.tripcolor(*args,
                                                     **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
@@ -313,8 +308,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             if self.getvar('use_tri'):
                 #print('redrawing tri image')
                 x, y, z = self.getp(('x', 'y', 'z'))
-                x = x.flatten()
-                y = y.flatten()
                 args, self._tri = tri_args(x, y, self._tri)
 
                 args.append(z.flatten().astype(float))
@@ -770,7 +763,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         else:
             im_center, ax1, ax2 = self._get_3d_placement()
             data = np.hstack(
-                [im_center[1] + ax1[1]*x, im_center[0] + ax2[1]*y])
+                [im_center[1] + ax1[1]*x, im_center[1] + ax2[1]*y])
             yrange = self._update_range(yrange,
                                         (np.nanmin(data), np.nanmax(data)))
             return yrange
@@ -785,7 +778,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         x, y, z = self._eval_xyz()
         im_center, ax1, ax2 = self._get_3d_placement()
 
-        data = np.hstack([im_center[2] + ax1[2]*x, im_center[0] + ax2[2]*y])
+        data = np.hstack([im_center[2] + ax1[2]*x, im_center[2] + ax2[2]*y])
         zrange = self._update_range(zrange,
                                     (np.nanmin(data), np.nanmax(data)))
 

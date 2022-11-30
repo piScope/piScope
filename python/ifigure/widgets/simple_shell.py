@@ -594,6 +594,10 @@ class SimpleShell(ShellBase):
                 print("unicode error")
                 pass
 
+    def toggle_overtype(self, evt):
+        value = not self.GetOvertype()
+        self.SetOvertype(value)
+
     def GetContextMenu(self):
         menu = super(SimpleShell, self).GetContextMenu()
         menu.AppendSeparator()
@@ -603,6 +607,14 @@ class SimpleShell(ShellBase):
         else:
             f1 = menu.Append(wx.ID_ANY, "Show Help")
             self.Bind(wx.EVT_MENU, self.onShowHelp, f1)
+
+        if self.GetOvertype():
+            f1 = menu.Append(wx.ID_ANY, "Insert Mode")
+            self.Bind(wx.EVT_MENU, self.toggle_overtype, f1)
+        else:
+            f1 = menu.Append(wx.ID_ANY, "Overwrite Mode")
+            self.Bind(wx.EVT_MENU, self.toggle_overtype, f1)
+
         if self._auto_complete:
             f2 = menu.Append(wx.ID_ANY, "Auto Complete Off")
             self.Bind(wx.EVT_MENU, self.onAutoCompOff, f2)

@@ -132,8 +132,9 @@ class ArtGL(object):
         self._gl_always_noclip = False  # used for axis
         self._gl_isArrow = False  # used for axis        
         self._gl_repr_name = ''
-        # extra index number assined to
-        # each triangle/line segment/...
+
+        # MPL3.6.1 and after this is not used and not defined.
+        self._offset_position = [0,0,0]
 
     def get_gl_arrayid_hit(self):
         return self._gl_hit_array_id
@@ -514,7 +515,7 @@ class AxesImageGL(ArtGL, AxesImage):
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
 
-                if self._gl_rgbacache_id != id(self._rgbacache):
+                if self._gl_rgbacache_id != id(self._imcache):
                     if glcanvas.has_vbo_data(self):
                         d = glcanvas.get_vbo_data(self)
                         for x in d:
@@ -522,8 +523,10 @@ class AxesImageGL(ArtGL, AxesImage):
                 renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
                                        np.transpose(self._im_cache, (1, 0, 2)),
                                        interp=self._gl_interp,
-                                       always_noclip=self._gl_always_noclip)                
-                self._gl_rgbacache_id = id(self._rgbacache)
+                                       always_noclip=self._gl_always_noclip)
+
+
+                self._gl_rgbacache_id = id(self._imcache)
                 gc.restore()
             else:
                 pass
@@ -800,12 +803,16 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         hl.set_edgecolor(([1, 1, 1, 0.],))
         return [hl]
 
+    def do_3d_projection(self):
+        return 1
+
+    '''
     def do_3d_projection(self, renderer):
         #        if not hasattr(renderer, 'use_gl'):
         if hasattr(renderer, '_gl_renderer'):
             return 1
         return Poly3DCollection.do_3d_projection(self, renderer)
-
+    '''
     def set_cmap(self, *args, **kwargs):
         super(Poly3DCollectionGL, self).set_cmap(*args, **kwargs)
         self._update_fc = True
@@ -1078,7 +1085,8 @@ class Polygon3DGL(ArtGL, Polygon):
         self._verts3d = juggle_axes(xs, ys, zs, zdir)
         self._invalidz = True
 
-    def do_3d_projection(self, renderer):
+    def do_3d_projection(self):
+#    def do_3d_projection(self, renderer):
         # I am not sure what I should return...
         return 1
 

@@ -1160,6 +1160,8 @@ def view(*args, **kwargs):
           view('updown')
           view('equal')   # equal aspect ratio
           view('auto')    # auto aspect ratio
+          view('clip')
+          view('noclip')
     '''
     if len(args) == 0 and len(kwargs) == 0:
         v = aviewer

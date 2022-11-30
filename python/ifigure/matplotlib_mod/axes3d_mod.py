@@ -236,13 +236,12 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip = kargs.pop('use_clip', 1)
 
-
         if LooseVersion(matplotlib.__version__) >= LooseVersion("3.4"):
             kargs['auto_add_to_figure'] = False
             super(Axes3DMod, self).__init__(*args, **kargs)
             args[0].add_axes(self)
         else:
-            super(Axes3DMod, self).__init__(*args, **kargs)            
+            super(Axes3DMod, self).__init__(*args, **kargs)
 
         self.patch.set_alpha(0)
         self._gl_id_data = None
@@ -253,6 +252,8 @@ class Axes3DMod(Axes3D):
         self._ignore_screen_aspect_ratio = True
         self._gl_scale = 1.0
         self._gl_scale_accum = 1.0
+        self._gl_rot_center = np.array([0., 0., 0.])
+        self._gl_use_rot_center = False
         self._zoom_btn = []
         self._pan_btn = []
         self._rotate_btn = []
@@ -266,12 +267,28 @@ class Axes3DMod(Axes3D):
     def dist(self, value):
         pass
 
-    def view_init(self, elev=None, azim=None, vertical_axis="z"):
+    # after MPL 3.6.1 dist became _dist
+    @property
+    def _dist(self):
+        return camera_distance
+
+    @_dist.setter
+    def _dist(self, value):
+        pass
+
+    # after MPL 3.6.1, initial_roll is defined
+    @property
+    def _initial_roll(self):
+        if hasattr(self, "initial_roll"):
+            return self.initial_roll
+        else:
+            return (0, 0, 1)
+
+    def view_init(self, elev=None, azim=None, roll=None, vertical_axis="z"):
         """
         Copied form Axes3D to play with self.dist
         """
-
-        #self.dist = camera_distance
+        #self._dist = camera_distance
 
         if elev is None:
             self.elev = self.initial_elev
@@ -282,6 +299,11 @@ class Axes3DMod(Axes3D):
             self.azim = self.initial_azim
         else:
             self.azim = azim
+
+        if roll is None:
+            self.roll = self._initial_roll
+        else:
+            self.roll = roll
 
         from matplotlib import _api
         self._vertical_axis = _api.check_getitem(
@@ -418,7 +440,6 @@ class Axes3DMod(Axes3D):
         if self._gl_mask_artist is None:
             return False
 
-
         # do not do this when hitest_map is updating..this is when
         # mouse dragging is going on
         if not get_glcanvas()._hittest_map_update:
@@ -496,6 +517,9 @@ class Axes3DMod(Axes3D):
             return
 
         fig_axes = self.figobj
+        if fig_axes is None:
+            return
+
         fig_axes.set_bmp_update(False)
 
         self._on_move_mod(evt)
@@ -597,8 +621,6 @@ class Axes3DMod(Axes3D):
                            np.sin(razim) * np.cos(relev),
                            np.sin(relev)))
             rightvec = np.cross(self._upvec, p1)
-            #dx = dx/np.sqrt(dx**2 + dy**2)/3.
-            #dy = dy/np.sqrt(dx**2 + dy**2)/3.
 
             newp1 = p1 - (dx / w * rightvec + dy / h * self._upvec) * \
                 Axes3DMod.pan_sensitivity * self._gl_scale_accum
@@ -609,10 +631,16 @@ class Axes3DMod(Axes3D):
             self.elev = np.arctan2(newp1[2], np.sqrt(
                 newp1[0]**2 + newp1[1]**2)) * 180 / np.pi
             self.azim = np.arctan2(newp1[1], newp1[0]) * 180 / np.pi
-#            self.elev = art3d.norm_angle(self.elev - (dy/h)*180)
-#            self.azim = art3d.norm_angle(self.azim - (dx/w)*180)
-            # self.get_proj()
-            # self.figure.canvas.draw_idle()
+
+            if self._gl_use_rot_center:
+                Mold = self._matrix_cache_combined
+                self.get_proj2()
+                Mnew = self._matrix_cache_combined
+
+                xrange, yrange, zrange = self._screen_shift_3drot(Mold, Mnew)
+                self.set_xlim3d(xrange)
+                self.set_ylim3d(yrange)
+                self.set_zlim3d(zrange)
 
         elif self.button_pressed in self._pan_btn:
             dx = 1 - ((w - dx) / w)
@@ -636,13 +664,6 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d(miny + dy, maxy + dy)
             self.set_zlim3d(minz + dz, maxz + dz)
 
-            # self.get_proj()
-            # self.figure.canvas.draw_idle()
-
-            # pan view
-            # project xv,yv,zv -> xw,yw,zw
-            # pan
-
         # Zoom
         elif self.button_pressed in self._zoom_btn:
             #print("in zoom")
@@ -665,6 +686,9 @@ class Axes3DMod(Axes3D):
             return
 
         fig_axes = self.figobj
+        if fig_axes is None:
+            return
+
         fig_axes.set_bmp_update(False)
         Axes3D._button_release(self, evt)
         self._pan_btn = []
@@ -672,8 +696,8 @@ class Axes3DMod(Axes3D):
         self._zoom_btn = []
         self._mouse_hit = False
         get_glcanvas()._hittest_map_update = True
-        
-        #events.SendPVDrawRequest(self.figobj,
+
+        # events.SendPVDrawRequest(self.figobj,
         #                         w=None, wait_idle=False,
         #                         refresh_hl=False,
         #                         caller = '_on_release')
@@ -1629,6 +1653,40 @@ class Axes3DMod(Axes3D):
         center_move = (v1 * sol[0] + v2 * sol[1])
 
         return center_move
+
+    def _screen_shift_3drot(self, Mold, Mnew):
+        #
+        # compute shift of screen for 3d zoom
+        # 3d rotation is done around _gl_rot_center
+        #
+        minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
+
+        vmax = np.array((maxx, maxy, maxz))
+        vmin = np.array((minx, miny, minz))
+        vrange = vmax - vmin
+        vmid = (vmax + vmin) / 2.0
+        midx, midy, midz = vmid
+
+        def vec2sc_old(vec):
+            x = np.dot(Mold, (vec[0], vec[1], vec[2], 1))
+            return x[0:2] / x[-1]
+
+        def vec2sc_new(vec):
+            x = np.dot(Mnew, (vec[0], vec[1], vec[2], 1))
+            return x[0:2] / x[-1]
+
+        #print("rot_center", vec2sc_old(self._gl_rot_center), vec2sc_new(self._gl_rot_center))
+
+        dd = vec2sc_new(self._gl_rot_center) - vec2sc_old(self._gl_rot_center)
+        center_move = self._screen_move_to_3d_move(dd)
+
+        minp = np.array([minx, miny, minz])
+        maxp = np.array([maxx, maxy, maxz])
+
+        r1 = minp + center_move
+        r2 = maxp + center_move
+
+        return (r1[0], r2[0]), (r1[1], r2[1]), (r1[2], r2[2])
 
     def set_gl_scale_accum(self, value):
         self._gl_scale_accum = value

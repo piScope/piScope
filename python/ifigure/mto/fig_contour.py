@@ -264,12 +264,8 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         kywds['alpha'] = self.getp('alpha')
 
         if self.getvar('use_tri'):
-            x = x.flatten()
-            y = y.flatten()
-            z = z.flatten()
             args, self._tri = tri_args(x, y, self._tri)
-            args = [args[0], args[1], z]
-            kywds['triangles'] = self._tri
+            args.append(np.real(z.flatten()))
         else:
             args = []
             if x is not None:
@@ -565,13 +561,16 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 return True, {'child_artist': artist}
             else:
                 return False, {}
-        elif isinstance(artist, PathCollection):
-            for path in artist.get_paths():
-                if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
-                    self._hit_path = path
-                    return True, {'child_artist': artist}
-            return False, {}
         else:
+            # if isinstance(artist, PathCollection):
+            #
+            #  For PathCollection, we do this test first
+            #
+            #    for path in artist.get_paths():
+            #        if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
+            #            self._hit_path = path
+            #            return True, {'child_artist': artist}
+
             for path in artist.get_paths():
                 #               for line plot, hit test is done for each path vertices
                 #               path.contains_points does not check if the point is "on the line"
@@ -776,7 +775,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                    xrange=[None, None],
                    yrange=[None, None], scale='linear'):
 
-        print(crange, xrange, yrange)
         x, y, z = self._eval_xyz()
         if (x is None or
                 y is None):

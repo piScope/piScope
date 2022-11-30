@@ -221,7 +221,8 @@ class FigureMod(Figure):
         renderer.open_group('figure')
         # do nothing
         renderer.close_group('figure')
-        self._cachedRenderer = renderer
+        #self._cachedRenderer = renderer
+        renderer = self.canvas.get_renderer()
         self.canvas.draw_event(renderer)
 
     def draw(self, renderer):

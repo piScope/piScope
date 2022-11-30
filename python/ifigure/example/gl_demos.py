@@ -180,7 +180,7 @@ def solid_demo(**kwargs):
     idxset = tri.triangles
     v = v.transpose()
 
-    print(v.shape, idxset.shape)
+    #print(v.shape, idxset.shape)
     viewer = figure()
     nsec(3)
     isec(0)
