@@ -313,7 +313,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 args.append(z.flatten().astype(float))
                 # astype(float) is patch work to open past files..
 
-                kywds = self._var["kywds"]
+                #kywds = self._var["kywds"]
                 kywds = lp[0]
                 kywds['shading'] = self.getp('shading')
                 kywds['mask'] = self.getp('mask')
@@ -324,6 +324,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                         kywds[k] = lp[0][k]
 #                  print lp
 #                  kywds["clim"]=lp[0]["clim"]
+                del(kywds['array'])
                 self.set_artist(container.tripcolor(*args,
                                                     **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])

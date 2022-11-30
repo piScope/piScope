@@ -7,7 +7,6 @@ use_mpl_tri = False
 
 def tri_args(x, y, _tri=None):
     #    use_mpl_tri = False
-    print(x.shape, y.shape)
     if use_mpl_tri:
         if _tri is None:
             _tri = Triangulation(x, y)
