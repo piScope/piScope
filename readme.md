@@ -23,7 +23,7 @@ and for the above purposes, &pi;Scope is equipped with
 Requirements
 *  Python >3.6
 *  wxPython 4
-*  matplotlib 3.3
+*  matplotlib 3.6.2
 *  PyOpenGL
 *  ... and others.
 
