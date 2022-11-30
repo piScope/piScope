@@ -1722,7 +1722,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             self._sb_timer.Start(timeout, oneShot=True)
 
     def save_animgif(self, filename='animation.gif',
-                     show_page=None):
+                     show_page=None, duration=None, dither=None, pages='all'):
         if show_page is None:
             def show_page(args):
                 import wx
@@ -1733,29 +1733,30 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book.draw()
                 time.sleep(0.1)
 
-        from ifigure.utils.edit_list import DialogEditList
-        l = [
-            ["Frame Speed(s/frame)", str(0.5),
-             0, {'noexpand': True}],
-            [None, True, 3, {"text": "Dither", "noindent": None}],
-        ]
-        value = DialogEditList(l, parent=self,
-                               title="GIF animation...",
-                               style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        if not value[0]:
-            return
+        if duration is None or dither is None:
+            from ifigure.utils.edit_list import DialogEditList
+            l = [["Frame Speed(s/frame)", str(0.5),  0, {'noexpand': True}],
+                 [None, True, 3, {"text": "Dither", "noindent": None}], ]
 
-        speed = float(value[1][0])
-        dither = 1 if value[1][1] else 0
-        param = []
-        for k in range(self.num_page()):
-            param.append((k, self))
+            value = DialogEditList(l, parent=self,
+                                   title="GIF animation...",
+                                   style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+            if not value[0]:
+                return
+
+            duration = float(value[1][0])
+            dither = 1 if value[1][1] else 0
+
+        pages = range(self.num_page()) if pages == 'all' else pages
+        param = [(k, self) for k in pages]
+
         from ifigure.utils.gif_animation import save_animation
         print('saveing gif animation...'+filename)
         save_animation(show_page, param, self.canvas, filename=filename,
-                       duration=speed, dither=dither)
+                       duration=duration, dither=dither)
 
-    def save_animpng(self, filename='animation.png', show_page=None):
+    def save_animpng(self, filename='animation.png', show_page=None,
+                     duration=None, pages='all'):
         if show_page is None:
             def show_page(args):
                 import wx
@@ -1766,25 +1767,24 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book.draw()
                 time.sleep(0.1)
 
-        from ifigure.utils.edit_list import DialogEditList
-        l = [
-            ["Frame Speed(s/frame)", str(0.5),
-             0, {'noexpand': True}],
-        ]
-        value = DialogEditList(l, parent=self,
-                               title="PNG animation...",
-                               style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        if not value[0]:
-            return
+        if duration is None:
+            from ifigure.utils.edit_list import DialogEditList
+            l = [["Frame Speed(s/frame)", str(0.5), 0, {'noexpand': True}],
+                 ]
+            value = DialogEditList(l, parent=self,
+                                   title="PNG animation...",
+                                   style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+            if not value[0]:
+                return
+            duration = float(value[1][0])*1000.
 
-        speed = float(value[1][0])*1000.
-        param = []
-        for k in range(self.num_page()):
-            param.append((k, self))
+        pages = range(self.num_page()) if pages == 'all' else pages
+        param = [(k, self) for k in pages]
+
         from ifigure.utils.png_animation import save_animation
         print('saveing png animation...'+filename)
         save_animation(show_page, param, self.canvas,
-                       filename=filename, duration=speed)
+                       filename=filename, duration=duration)
 
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):
