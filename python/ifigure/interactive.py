@@ -852,7 +852,7 @@ def tripcolor(*args, **kargs):
     tripcolor(tri, z)
     tripcolor(tri, x, y, z)
 
-    tri can be evaluated by tri = delauney(x, y) beforehand
+    tri can be evaluated by tri = delaunay(x, y) beforehand
     """
     pass
 
@@ -866,7 +866,7 @@ def tricontour(*args, **kargs):
     tricontour(x, y, z, v)
     tricontour(tri, x, y, z, n)
     tricontour(tri, x, y, z, v)
-    tri can be evaluated by tri = delauney(x, y) beforehand
+    tri can be evaluated by tri = delaunay(x, y) beforehand
     """
     pass
 
@@ -880,7 +880,7 @@ def tricontourf(*args, **kargs):
     tricontourf(x, y, z, v)
     tricontourf(tri, x, y, z, n)
     tricontourf(tri, x, y, z, v)
-    tri can be evaluated by tri = delauney(x, y) beforehand
+    tri can be evaluated by tri = delaunay(x, y) beforehand
     """
     pass
 
