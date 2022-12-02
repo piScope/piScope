@@ -126,7 +126,7 @@ class FunctionButton(wx.Button):
         self._handler_obj = None
 
         self._call_method = False
-        self.SetLabel(label)
+        self.SetLabel(" " + label + " ") # apparently I need white space...
 
     def GetValue(self):
         pass
