@@ -568,7 +568,8 @@ class PythonSTC(stc.StyledTextCtrl):
         else:
             app = wx.GetApp().TopWindow  # self.GetTopLevelParent()
             if hasattr(app, 'run_text'):
-                app.run_text(td.get_full_path()+'()', no_exec=True)
+                #app.run_text(td.get_full_path()+'()', no_exec=True)
+                app.run_text(td.get_full_path()+'()')
 
     def get_EOL_txt(self):
         m = self.GetEOLMode()

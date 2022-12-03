@@ -70,6 +70,7 @@ class PanelWithFindPanel(wx.Panel):
         self.find_panel = FindPanel(self, wx.ID_ANY)
         self._find_shown = False
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        self._find_mode = 'forward'
 
     def ToggleFindPanel(self):
         if self._find_shown:
@@ -105,14 +106,7 @@ class PanelWithFindPanel(wx.Panel):
             stc.SetSelection(l1, l2)
         return flag
 
-    def onHitFW(self, evt):
-        nb = self.GetChildren()[1]
-        stc = nb.GetCurrentPage()
-        flag = self.find_forward()
-        stc.EnsureCaretVisible()
-        evt.Skip()
-
-    def onHitBW(self, evt):
+    def find_backward(self):
         nb = self.GetChildren()[1]
         stc = nb.GetCurrentPage()
         txt = self.find_panel.get_find_text()
@@ -123,7 +117,22 @@ class PanelWithFindPanel(wx.Panel):
             l1, l2 = stc.GetSelection()
             stc.SetCurrentPos(l1)
             stc.SetSelection(l1, l2)
+        return flag
+
+    def onHitFW(self, evt):
+        nb = self.GetChildren()[1]
+        stc = nb.GetCurrentPage()
+        flag = self.find_forward()
         stc.EnsureCaretVisible()
+        self._find_mode = 'forward'
+        evt.Skip()
+
+    def onHitBW(self, evt):
+        nb = self.GetChildren()[1]
+        stc = nb.GetCurrentPage()
+        flag = self.find_backward()
+        stc.EnsureCaretVisible()
+        self._find_mode = 'backward'
         evt.Skip()
 
     def onRunFind(self, evt):
@@ -136,8 +145,15 @@ class PanelWithFindPanel(wx.Panel):
         txt = self.find_panel.get_replace_text()
         if len(txt) != 0:
             l1, l2 = stc.GetSelection()
+            if l1 == l2:
+                return False
             stc.Replace(l1, l2, txt)
-            return True
+            if self._find_mode == 'forward':
+                flag = self.find_forward()
+            else:
+                flag = self.find_backward()
+            stc.EnsureCaretVisible()
+            return flag != -1
         return False
 
     def onReplace(self, evt):
@@ -145,17 +161,20 @@ class PanelWithFindPanel(wx.Panel):
         evt.Skip()
 
     def onReplaceAll(self, evt):
-
         nb = self.GetChildren()[1]
         stc = nb.GetCurrentPage()
-        stc.SetCurrentPos(0)
+
         pos = stc.GetCurrentPos()
-        while(1):
-            flag = self.find_forward()
+
+        txt = self.find_panel.get_find_text()
+        rtxt = self.find_panel.get_replace_text()
+        while 1:
+            stc.SetCurrentPos(0)
+            stc.SearchAnchor()
+            flag = stc.SearchNext(0, txt)
             if flag == -1:
                 break
-            flag = self.replace_once()
-            if not flag:
-                break
+            stc.ReplaceSelection(rtxt)
+
         stc.EnsureCaretVisible()
         evt.Skip()
