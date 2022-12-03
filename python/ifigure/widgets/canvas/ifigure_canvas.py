@@ -1962,6 +1962,14 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.canvas.figure = figure
         self.mpl_connect()
         self._figure = figure
+
+        # this enforce the size of figure fits with window size
+        if figure is not None:
+            dpival = figure.dpi
+            winch = self.canvas._width / dpival
+            hinch = self.canvas._height / dpival
+            figure.set_size_inches(winch, hinch, forward=False)
+
         try:
             self.set_axes_selection(figure.figobj.get_axes(0)._artists[0])
         except BaseException:

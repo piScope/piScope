@@ -229,7 +229,7 @@ class FigureMod(Figure):
         """
         Render the figure using :class:`matplotlib.backend_bases.RendererBase` instance renderer
         """
-        print('calling figure::draw')
+#        print('calling figure::draw')
 #        import traceback
 #        traceback.print_stack()
         return super(FigureMod, self).draw(renderer)

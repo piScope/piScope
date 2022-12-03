@@ -1528,13 +1528,6 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         self.set_window_title()
         if self.nsec() > 0:
             self.isec(0)
-#        title=self.GetTitle()
-#        if title.find(':page ') == -1:
-#           title=title+':page '+str(self.ipage+1)
-#        else:
-#           tmp=title.rpartition(":page ")
-#           title=tmp[0]+':page '+str(self.ipage+1)
-#        self.SetTitle(title)
 
     def _link_canvas_property_editor(self):
         self.property_editor.set_canvas(self.canvas)
@@ -1724,9 +1717,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 k = args[0]
                 book = args[1]
                 book.show_page(k)
-                self._force_layout()
                 book.draw()
-                time.sleep(0.1)
+                time.sleep(0.01)
 
         if duration is None or dither is None:
             from ifigure.utils.edit_list import DialogEditList
@@ -1761,7 +1753,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book = args[1]
                 book.show_page(k)
                 book.draw()
-                time.sleep(0.1)
+                time.sleep(0.01)
 
         if duration is None:
             from ifigure.utils.edit_list import DialogEditList
@@ -1792,27 +1784,31 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book = args[1]
                 book.show_page(k)
                 book.draw()
+                time.sleep(0.01)
 
         param = []
         ret0 = '.'.join(filename.split('.')[:-1])
 
         from PyPDF2 import PdfFileReader, PdfFileWriter
+
         output = PdfFileWriter()
         image_dpi = wx.GetApp().TopWindow.aconfig.setting['image_dpi']
 
         from ifigure.matplotlib_mod.mpl_utils import call_savefig_method
 
         for k in range(self.num_page()):
-            print(('printing page: ', str(k)))
+            print('printing page: ' + str(k))
             self.show_page(k)
             self.draw()
             name = ret0+'_'+str(k)+'.pdf'
             call_savefig_method(self.canvas, 'print_pdf', name, dpi=image_dpi)
-            page = PdfFileReader(file(name, 'rb'))
+            #page = PdfFileReader(file(name, 'rb'))
+            page = PdfFileReader(name)
             output.addPage(page.getPage(0))
-        outputStream = file(filename, 'wb')
-        output.write(outputStream)
-        outputStream.close()
+
+        with open(filename, 'wb') as output_stream:
+            output.write(output_stream)
+
         for k in range(self.book.num_page()):
             os.remove(ret0+'_'+str(k)+'.pdf')
 
