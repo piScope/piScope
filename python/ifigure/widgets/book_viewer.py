@@ -1720,10 +1720,14 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 book.draw()
                 time.sleep(0.01)
 
-        if duration is None or dither is None:
+        if dither is not None:
+            import warnings
+            warnings.warn(
+                "dither is deprecated. not used anymore.", FutureWarning)
+
+        if duration is None:
             from ifigure.utils.edit_list import DialogEditList
-            l = [["Frame Speed(s/frame)", str(0.5),  0, {'noexpand': True}],
-                 [None, True, 3, {"text": "Dither", "noindent": None}], ]
+            l = [["Frame Speed(s/frame)", str(0.5),  0, {'noexpand': True}], ]
 
             value = DialogEditList(l, parent=self,
                                    title="GIF animation...",
@@ -1732,7 +1736,6 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
                 return
 
             duration = float(value[1][0])
-            dither = 1 if value[1][1] else 0
 
         pages = range(self.num_page()) if pages == 'all' else pages
         param = [(k, self) for k in pages]
@@ -1741,7 +1744,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         print('saveing gif animation...'+filename)
 
         save_animation(show_page, param, self.canvas, filename=filename,
-                       duration=duration, dither=dither)
+                       duration=duration)
 
     def save_animpng(self, filename='animation.png', show_page=None,
                      duration=None, pages='all'):
