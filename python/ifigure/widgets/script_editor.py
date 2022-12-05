@@ -520,6 +520,12 @@ class PythonSTC(stc.StyledTextCtrl):
     def run_text(self, sp, ep):
         l1 = self.LineFromPosition(sp)
         l2 = self.LineFromPosition(ep)
+
+        # if ending of selection is the begining of line. ignore the
+        # last line.
+        if self.PositionFromLine(l2) == ep:
+            l2 = l2 - 1
+
         line = []
 
         eol = self.get_EOL_txt()
@@ -562,7 +568,8 @@ class PythonSTC(stc.StyledTextCtrl):
         else:
             app = wx.GetApp().TopWindow  # self.GetTopLevelParent()
             if hasattr(app, 'run_text'):
-                app.run_text(td.get_full_path()+'()', no_exec=True)
+                #app.run_text(td.get_full_path()+'()', no_exec=True)
+                app.run_text(td.get_full_path()+'()')
 
     def get_EOL_txt(self):
         m = self.GetEOLMode()
