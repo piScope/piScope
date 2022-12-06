@@ -1780,13 +1780,12 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):
         if show_page is None:
-            def show_page(args):
+            def show_page(*args):
                 import wx
                 import time
                 k = args[0]
-                book = args[1]
-                book.show_page(k)
-                book.draw()
+                self.show_page(k)
+                self.draw()
                 time.sleep(0.01)
 
         param = []
@@ -1800,19 +1799,20 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         from ifigure.matplotlib_mod.mpl_utils import call_savefig_method
 
         for k in range(self.num_page()):
-            print('printing page: ' + str(k))
-            self.show_page(k)
+            #print('printing page: ' + str(k))
+            show_page(k)
             self.draw()
             name = ret0+'_'+str(k)+'.pdf'
             call_savefig_method(self.canvas, 'print_pdf', name, dpi=image_dpi)
-            #page = PdfFileReader(file(name, 'rb'))
+
             page = PdfFileReader(name)
             output.addPage(page.getPage(0))
 
         with open(filename, 'wb') as output_stream:
             output.write(output_stream)
 
-        for k in range(self.book.num_page()):
+        for k in range(self.num_page()):
+            #print("removing", ret0+'_'+str(k)+'.pdf')
             os.remove(ret0+'_'+str(k)+'.pdf')
 
     def isPropShown(self):

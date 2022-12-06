@@ -138,7 +138,7 @@ class VideoViewerMode(object):
             self.draw()
         BookViewer.save_animgif(self, filename=filename,
                                 show_page=show_page, duration=duration, dither=dither, pages=pages)
-        
+
     def save_animpng(self, filename='animation.png',
                      show_page=None, duration=None, pages='all'):
         def show_page(args):
@@ -150,13 +150,15 @@ class VideoViewerMode(object):
 
     def save_multipdf(self, filename='figure_allpage.pdf',
                       show_page=None):
-        def show_page(args):
+        def show_page(*args):
+            import time
             k = args[0]
             self.goto_frame(k)
+            time.sleep(0.01)
             self.draw()
+
         BookViewer.save_multipdf(self, filename=filename,
                                  show_page=show_page)
-
 
     def add_bookmenus(self, editmenu, viewmenu):
 
