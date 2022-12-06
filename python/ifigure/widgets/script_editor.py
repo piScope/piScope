@@ -551,7 +551,9 @@ class PythonSTC(stc.StyledTextCtrl):
         app = wx.GetApp().TopWindow  # self.GetTopLevelParent()
         if (hasattr(app, 'run_text') and
                 txt != ''):
+            app.shell.interp.set_batch_run_mode()
             app.run_text(txt)
+            app.shell.interp.set_single_run_mode()
         return
 
     def onCopyToShell(self, evt):

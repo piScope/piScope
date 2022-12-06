@@ -252,6 +252,53 @@ class FakeSimpleShell(wx.Panel):
         f = open(file, 'wb')
         f.close()
 
+from wx.py.interpreter import Interpreter
+class MyInterp(Interpreter):
+    '''
+    runsource is modified to perfrom the runsource with either symbol='exec' or 'single'
+
+    'single' is an orignal mode
+    'exec' is used to run multiple statement at once. this is useful when we run
+     segment of script written in scripteditor
+    '''
+    def __init__(self, *args, **kwargs):
+        Interpreter.__init__(self, *args, **kwargs)
+        self._runsouce_mode = 'single'
+
+    def set_single_run_mode(self):
+        self._runsouce_mode = 'single'
+
+    def set_batch_run_mode(self):
+        self._runsouce_mode = 'exec'
+
+    def runsource(self, source):
+        """Compile and run source code in the interpreter."""
+        stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
+        sys.stdin, sys.stdout, sys.stderr = \
+                   self.stdin, self.stdout, self.stderr
+
+        # we do this using "exec"
+        more = super(Interpreter, self).runsource(source, symbol=self._runsouce_mode)
+
+        # this was original
+        #more = InteractiveInterpreter.runsource(self, source)
+
+        # If sys.std* is still what we set it to, then restore it.
+        # But, if the executed source changed sys.std*, assume it was
+        # meant to be changed and leave it. Power to the people.
+        if sys.stdin == self.stdin:
+            sys.stdin = stdin
+        else:
+            self.stdin = sys.stdin
+        if sys.stdout == self.stdout:
+            sys.stdout = stdout
+        else:
+            self.stdout = sys.stdout
+        if sys.stderr == self.stderr:
+            sys.stderr = stderr
+        else:
+            self.stderr = sys.stderr
+        return more
 
 class SimpleShell(ShellBase):
     #   arrow key up/down are trapped to work as history
@@ -270,7 +317,10 @@ class SimpleShell(ShellBase):
         txt = '    --- Welcome to piScope ('+ifig_version+')---'
         super(SimpleShell, self).__init__(parent,
                                           locals=self.lvar,
-                                          startupScript=sc, introText=txt)
+                                          startupScript=sc,
+                                          introText=txt,
+                                          InterpClass=MyInterp)
+
         if os.getenv('PYTHONSTARTUP') is not None:
             file = os.getenv('PYTHONSTARTUP')
             if os.path.exists(file):
