@@ -539,6 +539,7 @@ class PythonSTC(stc.StyledTextCtrl):
                 line.append(str(self.GetLine(l1+i)).strip(eol))
         if len(line) == 0:
             return
+        line_count = len(line)
 
         txt = minify('\n'.join(line))
         line = txt.split('\n')
@@ -551,7 +552,8 @@ class PythonSTC(stc.StyledTextCtrl):
         app = wx.GetApp().TopWindow  # self.GetTopLevelParent()
         if (hasattr(app, 'run_text') and
                 txt != ''):
-            app.shell.interp.set_batch_run_mode()
+            if line_count > 1:
+                app.shell.interp.set_batch_run_mode()
             app.run_text(txt)
             app.shell.interp.set_single_run_mode()
         return
