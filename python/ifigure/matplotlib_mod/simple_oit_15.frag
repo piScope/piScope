@@ -181,16 +181,32 @@ void main() {
      }
 
      // clip plane
+     float isOnCutPlane = 1.0;   // 1: regular mode 2:shilhouette (black)
      if ((uUseClip == 2) || (uUseClip == 3)){
         float dd_clip = ((ClipDistance0[0]-0.5) * uClipLimit1[0] +
                       	 (ClipDistance0[1]-0.5) * uClipLimit1[1] +
                  	 (ClipDistance0[2]-0.5) * uClipLimit1[2] -
 			 uClipLimit2[0]);
- 	if ((uClipLimit2[1] > 0) && (dd_clip > bias)){
-           discard;	
-	}
- 	if ((uClipLimit2[1] <= 0) && (dd_clip < bias)){	
-           discard;	
+
+        if (uClipLimit2[1] > 0.){
+            if (dd_clip > bias){
+               discard;
+            }
+            if (dd_clip > bias - bias*5){
+	       // when point is very close to cut plane, suppress colors using
+	       // quadraticall.
+               isOnCutPlane = ((dd_clip - bias)/bias/5)*((dd_clip - bias)/bias/5);
+
+            }
+        } else {
+            if (dd_clip < -bias){
+                discard;
+	    }
+            if (dd_clip < - bias + bias*5){
+	       // when point is very close to cut plane, suppress colors using
+	       // quadraticall.
+               isOnCutPlane = ((dd_clip + bias)/bias/5)*((dd_clip + bias)/bias/5);
+            }
 	}
      }
 
@@ -255,12 +271,14 @@ void main() {
 
      vec4 cAmbient = vColor * uAmbient;
      float LightPow = uLightPow;
+
      vec4 cDiff = vColor * vec4(LightPow*cT + cT2,
                                 LightPow*cT + cT2,
 				LightPow*cT + cT2, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
-     FragData0 = cAmbient + cDiff + cSpec;
+     FragData0 = (cAmbient + cDiff + cSpec)* isOnCutPlane;
+
      float aaa = FragData0.a * vColor[3];
      if (uHasHL == 1){
         if (((uUseArrayID == 1) && (array_id < 0)) || (uUseArrayID != 1)){
