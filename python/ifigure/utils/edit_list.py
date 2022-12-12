@@ -2748,8 +2748,8 @@ class ComboBox(ComboBoxCompact):
         if index != -1:
             self.SetSelection(index)
         else:
-            if sel in c:
-                index = c.index(sel)
+            if sel in ch:
+                index = ch.index(sel)
                 self.SetSelection(index)
 
 
