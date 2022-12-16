@@ -13,7 +13,7 @@ from ifigure.interactive import aviewer
 from ifigure.interactive import plot, timetrace, oplot, plotc, loglog, semilogx, semilogy
 from ifigure.interactive import errorbar, errorbarc, oerrorbar
 from ifigure.interactive import triplot, delaunay
-from ifigure.interactive import fill, fill_between, fill_betweenx
+from ifigure.interactive import fill, fill_between, fill_betweenx, fill_between_3d
 from ifigure.interactive import contour, contourf
 from ifigure.interactive import image, spec, specgram
 from ifigure.interactive import scatter, hist
