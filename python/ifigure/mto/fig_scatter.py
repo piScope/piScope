@@ -373,7 +373,8 @@ class FigScatter(FigObj, XUser, YUser, ZUser, CUser):
                    yrange=[None, None],
                    scale='linear'):
         if self.get_figaxes().get_3d():
-            return zrange
+            x, y, z = self._eval_xyz()
+            return self._update_range(zrange, (np.nanmin(z), np.nanmax(z)))
         else:
             return zrange
 
