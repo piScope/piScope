@@ -1536,6 +1536,15 @@ class Axes3DMod(Axes3D):
                 zorder = max([a.get_zorder() for a in artists])
                 for a in self._3d_axes_icon[3:]:
                     a().set_zorder(zorder + 5)
+
+                # adjust padding based on lable/ticklable sizes
+                xmax = max(*([x.get_size() for x in self.xaxis.get_majorticklabels()] + [0]))
+                ymax = max(*([x.get_size() for x in self.yaxis.get_majorticklabels()] + [0]))
+                zmax = max(*([x.get_size() for x in self.zaxis.get_majorticklabels()] + [0]))
+                self.xaxis.labelpad = (xmax + self.xaxis.label.get_size())/2.0
+                self.yaxis.labelpad = (ymax + self.yaxis.label.get_size())/2.0
+                self.zaxis.labelpad = (zmax + self.zaxis.label.get_size())/2.0
+
             #zorder = max([a.get_zorder() for a in artists])
             # print(zorder)
 
