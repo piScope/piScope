@@ -688,7 +688,6 @@ class ifigure_app(BookViewerFrame):
         local_lc.release()
 
         if path is None:
-            print("doing this")
             path = dialog.read(parent=self,
                                message="Select project (.pfz) to open",
                                wildcard='*.pfz',
