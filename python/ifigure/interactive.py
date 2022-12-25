@@ -1016,6 +1016,12 @@ def fill_betweenx(*args, **kargs):
     '''
     pass
 
+@redirect_to_aviewer
+def fill_between_3d(*args, **kargs):
+    '''
+    fill_between_3d(x1, y1, z1, x2, y, z2, c='b')
+    '''
+    pass
 
 @redirect_to_aviewer_3D
 def surf(*args, **kargs):

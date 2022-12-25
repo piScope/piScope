@@ -1379,6 +1379,38 @@ class BookViewerInteractive(object):
         return obj
 
     @allow_interactive_call
+    def fill_between_3d(self, x1, y1, z1, x2, y2, z2, c='b', w=0, **kargs):
+        from ifigure.mto.fig_solid import FigSolid
+
+        verts1 = np.vstack([np.array(x1, copy=False),
+                            np.array(y1, copy=False),
+                            np.array(z1, copy=False), ]).transpose()
+        verts2 = np.vstack([np.array(x2, copy=False),
+                            np.array(y2, copy=False),
+                            np.array(z2, copy=False), ]).transpose()
+
+        x = np.arange(len(verts1))
+        y = np.arange(2)
+        X, Y = np.meshgrid(x, y)
+
+        from ifigure.utils.triangulation_wrapper import delaunay
+
+        idxset = delaunay(X.flatten(), Y.flatten())
+        verts = np.vstack([verts1, verts2])
+
+        args = (verts, idxset)
+
+        kargs['linewidth'] = w
+        kargs['facecolor'] = c
+
+        fig_axes = self.get_axes(ipage=None, iaxes=self.isec())
+        if not fig_axes.get_3d():
+            fig_axes.set_3d(True)
+
+        obj = FigSolid(*args, **kargs)
+        return obj
+
+    @allow_interactive_call
     def surf(self, *args, **kargs):
         fig_axes = self.get_axes(ipage=None, iaxes=self.isec())
         if not fig_axes.get_3d():
