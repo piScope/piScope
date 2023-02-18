@@ -2333,6 +2333,7 @@ class RadioButtons(wx.Panel):
             sizer0 = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
         First = True
+
         for item in setting["values"]:
             if First:
                 w = wx.RadioButton(self, wx.ID_ANY, item, style=wx.RB_GROUP)

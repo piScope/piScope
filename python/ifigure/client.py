@@ -158,11 +158,11 @@ def server(param, host='localhost', port=None, exe=None):
     server('shutdown')
     '''
     c = Client()
-    if param is 'launch':
+    if param == 'launch':
         c.launch(exe=exe)
-    if param is 'connect':
+    if param == 'connect':
         c.set_connection(host, port)
-    if param is 'shutdown':
+    if param == 'shutdown':
         if c.host is None:
             return
         if c.port == 0:
