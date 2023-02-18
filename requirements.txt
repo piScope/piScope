@@ -1,5 +1,4 @@
 attrdict
-wxPython
 numba-scipy
 matplotlib == 3.6.2
 hgapi
@@ -10,5 +9,5 @@ h5py
 PyPDF2
 pdfrw
 future
-
+wxPython
 
