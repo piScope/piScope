@@ -591,7 +591,7 @@ class ProjTreeViewer(wx.Panel):
 
     def update_widget_request(self, delay=3000, no_set_selection=False):
         if not self._update_request:
-            wx.CallLater(delay, self.update_widget0,
+            wx.CallLater(int(delay), self.update_widget0,
                          no_set_selection=no_set_selection)
             self._update_request = True
 
@@ -1020,7 +1020,7 @@ class ProjTreeViewer(wx.Panel):
         item = e.GetItem()
         pydata = self.tree.GetPyData(item)
         self._changed_flag = True
-        wx.CallLater(100., self.change_selection, pydata)
+        wx.CallLater(100, self.change_selection, pydata)
 
     def OnSelChanging(self, e):
         if self._drag_start:

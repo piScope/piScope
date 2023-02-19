@@ -29,7 +29,7 @@ btasks0 = [('plus_theta', 'shift_theta.png', 0, '+ polar angle (shift-key: reser
 # step size
 delta_z = 0.05
 delta_a = 5.
-# interval
+# interval(must be integer)
 dtime = 150
 
 class CutPlaneBar(bp.ButtonPanel):

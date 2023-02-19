@@ -255,7 +255,7 @@ class VideoViewerMode(object):
         if not value[0]:
             return
         interval = min([50, int(float(value[1][0])*1000.)])
-        self._playinterval = interval
+        self._playinterval = int(interval)
         self._playloop = bool(value[1][1])
 
 
