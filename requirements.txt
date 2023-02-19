@@ -1,5 +1,5 @@
-attrdict
-numba-scipy
+#attrdict
+#numba-scipy
 matplotlib == 3.6.2
 hgapi
 PyOpenGL
@@ -8,6 +8,8 @@ netCDF4
 h5py
 PyPDF2
 pdfrw
-future
 wxPython
+future
+autopep8
+
 

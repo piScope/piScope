@@ -105,7 +105,7 @@ def onUpdateFile(self, e):
                              pathname=pathname)
     file_check = os.path.join(obj.owndir(), obj.name)+'.mat'
 
-    if file is '':
+    if file == '':
         file = file_check
         try:
             export_matfile(obj, file)

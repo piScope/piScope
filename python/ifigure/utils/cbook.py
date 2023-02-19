@@ -1040,7 +1040,7 @@ def test(a=None, b=None, c=None):
 
 
 def loadct(num, **kwargs):
-    file = os.path.join(ifigure.__path__[0], 'utils', 'idl_colors.txt',)
+    file = os.path.join(ifigure.__path__[0], 'resources', 'idl_colors.txt',)
     output = scipy.genfromtxt(file,
                               skip_header=256*num,
                               skip_footer=(39-num)*256)/255.

@@ -52,10 +52,12 @@ def run_setup():
     
     setup(
         install_requires=install_req,
-        packages=['python/ifigure'],
+        packages=find_packages(where='python'),
+        package_dir = {'': 'python'},
         extras_require={},
-        package_data={},
-        entry_points={},
+        package_data={"ifigure.resources":["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"]},
+        include_package_data=True,
+        entry_points={'console_scripts':["piscope = ifigure:piscope"]},
         **setup_args)
 
 def main():
