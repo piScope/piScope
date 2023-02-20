@@ -1,0 +1,35 @@
+name: testrelease_binary
+
+on:
+  push:
+    #branches: [ action_test ]
+    tags: ["test_*"]
+
+jobs:
+  make_sdist:
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
+    steps:
+      - name: build_sdist
+        run: |
+          echo This job does not specify a container.
+          echo It runs directly on the virtual machine.
+          #
+          git clone https://github.com/piScope/piScope.git
+          cd piScope
+          #
+          REF=$(echo ${GITHUB_REF#refs/heads/})
+          echo "!!!!!: "$REF
+          git checkout $REF
+          #
+          export PATH=/opt/python/cp37-cp37m/bin:$PATH
+
+          pip3 install wheel six auditwheel twine build
+
+          rm -rf dist/*
+          python3 -m build --sdist --wheel --outdir dist/ .
+      -name:
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_PISCOPE_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
