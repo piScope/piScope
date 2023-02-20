@@ -29,4 +29,3 @@ jobs:
           python3 -m build --sdist --wheel --outdir dist/ .
           ls -l
           python3 -m twine upload --repository-url https://test.pypi.org/legacy/ --password ${{ secrets.TEST_PYPI_API_PISCOPE_TOKEN }} --username __token__ --verbose dist/*
-	  
