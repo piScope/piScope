@@ -33,7 +33,7 @@ _lastisec = 0
 aviewer = None
 
 def get_topwindow():
-    return wx.GetApp().TopWindow
+    return wx.GetApp().GetTopWindow()
 
 def set_aviewer(viewer):
     # called from ifigure_app.aviewer

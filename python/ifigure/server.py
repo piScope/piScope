@@ -41,9 +41,8 @@ import socket
 import subprocess
 import sys
 import shlex
-import ifigure.utils.pickle_wrapper
 from ifigure.utils.cbook import pick_unused_port
-
+import ifigure.utils.pickle_wrapper as pickle
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -53,7 +52,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         rfile = self.request.makefile('r')
         response = rfile.readline().strip()
         rfile.close()
-        data = cPickle.loads(binascii.a2b_hex(response))
+        data = pickle.loads(binascii.a2b_hex(response))
 #        data = self.request.recv(1024)
 #        data = cPickle.loads(binascii.a2b_hex(data))
         ifig_app = wx.GetApp().TopWindow
@@ -64,7 +63,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                                               command=data)
         try:
             data = wx.GetApp().TopWindow.server_response_queue.get(True)
-            data = binascii.b2a_hex(cPickle.dumps(data))
+            data = binascii.b2a_hex(pickle.dumps(data))
             self.request.sendall(data)
         except:
             import traceback
@@ -197,7 +196,7 @@ class Server(object):
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.rhost, self.rport))
-        data = binascii.b2a_hex(cPickle.dumps(
+        data = binascii.b2a_hex(pickle.dumps(
             {'type': data_type, 'data': data}))
         sock.sendall(data+'\n')
         sock.close()

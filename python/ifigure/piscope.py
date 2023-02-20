@@ -94,7 +94,8 @@ def piscope():
             elif p == '-s':
                 start_server = True
                 redirect_std = True
-                process_server_request = False
+                import __main__
+                __main__.process_server_request = False
 
                 server = ifigure.server.Server()
                 server.start()
@@ -214,7 +215,8 @@ def piscope():
 
     if start_server:
         ifig_app.use_server()
-        process_server_request = True
+        import __main__
+        __main__.process_server_request = True
         port = server.info()[3]
         print('remote port is open : port = ' + str(port) + '\n')
 

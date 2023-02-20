@@ -49,13 +49,15 @@ metadata = {'name': 'piScope',
 def run_setup():
     setup_args = metadata.copy()
     install_req = install_requires()
-    
+    packages = find_packages(where='python')
+
     setup(
         install_requires=install_req,
-        packages=find_packages(where='python'),
+        packages=packages,
         package_dir = {'': 'python'},
         extras_require={},
-        package_data={"ifigure.resources":["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"]},
+        package_data={"ifigure.resources":["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"],
+                      "ifigure.matplotlib_mod":["*.frag", "*.vert", "*.geom"]},
         include_package_data=True,
         entry_points={'console_scripts':["piscope = ifigure:piscope"]},
         **setup_args)
