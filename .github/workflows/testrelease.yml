@@ -27,8 +27,6 @@ jobs:
 
           rm -rf dist/*
           python3 -m build --sdist --wheel --outdir dist/ .
-    - name: publish on test pypi
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-          password: ${{ secrets.TEST_PYPI_API_PISCOPE_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          ls -l
+          python3 -m twine upload --repository-url https://test.pypi.org/legacy/ --password ${{ secrets.TEST_PYPI_API_PISCOPE_TOKEN }} --username __token__ --verbose dist/*
+	  
