@@ -122,7 +122,7 @@ class FrameWithWindowList(wx.Frame):
     def turn_on_updateui_event(self):
         pass
         #self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
-        
+
     def turn_off_updateui_event(self):
         pass
         #self.Unbind(wx.EVT_UPDATE_UI)
@@ -372,9 +372,9 @@ class FrameWithWindowList(wx.Frame):
 
 
 class FramePlus(FrameWithWindowList):
-    ''' 
+    '''
     Frame plus is wx.Frame with force_layout
-    and deffered_force_layout, which call 
+    and deffered_force_layout, which call
     force_layout after the next idle event.
 
     it also define self.finemenu and self.editmenu,
@@ -386,20 +386,24 @@ class FramePlus(FrameWithWindowList):
     ID_PASTES = wx.NewIdRef(count=1)
 
     def __init__(self, *args,  **kargs):
+        nomenu = kargs.pop('nomenu', False)
+
         kargs["size"] = (10, 10)
         super(FramePlus, self).__init__(*args, **kargs)
 
         # Setting up the menu.
-        self.filemenu = wx.Menu()
-        self.editmenu = wx.Menu()
-        self.viewmenu = wx.Menu()
-        self.plotmenu = wx.Menu()
+        if not nomenu:
+            self.filemenu = wx.Menu()
+            self.editmenu = wx.Menu()
+            self.viewmenu = wx.Menu()
+            self.plotmenu = wx.Menu()
+            self.menuBar.Append(self.filemenu, "&File")
+            self.menuBar.Append(self.editmenu, "&Edit")
+            self.menuBar.Append(self.viewmenu, "&View")
+            self.menuBar.Append(self.plotmenu, "Plot")
+
         self.previous_size = (-1, -1)
         self.previous_size2 = (-1, -1)
-        self.menuBar.Append(self.filemenu, "&File")
-        self.menuBar.Append(self.editmenu, "&Edit")
-        self.menuBar.Append(self.viewmenu, "&View")
-        self.menuBar.Append(self.plotmenu, "Plot")
 
         self._use_samerange_mni = None
         self._use_samerange = False
@@ -535,7 +539,7 @@ class FramePlus(FrameWithWindowList):
 
 class BookViewerFrame(FramePlus, BookViewerInteractive):
     '''
-    book viewer frame is a frame with 
+    book viewer frame is a frame with
     matplot and property editor
 
     '''
@@ -1829,7 +1833,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         if self.isPanel1Shown():
             '''
             when showing panel, it issues an event so that
-            the information shown on panels are 
+            the information shown on panels are
             properly updated
             '''
             self.gui_tree.toggle_panel(pe, not self.isPropShown())
@@ -2156,7 +2160,7 @@ class BookViewer(BookViewerFrame):
     def attach_to_main(self):
         '''
         attach to main window. it closes if a figure is
-        already open in the main window 
+        already open in the main window
         '''
         self.onAttachFigure(None)
         w = wx.GetApp().TopWindow
