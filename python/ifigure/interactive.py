@@ -997,7 +997,7 @@ def legend(*args, **kargs):
 @redirect_to_aviewer
 def fill(*args, **kargs):
     '''
-    fill(x, y, s)
+    fill(x, y)
     '''
     pass
 

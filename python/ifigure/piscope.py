@@ -70,7 +70,8 @@ def piscope():
 
     # this is a place where wdir is set when exiting
     # the program
-    xxx = []
+    import __main__
+    __main__.xxx = []
     launcher_file = None
     use_gl = True
     if len(sys.argv[1:]) >= 1:
@@ -94,7 +95,6 @@ def piscope():
             elif p == '-s':
                 start_server = True
                 redirect_std = True
-                import __main__
                 __main__.process_server_request = False
 
                 server = ifigure.server.Server()
@@ -215,7 +215,6 @@ def piscope():
 
     if start_server:
         ifig_app.use_server()
-        import __main__
         __main__.process_server_request = True
         port = server.info()[3]
         print('remote port is open : port = ' + str(port) + '\n')
@@ -266,7 +265,7 @@ def piscope():
     #
     #  deleting the wdir used last moment...
     #
-    wdirs = xxx
+    wdirs = __main__.xxx
     for wdir in wdirs:
         if os.path.exists(wdir):
             print(('deleting :', wdir))

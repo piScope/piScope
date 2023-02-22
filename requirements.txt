@@ -1,6 +1,6 @@
 #attrdict
 #numba-scipy
-matplotlib == 3.6.2
+matplotlib >= 3.6.2
 hgapi
 PyOpenGL
 PyOpenGL-accelerate

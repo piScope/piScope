@@ -208,8 +208,9 @@ class FigAxline(FigObj, XUser, YUser):
         else:
             for a in self._artists:
                 for hl in a.figobj_hl:
-                    if hl in container.lines:
-                        container.lines.remove(hl)
+                    #if hl in container.lines:
+                    #    container.lines.remove(hl)
+                    hl.remove()
                 a.figobj_hl = []
 #
 #   HitTest

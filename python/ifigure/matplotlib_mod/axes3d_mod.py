@@ -1368,9 +1368,9 @@ class Axes3DMod(Axes3D):
         self._3d_axes_icon[0]().remove()
         self._3d_axes_icon[1]().remove()
         self._3d_axes_icon[2]().remove()
-        self.texts.remove(self._3d_axes_icon[3]())
-        self.texts.remove(self._3d_axes_icon[4]())
-        self.texts.remove(self._3d_axes_icon[5]())
+        self._3d_axes_icon[3]().remove()
+        self._3d_axes_icon[4]().remove()
+        self._3d_axes_icon[5]().remove()
         self._3d_axes_icon = None
 
     def draw_3d_axes(self):
@@ -1465,9 +1465,13 @@ class Axes3DMod(Axes3D):
                       verticalalignment='center',
                       horizontalalignment='center')
 
-            self.texts.append(a4)
-            self.texts.append(a5)
-            self.texts.append(a6)
+            #self.texts.append(a4)
+            #self.texts.append(a5)
+            #self.texts.append(a6)
+            self.add_artist(a4)
+            self.add_artist(a5)
+            self.add_artist(a6)
+
             self._3d_axes_icon = [weakref.ref(a1),
                                   weakref.ref(a2),
                                   weakref.ref(a3),

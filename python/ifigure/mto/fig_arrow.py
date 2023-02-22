@@ -246,12 +246,16 @@ class FigArrow(FigObjGPHolder):
         arrowstyle = self.getp("arrowstyle")
         x1, y1 = self.get_gp(0).get_device_point()
         x2, y2 = self.get_gp(1).get_device_point()
+
+        from matplotlib.transforms import IdentityTransform
+        trans = IdentityTransform()
         styles = matplotlib.patches.ArrowStyle.get_styles()
         kywds = self.getvar('kywds')
         a = matplotlib.patches.FancyArrowPatch(posA=(x1, y1),
                                                posB=(x2, y2),
                                                connectionstyle='arc3',
                                                arrowstyle=arrowstyle, mutation_scale=1,
+                                               transform=trans,
                                                **kywds)
         lp = self.getp("loaded_property")
         if lp is not None:
@@ -286,10 +290,10 @@ class FigArrow(FigObjGPHolder):
             container.patches.append(a)
             a.set_figure(figure)
         else:
-            container.patches.append(a)
-            a.set_figure(figure)
-            axes = self.get_figaxes()._artists[0]
-            a.set_axes(axes)
+            container.add_patch(a)
+            #a.set_figure(figure)
+            #axes = self.get_figaxes()._artists[0]
+            #a.set_axes(axes)
 
     def refresh_artist(self):
         a1 = self._artists[0]
@@ -319,11 +323,14 @@ class FigArrow(FigObjGPHolder):
         if len(artistlist) != 0:
             #            container=self.get_figpage()._artists[0]
             container = self.get_container()
+            is_figtext = self.get_figaxes() is None
             self.highlight_artist(False, artistlist)
             for a in artistlist:
-                #            a is axes in this case
-                #            a.remove()
-                container.patches.remove(a)
+                #            a is figure in this case
+                if is_figtext:
+                    container.patches.remove(a)
+                else:
+                    a.remove()
 
         super(FigArrow, self).del_artist(artistlist)
 

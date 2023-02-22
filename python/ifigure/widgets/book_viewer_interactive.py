@@ -32,17 +32,17 @@ import traceback
          this is for plot command
          returned object from method will be added
          process update and hold keyword
-         copy doc_string from ifigure.interactive     
+         copy doc_string from ifigure.interactive
 
       2) allow_interactive_call2
          this is for commands to edit properties, such as title
          process update
-         copy doc_string from ifigure.interactive     
+         copy doc_string from ifigure.interactive
 
       3) share_doc_string
          this one just copy doc_string from ifigure.interactive
- 
-   decorator to update, hold functionality to 
+
+   decorator to update, hold functionality to
    methods for interactive ploting,
    also it copies doc_string from functions
    in ifigure.interactive
@@ -88,18 +88,18 @@ def has_plot(figaxes):
 def pop_metadata(kargs):
     '''
        metadata is either dictionary
-       or 
+       or
            longname,
            xlongname
            ylongname and so on
 
-      example : 
+      example :
            plot(np.arange(30), metadata = {'longname':'plot name',
                                            'xdata':{'longname': 'xdata name', 'unit': '[s]'},
                                            'ydata':{'longname': 'ydata name', 'unit': '[V]'}})
            plot(np.arange(30), metadata = 'metadata', xmetadata='xdata')
 
-           note: "name" in metadata is reseved, and piScope automatically 
+           note: "name" in metadata is reseved, and piScope automatically
                  fills using axis lables.
     '''
     meta0 = kargs.pop('metadata', None)
@@ -1283,6 +1283,10 @@ class BookViewerInteractive(object):
         try:
             if not 'trans' in kargs:
                 kargs['trans'] = ['axes']*2
+            else:
+                if isinstance(kargs['trans'], str):
+                    kargs['trans'] = [kargs['trans']]*2
+
             obj = FigText(*args, **kargs)
         except ValueError as x:
             print(x.message)
@@ -1297,6 +1301,9 @@ class BookViewerInteractive(object):
         try:
             if not 'trans' in kargs:
                 kargs['trans'] = ['axes']*4
+            else:
+                if isinstance(kargs['trans'], str):
+                    kargs['trans'] = [kargs['trans']]*4
             #kargs['autonext'] = False
             obj = FigArrow(*args, **kargs)
         except ValueError as x:
@@ -1309,6 +1316,8 @@ class BookViewerInteractive(object):
         from ifigure.mto.fig_arrow import FigArrow
 
         try:
+            if not 'trans' in kargs:
+                kargs['trans'] = ['figure']*4
             obj = FigArrow(*args, **kargs)
         except ValueError as x:
             print(x.message)

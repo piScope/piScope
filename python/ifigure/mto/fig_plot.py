@@ -348,9 +348,9 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                 #             a.set_picker(None)
                 try:
                     if a in container.collections:
-                        container.collections.remove(a)
+                        a.remove()
                     elif a in container.lines:
-                        container.lines.remove(a)
+                        a.remove()
                     if self._mpl_cmd == 'errorbar':
                         for a in self._eb_container[1]:
                             a.remove()
@@ -408,10 +408,7 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
         else:
             for a in alist:
                 for hl in a.figobj_hl:
-                    if hl in container.lines:
-                        container.lines.remove(hl)
-                    elif hl in container.collections:
-                        container.collections.remove(hl)
+                    hl.remove()
                 a.figobj_hl = []
 
     def get_mappable(self):

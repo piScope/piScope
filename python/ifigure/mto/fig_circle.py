@@ -230,7 +230,7 @@ class FigCircle(FigObjGPHolder):
 #           self.setp("loaded_property", val)
 
         if len(artistlist) != 0:
-            container = self.get_figpage()._artists[0]
+            container = self.get_container()
             self.highlight_artist(False, artistlist)
             for a in artistlist:
                 #            a is axes in this case

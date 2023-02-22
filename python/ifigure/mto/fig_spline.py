@@ -175,7 +175,7 @@ class FigSpline(FigObj, XUser, YUser):
         # managed by fig_obj tree. Any property
         # internally managed by matplotlib
         # does not change
-        container = self._parent._artists[0]
+        container = self.get_container()
 
         if self.isempty() is False:
             return
@@ -217,12 +217,10 @@ class FigSpline(FigObj, XUser, YUser):
 
         if len(artistlist) != 0:
             self.highlight_artist(False, artistlist)
-            container = self._parent._artists[0]
+            container = self.get_container()
             for a in artistlist:
-                a.set_picker(None)
-#             a.figobj=None
-#             self._artists.remove(a)
-                container.lines.remove(a)
+                a.remove()
+                # container.lines.remove(a)
 
         super(FigSpline, self).del_artist(artistlist)
 
@@ -231,7 +229,7 @@ class FigSpline(FigObj, XUser, YUser):
             alist = self._artists
         else:
             alist = artist
-        container = self._parent._artists[0]
+        container = self.get_container()
         if val == True:
             for a in alist:
                 x = self.getp("x")
@@ -250,7 +248,7 @@ class FigSpline(FigObj, XUser, YUser):
 
             for a in alist:
                 for hl in a.figobj_hl:
-                    container.lines.remove(hl)
+                    hl.remove()
                 a.figobj_hl = []
 #
 #   def hit_test

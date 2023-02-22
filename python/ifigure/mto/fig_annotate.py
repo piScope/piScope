@@ -138,7 +138,6 @@ class FigAnnotate(FigObj):
             for a in artistlist:
                 #            a is axes in this case
                 a.remove()
-#             container.texts.remove(a)
 
         super(FigAnnotate, self).del_artist(artistlist)
 
@@ -165,7 +164,7 @@ class FigAnnotate(FigObj):
         else:
             for a in alist:
                 for hl in a.figobj_hl:
-                    container.lines.remove(hl)
+                    hl.remove()
                     a.figobj_hl = []
 
     def get_artist_extent(self, a):
