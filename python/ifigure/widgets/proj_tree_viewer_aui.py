@@ -1020,7 +1020,7 @@ class ProjTreeViewer(wx.Panel):
         item = e.GetItem()
         pydata = self.tree.GetPyData(item)
         self._changed_flag = True
-        wx.CallLater(100., self.change_selection, pydata)
+        wx.CallLater(100, self.change_selection, pydata)
 
     def OnSelChanging(self, e):
         if self._drag_start:
