@@ -4,5 +4,5 @@ import multiprocessing as mp
 #sys.path = [os.path.dirname(os.path.dirname(__file__)),] + sys.path
 
 if __name__ == '__main__':
-    from .piscope import piscope
+    from ifigure.piscope import piscope
     piscope()

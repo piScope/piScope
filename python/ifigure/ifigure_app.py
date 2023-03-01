@@ -738,7 +738,7 @@ class ifigure_app(BookViewerFrame):
                            message="Select project (.pfz) to open in new piScope application",
                            wildcard='*.pfz')
         if path != '':
-            import piscope
+            import ifigure
             import subprocess
             import shlex
             import ifigure.widgets.canvas.ifigure_canvas
@@ -747,7 +747,10 @@ class ifigure_app(BookViewerFrame):
                 options = options + '-g '
             if redirect_std:
                 options = options + '-d '
-            command = sys.executable + ' ' + piscope.__file__ + options + path
+
+            script = os.path.join(os.path.dirname(ifigure.__file__),
+                                  "__main__.py ")
+            command = sys.executable + ' ' + script + options + path
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
 
