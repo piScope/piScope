@@ -26,6 +26,10 @@ def install_requires():
     fid.close()
     return requirements
 
+def long_description():
+    with open(os.path.join(rootdir, 'README.md'), encoding='utf-8') as f:
+        return f.read()
+
 platforms = """
 Mac OS X
 Linux
@@ -33,6 +37,8 @@ Linux
 metadata = {'name': 'piScope',
             'version': version(),
             'description': 'piScope data analysis workbench',
+            'long_description': long_description(),
+            'long_description_content_type': "text/markdown",
             'download_url': 'https://github.com/piScope/piScope',            
             'author': 'S. Shiraiwa',
             'author_email': 'shiraiwa@princeton.edu',
