@@ -219,9 +219,9 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
                 #             a.set_picker(None)
                 try:
                     if a in container.collections:
-                        container.collections.remove(a)
+                        a.remove()
                     elif a in container.lines:
-                        container.lines.remove(a)
+                        a.remove()
                 except:
                     logging.exception("fig_plot: highlight_aritst() failed")
             for a in self._other_artists:
@@ -258,7 +258,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
             for a in alist:
                 for hl in a.figobj_hl:
                     try:
-                        container.lines.remove(hl)
+                        h1.remove()
                     except:
                         logging.exception(
                             "fig_triplot: highlight_aritst() failed")

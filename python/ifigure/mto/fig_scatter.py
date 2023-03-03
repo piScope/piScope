@@ -272,10 +272,7 @@ class FigScatter(FigObj, XUser, YUser, ZUser, CUser):
         else:
             for a in alist:
                 for hl in a.figobj_hl:
-                    if hl in container.lines:
-                        container.lines.remove(hl)
-                    elif hl in container.collections:
-                        container.collections.remove(hl)
+                    hl.remove()
                 a.figobj_hl = []
 
     def picker_a(self, artist, evt):

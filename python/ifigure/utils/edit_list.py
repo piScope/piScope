@@ -1916,7 +1916,7 @@ class Slider(wx.Panel):
         self.datamax = (self.maxV-self.minV)/setting["res"]
         self.s1 = wx.Slider(self, wx.ID_ANY,
                             self._val2data(setting["val"]),
-                            0, self.datamax,
+                            0, int(self.datamax),
                             wx.DefaultPosition, size=(120, -1))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1942,7 +1942,7 @@ class Slider(wx.Panel):
         return self._data2val(self.s1.GetValue())
 
     def _val2data(self, x):
-        return (x-self.minV)/(self.maxV-self.minV)*self.datamax
+        return int((x-self.minV)/(self.maxV-self.minV)*self.datamax)
 
     def _data2val(self, data):
         return (self.maxV-self.minV)*data/self.datamax+self.minV
@@ -2333,6 +2333,7 @@ class RadioButtons(wx.Panel):
             sizer0 = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
         First = True
+
         for item in setting["values"]:
             if First:
                 w = wx.RadioButton(self, wx.ID_ANY, item, style=wx.RB_GROUP)

@@ -422,7 +422,7 @@ def onUpdateFile(self, e=None, *args, **kargs):
                                  pathname=pathname)
     file_check = os.path.join(obj.owndir(), obj.name)
 
-    if file is '':
+    if file == '':
         file = file_check
         try:
             self.onWriteFile(filename=file)

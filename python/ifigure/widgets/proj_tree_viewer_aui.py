@@ -591,7 +591,7 @@ class ProjTreeViewer(wx.Panel):
 
     def update_widget_request(self, delay=3000, no_set_selection=False):
         if not self._update_request:
-            wx.CallLater(delay, self.update_widget0,
+            wx.CallLater(int(delay), self.update_widget0,
                          no_set_selection=no_set_selection)
             self._update_request = True
 

@@ -324,21 +324,19 @@ class FigText(FigObjGPHolder):
 
         # save_data2->load_data2 will set "loaded_property"
         self.store_loaded_property()
-#        self.load_data2(self.save_data2({}))
-#        val = []
-#        for a in self._artists:
-#           val.append(self.get_artist_property(a))
-#        if len(val) != 0:
-#           self.setp("loaded_property", val)
 
         if len(artistlist) != 0:
             self.highlight_artist(False, artistlist)
             container = self.get_container()
+            is_figtext = self.get_figaxes() is None
             for a in artistlist:
                 #             a.set_picker(None)
                 #            this does not work for figtext
                 #             a.remove()
-                container.texts.remove(a)
+                if is_figtext:
+                    container.texts.remove(a)
+                else:
+                    a.remove()
 
         super(FigText, self).del_artist(artistlist)
 

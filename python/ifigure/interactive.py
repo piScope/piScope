@@ -1,9 +1,9 @@
 from __future__ import print_function
 
 '''
-   ifigure.interactive  
+   ifigure.interactive
 
-   these are commands which can be used in piScope 
+   these are commands which can be used in piScope
    interactive shell (command input)
 
    many function calls are actually redicted to
@@ -32,6 +32,8 @@ _lastisec = 0
 
 aviewer = None
 
+def get_topwindow():
+    return wx.GetApp().GetTopWindow()
 
 def set_aviewer(viewer):
     # called from ifigure_app.aviewer
@@ -158,7 +160,7 @@ def cls():
 @redirect_to_aviewer
 def clf():
     '''
-    clear current page. page annotations are not 
+    clear current page. page annotations are not
     deleted
     isec is moved to 0
     '''
@@ -186,7 +188,7 @@ def nsection(*args, **kargs):
 @redirect_to_aviewer
 def subplot(*args, **kargs):
     '''
-    set page section format. 
+    set page section format.
        subplot(3)     3 rows
        subplot(1, 3)     3 columns
        subplot(2, 3)  2x3
@@ -198,7 +200,7 @@ def subplot(*args, **kargs):
 
        dx and dy are optional arguments to determine the
        width and height of each column and row
-       if these are used, the number of dx and dy should be 
+       if these are used, the number of dx and dy should be
        ncol-1, nrow-1, respectively
 
        example: subplot(2,2, (0,1), dx=0.4)
@@ -272,7 +274,7 @@ def xlabel(txt, name='x', size=None, color=None):
 @redirect_to_aviewer
 def xtitle(txt, name='x', size=None, color=None):
     '''
-    set xaxis label 
+    set xaxis label
        xtitle(txt)
        xtitle(txt, name = 'x2')
        xtitle(txt, size=10, color='red')
@@ -546,8 +548,8 @@ def twiny():
 @redirect_to_aviewer_hold
 def oplot(*args, **kargs):
     '''
-    oplot : 
-        overplot 
+    oplot :
+        overplot
     see plot for all arguments
     '''
     pass
@@ -556,7 +558,7 @@ def oplot(*args, **kargs):
 @redirect_to_aviewer_hold
 def oerrorbar(*args, **kargs):
     '''
-    oerrrobar: 
+    oerrrobar:
         overplot errorbar
     see errorbar for all arguments
     '''
@@ -596,7 +598,7 @@ def timetrace(*args, **kargs):
     timetrace: special plot for time
                it supports decimation
     timetrace(y)
-    timetrace(x, y) 
+    timetrace(x, y)
     '''
     pass
 
@@ -622,25 +624,25 @@ def errorbarc(*args, **kargs):
 @redirect_to_aviewer
 def plot(*args, **kargs):
     """
-    plot : xy plot 
+    plot : xy plot
 
     plot(y)
     plot(x, y)
     plot(y, s)
-`   plot(x, y, s) 
+`   plot(x, y, s)
     plot(x, y, z)
     plot(x, y, z, cz=True)
 
-    s is a format string. For example 'bo-' means to use blue solid line with 
+    s is a format string. For example 'bo-' means to use blue solid line with
     circle marker. The format string is directly passed to matplotlib.
-    See http://piscope.psfc.mit.edu/index.php/Interactive_commands#plot for 
+    See http://piscope.psfc.mit.edu/index.php/Interactive_commands#plot for
     detail
 
     cz is option to change the color along a line using z.
 
     When x and y are expression, it evaulate x and y and the answer
     should be 1D data.
-    If x and y are given as numbers, following handling 
+    If x and y are given as numbers, following handling
     is done
           x.ndim == 2 and y.ndmi ==1
             x is sliced using the first row and multiple lines
@@ -660,11 +662,11 @@ def plot(*args, **kargs):
 @redirect_to_aviewer
 def scatter(*args, **kargs):
     """
-    scatter plot 
+    scatter plot
 
     scatter(x, y, s = 20, c = 'b')
 
-    s : scalar or array_like (same length as x, y) 
+    s : scalar or array_like (same length as x, y)
         size in points^2.
     c : color or sequence of color
         if c is a 1D array, it is normalized using c-axis range
@@ -689,7 +691,7 @@ def triplot(*args, **kargs):
     triplot : plot triangles
 
     triplot(x, y)
-    triplot(x, y, mask = mask, ...) 
+    triplot(x, y, mask = mask, ...)
     triplot(tri, x, y)
 
     """
@@ -707,7 +709,7 @@ def errorbar(*args, **kargs):
         ### assign 0.1 for all points)
         xerr = 0.1
         ### assign different value of error
-        xerr = [0.1, 0.2, ....] 
+        xerr = [0.1, 0.2, ....]
         ### assign upper and lower error separately
         xerr = [[0.1, 0.2, ...],[0.4, 0.7...]]
 
@@ -732,7 +734,7 @@ def annotate(*args, **kargs):
 @redirect_to_aviewer
 def ispline(*args, **kargs):
     """
-    ispline : xy plot 
+    ispline : xy plot
     ispline(x, y)
     """
     pass
@@ -742,10 +744,10 @@ def ispline(*args, **kargs):
 def contour(*args, **kargs):
     """
     contour : contour line plot  (see also contourf)
-    contour(z, n)  
-    contour(x, y, z, n)  
-    contour(z, v)  
-    contour(x, y, z, v)  
+    contour(z, n)
+    contour(x, y, z, n)
+    contour(z, v)
+    contour(x, y, z, v)
 
     n: number of levels
     v: a list of contour levels
@@ -757,10 +759,10 @@ def contour(*args, **kargs):
 def contourf(*args, **kargs):
     """
     contourf : contour fill plot
-    contourf(z, n)  
-    contourf(x, y, z, n)  
-    contourf(z, v)  
-    contourf(x, y, z, v)  
+    contourf(z, n)
+    contourf(x, y, z, n)
+    contourf(z, v)
+    contourf(x, y, z, v)
 
     n: number of levels
     v: a list of contour levels
@@ -771,9 +773,9 @@ def contourf(*args, **kargs):
 @redirect_to_aviewer
 def quiver(*args, **kargs):
     """
-    quiver : quiver plot 
+    quiver : quiver plot
     for 2D:
-       quiver(u, v)  
+       quiver(u, v)
        quiver(u, v, c)
        quiver(x, y, u, v)
        quiver(x, y, u, v, c)
@@ -804,7 +806,7 @@ def quiver3d(*args, **kargs):
 @redirect_to_aviewer
 def image(*args, **kargs):
     """
-    image : show image 
+    image : show image
 
     image(z)
     image(x, y, z)
@@ -919,7 +921,7 @@ def axspan(*args, **kargs):
     axspan([x1, x2], [y1,y2]) : mixed v-span h-span
 
     multiple v-span and h-span can be created at once
-    axspan([[x1, x2], [x3, x4]...], [[y1,y2], [y3, y4]...]) 
+    axspan([[x1, x2], [x3, x4]...], [[y1,y2], [y3, y4]...])
 
     (note) artists created by one axspan commands
           shares color, marker, alpha, and other attirbute.
@@ -935,7 +937,7 @@ def axspanc(*args, **kargs):
              see help(axspan) for the details of argments
 
              a user can add/drag/remove the patch object and edit
-             values from GUI               
+             values from GUI
     """
     pass
 
@@ -995,7 +997,7 @@ def legend(*args, **kargs):
 @redirect_to_aviewer
 def fill(*args, **kargs):
     '''
-    fill(x, y, s)
+    fill(x, y)
     '''
     pass
 
@@ -1026,7 +1028,7 @@ def fill_between_3d(*args, **kargs):
 @redirect_to_aviewer_3D
 def surf(*args, **kargs):
     '''
-    surf or surface : surface plot in 3D 
+    surf or surface : surface plot in 3D
                       using mplot3d
     surf(x, y, z, **kargs):
     '''
@@ -1036,7 +1038,7 @@ def surf(*args, **kargs):
 @redirect_to_aviewer_3D
 def surface(x, y, z, **kargs):
     '''
-    surf/surface : surface plot in 3D 
+    surf/surface : surface plot in 3D
                       using mplot3d
     surf(x, y, z, **kargs):
     '''
@@ -1046,9 +1048,9 @@ def surface(x, y, z, **kargs):
 @redirect_to_aviewer_3D
 def revolve(*args, **kargs):
     '''
-    revolve r, z : revolve (r, z) data 
+    revolve r, z : revolve (r, z) data
 
-      keywords to define revolve 
+      keywords to define revolve
          rcenter: [0,0]
          rtheta:  [0, 2*pi]
          raxis:   [0,  1]
@@ -1072,7 +1074,7 @@ def solid(v, **kargs):
         v[ielement, ivertex,  xyzc]
 
     Using idxset, vertices and index set to define the element shape
-    is given separately. v[:, xyz] and idxset[ielement, ivertex] 
+    is given separately. v[:, xyz] and idxset[ielement, ivertex]
     will be expanded as if v is v[idexset,...]. This allows to reduce
     the number of vertices passed to GPU
 
@@ -1139,7 +1141,7 @@ def lighting(**kwargs):
       lighting(light_direction = (1, 0., 1, 0)) : lighting source direction
       lighting(specular = 1.0) : specular reflection intensity
       lighting(light_color = (1.0, 1, 1)) : light source color
-      lighting(wireframe = 0)  : #0 normal mode 
+      lighting(wireframe = 0)  : #0 normal mode
                                  #1 wireframe + hidden line elimination
                                  #2 wireframe
     '''
@@ -1229,7 +1231,7 @@ def aviewer():
 @check_aviewer
 def draw():
     '''
-    draw draws the window contents. this command 
+    draw draws the window contents. this command
     is intended to use with update('off') in script
 
     ex) ou = update()
@@ -1308,7 +1310,7 @@ def ipage():
 @check_aviewer
 def close(*args):
     '''
-    close()     
+    close()
     clsee(1)   : close all figure window
     clsee(all) : close all figure window
     '''
@@ -1319,14 +1321,14 @@ def close(*args):
         # close all viewer whith has close method
         # having close method indicates it inherit
         # BookViewerInteractive
-        from __main__ import ifig_app
+        ifig_app = get_topwindow()
         for v in ifig_app.viewers[:]:
             if hasattr(v, 'close'):
                 v.close()
 
 
 def clear():
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     ifig_app.shell.clear()
 
 
@@ -1334,7 +1336,7 @@ def newbook(name='', basename=None):
     '''
     add a new book
     '''
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     book = ifig_app.proj.onAddBook(basename=basename)
     i_page = book.add_page()
     page = book.get_page(i_page)
@@ -1347,7 +1349,7 @@ def newbook(name='', basename=None):
 
 
 def _open_book(book, viewer, **kwargs):
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     if ifig_app.find_bookviewer(book) is not None:
         ifig_app.find_bookviewer(book).Raise()
         ifig_app.aviewer = ifig_app.find_bookviewer(book)
@@ -1508,9 +1510,9 @@ def futurize(obj=None, dryrun=False, verbose=False, unicode=True, stage1=True, s
     futurize : an interface to PY2->PY3 conversion utility.
 
        it uses futurizer in future module. Default actin is to perform
-       both stage1 and stage2 conversion. 
+       both stage1 and stage2 conversion.
 
-       See more detail in 
+       See more detail in
        https://python-future.org/futurize.html#forwards-conversion
 
        obj : either None, Folder, Script
@@ -1550,7 +1552,7 @@ def scopenw(book):
 
 
 def tscope(file='',  book=None):
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     proj = ifig_app.proj
 
     if proj.setting.has_child('ts_worker'):
@@ -1609,7 +1611,7 @@ def profile(txt, *args):
 
     run cProfile with locals in Shell
     '''
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     import cProfile
     l = ifig_app.shell.lvar
     cProfile.runctx(txt, {}, l, *args)
@@ -1635,7 +1637,7 @@ def profile_stop(pr, sortby='cumulative'):
     profile_stop(pr, sortby='cumulative'):
 
     end profile
-    sortby = 'cumulative', 'calls', 'cumtime', 
+    sortby = 'cumulative', 'calls', 'cumtime',
              'file', 'filename', 'module',
              'ncalls', pcalls', 'line', 'name',
              'nfl', stdname', 'time', 'tottime'
@@ -1689,7 +1691,7 @@ def importv(dest=None, path=''):
     import ifigure.utils.pickle_wrapper as pickle
     from ifigure.mto.py_code import PyData
     if dest is None:
-        from __main__ import ifig_app
+        ifig_app = get_topwindow()
         dest = PyData()
         ifig_app.proj.add_child('data', dest)
 
@@ -1745,7 +1747,7 @@ def quit():
     '''
     quit piScope
     '''
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     ifig_app.onQuit()
 
 
@@ -1769,7 +1771,7 @@ def glinfo():
 def setupmodel(package='', root='', path='setup_scripts', model=None,
                del_scripts=True):
     '''
-    Utility command to setup simulation model. It uses 
+    Utility command to setup simulation model. It uses
     mercurial repositories to store skelton scripts (and
     other pieces).
 
@@ -1781,7 +1783,7 @@ def setupmodel(package='', root='', path='setup_scripts', model=None,
          root   : root hg repository
          path   : paht to setup_scripts in repo
          model  : destination
-    return : 
+    return :
          model object
 
     example:
@@ -1822,7 +1824,7 @@ def autoplay(viewer=None, interval=0.2):
 
     viewer.timer.Start(interval*1000., oneShot=True)
 
-    from __main__ import ifig_app
+    ifig_app = get_topwindow()
     x = ifig_app.shell.raw_input('stop?')
     viewer.timer.Stop()
     viewer.timer = None

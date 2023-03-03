@@ -307,9 +307,9 @@ class FigBook(FigObj):
         viewer = self.get_root_parent().app.find_bookviewer(self)
         ovalue = self._keep_data_in_tree
         self._keep_data_in_tree = True
-        import __main__
+
         if viewer is not None:
-            if viewer is not __main__.app.GetTopWindow():
+            if viewer is not wx.GetApp().GetTopWindow():
                 viewer.onClose(None)
             else:
                 viewer.close_figurebook()

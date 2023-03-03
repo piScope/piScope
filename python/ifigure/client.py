@@ -72,23 +72,26 @@ class Client(object):
     def launch(self, host='localhost', exe=None):
         if host == 'localhost':
             from ifigure.utils.get_ifigure_dir import bin_dir
-#          command = os.path.join(bin_dir(), 'piscope.sh') + ' -s'
+            # command = os.path.join(bin_dir(), 'piscope.sh') + ' -s'
             if exe is None:
                 exe = sys.executable
-#          command = command + ' -e '+ exe + ' &'
-            import piscope
-            command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
-#          print(command)
+            # command = command + ' -e '+ exe + ' &'
+            # import piscope
+            # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
+            command = 'piscope  -s -d'
+            # print(command)
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
             p = subprocess.Popen(shlex.split(command),  # shell = True,
-                                 stdout=subprocess.PIPE)
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True)
             lhost = 'localhost'
         else:
             pass
         line = ''
         while line[0:5] != 'start':
             line = p.stdout.readline()
+            print(line)
         arr = line.split(':')
         Client.host = arr[1].rstrip("\r\n").strip()
         Client.port = int(arr[2].rstrip("\r\n").strip())
@@ -129,7 +132,7 @@ class Client(object):
         response = None
         try:
             hexmessage = binascii.b2a_hex(message)
-            sock.sendall(hexmessage + '\n')
+            sock.sendall(hexmessage + b'\n')
             if not noresponse:
                 rfile = sock.makefile('r')
                 response = rfile.readline().strip()
@@ -158,11 +161,11 @@ def server(param, host='localhost', port=None, exe=None):
     server('shutdown')
     '''
     c = Client()
-    if param is 'launch':
+    if param == 'launch':
         c.launch(exe=exe)
-    if param is 'connect':
+    if param == 'connect':
         c.set_connection(host, port)
-    if param is 'shutdown':
+    if param == 'shutdown':
         if c.host is None:
             return
         if c.port == 0:

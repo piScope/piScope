@@ -1,1 +1,3 @@
-__version__ = '0.9.0'
+__version__ = '1.0.2rc3'
+
+from .piscope import piscope

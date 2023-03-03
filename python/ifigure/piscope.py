@@ -1,9 +1,5 @@
-from __future__ import print_function
-import multiprocessing as mp
-#import sys, os, wx, weakref
-#sys.path = [os.path.dirname(os.path.dirname(__file__)),] + sys.path
-
-if __name__ == '__main__':
+def piscope():
+    import multiprocessing as mp
     import pkg_resources  # somehow importing this later cause warning message
     import mpl_toolkits
     import sys
@@ -74,7 +70,8 @@ if __name__ == '__main__':
 
     # this is a place where wdir is set when exiting
     # the program
-    xxx = []
+    import __main__
+    __main__.xxx = []
     launcher_file = None
     use_gl = True
     if len(sys.argv[1:]) >= 1:
@@ -98,7 +95,7 @@ if __name__ == '__main__':
             elif p == '-s':
                 start_server = True
                 redirect_std = True
-                process_server_request = False
+                __main__.process_server_request = False
 
                 server = ifigure.server.Server()
                 server.start()
@@ -218,7 +215,7 @@ if __name__ == '__main__':
 
     if start_server:
         ifig_app.use_server()
-        process_server_request = True
+        __main__.process_server_request = True
         port = server.info()[3]
         print('remote port is open : port = ' + str(port) + '\n')
 
@@ -268,7 +265,7 @@ if __name__ == '__main__':
     #
     #  deleting the wdir used last moment...
     #
-    wdirs = xxx
+    wdirs = __main__.xxx
     for wdir in wdirs:
         if os.path.exists(wdir):
             print(('deleting :', wdir))

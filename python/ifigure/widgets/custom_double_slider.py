@@ -178,23 +178,27 @@ class CustomSingleSlider(CustomPanel):
 
         dc.SetFont(self.font)
 
-        dc.SetDeviceOrigin(0, h/2 - self._sheight/2 -
-                           self._vmargin)
+        yy = int(h/2 - self._sheight/2 - self._vmargin)
+        dc.SetDeviceOrigin(0, yy)
+
 
         def draw_box(self, w1, dc):
-            dc.DrawBitmap(self._bbmp, w1-self._bwidth/2, 0, True)
+            dc.DrawBitmap(self._bbmp,
+                          int(w1-self._bwidth/2),
+                          0, True)
             return
 
         w1 = self._calc_w1()
 
         dc.SetPen(wx.Pen(col1))
         dc.SetBrush(wx.Brush(col2))
-        dc.DrawRoundedRectangle(self._hmargin, self._vmargin,
-                                w-2*self._hmargin, self._sheight, 2)
+        dc.DrawRoundedRectangle(int(self._hmargin),
+                                int(self._vmargin),
+                                int(w-2*self._hmargin),
+                                int(self._sheight),
+                                2.0)
         dc.SetPen(wx.Pen(col1))
         dc.SetBrush(wx.Brush(col3))
-#        dc.DrawRectangle(w1, self._vmargin, w2-w1,
-#                         self._sheight)
 
         draw_box(self, w1, dc)
 #        draw_box(self, w2, dc)
@@ -348,23 +352,31 @@ class CustomDoubleSlider(CustomPanel):
         w, h = self.GetSize()
         dc.SetFont(self.font)
 
-        dc.SetDeviceOrigin(0, h/2 - self._sheight/2 -
-                           self._vmargin)
+        yy = int(h/2 - self._sheight/2 - self._vmargin)
+        dc.SetDeviceOrigin(0, yy)
 
         def draw_box(self, w1, dc):
-            dc.DrawBitmap(self._bbmp, w1-self._bwidth/2, 0, True)
+            dc.DrawBitmap(self._bbmp,
+                          int(w1-self._bwidth/2),
+                          0,
+                          True)
             return
 
         w1, w2 = self._calc_w1_w2()
 
         dc.SetPen(wx.Pen(col1))
         dc.SetBrush(wx.Brush(col2))
-        dc.DrawRoundedRectangle(self._hmargin, self._vmargin,
-                                w-2*self._hmargin, self._sheight, 2)
+        dc.DrawRoundedRectangle(int(self._hmargin),
+                                int(self._vmargin),
+                                int(w-2*self._hmargin),
+                                int(self._sheight),
+                                2.)
         dc.SetPen(wx.Pen(col1))
         dc.SetBrush(wx.Brush(col3))
-        dc.DrawRectangle(w1, self._vmargin, w2-w1,
-                         self._sheight)
+        dc.DrawRectangle(int(w1),
+                         int(self._vmargin),
+                         int(w2-w1),
+                         int(self._sheight))
 
         draw_box(self, w1, dc)
         draw_box(self, w2, dc)

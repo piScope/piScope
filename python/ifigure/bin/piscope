@@ -1,4 +1,0 @@
-#!/bin/sh
-
-export PYTHONPATH=$HOME/PycharmProjects2:$PYTHONPATH
-python $HOME/PycharmProjects2/ifigure/ifigure_app.py $1

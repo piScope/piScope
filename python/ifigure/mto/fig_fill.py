@@ -47,7 +47,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('FigFill')
 
 def _arg_names(mpl_cmd):
     if mpl_cmd == 'fill':
-        return ("x", "y", "s")
+        return ("x", "y")
     elif mpl_cmd == 'fill_between':
         return ("x", "y", "y2", "where")
     elif mpl_cmd == 'fill_betweenx':
@@ -75,8 +75,8 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         else:
             p.add_opt('x', None, ['iter|nonstr', 'dynamic'])
             p.add_var('y', ['iter|nonstr', 'dynamic'])
-        if mpl_cmd == 'fill':
-            p.add_opt('s', '', 'str')
+        #if mpl_cmd == 'fill':
+        #    p.add_opt('s', '', 'str')
 
         p.add_key('x2', None)
         p.add_key('y2', None)
@@ -209,7 +209,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
             return
         s = ""
         if self._mpl_cmd == 'fill':
-            x, y, s = self._eval_xy()
+            x, y = self._eval_xy()
         elif self._mpl_cmd == 'fill_between':
             x, y, y2, where = self._eval_xy()
         elif self._mpl_cmd == 'fill_betweenx':
@@ -220,18 +220,18 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         kywds["alpha"] = self.getp('alpha')
         kywds["edgecolor"] = self.getp('edgecolor')
         kywds["linewidth"] = self.getp('linewidth')
+        kywds["facecolor"] = self.getp('facecolor')
+        kywds["linestyle"] = self.getp('linestyle')
 
-        if s == "":
-            kywds["facecolor"] = self.getp('facecolor')
-            kywds["linestyle"] = self.getp('linestyle')
         try:
             if self.get_figaxes().get_3d():
                 kywds['zs'] = self.getvar('zs')
         except:
             pass
         try:
+            print(kywds)
             if self._mpl_cmd == 'fill':
-                self._artists = container.fill(x, y, s, **kywds)
+                self._artists = container.fill(x, y, **kywds)
             elif self._mpl_cmd == 'fill_between':
                 kywds["y2"] = y2
                 kywds["where"] = where
@@ -323,12 +323,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         else:
             for a in alist:
                 for hl in a.figobj_hl:
-                    if hl in container.lines:
-                        container.lines.remove(hl)
-                    if hl in container.patches:
-                        container.patches.remove(hl)
-                    if hl in container.collections:
-                        container.collections.remove(hl)
+                    hl.remove()
                 a.figobj_hl = []
 #
 #   def hit_test
@@ -428,7 +423,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         if self._data_extent is not None:
             return self._data_extent
         if self._mpl_cmd == 'fill':
-            x, y, s = self._eval_xy()
+            x, y = self._eval_xy()
             if x is None:
                 self._data_extent = [None]*4
             else:
@@ -458,7 +453,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
 
     def get_xrange(self, xrange=[None, None], scale='linear'):
         if self._mpl_cmd == 'fill':
-            x, y, s = self._eval_xy()
+            x, y = self._eval_xy()
             if x is None:
                 return
             if scale == 'log':
@@ -491,7 +486,7 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         if (xrange[0] is not None and
                 xrange[1] is not None):
             if self._mpl_cmd == 'fill':
-                x, y, s = self._eval_xy()
+                x, y = self._eval_xy()
                 ym = np.ma.masked_array(y)
                 ym[x < xrange[0]] = np.ma.masked
                 ym[x > xrange[1]] = np.ma.masked

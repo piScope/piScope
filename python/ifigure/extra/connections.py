@@ -76,7 +76,7 @@ def draw_octagon(loc, color='black', direction='v', alpha=1):
     obj1 = PathPatch(path, facecolor='white', edgecolor='black', alpha=alpha,
                      figure=figure, transform=figure.transFigure)
 
-    if direction is 'v':
+    if direction == 'v':
         theta2 = theta[[6, 1, 2, 5, 6]]
     else:
         theta2 = theta[[7, 0, 3, 4, 7]]

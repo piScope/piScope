@@ -274,7 +274,7 @@ def load_file(file=None):
     # print nbbbs, limitr
         nbbbs = int(nbbbs)
         limitr = int(limitr)
-        if nbbbs is not 0:
+        if nbbbs != 0:
             rzbbbs = load_matrix_form2020(f, nbbbs, 2)
 
         xylim = load_matrix_form2020(f, limitr, 2)
