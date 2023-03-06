@@ -789,6 +789,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
      from the popup has the widget as eventobj
     '''
     isTop = True
+    base0 = base
     ret = {}
     for m in menus:
         s = m[0]
@@ -804,21 +805,29 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             new_base = wx.Menu()
             mmi = base.AppendSubMenu(new_base, s[1:])
             base = new_base
+            if "wxMSW" in wx.PlatformInfo:
+                pass
+            else:
+                base0 = base
             isTop = True
             mmm = base
         elif s[0] == '!':
             base = base.GetParent()
+            if "wxMSW" in wx.PlatformInfo:
+                pass
+            else:
+                base0 = base
             isTop = False
         else:
             isTop = False
             if s[0] == '-':
-                mmi = wx.MenuItem(base, id, s[1:])
+                mmi = wx.MenuItem(base0, id, s[1:])
             elif s[0] == '*':
-                mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
+                mmi = wx.MenuItem(base0, id, s[1:], kind=wx.ITEM_CHECK)
             elif s[0] == '^':
-                mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
+                mmi = wx.MenuItem(base0, id, s[1:], kind=wx.ITEM_CHECK)
             else:
-                mmi = wx.MenuItem(base, id, s)
+                mmi = wx.MenuItem(base0, id, s)
             if bmp is not None:
                 mmi.SetBitmap(bmp)
             menu_AppendItem(base, mmi)
@@ -842,7 +851,7 @@ def BuildPopUpMenu(base, menus, eventobj=None,
                 else:
                     evt.mpl_xydata = (None, None)
                 handler(evt)
-            base.Bind(wx.EVT_MENU, func, mmi)
+            base0.Bind(wx.EVT_MENU, func, mmi)
             mmm = mmi.GetMenu()
         if id != wx.ID_ANY:
             ret[id] = (mmm, mmi)

@@ -68,7 +68,8 @@ class PanelWithFindPanel(wx.Panel):
         wx.Panel.__init__(self, *args, **kwargs)
 
         self.find_panel = FindPanel(self, wx.ID_ANY)
-        self._find_shown = False
+        self.find_panel.Hide()  # for windows, this solves a ghost find panel..
+        self._find_shown = False        
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         self._find_mode = 'forward'
 
@@ -78,9 +79,11 @@ class PanelWithFindPanel(wx.Panel):
             stc = nb.GetCurrentPage()
             stc.SetFocus()
             self.GetSizer().Detach(self.find_panel)
+            self.find_panel.Hide() # for windows, this solves a ghost find panel..
             self._find_shown = False
         else:
             self.GetSizer().Add(self.find_panel, 0, wx.EXPAND)
+            self.find_panel.Show() # for windows, this solves a ghost find panel..
             self._find_shown = True
         self.Layout()
 

@@ -29,17 +29,14 @@ def pid_exists(pid):
         HANDLE = ctypes.c_void_p
         DWORD = ctypes.c_ulong
         LPDWORD = ctypes.POINTER(DWORD)
+        from win32con import STILL_ACTIVE, PROCESS_ALL_ACCESS
 
-        class ExitCodeProcess(ctypes.Structure):
-            _fields_ = [('hProcess', HANDLE),
-                        ('lpExitCode', LPDWORD)]
-        SYNCHRONIZE = 0x100000
-        process = kernel32.OpenProcess(SYNCHRONIZE, 0, pid)
+        process = kernel32.OpenProcess(PROCESS_ALL_ACCESS, 0, pid)
 
         if not process:
             return False
-        ec = ExitCodeProcess()
-        out = kernel32.GetExitCodeProcess(process, ctypes.byref(ec))
+        ec = DWORD(0)
+        out = kernel32.GetExitCodeProcess(process, ctypes.pointer(ec))#ctypes.byref(ec))
         if not out:
             err = kernel32.GetLastError()
             if kernel32.GetLastError() == 5:
@@ -47,8 +44,8 @@ def pid_exists(pid):
                 logging.warning("Access is denied to get pid info." + str(pid))
             kernel32.CloseHandle(process)
             return True
-        elif bool(ec.lpExitCode):
-            # print ec.lpExitCode.contents
+        elif ec != DWORD(STILL_ACTIVE):
+            # If the error code (ec) is not STILL_ACTIVE..
             # There is an exist code, it quit
             kernel32.CloseHandle(process)
             return False
