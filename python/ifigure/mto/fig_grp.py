@@ -102,13 +102,18 @@ class FigGrp(FigObj):
 
         ax = self.get_figaxes()
         c = self.get_container()
+        is_figgrp = self.get_figaxes() is None
+
         if self.isempty():
             a = Rectangle((0, 0), 1, 1, facecolor='none', fill=False,
                           edgecolor='none', alpha=0)
             a.figobj = self
             a.figobj_hl = []
             self._artists = [a]
-            c.patches.append(a)
+            if is_figgrp:
+                c.patches.append(a)
+            else:
+                c.add_patch(a)
             if ax is not None and ax.get_3d():
                 import mpl_toolkits.mplot3d.art3d as art3d
                 art3d.patch_2d_to_3d(a)
@@ -126,10 +131,15 @@ class FigGrp(FigObj):
             child.del_artist(delall=True)
         if len(artistlist) != 0:
             c = self.get_container()
+            is_figgrp = self.get_figaxes() is None
+
             self.highlight_artist(False, artistlist)
             for a in artistlist:
                 if a in c.patches:
-                    c.patches.remove(a)
+                    if is_figgrp:
+                        c.patches.remove(a)
+                    else:
+                        a.remove()
 
         return super(FigGrp, self).del_artist(artist=artistlist,
                                               delall=delall)
@@ -274,7 +284,7 @@ class FigGrp(FigObj):
 
     def get_artist_extent_all(self):
         '''
-        retrun the extent of artist in device 
+        retrun the extent of artist in device
         coordinate
         '''
         def _merge(s, x0d, x1d, y0d, y1d):

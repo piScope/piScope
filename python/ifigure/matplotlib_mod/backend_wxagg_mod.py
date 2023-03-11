@@ -21,11 +21,11 @@
             13.01.??  speed up by eliminating stupid type conversions..
                02.23  fix iframe drawing timing
                03.15  add image scaling during active resize
-            14.06.05  updated resize. during the resize it shows scaled 
+            14.06.05  updated resize. during the resize it shows scaled
                       image to realize smooth window edge drag.
                       BookViewer detects the end of resize events and
                       issue draw_later (after adjusting tree objects)
-   
+
 
 """
 # uncomment the following to use wx rather than wxagg
@@ -181,8 +181,8 @@ class FigureCanvasWxAggMod(CanvasAgg):
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
-        ''' 
-        draw everything from scratch 
+        '''
+        draw everything from scratch
         mostly debugging purpose
         '''
         self.figure.figobj.reset_axesbmp_update()
@@ -258,22 +258,24 @@ class FigureCanvasWxAggMod(CanvasAgg):
         else:
             bmp_obj.SetBitmap(bmp)
 
+        def copy_to_cb(bmp_obj):
+            if wx.TheClipboard.Open():
+                wx.TheClipboard.SetData(bmp_obj)
+                wx.TheClipboard.Flush()
+                wx.TheClipboard.Close()
+            else:
+                print('can not open clipboard')
+
         if pgbar:
             dialog = wx.ProgressDialog(
                 'Progress...',
                 'Coping bitmap image to System Clipboard.',
                 maximum=10,
                 parent=self.GetTopLevelParent())
-            for x in range(10):
-                wx.Sleep(0.05)
-                dialog.Update(
-                    x+1, 'Coping bitmap image to System Clipboard.('+str(x)+'/10')
-            dialog.Destroy()
+            wx.CallLater(1000, dialog.Destroy)
 
-        wx.TheClipboard.Open()
-        wx.TheClipboard.SetData(bmp_obj)
-        wx.TheClipboard.Close()
-        wx.TheClipboard.Flush()
+        copy_to_cb(bmp_obj)
+
 
     def draw_by_bitmap(self):
         last_size = self.figure.figobj._last_draw_size
@@ -357,7 +359,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def make_buffer_image(self, func, **kargs):
         '''
-        prepare renderer.bitmap 
+        prepare renderer.bitmap
         '''
         self.renderer.clear()
 
