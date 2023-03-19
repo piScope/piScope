@@ -277,7 +277,9 @@ void main() {
 				LightPow*cT + cT2, 1);
      vec4 cSpec = light_color * uLightPowSpec * pow(cA, 5)/2.;
 
-     FragData0 = (cAmbient + cDiff + cSpec)* isOnCutPlane;
+     FragData0 = (cAmbient + cDiff + cSpec);
+     FragData0.g = FragData0.g * isOnCutPlane;
+     FragData0.b = FragData0.b * isOnCutPlane;     
 
      float aaa = FragData0.a * vColor[3];
      if (uHasHL == 1){
