@@ -558,7 +558,7 @@ class RedirectOutput(object):
         t = threading.current_thread()
         for x in self.redirect_list:
             if x[0] == t:
-                   ##Do not put a print statement here!!##
+                ##Do not put a print statement here!!##
                 wx.CallAfter(x[1], string)
                 if t.name == 'MainThread':
                     try:
@@ -626,11 +626,17 @@ class JobMonitor(threading.Thread):
         for line in self.p.stdout.readlines():
             self.stdout.write(line)
 
+def get_piscope_icon():
+    img = app_logo.GetImage()
+    img = img.Scale(128, 128)
+    icon = IconFromBitmap(img.ConvertToBitmap())
+    return icon
 
 class TaskBarIcon(wxTaskBarIcon):
-    TBMENU_OPENNEW = wx.NewIdRef(count=1)
-    TBMENU_OPENED = wx.NewIdRef(count=1)
+    TBMENU_RESTORE = wx.NewIdRef(count=1)
     TBMENU_CLOSE = wx.NewIdRef(count=1)
+    TBMENU_CHANGE = wx.NewIdRef(count=1)
+    TBMENU_REMOVE = wx.NewIdRef(count=1)
 
     def __init__(self):
         wxTaskBarIcon.__init__(self, TBI_DOCK)
@@ -643,14 +649,17 @@ class TaskBarIcon(wxTaskBarIcon):
 
         # bind some events
         self.Bind(EVT_TASKBAR_LEFT_DCLICK, self.OnTaskBarActivate)
+        self.Bind(wx.EVT_MENU, self.OnTaskBarActivate, id=self.TBMENU_RESTORE)
         self.Bind(wx.EVT_MENU, self.OnTaskBarClose, id=self.TBMENU_CLOSE)
+        self.Bind(wx.EVT_MENU, self.OnTaskBarChange, id=self.TBMENU_CHANGE)
+        self.Bind(wx.EVT_MENU, self.OnTaskBarRemove, id=self.TBMENU_REMOVE)
 
     @property
     def frame(self):
         import wx
         app = wx.GetApp()
         return app.TopWindow
-    
+
     def CreatePopupMenu(self):
         """
         This method is called by the base class when it needs to popup
@@ -693,6 +702,10 @@ class TaskBarIcon(wxTaskBarIcon):
             if v.GetTitle() == name1:
                 v.Raise()
 
+    def get_icon(self):
+        icon = self.MakeIcon(app_logo.GetImage(), big=True)
+        return icon
+
     def MakeIcon(self, img):
         """
         The various platforms have different requirements for the
@@ -715,10 +728,16 @@ class TaskBarIcon(wxTaskBarIcon):
             self.frame.Show(True)
         self.frame.Raise()
 
+    def OnTaskBarChange(self, evt):
+        evt.Skip()
+
     def OnTaskBarClose(self, evt):
         for v in self.frame.viewers:
             if v is not self.frame:
                 wx.CallAfter(v.Close)
+
+    def OnTaskBarRemove(self, evt):
+        self.RemoveIcon()
 
 
 class MainFrame(wx.Frame):
