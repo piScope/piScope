@@ -325,7 +325,7 @@ class FigLegend(FigObjGPHolder):
                         c.legends.remove(a)
                 else:
                     if a in c.artists:
-                        c.artists.remove(a)
+                        a.remove()#c.artists.remove(a)
 
         super(FigLegend, self).del_artist(artistlist)
 
