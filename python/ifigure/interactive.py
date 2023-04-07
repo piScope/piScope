@@ -32,8 +32,10 @@ _lastisec = 0
 
 aviewer = None
 
+
 def get_topwindow():
     return wx.GetApp().GetTopWindow()
+
 
 def set_aviewer(viewer):
     # called from ifigure_app.aviewer
@@ -497,7 +499,19 @@ def cauto(name='c'):
 def xlim(*range, **kargs):
     '''
     xlim change range of xaxis
-    example) xlim(min, max) , xlim((min, max)), or xlim([min, max])
+
+    kargs:
+        tposition : tick position ('top', 'bottom')
+        ticks : tick values
+        tcolor : tick color
+        color : text color
+        size : text size
+        ocolor : offset text color
+        osize : offset text size
+
+    example) 
+        xlim(min, max) , xlim((min, max)), or xlim([min, max])
+        xlim([0, 3], size=25, color='red', tcolor='red', ticks=[0,1, 3], tposition='top')
     '''
     pass
 
@@ -506,7 +520,18 @@ def xlim(*range, **kargs):
 def ylim(*range, **kargs):
     '''
     ylim change range of yaxis
-    example) ylim(min, max) , ylim((min, max)), or ylim([min, max])
+    kargs:
+        tposition : tick position ('left', 'right')
+        ticks : tick values
+        tcolor : tick color
+        color : text color
+        size : text size
+        ocolor : offset text color
+        osize : offset text size
+
+    example) 
+        ylim(min, max) , ylim((min, max)), or ylim([min, max])
+        ylim([0, 3], size=25, color='red', tcolor='red', ticks=[0,1, 3], tposition='left')
     '''
     pass
 
@@ -515,6 +540,16 @@ def ylim(*range, **kargs):
 def zlim(*range, **kargs):
     '''
     zlim change range of zaxis
+
+    kargs:
+        tposition : tick position ('top', 'bottom')
+        ticks : tick values
+        tcolor : tick color
+        color : text color
+        size : text size
+        ocolor : offset text color
+        osize : offset text size
+
     example) zlim(min, max) , zlim((min, max)), or zlim([min, max])
     '''
     pass
@@ -1018,12 +1053,14 @@ def fill_betweenx(*args, **kargs):
     '''
     pass
 
+
 @redirect_to_aviewer
 def fill_between_3d(*args, **kargs):
     '''
     fill_between_3d(x1, y1, z1, x2, y, z2, c='b')
     '''
     pass
+
 
 @redirect_to_aviewer_3D
 def surf(*args, **kargs):
@@ -1216,8 +1253,48 @@ def cbar(*args, **kwargs):
     toggle cbar of current plot
         cbar()
         cbar('c2')  # to specify caxis name
+
+    keywords:
+        position : position of color bar (normalized to axis)
+        size : size of color bar (normalized to axis)
+        direction : h or v (horizontal, or vertical)
+        lcolor : text color
+        lsize : text size
+        olcolor : offset text color
+        olsize : offset text size
+
+    example:
+        cbar(position=(0.1, 0.1), size=(0.7, 0.05), lsize=16, 
+             lcolor='red', olsize=19, olcolor='b',direction='h') 
     '''
     pass
+
+
+@redirect_to_aviewer
+def savefig(filename):
+    '''
+    save figure as image
+
+       savefig(filename)
+
+       filename must be one of following
+          .eps
+          .pdf  (support multipage pdf)
+          .svg
+          .jpeg
+          .png
+          .gif  (animation gif)
+    '''
+
+
+@redirect_to_aviewer
+def savedata(filename):
+    '''
+    save dataset as hdf file
+
+      savedate(filename) # filename must be *.hdf
+    '''
+
 #
 #   functions which are actually implemented here
 #

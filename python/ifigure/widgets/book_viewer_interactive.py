@@ -711,6 +711,15 @@ class BookViewerInteractive(object):
             val = range[0]
 
         name = kargs['name']
+
+        if (name.startswith('x') or name.startswith('y') or
+                name.startswith('z')):
+            axis_param_names0 = ('tick_position', 'ticks', 'tcolor',
+                                 'lcolor', 'lsize', 'otcolor', 'otsize')
+            axis_param_names = ('tposition', 'ticks', 'tcolor',
+                                'color', 'size', 'ocolor', 'osize')
+            axis_param = {x: kargs[x] for x in axis_param_names if x in kargs}
+
         fig_p = self.get_page(ipage=None)
         if fig_p is None:
             raise NoPageError("no page exists")
@@ -723,6 +732,19 @@ class BookViewerInteractive(object):
         v[1] = False
         v[2] = val
         axes.set_axrangeparam((name, v), axes._artists[0])
+
+        if (name.startswith('x') or name.startswith('y') or
+                name.startswith('z')):
+
+            ap = axes.get_axis_param(name)
+            for x, y in zip(axis_param_names0, axis_param_names):
+                if y in axis_param:
+                    setattr(ap, x, axis_param[y])
+            artist = axes.get_axes_artist_by_name(name)[0]
+            ap.set_tickparam(artist, axes)
+            ap.set_ticks(artist)
+
+        axes.set_bmp_update(False)
 
     @allow_interactive_call2
     def xlim(self, *range, **kargs):
@@ -1647,6 +1669,15 @@ class BookViewerInteractive(object):
 
     @share_doc_string_simple
     def cbar(self, name=None, *args,  **kargs):
+
+        position = kargs.pop('position', (0.9, 0.1))
+        size = kargs.pop('size', (0.05, 0.8))
+        lsize = kargs.pop('lsize', 'default')
+        lcolor = kargs.pop('lcolor', 'black')
+        olsize = kargs.pop('olsize', 'default')
+        olcolor = kargs.pop('olcolor', 'black')
+        direction = kargs.pop('direction', 'v')
+
         update = kargs.pop('update', self._interactive_update)
         hold = kargs.pop('hold', True)
         f_page = self.get_page()
@@ -1658,7 +1689,15 @@ class BookViewerInteractive(object):
         for k, p in enumerate(ax._caxis):
             if (not p.has_cbar() and (name is None or p.name == name) and
                     (action == 'on' or action == 'both')):
-                p.show_cbar(ax, offset=-0.1*k)
+                p.show_cbar(ax,
+                            offset=-0.1*k,
+                            position=position,
+                            size=size,
+                            lsize=lsize,
+                            lcolor=lcolor,
+                            olsize=olsize,
+                            olcolor=olcolor,
+                            direction=direction[0])
                 action = 'on'
             if (p.has_cbar() and (name is None or p.name == name) and
                     (action == 'off' or action == 'both')):
@@ -1780,3 +1819,82 @@ class BookViewerInteractive(object):
             figobj = actions[-1].do2()
             figobj.set_bmp_update(False)
             self.draw()
+
+    def size(self, *args):
+        if len(args) == 0:
+            return self.GetSize()
+        try:
+            value = (args[0], args[1])
+        except:
+            try:
+                value = tuple(args[0])
+            except:
+                raise
+        self.SetSize(value)
+        return self
+
+    @allow_interactive_call2
+    def savefig(self, filename):
+        import os
+        filename = os.path.expanduser(filename)
+        if self.num_page() == 0:
+            return
+        if filename[-4:] == '.eps':
+            wc = 0
+        elif filename[-4:] == '.pdf':
+            if self.num_page() == 1:
+                wc = 1
+            else:
+                wc = 7
+        elif filename[-4:] == '.svg':
+            wc = 2
+        elif filename[-4:] == '.png':
+            wc = 3
+        elif filename[-5:] == '.jpeg':
+            wc = 4
+        elif filename[-4:] == '.gif':
+            wc = 5
+        else:
+            assert False, "unknown file format"
+
+        self.canvas.save_pic(ret=filename, wc=wc)
+
+    @allow_interactive_call2
+    def savedata(self, filename, **kargs):
+        import os
+        filename = os.path.expanduser(filename)
+        if self.num_page() == 0:
+            return
+        if filename[-4:] != '.hdf':
+            assert False, "filename must end with hdf"
+
+        page = self.canvas._figure.figobj
+        metadata = kargs.pop('metadata', OrderedDict())
+        export_flag = kargs.pop('export_flag', {})
+        verbose = kargs.pop('verbose', True)
+
+        try:
+            #  for standalone testing (when running python hdf_export_window.py)
+            from ifigure.utils.hdf_data_export import (build_data,
+                                                       hdf_data_export,
+                                                       set_all_properties_all,
+                                                       select_unique_properties_all)
+        except:
+            print("can not load hdf export tools")
+            raise
+
+        dataset, metadata, export_flag = build_data(page,
+                                                    verbose=False,
+                                                    metadata=metadata,
+                                                    export_flag=export_flag)
+
+        try:
+            hdf_data_export(data=dataset,
+                            metadata=metadata,
+                            export_flag=export_flag,
+                            filename=filename,
+                            verbose=verbose)
+            print('HDF export finished : '+filename)
+        except:
+            print("can not export  hdf dataset")
+            raise

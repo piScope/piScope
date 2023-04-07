@@ -2034,7 +2034,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         if self.axes_selection() is not None:
             ax = self.axes_selection()
-            is3Dax = ax.figobj.get_3d()
+            if ax.figobj is None:
+                ax = None
+                is3Dax = False
+            else:
+                is3Dax = ax.figobj.get_3d()
         else:
             ax = None
             is3Dax = False
@@ -4813,6 +4817,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
+
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

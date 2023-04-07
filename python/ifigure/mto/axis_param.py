@@ -647,19 +647,43 @@ class AxisCParam(AxisParam):
                                 self.range[1]))
             a2.set_clim(self.range)
 
-    def show_cbar(self, figaxes, offset=0.0):
+    def show_cbar(self, figaxes,
+                  offset=0.0,
+                  position=(0.9, 0.1),
+                  size=(0.05, 0.8),
+                  lsize='default',
+                        lcolor='black',
+                  olsize='default',
+                        olcolor='black',
+                  direction='v'):
+
         if self._cb is None:
             ichild = figaxes.add_colorbar()
             cb = figaxes.get_child(ichild)
             anchor = cb.getp("inset_anchor")
-            anchor = (anchor[0] + offset, anchor[1])
+            anchor = (position[0] + offset, position[1])
             cb.setp("inset_anchor", anchor)
+            cb.setp("cdir", direction)
+            cb.setp("inset_w", size[0])
+            cb.setp("inset_h", size[1])
             cb.set_caxis_param(self)
             cb.realize()
             self._cb = weakref.ref(cb, self._cb_dead)
-#           ifigure.events.SendPVAddFigobj(figaxes)
 
+            if direction == 'v':
+                name = 'y'
+            else:
+                name = 'x'
+
+            ap = cb.get_axis_param(name)
+            artist = cb.get_axes_artist_by_name(name)[0]
+            ap.lsize = lsize
+            ap.otsize = olsize
+            ap.lcolor = lcolor
+            ap.otcolor = olcolor
+            ap.set_tickparam(artist, cb)
             # set cb params here...
+
     def hide_cbar(self):
         if self._cb is None:
             return
