@@ -20,7 +20,10 @@ font = None
 
 
 def set_default_font():
-    size = 12
+    if "wxMSW" in wx.PlatformInfo:
+        size = 10
+    else:
+        size = 12
     font = wx.Font(pointSize=size, family=wx.DEFAULT,
                    style=wx.NORMAL,  weight=wx.NORMAL,
                    faceName='Consolas')
