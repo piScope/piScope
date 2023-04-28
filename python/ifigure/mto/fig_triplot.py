@@ -258,7 +258,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
             for a in alist:
                 for hl in a.figobj_hl:
                     try:
-                        h1.remove()
+                        hl.remove()
                     except:
                         logging.exception(
                             "fig_triplot: highlight_aritst() failed")
@@ -271,6 +271,7 @@ class FigTriplot(FigObj, XUser, YUser, TrianglePlots):
         axes = artist.axes
         if axes is None:
             return False, {}
+
         hit, extra = artist.contains(evt)
 
         if hit:
