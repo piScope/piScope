@@ -29,7 +29,7 @@ def read(parent=None,
             open_dlg.SetDirectory(os.path.dirname(defaultfile))
     if defaultdir != '':
         open_dlg.SetDirectory(defaultdir)
-            
+
     path = ''
     if open_dlg.ShowModal() == wx.ID_OK:
         path = open_dlg.GetPath()
@@ -112,13 +112,13 @@ def readdir(parent=None,  message='Directory to read'):
 
 
 def textentry(parent=None, message='', title='', def_string='', center=False,
-              center_on_screen=False):    
+              center_on_screen=False):
     dlg = TextEntryDialog(parent,
                           message, caption=title, value=def_string)
     if center:
         dlg.Centre()
     if center_on_screen:
-        dlg.CentreOnScreen()        
+        dlg.CentreOnScreen()
     if dlg.ShowModal() == wx.ID_OK:
         new_name = str(dlg.GetValue())
         dlg.Destroy()
@@ -145,15 +145,15 @@ def textselect(parent=None, message='', title='', def_string='',
     from ifigure.utils.edit_list import EditListDialog
 
     if endmodal_on_lastvalue:
-        endmodal_lastvalue=endmodal_on_lastvalue
+        endmodal_lastvalue = endmodal_on_lastvalue
     else:
-        endmodal_lastvalue=None        
+        endmodal_lastvalue = None
     dlg = EditListDialog(parent, wx.ID_ANY, title, ll,
                          endmodal_value=endmodal_lastvalue)
     if center:
         dlg.Centre()
     if center_on_screen:
-        dlg.CentreOnScreen()        
+        dlg.CentreOnScreen()
     val = dlg.ShowModal()
     value = dlg.GetValue()
     #print(val, wx.ID_OK)
@@ -166,7 +166,9 @@ def textselect(parent=None, message='', title='', def_string='',
 
 def message(parent=None, message='', title='', style=0,
             icon=wx.ICON_EXCLAMATION,
-            center_on_screen=False):    
+            center_on_screen=False,
+            center_on_parent=False,
+            labels=None):
     if style == 0:
         style0 = wx.OK
     if style == 1:
@@ -189,8 +191,13 @@ def message(parent=None, message='', title='', style=0,
               message,
               title,
               style0)
+    if labels is not None:
+        dlg.SetOKCancelLabels(labels[0], labels[1])
     if center_on_screen:
-        dlg.CentreOnScreen()        
+        dlg.CentreOnScreen()
+    if center_on_parent:
+        dlg.CentreOnParent()
+
     ret = dlg.ShowModal()
     if ret == wx.ID_OK:
         ret = 'ok'
@@ -213,7 +220,7 @@ def showtraceback(parent=None, txt='', title="Error", traceback='None\n',
 
     dlg = DlgMessageScroll(parent, wx.ID_ANY, title)
     if center_on_screen:
-        dlg.CentreOnScreen()        
+        dlg.CentreOnScreen()
     dlg.update(txt + '\n'+traceback)
     ret = dlg.ShowModal()
 
