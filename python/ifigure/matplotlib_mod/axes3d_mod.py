@@ -1581,6 +1581,7 @@ class Axes3DMod(Axes3D):
 
                     nn  = l1*np.array([xmax-xmin, ymax-ymin, zmax-zmin])
                     nn2  = np.sqrt(np.sum(nn*nn))
+
                     if nn2 != 0:
                         l2[0] = -(l2[0] + np.sum(l1*cc))/nn2
                         l1 = nn/nn2
