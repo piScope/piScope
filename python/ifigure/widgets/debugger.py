@@ -105,10 +105,11 @@ class DebuggerPanel(wx.Panel):
         self.GetSizer().Add(msizer, 0, wx.EXPAND)
         d_labels = ['s', 'n', 'r', 'c', 'q']
         d_tips = ['step', 'next', 'return', 'continue',  'quit']
-        d_buttons = [wx.Button(self, wx.ID_ANY, button, size=(30, -1)) for
+        d_buttons = [wx.Button(self, wx.ID_ANY, size=(40, 20)) for
                      button in d_labels]
 
         for b, l, t in zip(d_buttons, d_labels, d_tips):
+            b.SetLabel(" "+l+" ")
             panel_SetToolTip(b, t)
             msizer.Add(b, 0, wx.ALL, 1)
 

@@ -70,7 +70,7 @@ from ifigure.interactive import autoplay, cbar
 from ifigure.interactive import autoplay, setupmodel
 from ifigure.interactive import property
 from ifigure.interactive import view
-from ifigure.interactive import glinfo
+from ifigure.interactive import glinfo, savefig, savedata
 
 if six.PY3:
     from importlib import reload

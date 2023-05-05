@@ -90,6 +90,9 @@ class FrameWithWindowList(wx.Frame):
         tw = wx.GetApp().TopWindow
         tw.windowlist.add_item(self)
 
+        from ifigure.widgets.taskbar import get_piscope_icon
+        self.SetIcon(get_piscope_icon())
+
         self.Bind(wx.EVT_UPDATE_UI, self.onUpdateUI)
         self.Bind(wx.EVT_ACTIVATE, self.onActivate)
 

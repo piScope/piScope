@@ -765,6 +765,7 @@ class ifigure_canvas_draghandler_3d(draghandler_base2):
             req = None
             func = canvas.make_range_request_zoom
             minx, maxx, miny, maxy, minz, maxz = ax.get_w_lims()
+
             req = func(figaxes, 'x', [minx, maxx], False, ax, requests=req)
             req = func(figaxes, 'y', [miny, maxy], False, ax, requests=req)
             req = func(figaxes, 'z', [minz, maxz], False, ax, requests=req)
@@ -2034,7 +2035,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         if self.axes_selection() is not None:
             ax = self.axes_selection()
-            is3Dax = ax.figobj.get_3d()
+            if ax.figobj is None:
+                ax = None
+                is3Dax = False
+            else:
+                is3Dax = ax.figobj.get_3d()
         else:
             ax = None
             is3Dax = False
@@ -4813,6 +4818,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
+
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

@@ -27,7 +27,7 @@ btasks0 = [('plus_theta', 'shift_theta.png', 0, '+ polar angle (shift-key: reser
            ('reset_cp',    'reset.png', 0, 'reset cp setting'), ]
 
 # step size
-delta_z = 0.05
+delta_z = 0.02
 delta_a = 5.
 # interval(must be integer)
 dtime = 150
@@ -185,16 +185,22 @@ class CutPlaneBar(bp.ButtonPanel):
             return vec
 
         if btask == 'plus_offset':
+            limit1 = ax._lighting["clip_limit1"]
             limit2 = ax._lighting['clip_limit2']
+
+            xmin, xmax = ax.get_xlim3d()
+            ymin, ymax = ax.get_ylim3d()
+            zmin, zmax = ax.get_zlim3d()
+            nn  = np.sum(limit1*np.array([xmax-xmin, ymax-ymin, zmax-zmin]))
+
+            delta = nn*delta_z
+
             if self._shift_down:
-                limit2[0] = limit2[0] + delta_z
+                limit2[0] = limit2[0] + delta
             else:
-                limit2[0] = limit2[0] - delta_z                
+                limit2[0] = limit2[0] - delta
             ax._lighting['clip_limit2'] = limit2
-        #elif btask == 'minus_offset':
-        #    limit2 = ax._lighting['clip_limit2']
-        #    limit2[0] = limit2[0] - delta_z
-        #    ax._lighting['clip_limit2'] = limit2
+
         elif btask == 'plus_phi':
             th, ph = get_angles(ax._lighting['clip_limit1'])
             if self._shift_down:
@@ -203,11 +209,7 @@ class CutPlaneBar(bp.ButtonPanel):
                 ph = ph  + delta_a/180*np.pi
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
-        #elif btask == 'minus_phi':
-        #    th, ph = get_angles(ax._lighting['clip_limit1'])
-        #    ph = ph  - delta_a/180*np.pi
-        #    vec = get_norm(th, ph)
-        #    ax._lighting['clip_limit1'] = vec
+
         elif btask == 'plus_theta':
             th, ph = get_angles(ax._lighting['clip_limit1'])
             limit2 = ax._lighting['clip_limit2']            
@@ -223,15 +225,7 @@ class CutPlaneBar(bp.ButtonPanel):
             ax._lighting['clip_limit2'] = limit2
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
-        #elif btask == 'minus_theta':
-        #    th, ph = get_angles(ax._lighting['clip_limit1'])
-        #    th = th  - delta_a/180*np.pi
-        #    if th < 0:
-        #        limit2 = ax._lighting['clip_limit2']
-        #        limit2[1] = -limit2[1]
-        #        ax._lighting['clip_limit2'] = limit2
-        #    vec = get_norm(th, ph)
-        #    ax._lighting['clip_limit1'] = vec
+
         else:
             pass
         

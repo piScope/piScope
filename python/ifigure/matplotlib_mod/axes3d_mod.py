@@ -259,6 +259,11 @@ class Axes3DMod(Axes3D):
         self._rotate_btn = []
         self._drag_mode = ''
 
+        from ifigure.matplotlib_mod.axis3d_mod import XAxis, YAxis, ZAxis
+        self.xaxis.__class__ = XAxis
+        self.yaxis.__class__ = YAxis
+        self.zaxis.__class__ = ZAxis
+
     @property
     def dist(self):
         return camera_distance
@@ -1562,7 +1567,28 @@ class Axes3DMod(Axes3D):
                 glcanvas = get_glcanvas()
                 if (glcanvas is not None and
                         glcanvas.init):
-                    glcanvas.set_lighting(**self._lighting)
+
+                    params = self._lighting.copy()
+                    del params["clip_limit1"]
+                    del params["clip_limit2"]
+                    xmin, xmax = self.get_xlim3d()
+                    ymin, ymax = self.get_ylim3d()
+                    zmin, zmax = self.get_zlim3d()
+
+                    cc = np.array([(xmin+xmax)/2.0, (ymin+ymax)/2.0, (zmin+zmax)/2.0])
+                    l1 = self._lighting["clip_limit1"]
+                    l2 = self._lighting["clip_limit2"].copy()
+
+                    nn  = l1*np.array([xmax-xmin, ymax-ymin, zmax-zmin])
+                    nn2  = np.sqrt(np.sum(nn*nn))
+
+                    if nn2 != 0:
+                        l2[0] = -(l2[0] + np.sum(l1*cc))/nn2
+                        l1 = nn/nn2
+
+                    glcanvas.set_lighting(clip_limit1=l1, clip_limit2=l2, **params)
+#                   glcanvas.set_lighting(**self._lighting)
+
                     glcanvas._gl_scale = self._gl_scale
                 else:
                     return

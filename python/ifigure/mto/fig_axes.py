@@ -1086,14 +1086,14 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         p = self.get_axis_param(name)
         return p.clip[1]
 
-    def set_axticks(self, param, a):
+    def set_axticks(self, param, a=None):
         p = self.get_axis_param(param[0])
         p.ticks = param[1]
         ax = self.get_axes_artist_by_name(param[0])[0]
         p.set_ticks(ax)
         self.set_bmp_update(False)
 
-    def get_axticks(self, a, name):
+    def get_axticks(self, a=None, name='x'):
         p = self.get_axis_param(name)
         return p.ticks
 
