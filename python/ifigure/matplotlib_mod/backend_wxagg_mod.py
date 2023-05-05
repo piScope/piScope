@@ -496,16 +496,16 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
         im = np.ndarray(shape=self.iframe[0].shape, dtype=np.uint8)
 
-        da = (self.iframe[0][:, :, 3]).astype(np.float)/255.
-        sa = (self.axes_image[0][:, :, 3]).astype(np.float)/255.
+        da = (self.iframe[0][:, :, 3]).astype(np.float64)/255.
+        sa = (self.axes_image[0][:, :, 3]).astype(np.float64)/255.
 
         dd = (1-sa)
         ss = 1
-        out = ((self.iframe[0][:, :, 3].astype(np.float)*(dd) +
-                self.axes_image[0][:, :, 3].astype(np.float)*(ss)))
+        out = ((self.iframe[0][:, :, 3].astype(np.float64)*(dd) +
+                self.axes_image[0][:, :, 3].astype(np.float64)*(ss)))
         for k in range(3):
-            im[:, :, k] = ((self.iframe[0][:, :, k].astype(np.float)*(da)*(dd) +
-                            self.axes_image[0][:, :, k].astype(np.float)*(sa)*(ss))).astype(np.uint8)
+            im[:, :, k] = ((self.iframe[0][:, :, k].astype(np.float64)*(da)*(dd) +
+                            self.axes_image[0][:, :, k].astype(np.float64)*(sa)*(ss))).astype(np.uint8)
 
         im[:, :, 3] = out.astype(np.uint8)
 

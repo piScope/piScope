@@ -2191,7 +2191,7 @@ class CDoubleSlider(CustomDoubleSlider):
 
     def SetValue(self, value):
         import numpy as np
-        value = np.array(value, dtype=np.float)
+        value = np.array(value, dtype=np.float64)
         v = (np.ceil((value - self._range[0])/self._resolution)
              * self._resolution
              + self._range[0])
@@ -2199,7 +2199,7 @@ class CDoubleSlider(CustomDoubleSlider):
 
     def GetValue(self):
         import numpy as np
-        value = np.array(super(CDoubleSlider, self).GetValue(), dtype=np.float)
+        value = np.array(super(CDoubleSlider, self).GetValue(), dtype=np.float64)
         v = (np.ceil((value - self._range[0])/self._resolution)
              * self._resolution
              + self._range[0])

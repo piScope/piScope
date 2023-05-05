@@ -197,8 +197,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
             cax = self.get_caxisparam()
             cax.set_cmap(self.getvar('kywds')['cmap'])
 
-#        self.setp("x", self.getp('x').astype(np.float))
-#        self.setp("y", self.getp('y').astype(np.float))
+#        self.setp("x", self.getp('x').astype(np.float64))
+#        self.setp("y", self.getp('y').astype(np.float64))
         return True
 
     def generate_artist(self):
