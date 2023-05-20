@@ -283,7 +283,7 @@ class LineGL(ArtGL, Line3D):
             y = [y[s] for s in np.ma.clump_unmasked(np.ma.masked_invalid(y))]
             z = [z[s] for s in np.ma.clump_unmasked(np.ma.masked_invalid(z))]
             norms = None
-            idx = np.arange(len(x), dtype=np.int)
+            idx = np.arange(len(x), dtype=np.int32)
             l = 0
             indexset = []
             for chunk in x:
@@ -458,7 +458,7 @@ class AxesImageGL(ArtGL, AxesImage):
         y = p[..., 1].flatten()
         z = p[..., 2].flatten()        
         self._gl_3dpath = (x, y, z, np.hstack([n]*len(x)),
-                           np.arange(len(x)).astype(np.int))
+                           np.arange(len(x)).astype(np.int32))
 
     def set_cmap(self, *args, **kwargs):
         super(AxesImage, self).set_cmap(*args, **kwargs)
