@@ -89,7 +89,7 @@ def convert_ndarray(v, name):
     if np.iscomplexobj(v[name]):
         v[name] = v[name].real
     else:
-        v[name] = v[name].astype(np.float)
+        v[name] = v[name].astype(np.float64)
     return v
 
 
@@ -193,7 +193,7 @@ class ArgsParser(object):
                 return isndarray(value)
             if cond == 'can_ndreal_array':
                 try:
-                    void = np.array(value).astype(np.float)
+                    void = np.array(value).astype(np.float64)
                     return void.size > 0
                 except:
                     pass
