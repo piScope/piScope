@@ -78,6 +78,20 @@ class Panel(wx.Panel):
             c.Enable(value)
 
 
+class Panel0(wx.Panel):
+    """
+    a panel to place edit_list widgets
+    """
+
+    def send_event(self, obj, evt):
+        self.GetParent().send_event(obj, evt)
+
+    def Enable(self, value=True):
+        wx.Panel.Enable(self, value)
+        for c in self.GetChildren():
+            c.Enable(value)
+
+
 class DialogButton(wx.Button):
     def __init__(self, *args, **kargs):
         setting = kargs.pop("setting", {})
@@ -126,7 +140,7 @@ class FunctionButton(wx.Button):
         self._handler_obj = None
 
         self._call_method = False
-        self.SetLabel(" " + label + " ") # apparently I need white space...
+        self.SetLabel(" " + label + " ")  # apparently I need white space...
 
     def GetValue(self):
         pass
@@ -1576,7 +1590,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         if key == wx.WXK_LEFT:
             if shiftDown:
                 a, b = self.GetSelection()
-                if a > 0: 
+                if a > 0:
                     a = a - 1
                 self.SetSelection(a, b)
             else:
@@ -1590,7 +1604,8 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             else:
                 self.SetInsertionPoint(self.GetInsertionPoint()+1)
 
-        if key > 127: return
+        if key > 127:
+            return
 
         if key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
@@ -3779,7 +3794,6 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
-
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -3908,14 +3922,47 @@ class EditListCore(object):
         self.call_sendevent = call_sendevent
 
       #  sizer =  wx.FlexGridSizer(0, 2)
-        sizer = wx.GridBagSizer()
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(sizer0)
+        parent = []
+        bsizers = []
+
+        def add_newpanel():
+            p = Panel0(self, wx.ID_ANY)
+            sizer0.Add(p, 0, wx.EXPAND | wx.GROW | wx.ALL)
+            parent.append(p)
+
+            sizer = wx.GridBagSizer()
+            bsizers.append(sizer)
+
+            parent[-1].SetSizer(sizer)
+            return 0, sizer
+
+        def add_newcollapsiblepane(label):
+            cp = wx.CollapsiblePane(self, wx.ID_ANY, label=label)
+            sizer0.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
+
+            def send_event(self, obj, evt, cp):
+                print('called', self, obj, evt, cp)
+                cp.GetParent().send_event(obj, evt)
+
+            p = cp.GetPane()
+            p.send_event = send_event
+            sizer = wx.GridBagSizer()
+            bsizers.append(sizer)
+
+            parent.append(p)
+            parent[-1].SetSizer(sizer)
+            return 0, sizer
+
+        row, sizer = add_newpanel()
 
         self.widgets = []
         self.widgets_enable = []
         # by default, widgets are added in (row, col)
         # row increass in this loop
-        row = 0
         k = 0
+
         for val in list:
             setting = {}
             col = 1
@@ -3936,7 +3983,17 @@ class EditListCore(object):
                         del val[3]["UpdateUI"]
 
             if val[0] is not None:
-                txt = wx.StaticText(self, wx.ID_ANY, val[0])
+                if val[0].startswith("->"):
+                    row, sizer = add_newcollapsiblepane(val[0][2:])
+                    k = k + 1
+                    continue
+
+                elif val[0].startswith("<-"):
+                    row, sizer = add_newpanel()
+                    k = k + 1
+                    continue
+
+                txt = wx.StaticText(parent[-1], wx.ID_ANY, val[0])
                 sizer.Add(txt, (row, 0), span,
                           wx.ALL | wx.ALIGN_CENTER_VERTICAL, edge)
                 if tip is not None and len(tip) > k:
@@ -3946,12 +4003,13 @@ class EditListCore(object):
                 txt = None
                 col = 0
                 span = (1, 2)
+
             if val[2] < -1:
                 val = __builtins__['list'](val)
                 val[2] = val[2] + 10000
                 enabled = False
             if val[2] == -1:
-                w = wx.StaticText(self, wx.ID_ANY, '')
+                w = wx.StaticText(parent[-1], wx.ID_ANY, '')
 #               sizer.Add(w, (row,0), span,
 #                         wx.ALL|wx.ALIGN_CENTER_VERTICAL, 0)
                 col = 0
@@ -3962,7 +4020,7 @@ class EditListCore(object):
                 else:
                     setting = {}
                 noexpand = setting.pop('noexpand', False)
-                w = TextCtrlCopyPaste(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
                                       style=wx.TE_PROCESS_ENTER,
                                       **setting)
                 if val[1] is not None:
@@ -3975,13 +4033,13 @@ class EditListCore(object):
                     setting = val[3]
                     if 'ns' in setting:
                         ns = setting['ns']
-                w = TextCtrlCopyPasteEval(self, wx.ID_ANY, val[1],
+                w = TextCtrlCopyPasteEval(parent[-1], wx.ID_ANY, val[1],
                                           style=wx.TE_PROCESS_ENTER | wx.TE_RICH,
                                           ns=ns)
                 self.Bind(wx.EVT_TEXT_ENTER, w.onEnter, w)
                 p = w
             elif val[2] == 200:
-                w = TextCtrlCopyPaste(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
                                       style=wx.TE_PROCESS_ENTER)
                 self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 w._use_escape = False
@@ -3989,14 +4047,14 @@ class EditListCore(object):
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 300:
-                w = TextCtrlCopyPasteFloat(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPasteFloat(parent[-1], wx.ID_ANY, '',
                                            style=wx.TE_PROCESS_ENTER)
                 self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 400:
-                w = TextCtrlCopyPasteInt(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPasteInt(parent[-1], wx.ID_ANY, '',
                                          style=wx.TE_PROCESS_ENTER)
                 self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 if val[1] is not None:
@@ -4007,7 +4065,7 @@ class EditListCore(object):
                     nlines = val[3]['nlines']
                 except:
                     nlines = 1
-                w = TextCtrlCopyPaste(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
                                       style=wx.TE_MULTILINE,
                                       nlines=nlines)
                 if val[1] is not None:
@@ -4019,7 +4077,7 @@ class EditListCore(object):
                     nlines = val[3]['nlines']
                 except:
                     nlines = 5
-                w = TextCtrlCopyPaste(self, wx.ID_ANY, '',
+                w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
                                       style=wx.TE_MULTILINE,
                                       nlines=nlines)
                 #self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
@@ -4032,15 +4090,15 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {"values": ["on", "off"]}
-                w = RadioButtons(self, wx.ID_ANY, val[1], setting)
+                w = RadioButtons(parent[-1], wx.ID_ANY, val[1], setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 2:
-                w = StaticText(self, wx.ID_ANY, val[1])
+                w = StaticText(parent[-1], wx.ID_ANY, val[1])
                 p = w
             elif val[2] == 102:
-                w = StaticText(self, wx.ID_ANY, val[1])
+                w = StaticText(parent[-1], wx.ID_ANY, val[1])
                 p = w
                 col = 0
                 span = (1, 2)
@@ -4052,7 +4110,7 @@ class EditListCore(object):
                     setting = {"text": "check box"}
                 if not "expand" in setting:
                     setting["expand"] = False
-                w = CheckBox(self, wx.ID_ANY, setting["text"])
+                w = CheckBox(parent[-1], wx.ID_ANY, setting["text"])
                 w.SetValue(val[1])
                 if "noindent" in setting:
                     col = 0
@@ -4069,7 +4127,7 @@ class EditListCore(object):
                     setting = {"style": wx.CB_READONLY,
                                "choices": ["ok", "cancel"], }
                 choices_cb = setting.pop("choices_cb", None)
-                w = ComboBox(self, wx.ID_ANY, style=setting["style"],
+                w = ComboBox(parent[-1], wx.ID_ANY, style=setting["style"],
                              choices=setting["choices"],
                              choices_cb=choices_cb)
                 w.SetValue(val[1])
@@ -4085,20 +4143,21 @@ class EditListCore(object):
                 else:
                     setting = {"style": wx.CB_READONLY,
                                "choices": ["ok", "cancel"]}
-                w = ComboBox_Float(self, wx.ID_ANY, style=setting["style"],
+                w = ComboBox_Float(parent[-1], wx.ID_ANY, style=setting["style"],
                                    choices=setting["choices"])
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 204:
-                w = MDSserver(self, wx.ID_ANY)
+                w = MDSserver(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 304:
-                w = ComboBoxPrefList(self, wx.ID_ANY, setting=val[3])
+                w = ComboBoxPrefList(parent[-1], wx.ID_ANY, setting=val[3])
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 404:
-                w = ComboBoxPrefListDirectory(self, wx.ID_ANY, setting=val[3])
+                w = ComboBoxPrefListDirectory(
+                    parent[-1], wx.ID_ANY, setting=val[3])
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 504:
@@ -4113,7 +4172,7 @@ class EditListCore(object):
                 s = [x for x in s if x != 'New...']
                 s = s + ['New...']
                 choices_cb = setting.pop("choices_cb", None)
-                w = ComboBoxWithNew(self, wx.ID_ANY, style=setting["style"],
+                w = ComboBoxWithNew(parent[-1], wx.ID_ANY, style=setting["style"],
                                     choices=s,
                                     choices_cb=choices_cb,)
                 w.SetValue(val[1])
@@ -4128,31 +4187,31 @@ class EditListCore(object):
                                "val": 0.5,
                                "res": 0.01,
                                "text_box": True}
-                w = Slider(self, wx.ID_ANY, setting=setting)
+                w = Slider(parent[-1], wx.ID_ANY, setting=setting)
                 w.SetValue(val[1])
                 p = w
 
             elif val[2] == 105:
-                w = AlphaPanel(self, wx.ID_ANY)
+                w = AlphaPanel(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 6:
-                w = Color(self, wx.ID_ANY)
+                w = Color(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 3006:
-                w = CheckBoxModified(self, wx.ID_ANY, Color,
+                w = CheckBoxModified(parent[-1], wx.ID_ANY, Color,
                                      setting=val[3])
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 27:
-                w = CheckBoxModifiedELP(self, wx.ID_ANY,
+                w = CheckBoxModifiedELP(parent[-1], wx.ID_ANY,
                                         setting=val[3])
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 127:
-                w = CheckBoxModifiedELP(self, wx.ID_ANY,
+                w = CheckBoxModifiedELP(parent[-1], wx.ID_ANY,
                                         setting=val[3])
                 w._forward_logic = False
                 w.SetValue(val[1])
@@ -4162,55 +4221,55 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {"elp": [("name", '', 0, None), ]}
-                w = ComboBoxModifiedELP(self, wx.ID_ANY,
+                w = ComboBoxModifiedELP(parent[-1], wx.ID_ANY,
                                         setting=val[3])
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 106:
-                w = ColorFace(self, wx.ID_ANY)
+                w = ColorFace(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 206:
-                w = ColorSelector(self, wx.ID_ANY)
+                w = ColorSelector(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
                 noexpand = True
             elif val[2] == 306:
-                w = PathCollectionEdgeColor(self, wx.ID_ANY)
+                w = PathCollectionEdgeColor(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 406:
-                w = LineColor(self, wx.ID_ANY)
+                w = LineColor(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 506:
-                w = ColorPairSelector(self, wx.ID_ANY)
+                w = ColorPairSelector(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 606:
-                w = TickLabelColorSelector(self, wx.ID_ANY)
+                w = TickLabelColorSelector(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 7:
-                w = LineWidth(self, wx.ID_ANY)
+                w = LineWidth(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 107:
-                w = LineWidthWithZero(self, wx.ID_ANY)
+                w = LineWidthWithZero(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 8:
-                w = LineStyle(self, wx.ID_ANY)
+                w = LineStyle(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 9:
-                w = Marker(self, wx.ID_ANY)
+                w = Marker(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 10:
-                w = PatchLineStyle(self, wx.ID_ANY)
+                w = PatchLineStyle(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 11:
@@ -4218,12 +4277,12 @@ class EditListCore(object):
                 #                 setting=val[3]
                 #              else:
                 #                 setting={"reverse": False}
-                w = ColorMap(self, wx.ID_ANY)
+                w = ColorMap(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 12:
-                w = color_map_button(self, wx.ID_ANY)
+                w = color_map_button(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
@@ -4232,40 +4291,40 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {'check_range_order': False}
-                w = AxisRange(self, wx.ID_ANY, setting=setting)
+                w = AxisRange(parent[-1], wx.ID_ANY, setting=setting)
                 p = w
             elif val[2] == 14:
-                w = LogLinScale(self, wx.ID_ANY)
+                w = LogLinScale(parent[-1], wx.ID_ANY)
                 p = w
             elif val[2] == 15:
-                w = LabelPanel(self, wx.ID_ANY)
+                w = LabelPanel(parent[-1], wx.ID_ANY)
                 p = w
             elif val[2] == 115:
-                w = LabelPanel2(self, wx.ID_ANY)
+                w = LabelPanel2(parent[-1], wx.ID_ANY)
                 p = w
             elif val[2] == 16:
-                w = ArrowStylePanel(self,  wx.ID_ANY)
+                w = ArrowStylePanel(parent[-1], wx.ID_ANY)
                 p = w
                 noexpand = True
             elif val[2] == 17:
-                w = GenericCoordsTransform(self, wx.ID_ANY)
+                w = GenericCoordsTransform(parent[-1], wx.ID_ANY)
                 p = w
             elif val[2] == 18:
-                w = MDSSource(self,  wx.ID_ANY)
+                w = MDSSource(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
                 col = 0
                 span = (1, 2)
             elif val[2] == 118:
-                w = MDSSource0(self,  wx.ID_ANY)
+                w = MDSSource0(parent[-1],  wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
                 col = 0
                 span = (1, 2)
             elif val[2] == 19:
-                w = LegendLocPanel(self,  wx.ID_ANY)
+                w = LegendLocPanel(parent[-1],  wx.ID_ANY)
                 p = w
                 col = 0
                 span = (1, 2)
@@ -4274,22 +4333,22 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {'check_range_order': False}
-                w = AxesRangeParamPanel(self,  wx.ID_ANY, **setting)
+                w = AxesRangeParamPanel(parent[-1],  wx.ID_ANY, **setting)
                 p = w
                 col = 0
                 span = (1, 2)
                 noexpand = True
             elif val[2] == 21:
-                w = MDSGlobalSelection(self,  wx.ID_ANY)
+                w = MDSGlobalSelection(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 22:
-                w = ColorOrder(self, wx.ID_ANY)
+                w = ColorOrder(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
                 noexpand = True
             elif val[2] == 23:
-                w = Color3DPane(self, wx.ID_ANY)
+                w = Color3DPane(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
                 noexpand = True
@@ -4302,7 +4361,7 @@ class EditListCore(object):
                                "val": 0.5,
                                "res": 0.01,
                                "motion_event": False}
-                w = CSlider(self, wx.ID_ANY, setting=setting)
+                w = CSlider(parent[-1], wx.ID_ANY, setting=setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
@@ -4315,12 +4374,12 @@ class EditListCore(object):
                                "val": 0.5,
                                "res": 0.01,
                                "motion_event": False}
-                w = CSliderWithText(self, wx.ID_ANY, setting=setting)
+                w = CSliderWithText(parent[-1], wx.ID_ANY, setting=setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 25:
-                w = RotationPanel(self, wx.ID_ANY)
+                w = RotationPanel(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 26:
@@ -4329,7 +4388,7 @@ class EditListCore(object):
                 else:
                     setting = {"style": wx.CB_READONLY,
                                "choices": ["left", "right"]}
-                w = AxisPositionPanel(self, wx.ID_ANY, setting=setting)
+                w = AxisPositionPanel(parent[-1], wx.ID_ANY, setting=setting)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 28:
@@ -4341,40 +4400,40 @@ class EditListCore(object):
                     if 'style' in val[3]:
                         style = val[3]['style']
 
-                w = CAxisSelector(
-                    self, wx.ID_ANY, style=style, choices=choices)
+                w = CAxisSelector(parent[-1],
+                                  wx.ID_ANY, style=style, choices=choices)
                 if val[1] is not None:
                     w.SetValue(val[1])
 #              w.SetValue(val[1])
                 p = w
             elif val[2] == 29:
-                w = XYResize(self, wx.ID_ANY)
+                w = XYResize(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 30:
-                w = XYAnchor(self, wx.ID_ANY)
+                w = XYAnchor(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 31:
-                w = MDSFigureType(self, wx.ID_ANY)
+                w = MDSFigureType(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
 #              w.SetValue(val[1])
                 p = w
             elif val[2] == 32:
-                w = MDSRange(self, wx.ID_ANY)
+                w = MDSRange(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 33:
-                w = ELP(self, wx.ID_ANY, setting=val[3])
+                w = ELP(parent[-1], wx.ID_ANY, setting=val[3])
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 34:
-                w = SelectableELP(self, wx.ID_ANY, setting=val[3])
+                w = SelectableELP(parent[-1], wx.ID_ANY, setting=val[3])
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
@@ -4382,17 +4441,17 @@ class EditListCore(object):
                 from ifigure.utils.checkbox_panel import CheckBoxes
                 # setting = {'col': 4,
                 #     'labels': ['lable1','label2', ...]}
-                w = CheckBoxes(self, wx.ID_ANY, setting=val[3])
+                w = CheckBoxes(parent[-1], wx.ID_ANY, setting=val[3])
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 37:
-                w = TickLocator(self, wx.ID_ANY, setting=val[3])
+                w = TickLocator(parent[-1], wx.ID_ANY, setting=val[3])
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
             elif val[2] == 38:
-                w = ClipSetting(self, wx.ID_ANY)
+                w = ClipSetting(parent[-1], wx.ID_ANY)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 39:
@@ -4405,11 +4464,11 @@ class EditListCore(object):
                                "res": 0.01,
                                "motion_event": False,
                                "text_box": True}
-                w = CDoubleSlider(self, wx.ID_ANY, setting=setting)
+                w = CDoubleSlider(parent[-1], wx.ID_ANY, setting=setting)
                 w.SetValue(val[1])
                 p = w
             elif val[2] == 40:
-                w = GL_Lighting(self, wx.ID_ANY)
+                w = GL_Lighting(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 col = 0
@@ -4420,7 +4479,7 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = DialogButton(self, wx.ID_ANY, setting=setting)
+                w = DialogButton(parent[-1], wx.ID_ANY, setting=setting)
                 p = w
                 alignright = setting.pop('alignright', alignright)
                 noexpand = setting.pop('noexpand', False)
@@ -4429,7 +4488,7 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = FunctionButton(self, wx.ID_ANY, setting=setting)
+                w = FunctionButton(parent[-1], wx.ID_ANY, setting=setting)
                 p = w
                 alignright = setting.pop('alignright', alignright)
                 noexpand = setting.pop('noexpand', False)
@@ -4438,7 +4497,7 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = FunctionButtons(self, wx.ID_ANY, setting=setting)
+                w = FunctionButtons(parent[-1], wx.ID_ANY, setting=setting)
                 p = w
                 alignright = setting.pop('alignright', alignright)
                 noexpand = setting.pop('noexpand', False)
@@ -4447,7 +4506,7 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = FunctionButton(self, wx.ID_ANY, setting=setting)
+                w = FunctionButton(parent[-1], wx.ID_ANY, setting=setting)
                 w._call_method = True
                 p = w
                 noexpand = setting.pop('noexpand', False)
@@ -4456,7 +4515,8 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = TickLabelSizeSelector(self, wx.ID_ANY, setting=setting)
+                w = TickLabelSizeSelector(
+                    parent[-1], wx.ID_ANY, setting=setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
@@ -4465,14 +4525,14 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     raise ValueError("array text box setting is misssing")
-                w = ArrayTextCtrl(self, wx.ID_ANY, **setting)
+                w = ArrayTextCtrl(parent[-1], wx.ID_ANY, **setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
 #              self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 noexpand = setting.pop('noexpand', False)
                 p = w
             elif val[2] == 44:
-                w = GL_View(self, wx.ID_ANY)
+                w = GL_View(parent[-1], wx.ID_ANY)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 col = 0
@@ -4483,7 +4543,7 @@ class EditListCore(object):
                     setting = val[3]
                 else:
                     setting = {}
-                w = FilePath(self, wx.ID_ANY, wx.Panel, **setting)
+                w = FilePath(parent[-1], wx.ID_ANY, wx.Panel, **setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 p = w
@@ -4495,13 +4555,13 @@ class EditListCore(object):
                 span = setting.pop('span', span)
                 alignright = setting.pop('alignright', alignright)
                 if UI is not None:
-                    w = UI(self, wx.ID_ANY, setting=setting)
+                    w = UI(parent[-1], wx.ID_ANY, setting=setting)
                     if val[1] is not None:
                         w.SetValue(val[1])
                     p = w
                 else:
                     w = wx.StaticText(
-                        self, wx.ID_ANY, 'Custom UI is not defined!')
+                        parent[-1], wx.ID_ANY, 'Custom UI is not defined!')
 
             w.Fit()
             if UpdateUI is not None:
@@ -4523,9 +4583,10 @@ class EditListCore(object):
             row = row+1
             k = k + 1
 
-        if len(list) > 0:
-            sizer.AddGrowableCol(1)
-        self.SetSizer(sizer)
+        for sizer in bsizers:
+            if len(sizer.GetChildren()) > 0:
+                sizer.AddGrowableCol(1)
+
         self.list = list
 
     def GetValue(self):
@@ -5101,9 +5162,9 @@ class EditListMiniFrame(wx.MiniFrame):
 
 
 class Example(wx.Frame):
-    def __init__(self, parent, title, list=None, style=None):
+    def __init__(self, parent, title, list=None, style=None, tip=None):
         super(Example, self).__init__(parent, title=title)
-        dia = EditListDialog(self, wx.ID_ANY, '', list, style=style)
+        dia = EditListDialog(self, wx.ID_ANY, '', list, tip=tip)
 #        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
 #        self.GetSizer().Add(dia, 1, wx.EXPAND, 0)
         val = dia.ShowModal()
@@ -5138,8 +5199,18 @@ if __name__ == "__main__":
             ["Shot", shot, 0]]
 
     list = [["color order", ['blue', 'red', 'green'], 22, {}],
+            ["->"],
+            ["color map", 3, 12, {}],
+            ["color map", 3, 12, {}],
+            ["color map", 3, 12, {}],
+            ["color map", 3, 12, {}],
+            ["Env  options",  None, 235, {'nlines': 2}],
+            ["<-"],
+            ["color map", 3, 12, {}],
+            ["color map", 3, 12, {}],
             ["color map", 3, 12, {}]]
-    list = [["Max", (True, 'r'), 3006, ({"text": "Clip"}, {})]]
+#    list = [ ["Max", (True, 'r'), 3006, ({"text": "Clip"}, {})]]
 #   e=Example(None, 'example', list=list, style='no button')
-    e = Example(None, 'example', list=list)
+    e = Example(None, 'example', list=list, tip=[
+                "tip for " + str(x) for x in range(len(list))])
     app.MainLoop()
