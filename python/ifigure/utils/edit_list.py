@@ -86,10 +86,34 @@ class Panel0(wx.Panel):
     def send_event(self, obj, evt):
         self.GetParent().send_event(obj, evt)
 
+    def send_changing_event(self, evtobj, evt0):
+        self.GetParent().send_changing_event(evtobj, evt0)
+
+    def send_setfocus_event(self, evtobj, evt0):
+        self.GetParent().send_setfocus_event(evtobj, evt0)
+
     def Enable(self, value=True):
         wx.Panel.Enable(self, value)
         for c in self.GetChildren():
             c.Enable(value)
+
+
+class CollapsiblePane0(wx.CollapsiblePane):
+    def GetPane(self):
+        def send_event(_x, obj, evt, cp):
+            self.GetParent().send_event(obj, evt)
+
+        def send_changing_event(_x, evtobj, evt0):
+            self.GetParent().send_changing_event(evtobj, evt0)
+
+        def send_setfocus_event(_x, evtobj, evt0):
+            self.GetParent().send_setfocus_event(evtobj, evt0)
+
+        p = wx.CollapsiblePane.GetPane(self)
+        p.send_event = send_event
+        p.send_changing_event = send_changing_event
+        p.send_setfocus_event = send_setfocus_event
+        return p
 
 
 class DialogButton(wx.Button):
@@ -2214,7 +2238,8 @@ class CDoubleSlider(CustomDoubleSlider):
 
     def GetValue(self):
         import numpy as np
-        value = np.array(super(CDoubleSlider, self).GetValue(), dtype=np.float64)
+        value = np.array(
+            super(CDoubleSlider, self).GetValue(), dtype=np.float64)
         v = (np.ceil((value - self._range[0])/self._resolution)
              * self._resolution
              + self._range[0])
@@ -3794,6 +3819,7 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
+
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -3939,15 +3965,10 @@ class EditListCore(object):
             return 0, sizer
 
         def add_newcollapsiblepane(label):
-            cp = wx.CollapsiblePane(self, wx.ID_ANY, label=label)
+            cp = CollapsiblePane0(self, wx.ID_ANY, label=label)
             sizer0.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
 
-            def send_event(self, obj, evt, cp):
-                print('called', self, obj, evt, cp)
-                cp.GetParent().send_event(obj, evt)
-
             p = cp.GetPane()
-            p.send_event = send_event
             sizer = wx.GridBagSizer()
             bsizers.append(sizer)
 
