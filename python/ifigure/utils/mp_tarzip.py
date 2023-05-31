@@ -31,7 +31,11 @@ class MPTarzip(object):
     def Run(self, filename, d, odir):
         if not self.isReady():
             return False
-        
+        try:
+            os.getcwd()
+        except FileNotFoundError:
+            os.chdir(os.path.expanduser("~"))
+
         print("starting tar....(save)")
 
         try:

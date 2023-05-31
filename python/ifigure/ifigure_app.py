@@ -1075,7 +1075,10 @@ class ifigure_app(BookViewerFrame):
         from ifigure.utils.mp_tarzip import local_lc
         if not local_lc.acquire(False):
             ret = dialog.message(
-                self, 'Previous save job is still running.', 'Please wait', 0)
+                self, 'Previous save job is still running.\n If this is an error, choose unlock. ', 'Please wait (locked)', 2,
+                labels=["OK", "Unlock"])
+            if ret == 'cancel':
+                local_lc.release()
             return
 
         path = self.proj.getvar("filename")
@@ -1154,13 +1157,21 @@ class ifigure_app(BookViewerFrame):
         from ifigure.utils.mp_tarzip import local_lc
         if not local_lc.acquire(False):
             ret = dialog.message(
-                self, 'Previous save job is still running.', 'Please wait', 0)
+                self, 'Previous save job is still running.\n If this is an error, choose unlock. ', 'Please wait (locked)', 2,
+                labels=["OK", "Unlock"])
+            if ret == 'cancel':
+                local_lc.release()
             return
 
         opath = self.proj.getvar("filename")
         owdir = self.proj.getvar("wdir")
 
-        odir = os.getcwd()
+        try:
+            odir = os.getcwd()
+        except FileNotFoundError:
+            os.chdir(os.path.expanduser("~"))
+            odir = os.getcwd()
+
         if odir.startswith(owdir):
             # if current dir is under wdir. we move to home
             # since saveas will change wdir and wdir will be gone
