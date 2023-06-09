@@ -1241,11 +1241,11 @@ class Axes3DMod(Axes3D):
         return a
 
     def rotate_view_90deg(self, flip=False):
-        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
+        self._vvec = self._vvec / np.sqrt(np.sum(self._vvec**2))
         if flip:
-            M = rotation_mat(self.vvec, np.pi / 2)
+            M = rotation_mat(self._vvec, np.pi / 2)
         else:
-            M = rotation_mat(self.vvec, -np.pi / 2)
+            M = rotation_mat(self._vvec, -np.pi / 2)
         self._upvec = np.dot(M, self._upvec)
 
     def get_proj2(self):
@@ -1272,9 +1272,9 @@ class Axes3DMod(Axes3D):
         zp = R[2] + np.sin(relev) * self.dist
         E = np.array((xp, yp, zp))
 
-        self.eye = E
-        self.vvec = R - E
-        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
+        #self.eye = E
+        self._vvec = R - E
+        self._vvec = self._vvec / np.sqrt(np.sum(self._vvec**2))
 
         if abs(relev) > np.pi / 2:
             V = np.array((0, 0, -1))
