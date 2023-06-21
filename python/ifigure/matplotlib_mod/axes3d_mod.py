@@ -610,10 +610,10 @@ class Axes3DMod(Axes3D):
         if x is None:
             return
 
-        dx, dy = x - self.sx, y - self.sy
+        dx, dy = x - self._sx, y - self._sy
         w = self._pseudo_w
         h = self._pseudo_h
-        self.sx, self.sy = x, y
+        self._sx, self._sy = x, y
 
         # Rotation
         if self.button_pressed in self._rotate_btn:

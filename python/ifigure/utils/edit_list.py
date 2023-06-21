@@ -52,6 +52,24 @@ EditorSetFocus = wx.NewEventType()
 EDITLIST_SETFOCUS = wx.PyEventBinder(EditorSetFocus, 1)
 
 
+def call_send_event(obj, evt):
+    if hasattr(obj.GetParent(), "send_event"):
+        obj.GetParent().send_event(obj, evt)
+    elif hasattr(obj.GetParent().GetParent(), "send_event"):
+        obj.GetParent().GetParent().send_event(obj, evt)
+
+def call_send_changing_event(obj, evt):
+    if hasattr(obj.GetParent(), "send_changing_event"):
+        obj.GetParent().send_changing_event(obj, evt)
+    elif hasattr(obj.GetParent().GetParent(), "send_changing_event"):
+        obj.GetParent().GetParent().send_changing_event(obj, evt)
+
+def call_send_setfocus_event(obj, evt):
+    if hasattr(obj.GetParent(), "send_setfocus_event"):
+        obj.GetParent().send_setfocus_event(obj, evt)
+    elif hasattr(obj.GetParent().GetParent(), "send_setfocus_event"):
+        obj.GetParent().GetParent().send_setfocus_event(obj, evt)
+
 class EditListEvent(wx.PyCommandEvent):
     """
     event for treedict to request edit a file
@@ -99,6 +117,36 @@ class Panel0(wx.Panel):
 
 
 class CollapsiblePane0(wx.CollapsiblePane):
+    def __init__(self, *args, **kwargs):
+        wx.CollapsiblePane.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.onCPChanged)
+
+        self._size = self.Size
+        self._def_size = 20
+
+    def onCPChanged(self, evt):
+        p = self.GetPane()
+        ysize = p.GetSizer().GetMinSize()[1]
+
+        if self.IsCollapsed():
+            mysize = (p.Size[0], 0)
+            mypsize = (p.Size[0], self._def_size)
+
+            p.SetSize(mysize)
+            p.GetParent().SetSize(mypsize)
+
+        else:
+            mysize = (p.Size[0], ysize)
+            mypsize = (p.Size[0], p.GetParent().Size[1] + ysize)
+
+            self._def_size = p.GetParent().Size[1]
+
+            p.SetSize(mysize)
+            p.GetParent().SetSize(mypsize)
+
+    def send_event(self, obj, evt):
+        self.GetParent().send_event(obj, evt)
+
     def GetPane(self):
         def send_event(_x, obj, evt, cp):
             self.GetParent().send_event(obj, evt)
@@ -1692,7 +1740,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         event.Skip()
 
         if self.changing_event:
-            self.GetParent().send_changing_event(self, event)
+            call_send_changing_event(self, evt)
 
         if self._validator is not None:
             wx.CallAfter(self.call_validator)
@@ -1706,13 +1754,13 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             self.set_value_error()
 
     def onEnter(self, evt):
-        self.GetParent().send_event(self, evt)
+        call_send_event(self, evt)
 
     def onSetFocus(self, evt):
         # print 'get focus', self, self.GetValue()
         self._value_at_getfocus = self.GetValue()
         if self._send_setfocus_event:
-            self.GetParent().send_setfocus_event(self, evt)
+            call_send_setfocus_event(self, evt)
         evt.Skip()
 
     def onKillFocus(self, evt):
@@ -1721,8 +1769,8 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         '''
         # print 'kill focus', self, self.GetValue()
         if self._value_at_getfocus != self.GetValue():
-            if hasattr(self.GetParent(), 'send_event'):
-                self.GetParent().send_event(self, evt)
+            call_send_event(self, evt)
+
         evt.Skip()
 
     def onDragInit(self, e):
@@ -1862,6 +1910,108 @@ class TextCtrlCopyPasteEval(TextCtrlCopyPaste):
             val = None
         return txt, val
 
+class TextCtrHistoryPopup(wx.Menu):
+    def __init__(self, parent):
+        super(TextCtrHistoryPopup, self).__init__()
+        self.parent = parent
+        menus = []
+        if self.parent.CanCut():
+            menus.append(('Cut', self.parent.Cut, None))
+        else:
+            menus.append(('-Cut', self.parent.Cut, None))
+
+        if self.parent.CanCopy():
+            menus.append(('Copy', self.parent.Copy, None))
+        else:
+            menus.append(('-Copy', self.parent.Copy, None))
+
+        if self.parent.CanPaste():
+            menus.append(('Paste', self.parent.Paste, None))
+        else:
+            menus.append(('-Paste', self.parent.Paste, None))
+
+        hist = (self.parent._key_history_st1 +
+                list(reversed(self.parent._key_history_st2)))
+
+        if len(hist) > 0:
+            menus.append(('+History', None, None))
+            for i in range(len(hist)):
+                def func(evt, idx=i, parent=self.parent, hist=hist):
+                    a = hist[:idx+1]
+                    b = list(reversed(hist[idx+1:]))
+                    parent._key_history_st1 = a
+                    parent._key_history_st2 = b
+                    parent.SetValue(hist[idx])
+                menus.append((hist[i], func, None))
+
+            def func(evt, hist=hist):
+                if wx.TheClipboard.Open():
+                    wx.TheClipboard.SetData(wx.TextDataObject("\n".join(hist)))
+                    wx.TheClipboard.Close()
+            menus.append(('Export history', func, None))
+            menus.append(('!', None, None))
+
+        cbook.BuildPopUpMenu(self, menus)
+
+class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
+    '''
+    TextControlWithHistory
+    '''
+
+    def __init__(self, *args, **kargs):
+        TextCtrlCopyPasteGeneric.__init__(self, *args, **kargs)
+        self._key_history_st1 = []
+        self._key_history_st2 = []
+        #self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
+        self.Bind(wx.EVT_CONTEXT_MENU, self.onContext)
+
+    def onRightUp(self, evt):
+        m = TextCtrHistoryPopup(self)
+        self.PopupMenu(m,  # ifigure_popup(self),
+                       evt.GetPosition())
+        m.Destroy()
+
+    def onContext(self, evt):
+        print("here")
+        m = TextCtrHistoryPopup(self)
+        self.PopupMenu(m)  # ifigure_popup(self),
+#                       evt.GetPosition())
+        m.Destroy()
+
+    def onKeyPressed(self, event):
+        key = event.GetKeyCode()
+        if hasattr(event, 'RawControlDown'):
+            controlDown = event.RawControlDown()
+        else:
+            controlDown = event.ControlDown()
+        altDown = event.AltDown()
+
+        if key == wx.WXK_UP:
+            if len(self._key_history_st1) == 0:
+                return
+            v = self._key_history_st1.pop()
+            self._key_history_st2.append(v)
+            if len(self._key_history_st1) == 0:
+                return
+            self.SetValue(self._key_history_st1[-1])
+            return
+        elif key == wx.WXK_DOWN:
+            if len(self._key_history_st2) == 0:
+                return
+            v = self._key_history_st2.pop()
+            self._key_history_st1.append(v)
+            if len(self._key_history_st1) == 0:
+                return
+            self.SetValue(self._key_history_st1[-1])
+            return
+        return TextCtrlCopyPaste.onKeyPressed(self, event)
+
+    def onEnter(self, evt):
+        v = self.GetValue()
+        if (v not in  self._key_history_st1 and
+            v not in  self._key_history_st2):
+            self._key_history_st1.append(v)
+        TextCtrlCopyPaste.onEnter(self, evt)
 
 class TextCtrlCopyPasteGeneric(TextCtrlCopyPaste):
     '''
@@ -1875,8 +2025,7 @@ class TextCtrlCopyPasteGeneric(TextCtrlCopyPaste):
 
 class TextCtrlCopyPasteGenericHistory(TextCtrlCopyPasteGeneric):
     '''
-    TextCtrlCopyPasteGeneric is TextCtrlCopyPaste
-    w/o calling sendevent
+    TextControlWithHistory (no sendevent)
     '''
 
     def __init__(self, *args, **kargs):
@@ -2383,8 +2532,9 @@ class RadioButtons(wx.Panel):
 
             if item == val:
                 w.SetValue(True)
+
             self.widgets.append(w)
-            sizer0.Add(w, 0)
+            sizer0.Add(w, 0, wx.EXPAND)
             self.Bind(wx.EVT_RADIOBUTTON, self.onHit, w)
 
         sizer.Add(sizer0, 0, wx.ALIGN_LEFT)
@@ -2403,6 +2553,7 @@ class RadioButtons(wx.Panel):
                 chk = True
             else:
                 w.SetValue(False)
+
         return chk
 
     def onHit(self, evt):
@@ -2427,7 +2578,7 @@ class ELP(Panel):
 
 class ComboBoxModifiedELP(Panel):
     '''
-    this panel is ELP, which represetns an element 
+    this panel is ELP, which represetns an element
     of array. Attached combobox allows user to select
     the index of array which user wants to edit the
     elements.
@@ -3964,8 +4115,10 @@ class EditListCore(object):
             parent[-1].SetSizer(sizer)
             return 0, sizer
 
-        def add_newcollapsiblepane(label):
-            cp = CollapsiblePane0(self, wx.ID_ANY, label=label)
+        def add_newcollapsiblepane(label, setting):
+            if setting["no_tlw_resize"]:
+                kwargs = {"style": wx.CP_NO_TLW_RESIZE}
+            cp = CollapsiblePane0(self, wx.ID_ANY, label=label, **kwargs)
             sizer0.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
 
             p = cp.GetPane()
@@ -3974,6 +4127,7 @@ class EditListCore(object):
 
             parent.append(p)
             parent[-1].SetSizer(sizer)
+            sizer.SetSizeHints(p)
             return 0, sizer
 
         row, sizer = add_newpanel()
@@ -4005,7 +4159,11 @@ class EditListCore(object):
 
             if val[0] is not None:
                 if val[0].startswith("->"):
-                    row, sizer = add_newcollapsiblepane(val[0][2:])
+                    if len(val) < 3:
+                        setting = {"no_tlw_resize": True}
+                    else:
+                        setting = val[3]
+                    row, sizer = add_newcollapsiblepane(val[0][2:], setting)
                     k = k + 1
                     continue
 
@@ -4080,6 +4238,19 @@ class EditListCore(object):
                 self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 if val[1] is not None:
                     w.SetValue(val[1])
+                p = w
+            elif val[2] == 500:
+                if len(val) == 4 and val[3] is not None:
+                    setting = val[3]
+                else:
+                    setting = {}
+                noexpand = setting.pop('noexpand', False)
+                w = TextCtrlCopyPasteHistory(parent[-1], wx.ID_ANY, '',
+                                      style=wx.TE_PROCESS_ENTER,
+                                      **setting)
+                if val[1] is not None:
+                    w.SetValue(val[1])
+                self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 p = w
             elif val[2] == 35:
                 try:
@@ -4737,11 +4908,11 @@ class EditListPanel(EditListCore, wx.Panel):
         EditListCore.Enable(self, value=value)
 
 
-'''        
+'''
    use_frame=True
    def_style = (wx.CAPTION|
              wx.CLOSE_BOX|
-             wx.MINIMIZE_BOX| 
+             wx.MINIMIZE_BOX|
              wx.RESIZE_BORDER|
              wx.FRAME_FLOAT_ON_PARENT|
              wx.FRAME_TOOL_WINDOW)
@@ -4866,8 +5037,8 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
     wx control widgets
 
     list has a following form
-         [["label1", value1, mode1, {setting1}], 
-          ["label2", value2, mode2  {setting2}], 
+         [["label1", value1, mode1, {setting1}],
+          ["label2", value2, mode2  {setting2}],
           ...]
 
     label is a text shown on the left of control.
@@ -4883,11 +5054,12 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
      200 : textctrl with cut&paste (no backslash escape)
      300 : textctrl with cut&paste float
      400 : textctrl with cut&paste int
+     500 : textctrl with cut&paste and history
        1 : radio button
            setting = {"values":['on', 'off']}
        2:  text label (static text)
      102:  text label (use two columns)
-       3:  check box 
+       3:  check box
            setting = {"text":'check box label'
        4:  combo box
            setting={"style":wx.CB_READONLY,
@@ -4901,7 +5073,7 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
                       'pref':  pref file  ex. 'mdsplus.mdssever_config'
                       'varname': varname ex. 'connection'
                       'keyname': keyname ex. 'server'
-                      'def_value': value which appears at top 
+                      'def_value': value which appears at top
                       'dialog':  callable to ask new entry (see below)}
            app = wx.GetApp().TopWindow
            def callable(parent, app0 = app):
@@ -4911,16 +5083,16 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
               return m
            !!! setting dict will be destroyed. not reused it.
      404:  ComboBoxPrefList + DirectoryBrowseButton
-       5:  slider 
+       5:  slider
            setting={"minV": 0.,
-                    "maxV": 1., 
-                    "val" : 0.5, 
-                    "res" : 0.01, 
+                    "maxV": 1.,
+                    "val" : 0.5,
+                    "res" : 0.01,
                     "text_box" : True}
      105: slideralpha
             used to alpha setting
             range = (0, 1)
-            translate 1 => None 
+            translate 1 => None
        6: color
     3006: color?
      106: color_face (no none color button)
@@ -4942,21 +5114,21 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
       17: generic point
       18: mdsplus
       19: legendloc
-      20: axes_ranage_param 
+      20: axes_ranage_param
       21: mdsscope global selection
-      22: color order 
+      22: color order
       23: color 3D pane
       24: custom single slider with slider (5) like
           setting. text box is not yet implemented
            setting={"minV": 0.,
-                    "maxV": 1., 
-                    "val" : 0.5, 
-                    "res" : 0.01, 
+                    "maxV": 1.,
+                    "val" : 0.5,
+                    "res" : 0.01,
                     "text_box" : False}
      124: custom single slider with text box
       25: Rotation Panel
       26: AxisPosition Panel
-      27: CheckBoxModifiedELP 
+      27: CheckBoxModifiedELP
            example:
            [None,  [True, ['0.95']], 27, [{'text':'use q0'},
                                           {'elp':[['Experiment', 'cmod', 0, None],]
@@ -4964,7 +5136,7 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
      127: CheckBoxModifiedELP (revserse the bool of checkbox)
      227: ComoboBoxModifiedELP
       28: CaxisSelector
-      29: XYResize 
+      29: XYResize
       30: XYAnchor
       31: MDSfiguretype
       32: MDSRnage
@@ -4978,9 +5150,9 @@ def _DialogEditListCore(list, modal=True, style=wx.DEFAULT_DIALOG_STYLE,
       38: clip setting
       39: custom double slider
            setting={"minV": 0.,
-                    "maxV": 1., 
-                    "val" : 0.5, 
-                    "res" : 0.01, 
+                    "maxV": 1.,
+                    "val" : 0.5,
+                    "res" : 0.01,
                     "motion_event: : False,
                     "text_box" : False}
       40: GL Lighting
@@ -5082,10 +5254,10 @@ def DialogEditListTabWithWindowList(tab, list, **kwargs):
     return _DialogEditListCore(list, **kwargs)
 
     '''
-    dia = EditListDialogTab(parent, wx.ID_ANY, title, tab, 
+    dia = EditListDialogTab(parent, wx.ID_ANY, title, tab,
                             list, style=style, tip=tip, pos=pos)
     wx.CallAfter(dia.Layout)
-    if modal:    
+    if modal:
         val = dia.ShowModal()
         value=dia.GetValue()
         if val == wx.ID_OK:
@@ -5100,7 +5272,7 @@ def DialogEditListTabWithWindowList(tab, list, **kwargs):
            diag.Destroy()
            ok_cb(value)
        if ok_cb is not None:
-           dia.Bind(wx.EVT_BUTTON, ok_func, id=wx.ID_OK)        
+           dia.Bind(wx.EVT_BUTTON, ok_func, id=wx.ID_OK)
        dia.Show()
     '''
 
