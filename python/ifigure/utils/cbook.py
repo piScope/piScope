@@ -811,8 +811,12 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             isTop = False
         else:
             isTop = False
-            if s[0] == '-':
+            escape = False
+            if s[0] == "\\":
+                escape = True
                 mmi = wx.MenuItem(base, id, s[1:])
+            elif s[0] == '-':
+                mmi = wx.MenuItem(base, id, s[1:])                
             elif s[0] == '*':
                 mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
             elif s[0] == '^':
@@ -822,10 +826,11 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             if bmp is not None:
                 mmi.SetBitmap(bmp)
             menu_AppendItem(base, mmi)
-            if s[0] == '^':
-                mmi.Check(True)
-            if s[0] == '-':
-                mmi.Enable(False)
+            if not escape:
+                if s[0] == '^':
+                    mmi.Check(True)
+                if s[0] == '-':
+                    mmi.Enable(False)
 
             def func(evt, handler=h, obj=eventobj, extra=i,
                      xy=xy, xydata=xydata):

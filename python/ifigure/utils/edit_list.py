@@ -1943,7 +1943,7 @@ class TextCtrHistoryPopup(wx.Menu):
                     parent._key_history_st1 = a
                     parent._key_history_st2 = b
                     parent.SetValue(hist[idx])
-                menus.append((hist[i], func, None))
+                menus.append(("\\"+hist[i], func, None))
 
             def func(evt, hist=hist):
                 if wx.TheClipboard.Open():
