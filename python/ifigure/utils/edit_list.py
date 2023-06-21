@@ -1934,6 +1934,7 @@ class TextCtrHistoryPopup(wx.Menu):
                 list(reversed(self.parent._key_history_st2)))
 
         if len(hist) > 0:
+            menus.append(('---', None, None))            
             menus.append(('+History', None, None))
             for i in range(len(hist)):
                 def func(evt, idx=i, parent=self.parent, hist=hist):
@@ -1965,17 +1966,9 @@ class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
         #self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
         self.Bind(wx.EVT_CONTEXT_MENU, self.onContext)
 
-    def onRightUp(self, evt):
-        m = TextCtrHistoryPopup(self)
-        self.PopupMenu(m,  # ifigure_popup(self),
-                       evt.GetPosition())
-        m.Destroy()
-
     def onContext(self, evt):
-        print("here")
         m = TextCtrHistoryPopup(self)
         self.PopupMenu(m)  # ifigure_popup(self),
-#                       evt.GetPosition())
         m.Destroy()
 
     def onKeyPressed(self, event):
