@@ -1740,7 +1740,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         event.Skip()
 
         if self.changing_event:
-            call_send_changing_event(self, evt)
+            call_send_changing_event(self, event)
 
         if self._validator is not None:
             wx.CallAfter(self.call_validator)
