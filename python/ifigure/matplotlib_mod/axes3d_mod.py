@@ -259,6 +259,8 @@ class Axes3DMod(Axes3D):
         self._rotate_btn = []
         self._drag_mode = ''
 
+        self._sx, self._sy = 0, 0
+
         from ifigure.matplotlib_mod.axis3d_mod import XAxis, YAxis, ZAxis
         self.xaxis.__class__ = XAxis
         self.yaxis.__class__ = YAxis
