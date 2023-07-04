@@ -3,7 +3,6 @@
 matplotlib >= 3.6.2
 hgapi
 PyOpenGL
-PyOpenGL-accelerate
 netCDF4
 h5py
 PyPDF2

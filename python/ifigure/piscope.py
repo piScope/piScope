@@ -92,6 +92,7 @@ def piscope():
                 print('-h               : show this help')
                 print('-g               : turn off gl')
                 print('-w               : warning on')
+                print('-ww              : warning on (error)')
                 print('-l <path>        : file to commnicate with launcher ')
                 sys.exit()
             elif p == '-s':
@@ -129,6 +130,9 @@ def piscope():
             elif p == '-w':
                 warnings.simplefilter('always')
                 print('debug mode (warning is on)')
+            elif p == '-ww':
+                warnings.simplefilter('error')
+                print('debug mode (warning cuases error)')
             else:
                 if rflag:
                     if len(p) > 0:
