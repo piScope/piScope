@@ -2030,6 +2030,8 @@ class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
 
     def add_current_to_history(self):
         v = self.GetValue()
+        if len(v.strip()) == 0:
+            return
         if (v not in self._key_history_st1 and
                 v not in self._key_history_st2):
             self._key_history_st1.append(v)
@@ -3992,6 +3994,7 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
+
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4807,6 +4810,11 @@ class EditListCore(object):
         for w, txt in self.widgets:
             v.append(w.GetValue())
         return v
+
+    def AddCurrentToHistory(self):
+        for w, txt in self.widgets:
+            if hasattr(w, "add_current_to_history"):
+                w.add_current_to_history()
 
     def SetValue(self, value):
         if value is None:
