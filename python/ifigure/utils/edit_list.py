@@ -58,17 +58,20 @@ def call_send_event(obj, evt):
     elif hasattr(obj.GetParent().GetParent(), "send_event"):
         obj.GetParent().GetParent().send_event(obj, evt)
 
+
 def call_send_changing_event(obj, evt):
     if hasattr(obj.GetParent(), "send_changing_event"):
         obj.GetParent().send_changing_event(obj, evt)
     elif hasattr(obj.GetParent().GetParent(), "send_changing_event"):
         obj.GetParent().GetParent().send_changing_event(obj, evt)
 
+
 def call_send_setfocus_event(obj, evt):
     if hasattr(obj.GetParent(), "send_setfocus_event"):
         obj.GetParent().send_setfocus_event(obj, evt)
     elif hasattr(obj.GetParent().GetParent(), "send_setfocus_event"):
         obj.GetParent().GetParent().send_setfocus_event(obj, evt)
+
 
 class EditListEvent(wx.PyCommandEvent):
     """
@@ -225,7 +228,7 @@ class FunctionButton(wx.Button):
             if hasattr(self._handler_obj, self._handler):
                 _handler = getattr(self._handler_obj, self._handler)
             else:
-                _hander = None
+                _handler = None
         else:
             _handler = self._handler
         if _handler is not None:
@@ -1910,31 +1913,36 @@ class TextCtrlCopyPasteEval(TextCtrlCopyPaste):
             val = None
         return txt, val
 
+
 class TextCtrHistoryPopup(wx.Menu):
     def __init__(self, parent):
         super(TextCtrHistoryPopup, self).__init__()
         self.parent = parent
         menus = []
         if self.parent.CanCut():
-            menus.append(('Cut', self.parent.Cut, None))
+            menus.append(('Cut', self.parent.onCut, None))
         else:
-            menus.append(('-Cut', self.parent.Cut, None))
+            menus.append(('-Cut', self.parent.onCut, None))
 
         if self.parent.CanCopy():
-            menus.append(('Copy', self.parent.Copy, None))
+            menus.append(('Copy', self.parent.onCopy, None))
         else:
-            menus.append(('-Copy', self.parent.Copy, None))
+            menus.append(('-Copy', self.parent.onCopy, None))
 
         if self.parent.CanPaste():
-            menus.append(('Paste', self.parent.Paste, None))
+            menus.append(('Paste', self.parent.onPaste, None))
         else:
-            menus.append(('-Paste', self.parent.Paste, None))
+            menus.append(('-Paste', self.parent.onPaste, None))
+
+        menus.append(('Delete', self.parent.onDelete, None))
+        menus.append(('---', None, None))
+        menus.append(('Select All ', self.parent.onSelectAll, None))
 
         hist = (self.parent._key_history_st1 +
                 list(reversed(self.parent._key_history_st2)))
 
         if len(hist) > 0:
-            menus.append(('---', None, None))            
+            menus.append(('---', None, None))
             menus.append(('+History', None, None))
             for i in range(len(hist)):
                 def func(evt, idx=i, parent=self.parent, hist=hist):
@@ -1954,17 +1962,34 @@ class TextCtrHistoryPopup(wx.Menu):
 
         cbook.BuildPopUpMenu(self, menus)
 
+
 class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
     '''
     TextControlWithHistory
     '''
 
     def __init__(self, *args, **kargs):
-        TextCtrlCopyPasteGeneric.__init__(self, *args, **kargs)
+        TextCtrlCopyPaste.__init__(self, *args, **kargs)
         self._key_history_st1 = []
         self._key_history_st2 = []
         #self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
         self.Bind(wx.EVT_CONTEXT_MENU, self.onContext)
+
+    def onCopy(self, evt):
+        self.Copy()
+
+    def onPaste(self, evt):
+        self.Paste()
+
+    def onCut(self, evt):
+        self.Cut()
+
+    def onDelete(self, evt):
+        st, et = self.GetSelection()
+        self.Remove(st, et)
+
+    def onSelectAll(self, evt):
+        self.SelectAll()
 
     def onContext(self, evt):
         m = TextCtrHistoryPopup(self)
@@ -2000,11 +2025,15 @@ class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
         return TextCtrlCopyPaste.onKeyPressed(self, event)
 
     def onEnter(self, evt):
-        v = self.GetValue()
-        if (v not in  self._key_history_st1 and
-            v not in  self._key_history_st2):
-            self._key_history_st1.append(v)
+        self.add_current_to_history()
         TextCtrlCopyPaste.onEnter(self, evt)
+
+    def add_current_to_history(self):
+        v = self.GetValue()
+        if (v not in self._key_history_st1 and
+                v not in self._key_history_st2):
+            self._key_history_st1.append(v)
+
 
 class TextCtrlCopyPasteGeneric(TextCtrlCopyPaste):
     '''
@@ -3963,7 +3992,6 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
-
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4239,8 +4267,8 @@ class EditListCore(object):
                     setting = {}
                 noexpand = setting.pop('noexpand', False)
                 w = TextCtrlCopyPasteHistory(parent[-1], wx.ID_ANY, '',
-                                      style=wx.TE_PROCESS_ENTER,
-                                      **setting)
+                                             style=wx.TE_PROCESS_ENTER,
+                                             **setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
                 self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
