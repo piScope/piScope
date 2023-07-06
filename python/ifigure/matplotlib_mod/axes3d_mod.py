@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from distutils.version import LooseVersion
+from packaging import version
 
 from ifigure.matplotlib_mod.canvas_common import camera_distance
 
@@ -236,7 +236,7 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip = kargs.pop('use_clip', 1)
 
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("3.4"):
+        if version.parse(matplotlib.__version__) >= version.parse("3.4"):
             kargs['auto_add_to_figure'] = False
             super(Axes3DMod, self).__init__(*args, **kargs)
             args[0].add_axes(self)

@@ -10,7 +10,8 @@ import array
 import gc
 import traceback
 import platform
-from distutils.version import LooseVersion
+
+from packaging import version
 
 from ctypes import sizeof, c_float, c_void_p, c_uint, string_at
 
@@ -46,7 +47,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
     def __init__(self, parent):
         self.init = False
         
-        if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
+        if version.parse(wx.__version__) >= version.parse('4.1'):
             dispAttrs = wx.glcanvas.GLAttributes()
 
             if platform.system() == 'Darwin':
@@ -67,7 +68,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glcanvas.GLCanvas.__init__(self, parent, -1, attribs)
             
         if MyGLCanvas.context is None:
-            if LooseVersion(wx.__version__) >= LooseVersion('4.1'):
+            if version.parse(wx.__version__) >= version.parse('4.1'):
                 ctxAttrs = wx.glcanvas.GLContextAttrs()
                 if platform.system() == 'Darwin':
                     ctxAttrs.CoreProfile().OGLVersion(4, 1).Robust().ResetIsolation().EndList()
