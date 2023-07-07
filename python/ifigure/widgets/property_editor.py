@@ -73,7 +73,7 @@ class property_editor(wx.Panel):
     @property
     def parent(self):
         return self.GetParent()
-    
+
     def set_sizehint(self):
         if (property_editor.screen_width == None
                 or property_editor.screen_width == 0):
@@ -166,6 +166,10 @@ class property_editor(wx.Panel):
         self.OnPaneChanged()
         self._panel_shown_flag[0] = True
 
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            self.GetTopLevelParent().deffered_force_layout()
+
     def ToggleAxes(self, e):
         obj = e.GetEventObject()
         isPressed = obj.GetValue()
@@ -184,15 +188,19 @@ class property_editor(wx.Panel):
             self.b2.SetValue(True)
         self.CP2.GetSizer().Layout()
 
-        # set selected axes to panel 
+        # set selected axes to panel
         canvas = self.get_canvas()
         ax = canvas.axes_selection()
         self.CP2.set_axes(ax)
- 
+
         self.CP2.update_panel()
         self.OnPaneChanged()
         self.CP2.Layout()
         self._panel_shown_flag[1] = True
+
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            self.GetTopLevelParent().deffered_force_layout()
 
     def ToggleSection(self, e):
         obj = e.GetEventObject()
@@ -214,6 +222,10 @@ class property_editor(wx.Panel):
         self.CP3.update_panel()
         self.OnPaneChanged()
         self._panel_shown_flag[2] = True
+
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            self.GetTopLevelParent().deffered_force_layout()
 
     def hndl_event(self, event):
         if event.GetEventObject() is self.CP1:

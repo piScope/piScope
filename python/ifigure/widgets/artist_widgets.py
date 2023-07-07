@@ -530,6 +530,8 @@ class artist_panel(wx.Panel):
         self.elp = [None]*len(self.list)
         if (self.tab[0]) != '':
             nb = wx.Notebook(self)
+            self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
+
         else:
             nb = wx.Panel(self, wx.ID_ANY)
             nb.SetSizer(wx.BoxSizer(wx.VERTICAL))
@@ -714,6 +716,12 @@ class artist_panel(wx.Panel):
 
     def adjust_elp(self, artist):
         pass
+
+    def onNBChanged(self, evt):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            self.GetTopLevelParent().deffered_force_layout()
+        evt.Skip()
 
 
 class artist_image_widget(artist_panel, base_artist_widget):
@@ -1492,7 +1500,7 @@ class panel2(artist_widgets):
                     self.mode].get_selected_page_text()
 
             self.update_panel()
-            
+
     def set_axes(self, ax):
         if ax is None:
             self.ax = None
@@ -1500,7 +1508,7 @@ class panel2(artist_widgets):
         else:
             self.ax = weakref.ref(ax)
             self.enable(True)
-        
+
     def onEL_Changed(self, evt):
         actions, name = evt.artist_panel.set_artist_property(evt)
         if actions is None:

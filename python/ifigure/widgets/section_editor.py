@@ -67,6 +67,8 @@ class section_editor(wx.Panel):
 
         notebook = wx.Notebook(self)
 
+        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onNBChanged)
+
         # nb1=wx.Panel(notebook)
         nb1 = SP(notebook)
         nb1.SetScrollRate(0, 5)
@@ -81,7 +83,7 @@ class section_editor(wx.Panel):
         self.st1 = wx.StaticText(nb1, label="Axis Margin")
         self.sl_margin = MarginWidget(nb1)
         minisizer.Add(self.st1, 0, wx.ALL, 2)
-        minisizer.Add(self.sl_margin, 0, wx.ALL | wx.EXPAND , 1)
+        minisizer.Add(self.sl_margin, 0, wx.ALL | wx.EXPAND, 1)
         self.st2 = wx.StaticText(nb1, label="Page Margin ")
         self.sl_marginp = MarginpWidget(nb1)
         minisizer.Add(self.st2, 0, wx.ALL, 2)
@@ -382,3 +384,10 @@ class section_editor(wx.Panel):
 
     def onTD_Replace(self, evt):
         pass
+
+    def onNBChanged(self, evt):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            self.GetTopLevelParent().deffered_force_layout()
+
+        evt.Skip()
