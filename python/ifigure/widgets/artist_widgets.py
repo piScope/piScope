@@ -1393,7 +1393,7 @@ class panel1(artist_widgets):
     def onEL_Changed(self, evt):
         tw = wx.GetApp().TopWindow
         if tw.appearanceconfig.setting['generate_more_refresh']:
-            wx.CallAfter(self.Refresh)
+            wx.CallAfter(self.Update)
 
         actions, name = evt.artist_panel.set_artist_property(evt)
         if actions is None:
@@ -1516,7 +1516,7 @@ class panel2(artist_widgets):
     def onEL_Changed(self, evt):
         tw = wx.GetApp().TopWindow
         if tw.appearanceconfig.setting['generate_more_refresh']:
-            wx.CallAfter(self.Refresh)
+            wx.CallAfter(self.Update)
 
         actions, name = evt.artist_panel.set_artist_property(evt)
         if actions is None:

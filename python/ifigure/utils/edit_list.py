@@ -1656,7 +1656,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
     def onKeyPressed(self, event):
         tw = wx.GetApp().TopWindow
         if tw.appearanceconfig.setting['generate_more_refresh']:
-            wx.CallAfter(self.Refresh)
+            wx.CallAfter(self.Update)
 
         key = event.GetKeyCode()
         if hasattr(event, 'RawControlDown'):
