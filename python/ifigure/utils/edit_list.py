@@ -121,6 +121,8 @@ class Panel0(wx.Panel):
 
 class CollapsiblePane0(wx.CollapsiblePane):
     def __init__(self, *args, **kwargs):
+        self._keepwidth = kwargs.pop("keepwidth", False)
+
         wx.CollapsiblePane.__init__(self, *args, **kwargs)
         self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, self.onCPChanged)
 
@@ -128,6 +130,8 @@ class CollapsiblePane0(wx.CollapsiblePane):
         self._def_size = 20
 
     def onCPChanged(self, evt):
+        tpx, tpy = self.GetTopLevelParent().GetSize()
+        px, py = self.GetParent().GetSize()
         p = self.GetPane()
         ysize = p.GetSizer().GetMinSize()[1]
 
@@ -138,6 +142,10 @@ class CollapsiblePane0(wx.CollapsiblePane):
             p.SetSize(mysize)
             p.GetParent().SetSize(mypsize)
 
+            self.GetParent().SetSize((px, py-ysize))
+            if self._keepwidth:
+                self.GetTopLevelParent().SetSize((tpx, tpy-ysize))
+
         else:
             mysize = (p.Size[0], ysize)
             mypsize = (p.Size[0], p.GetParent().Size[1] + ysize)
@@ -146,6 +154,13 @@ class CollapsiblePane0(wx.CollapsiblePane):
 
             p.SetSize(mysize)
             p.GetParent().SetSize(mypsize)
+
+            self.GetParent().SetSize((px, py+ysize))
+            if self._keepwidth:
+                self.GetTopLevelParent().SetSize((tpx, tpy+ysize))
+
+        self.GetParent().Layout()
+        self.GetTopLevelParent().Layout()
 
     def send_event(self, obj, evt):
         self.GetParent().send_event(obj, evt)
@@ -3998,7 +4013,6 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
-
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4144,11 +4158,14 @@ class EditListCore(object):
             return 0, sizer
 
         def add_newcollapsiblepane(label, setting):
-            if setting["no_tlw_resize"]:
-                kwargs = {"style": wx.CP_NO_TLW_RESIZE}
-            cp = CollapsiblePane0(self, wx.ID_ANY, label=label, **kwargs)
+            kwargs = {}
+            if setting.pop("no_tlw_resize", True):
+                kwargs["style"] = wx.CP_NO_TLW_RESIZE
+            keepwidth = setting.pop("tlb_resize_samewidth", False)
+            cp = CollapsiblePane0(self, wx.ID_ANY, label=label,
+                                  keepwidth=keepwidth,
+                                  **kwargs)
             sizer0.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
-
             p = cp.GetPane()
             sizer = wx.GridBagSizer()
             bsizers.append(sizer)
