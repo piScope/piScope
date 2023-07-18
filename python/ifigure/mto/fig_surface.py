@@ -12,10 +12,12 @@ from ifigure.utils.cbook import ProcessKeywords, LoadImageFile, isdynamic
 from matplotlib.tri import Triangulation
 from ifigure.matplotlib_mod.triplot_mod import triplot
 from ifigure.utils.args_parser import ArgsParser
-from matplotlib import cm
 from matplotlib.colors import Normalize, colorConverter, LightSource, Colormap
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import ColorConverter
+
+from ifigure.mto.axis_param import get_cmap
+
 cc = ColorConverter()
 
 
@@ -224,7 +226,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
         if (not 'color' in kywds and
                 not 'facecolors' in kywds):
             cmap = self.get_cmap()
-            kywds['cmap'] = cm.get_cmap(cmap)
+            kywds['cmap'] = get_cmap(cmap)
 
         # if self.getp('alpha') is not None else 1
         kywds['alpha'] = self.getp('alpha')
@@ -370,7 +372,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
 #   Setter/Getter
 #
     def set_cmap(self, value, a):
-        a.set_cmap(cm.get_cmap(value))
+        a.set_cmap(et_cmap(value))
         self.setp('cmap', value)
         ca = self.get_caxisparam()
         ca.set_cmap(value)
@@ -722,7 +724,7 @@ class FigRevolve(FigSurface):
         if (not 'color' in kywds and
                 not 'facecolors' in kywds):
             cmap = self.get_cmap()
-            kywds['cmap'] = cm.get_cmap(cmap)
+            kywds['cmap'] = get_cmap(cmap)
 
         kywds['shade'] = self.getvar('shade')
         # if self.getp('alpha') is not None else 1

@@ -1,5 +1,5 @@
 import weakref
-from matplotlib.cm import ScalarMappable, get_cmap
+from matplotlib.cm import ScalarMappable
 from matplotlib.colors import LogNorm, Normalize, Colormap, SymLogNorm
 import ifigure
 from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
@@ -13,6 +13,11 @@ def _to_float(value):
     if hasattr(value, 'real'):
         return value.real
     return float(value)
+
+
+def get_cmap(name, param=256):
+    from matplotlib import colormaps
+    return colormaps[name].resampled(param)
 
 class Memberholder(object):
     def __init__(self):
