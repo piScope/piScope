@@ -1689,7 +1689,9 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                 self.SetSelection(a, b)
             else:
                 self.SetInsertionPoint(self.GetInsertionPoint()-1)
-        if key == wx.WXK_RIGHT:
+            return
+        
+        elif key == wx.WXK_RIGHT:
             if shiftDown:
                 a, b = self.GetSelection()
                 if b != self.GetLastPosition():
@@ -1697,67 +1699,73 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                 self.SetSelection(a, b)
             else:
                 self.SetInsertionPoint(self.GetInsertionPoint()+1)
-
-        if key > 127:
             return
 
-        if key == 67 and controlDown:  # ctrl + C (copy)
+        elif key > 127:
+            return
+
+        elif key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
             return
-        if key == 87 and controlDown:  # ctrl + X (cut)
+        elif key == 87 and controlDown:  # ctrl + X (cut)
             self.Cut()
-            return
-        if key == 88 and controlDown:  # ctrl + W (cut)
+
+        elif key == 88 and controlDown:  # ctrl + W (cut)
             self.Cut()
-            return
-        if key == 86 and controlDown:  # ctrl + V (paste)
+
+        elif key == 86 and controlDown:  # ctrl + V (paste)
             self.Paste()
-            return
-        if key == 89 and controlDown:  # ctrl + Y (paste)
+
+        elif key == 89 and controlDown:  # ctrl + Y (paste)
             self.Paste()
-            return
-        if key == 70 and controlDown:  # ctrl + F
+
+        elif key == 70 and controlDown:  # ctrl + F
             self.SetInsertionPoint(self.GetInsertionPoint()+1)
             return
-        if key == 66 and controlDown:  # ctrl + B
+        elif key == 66 and controlDown:  # ctrl + B
             self.SetInsertionPoint(self.GetInsertionPoint()-1)
             return
-        if key == 65 and controlDown:  # ctrl + A (beginning)
+        elif key == 65 and controlDown:  # ctrl + A (beginning)
             # print 'move to front'
             self.SetInsertionPoint(0)
             self.SetSelection(0, 0)
             return
-        if key == 69 and controlDown:  # ctrl + E
+        elif key == 69 and controlDown:  # ctrl + E
             self.SetInsertionPoint(self.GetLastPosition())
             return
-        if key == 75 and controlDown:  # ctrl + K
+        elif key == 75 and controlDown:  # ctrl + K
             ### works only for single line ###
             self.SetSelection(self.GetInsertionPoint(),
                               self.GetLastPosition())
             self.Cut()
-            return
-        if key == wx.WXK_BACK:
+        else:
+            pass
+
+        '''
+        ### these two are not necessary sinse event.skip will handle it ###
+        elif key == wx.WXK_BACK:
             ### works only for single line ###
             a, b = self.GetSelection()
             if a != b:
                 self.Remove(a, b)
-                return
+                #return
             else:
                 ptx = self.GetInsertionPoint()
                 if ptx > 0:
                     self.Remove(ptx-1, ptx)
-                return
-        if key == wx.WXK_DELETE:
+                #return
+        elif key == wx.WXK_DELETE:
             ### works only for single line ###
             a, b = self.GetSelection()
             if a != b:
                 self.Remove(a, b)
-                return
+                #return
             else:
                 ptx = self.GetInsertionPoint()
                 if ptx < self.GetLastPosition():
                     self.Remove(ptx, ptx+1)
-                return
+                #return
+        '''
 
         event.Skip()
 
