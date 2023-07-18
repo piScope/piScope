@@ -182,9 +182,8 @@ def message(parent=None, message='', title='', style=0,
     if style == 5:
         style0 = wx.YES | wx.NO | wx.CANCEL
 
-    from wx.lib.agw.genericmessagedialog import GenericMessageDialog as dia
-#    from wx.lib.agw.genericmessagedialog import GMD_USE_AQUABUTTONS as g
-#    from wx import MessageDialog as dia
+#    from wx.lib.agw.genericmessagedialog import GenericMessageDialog as dia
+    from wx import MessageDialog as dia
     style0 = style0 | icon
 
     dlg = dia(parent,
