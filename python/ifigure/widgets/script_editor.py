@@ -1277,6 +1277,7 @@ class ScriptEditor(wx.Panel):
         self.nb_panel = PanelWithFindPanel(self.sp)
         self.nb = Notebook(self.nb_panel,
                            style=(aui.AUI_NB_DEFAULT_STYLE |
+                                  aui.AUI_NB_CLOSE_ON_ACTIVE_TAB |
                                   aui.AUI_NB_WINDOWLIST_BUTTON),)
 
         self.nb_panel.GetSizer().Add(self.nb, 1, wx.ALL | wx.EXPAND)

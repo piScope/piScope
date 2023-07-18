@@ -2150,7 +2150,9 @@ class TopTreeDict(TreeDict):
         self.setvar("filename", filename)
 #         if old_wdir != d:
 #              self._delete_tempdir(old_wdir)
-        open(os.path.join(d, '.filename'), 'w').write(filename)
+        fid = open(os.path.join(d, '.filename'), 'w')
+        fid.write(filename)
+        fid.close()
         print("done....(save)")
 
         from ifigure.utils.mp_tarzip import MPTarzip

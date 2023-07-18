@@ -8,14 +8,15 @@ def piscope():
     import weakref
     import matplotlib
     import shutil
-    
+    import warnings
+
     import platform
     if platform.system() == 'Darwin':
-       mp.set_start_method('spawn')
+        mp.set_start_method('spawn')
     else:
-       if 'forkserver' in mp.get_all_start_methods():
-           mp.set_start_method('forkserver')
-           
+        if 'forkserver' in mp.get_all_start_methods():
+            mp.set_start_method('forkserver')
+
     matplotlib.use('WXAGG')
 
     wx.UpdateUIEvent.SetMode(wx.UPDATE_UI_PROCESS_SPECIFIED)
@@ -90,6 +91,8 @@ def piscope():
                 print('-r <command>     : run command')
                 print('-h               : show this help')
                 print('-g               : turn off gl')
+                print('-w               : warning on')
+                print('-ww              : warning on (error)')
                 print('-l <path>        : file to commnicate with launcher ')
                 sys.exit()
             elif p == '-s':
@@ -124,6 +127,12 @@ def piscope():
                 lflag = True
             elif p == '-g':
                 use_gl = False
+            elif p == '-w':
+                warnings.simplefilter('always')
+                print('debug mode (warning is on)')
+            elif p == '-ww':
+                warnings.simplefilter('error')
+                print('debug mode (warning cuases error)')
             else:
                 if rflag:
                     if len(p) > 0:
@@ -247,9 +256,9 @@ def piscope():
 
     from ifigure.widgets.taskbar import TaskBarIcon
     tbicon = TaskBarIcon()
-    
+
     app.MainLoop()
-    
+
     server = ifigure.server.Server()
     if server.info()[0]:
         server.stop()

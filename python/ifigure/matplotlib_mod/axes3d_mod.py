@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from distutils.version import LooseVersion
+from packaging import version
 
 from ifigure.matplotlib_mod.canvas_common import camera_distance
 
@@ -236,7 +236,7 @@ class Axes3DMod(Axes3D):
         self._use_frustum = kargs.pop('use_frustum', True)
         self._use_clip = kargs.pop('use_clip', 1)
 
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("3.4"):
+        if version.parse(matplotlib.__version__) >= version.parse("3.4"):
             kargs['auto_add_to_figure'] = False
             super(Axes3DMod, self).__init__(*args, **kargs)
             args[0].add_axes(self)
@@ -258,6 +258,8 @@ class Axes3DMod(Axes3D):
         self._pan_btn = []
         self._rotate_btn = []
         self._drag_mode = ''
+
+        self._sx, self._sy = 0, 0
 
         from ifigure.matplotlib_mod.axis3d_mod import XAxis, YAxis, ZAxis
         self.xaxis.__class__ = XAxis
@@ -610,10 +612,10 @@ class Axes3DMod(Axes3D):
         if x is None:
             return
 
-        dx, dy = x - self.sx, y - self.sy
+        dx, dy = x - self._sx, y - self._sy
         w = self._pseudo_w
         h = self._pseudo_h
-        self.sx, self.sy = x, y
+        self._sx, self._sy = x, y
 
         # Rotation
         if self.button_pressed in self._rotate_btn:
@@ -1241,11 +1243,11 @@ class Axes3DMod(Axes3D):
         return a
 
     def rotate_view_90deg(self, flip=False):
-        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
+        self._vvec = self._vvec / np.sqrt(np.sum(self._vvec**2))
         if flip:
-            M = rotation_mat(self.vvec, np.pi / 2)
+            M = rotation_mat(self._vvec, np.pi / 2)
         else:
-            M = rotation_mat(self.vvec, -np.pi / 2)
+            M = rotation_mat(self._vvec, -np.pi / 2)
         self._upvec = np.dot(M, self._upvec)
 
     def get_proj2(self):
@@ -1272,9 +1274,9 @@ class Axes3DMod(Axes3D):
         zp = R[2] + np.sin(relev) * self.dist
         E = np.array((xp, yp, zp))
 
-        self.eye = E
-        self.vvec = R - E
-        self.vvec = self.vvec / np.sqrt(np.sum(self.vvec**2))
+        #self.eye = E
+        self._vvec = R - E
+        self._vvec = self._vvec / np.sqrt(np.sum(self._vvec**2))
 
         if abs(relev) > np.pi / 2:
             V = np.array((0, 0, -1))

@@ -395,7 +395,7 @@ def isBinary(filename):
     File is considered to be binary if it contains a NULL byte.
     (This approach incorrectly reports UTF-16 as binary.)
     """
-    if six.PY2:    
+    if six.PY2:
         with open(filename, 'rb') as f:
             for block in f:
                 if '\0' in block:
@@ -405,7 +405,7 @@ def isBinary(filename):
             for block in f:
                 if b'\0' in block:
                     return True
-                
+
     return False
 
 
@@ -811,7 +811,11 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             isTop = False
         else:
             isTop = False
-            if s[0] == '-':
+            escape = False
+            if s[0] == "\\":
+                escape = True
+                mmi = wx.MenuItem(base, id, s[1:])
+            elif s[0] == '-':
                 mmi = wx.MenuItem(base, id, s[1:])
             elif s[0] == '*':
                 mmi = wx.MenuItem(base, id, s[1:], kind=wx.ITEM_CHECK)
@@ -822,10 +826,11 @@ def BuildPopUpMenu(base, menus, eventobj=None,
             if bmp is not None:
                 mmi.SetBitmap(bmp)
             menu_AppendItem(base, mmi)
-            if s[0] == '^':
-                mmi.Check(True)
-            if s[0] == '-':
-                mmi.Enable(False)
+            if not escape:
+                if s[0] == '^':
+                    mmi.Check(True)
+                if s[0] == '-':
+                    mmi.Enable(False)
 
             def func(evt, handler=h, obj=eventobj, extra=i,
                      xy=xy, xydata=xydata):
@@ -920,15 +925,18 @@ def isiterable(obj):
         return False
     return True
 
+
 def isiterable_not_string(obj):
     return hasattr(obj, '__iter__') and not isinstance(obj, str)
-    
+
+
 def isstringlike(x):
     if six.PY2:
         return (isinstance(x, str) or isinstance(x, unicode))
     else:
         return isinstance(x, str)
-    
+
+
 def nd_iter(x):
     if x.size:
         return x
@@ -988,12 +996,14 @@ def LoadScriptFile(file):
         if not line:
             break
         txt = txt+line
+    f.close()
+
     try:
         code = compile(txt, file, 'exec')
     except:
         print(traceback.format_exc())
         raise
-    f.close()
+
     return txt, code, mtime
 
 

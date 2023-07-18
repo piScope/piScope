@@ -5,7 +5,7 @@
 from matplotlib.cbook import ls_mapper
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
-from matplotlib.tri.triangulation import Triangulation
+from matplotlib.tri import Triangulation
 import numpy as np
 
 

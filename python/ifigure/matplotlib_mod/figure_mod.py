@@ -223,7 +223,12 @@ class FigureMod(Figure):
         renderer.close_group('figure')
         #self._cachedRenderer = renderer
         renderer = self.canvas.get_renderer()
-        self.canvas.draw_event(renderer)
+        #self.canvas.draw_event(renderer)
+
+        from matplotlib.backend_bases import DrawEvent
+        self.canvas.callbacks.process("draw_event",
+                                      DrawEvent("draw_from_bitmap", self.canvas,
+                                                renderer))
 
     def draw(self, renderer):
         """

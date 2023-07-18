@@ -1,5 +1,5 @@
 import weakref
-from matplotlib.cm import ScalarMappable, get_cmap
+from matplotlib.cm import ScalarMappable
 from matplotlib.colors import LogNorm, Normalize, Colormap, SymLogNorm
 import ifigure
 from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
@@ -9,6 +9,15 @@ from ifigure.ifigure_config import isMPL33
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('AxisParam')
 
+def _to_float(value):
+    if hasattr(value, 'real'):
+        return value.real
+    return float(value)
+
+
+def get_cmap(name, param=256):
+    from matplotlib import colormaps
+    return colormaps[name].resampled(param)
 
 class Memberholder(object):
     def __init__(self):
@@ -104,15 +113,15 @@ class AxisRangeParam(Memberholder):
         self.symloglin = value[4]
         self.symloglinscale = value[5]
         self.scale = value[3]
-        #self.range = value[2][0]
-        self.range = [value[2][0], value[2][1]]
+
+        self.range = [_to_float(value[2][0]), _to_float(value[2][1])]
 
     def set_artist_rangeparam(self,
                               set_scale=None,
                               set_auto=None,
                               set_lim=None,
                               set_ticks=None):
-        set_lim(self.range)
+
         set_auto(False)
         suffix = self.name
         if self.scale == 'log':
@@ -133,7 +142,9 @@ class AxisRangeParam(Memberholder):
             kargs = {}
 
         set_scale(self.scale, **kargs)
-        set_lim(self.range)
+
+        r = (_to_float(self.range[0]), _to_float(self.range[1]))
+        set_lim(r)
 
     def make_save_data(self, ax):
         names = ("name", "base", "auto", "range", "scale", "cmap",

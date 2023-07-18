@@ -411,6 +411,10 @@ class navibar(ButtonPanel):
         self.OnButton(evt, btask)
 
     def OnButton(self, evt, btask):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            wx.CallAfter(self.Update)
+        
         frame = cbook.FindFrame(self)
         btnl = [x for x in self.allbinfo if x.btask == btask][0]
         #        btnl = evt.GetEventObject()
@@ -528,6 +532,10 @@ class navibar(ButtonPanel):
         return self.p0.index(self.p0.get_btn('pmode'))
 
     def SetAMode(self):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            wx.CallAfter(self.Update)
+        
         if self.rotmode:
             self.rotmode = False
             self.GetParent().set_3dzoom_mode(False)
@@ -554,6 +562,10 @@ class navibar(ButtonPanel):
         self.GetParent().canvas.SetCursor(sc)
 
     def SetPMode(self, skip_sc=False):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            wx.CallAfter(self.Update)
+        
         if self.rotmode:
             self.rotmode = False
             self.GetParent().set_3dzoom_mode(False)
@@ -575,6 +587,10 @@ class navibar(ButtonPanel):
         self.GetParent()._show_cursor = False
 
     def SetSelect(self, skip_sc=False):
+        tw = wx.GetApp().TopWindow
+        if tw.appearanceconfig.setting['generate_more_refresh']:
+            wx.CallAfter(self.Update)
+        
         if self.rotmode:
             self.rotmode = False
             self.GetParent().set_3dzoom_mode(False)
