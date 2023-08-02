@@ -44,7 +44,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
     if not glcanvas._hittest_map_update:
         glcanvas._no_hl = False
         id_dict = glcanvas.draw_mpl_artists(tag)
-        im = glcanvas.read_data(tag)        
+        im = glcanvas.read_data(tag)
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
@@ -65,7 +65,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         glcanvas._hittest_map_update = False
         id_dict = glcanvas.draw_mpl_artists(tag)
         im = glcanvas.read_data(tag)
-        
+
         glcanvas._hittest_map_update = True
 
         gc = renderer.new_gc()
@@ -107,6 +107,8 @@ def draw_wrap(func):
             gc.restore()
         else:
             return func(self, renderer)
+
+    func_wrap._supports_rasterization = True  # suppress user warning
     return func_wrap
 
 
@@ -130,11 +132,11 @@ class ArtGL(object):
         self._gl_marker_tex = weakref.WeakKeyDictionary()
         self._gl_isLast = False  # an aritst which should be drawn last
         self._gl_always_noclip = False  # used for axis
-        self._gl_isArrow = False  # used for axis        
+        self._gl_isArrow = False  # used for axis
         self._gl_repr_name = ''
 
         # MPL3.6.1 and after this is not used and not defined.
-        self._offset_position = [0,0,0]
+        self._offset_position = [0, 0, 0]
 
     def get_gl_arrayid_hit(self):
         return self._gl_hit_array_id
@@ -161,7 +163,7 @@ class ArtGL(object):
 
         if check:
             shift_down = evt.guiEvent.ShiftDown()
-            
+
             self._gl_hit_array_id_new = self._gl_hit_array_id.copy()
             if int(array_id) in self._gl_hit_array_id:
                 self._gl_hit_array_id_new.remove(int(array_id))
@@ -170,7 +172,7 @@ class ArtGL(object):
                     self._gl_hit_array_id_new.append(int(array_id))
                 else:
                     self._gl_hit_array_id_new = [int(array_id)]
-            #self.mask_array_idx()
+            # self.mask_array_idx()
             return True, {'child_artist': self}
         return False, {}
 
@@ -178,17 +180,17 @@ class ArtGL(object):
         self._gl_hl = False
         if len(self._gl_hit_array_id) > 0:
             self._gl_hit_array_id = []
-            self._gl_hit_array_id_new = []            
+            self._gl_hit_array_id_new = []
             self.mask_array_idx()
 
     def mask_array_idx(self, shift_down=True):
         if self._gl_array_idx is not None:
             if (not shift_down and len(self._gl_hit_array_id) > 0):
-                #any([not x in self._gl_hit_array_id  for x in self._gl_hit_array_id_new])):
+                # any([not x in self._gl_hit_array_id  for x in self._gl_hit_array_id_new])):
                 # if not shift-donw. already_selected, and all new selected is not in already_selected
                 self.unselect_gl_artist()
                 return
-            
+
             array_idx = np.abs(self._gl_array_idx)
             mask = np.isin(array_idx, self._gl_hit_array_id_new)
             array_idx[mask] *= -1
@@ -233,17 +235,22 @@ class ArtGL(object):
         self._gl_hl = True
         return []
 
-    ## we need a comparision operator defined for PY3
+    # we need a comparision operator defined for PY3
     def __gt__(self, other):
         return False
+
     def __ge__(self, other):
-         return False
+        return False
+
     def __le__(self, other):
         return False
+
     def __lt__(self, other):
         return False
+
     def get_alpha_float(self):
-        if self.get_alpha() is None: return 1
+        if self.get_alpha() is None:
+            return 1
         return self.get_alpha()
 
     def __repr__(self):
@@ -251,9 +258,11 @@ class ArtGL(object):
             return object.__repr__(self)
         else:
             return self._gl_repr_name
+
     def __str__(self):
         return self.__repr__()
-        
+
+
 class LineGL(ArtGL, Line3D):
     def __init__(self, xdata, ydata, zdata,  **kargs):
         self._invalidz = False
@@ -367,7 +376,7 @@ class LineGL(ArtGL, Line3D):
             self._invalidz = False
             gc = renderer.new_gc()
 
-            from matplotlib.colors import to_rgba            
+            from matplotlib.colors import to_rgba
             ln_color_rgba = to_rgba(self._color, self._alpha)
 
             gc.set_foreground(ln_color_rgba, isRGBA=True)
@@ -427,6 +436,7 @@ def line_3d_to_gl(obj):
     ArtGL.__init__(obj)
     return obj
 
+
 class AxesImageGL(ArtGL, AxesImage):
     def __init__(self, *args, **kargs):
         ArtGL.__init__(self)
@@ -434,7 +444,7 @@ class AxesImageGL(ArtGL, AxesImage):
         self._gl_interp = 'nearest'
         self._gl_rgbacache_id = None
         self._update_im = False
-        
+
     def __repr__(self):
         return 'ImageGL'
 
@@ -456,14 +466,14 @@ class AxesImageGL(ArtGL, AxesImage):
         p = np.array(p)
         x = p[..., 0].flatten()
         y = p[..., 1].flatten()
-        z = p[..., 2].flatten()        
+        z = p[..., 2].flatten()
         self._gl_3dpath = (x, y, z, np.hstack([n]*len(x)),
                            np.arange(len(x)).astype(np.int32))
 
     def set_cmap(self, *args, **kwargs):
         super(AxesImage, self).set_cmap(*args, **kwargs)
         self._gl_rgbacache_id = None
-        
+
     def make_hl_artist(self, container):
         idx = [0, 1, 2, 3]
         x = [self._gl_3dpath[0][k] for k in idx]
@@ -509,8 +519,8 @@ class AxesImageGL(ArtGL, AxesImage):
                 except:
                     # this is for an old version of matplotlib
                     im = self.make_image(renderer.get_image_magnification())
-                idx_none = im[...,3] == 0
-                im[idx_none,0:3] = 255
+                idx_none = im[..., 3] == 0
+                im[idx_none, 0:3] = 255
                 self._im_cache = im
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
@@ -524,7 +534,6 @@ class AxesImageGL(ArtGL, AxesImage):
                                        np.transpose(self._im_cache, (1, 0, 2)),
                                        interp=self._gl_interp,
                                        always_noclip=self._gl_always_noclip)
-
 
                 self._gl_rgbacache_id = id(self._imcache)
                 gc.restore()
@@ -749,7 +758,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         self._update_a = True
 
         Poly3DCollection.__init__(self, *args, **kargs)
-        
+
     def convert_2dpath_to_3dpath(self, z, zdir='z'):
         '''
         convert a path on flat surface
@@ -773,7 +782,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
         if hasattr(self, '_segis'):
             xyzlist = [(txs[si:ei], tys[si:ei], tzs[si:ei])
-                        for si, ei in self._segis]
+                       for si, ei in self._segis]
         else:
             xyzlist = [(txs[sl], tys[sl], tzs[sl]) for sl in
                        self._segslices]
@@ -813,6 +822,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             return 1
         return Poly3DCollection.do_3d_projection(self, renderer)
     '''
+
     def set_cmap(self, *args, **kwargs):
         super(Poly3DCollectionGL, self).set_cmap(*args, **kwargs)
         self._update_fc = True
@@ -887,7 +897,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
 
     def update_scalarmappable(self):
         #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
-        
+
         if self._gl_solid_facecolor is not None:
             f = cc.to_rgba(self._gl_solid_facecolor)
             self._gl_facecolor = np.tile(f, (len(self._gl_3dpath[2]), 1))
@@ -926,9 +936,9 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 self._gl_edgecolor = self.to_rgba(z)
             else:
                 if self._gl_cz is None:
-                     self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
+                    self._gl_edgecolor = self.to_rgba(self._gl_3dpath[2])
                 else:
-                     self._gl_edgecolor = self.to_rgba(self._gl_cz)
+                    self._gl_edgecolor = self.to_rgba(self._gl_cz)
             if self._alpha is not None:
                 if self._gl_edgecolor.ndim == 3:
                     self._gl_edgecolor[:, :, -1] = self._alpha
@@ -942,7 +952,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
     def update_idxset(self, idxset):
         self._gl_3dpath[4] = idxset
         self._update_i = True
-        
+
     def update_edge_idxset(self, idxset):
         self._gl_edge_idx = idxset
         self._update_i = True
@@ -1086,7 +1096,7 @@ class Polygon3DGL(ArtGL, Polygon):
         self._invalidz = True
 
     def do_3d_projection(self):
-#    def do_3d_projection(self, renderer):
+        #    def do_3d_projection(self, renderer):
         # I am not sure what I should return...
         return 1
 
