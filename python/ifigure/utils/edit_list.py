@@ -1690,7 +1690,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             else:
                 self.SetInsertionPoint(self.GetInsertionPoint()-1)
             return
-        
+
         elif key == wx.WXK_RIGHT:
             if shiftDown:
                 a, b = self.GetSelection()
@@ -4021,6 +4021,7 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
+
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4879,6 +4880,11 @@ class EditListCore(object):
 
     def update_label(self, ll):
         i = 0
+
+        # these has to be skipped (relating to collapsable pane
+        ll = [x for x in ll if x[0] is None or not x[0].startswith("->")]
+        ll = [x for x in ll if x[0] is None or not x[0].startswith("<-")]
+
         for w, txt in self.widgets:
             if txt is not None:
                 label = ll[i][0] if ll[i][0] is not None else ""
