@@ -1739,7 +1739,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                               self.GetLastPosition())
             self.Cut()
         else:
-            pass
+            event.Skip()
 
         '''
         ### these two are not necessary sinse event.skip will handle it ###
@@ -1766,9 +1766,6 @@ class TextCtrlCopyPaste(wx.TextCtrl):
                     self.Remove(ptx, ptx+1)
                 #return
         '''
-
-        event.Skip()
-
         if self.changing_event:
             call_send_changing_event(self, event)
 
