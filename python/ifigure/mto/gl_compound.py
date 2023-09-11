@@ -189,7 +189,7 @@ class GLCompound(object):
                                          wait_idle=True, refresh_hl=False)
 
     def canvas_menu(self):
-        if not self.isCompound:
+        if not self.isCompound():
             return []
         m = []
         if not self.get_gl_hl_use_array_idx():

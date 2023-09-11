@@ -1149,6 +1149,10 @@ class FigPlotGL(GLCompound, FigPlot):
         axes._gl_use_rot_center = True
         evt.Skip()
 
+    def canvas_menu(self):
+        m = FigObj.canvas_menu(self)
+        m2 = GLCompound.canvas_menu(self)
+        return m[:1]+m2+m[1:]
 
 def convert_to_FigPlotGL(obj):
     obj.__class__ = FigPlotGL
