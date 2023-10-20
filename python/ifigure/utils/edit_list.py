@@ -19,6 +19,7 @@ from wx import ScrolledWindow as SP
 from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 import ifigure.utils.debug as debug
 import wx
+from wx.richtext import RichTextCtrl, RE_MULTILINE
 import sys
 import six
 import os
@@ -1612,65 +1613,70 @@ class TextDropTarget(wx.TextDropTarget):
         return False
 
 
-class TextCtrlCopyPaste(wx.TextCtrl):
-    def __init__(self, *args, **kargs):
-        self._use_escape = True
-        nlines = 1
-        flag = 0
+def textctrl_mixin_do_init(self, *args, **kargs):
+    self._use_escape = True
+    nlines = 1
+    flag = 0
 
-        if not 'style' in kargs:
-            kargs['style'] = 0
+    if not 'style' in kargs:
+        kargs['style'] = 0
 
-        changing_event = kargs.pop('changing_event', False)
-        setfocus_event = kargs.pop('setfocus_event', False)
-        self._validator = kargs.pop('validator', None)
-        self._validator_param = kargs.pop('validator_param', None)
+    changing_event = kargs.pop('changing_event', False)
+    setfocus_event = kargs.pop('setfocus_event', False)
+    self._validator = kargs.pop('validator', None)
+    self._validator_param = kargs.pop('validator_param', None)
 
-        flag = wx.TE_MULTILINE & kargs['style']
-        if 'nlines' in kargs:
-            nlines = kargs['nlines']
-            del kargs['nlines']
+    flag = wx.TE_MULTILINE & kargs['style']
+    if 'nlines' in kargs:
+        nlines = kargs['nlines']
+        del kargs['nlines']
 
-        if flag == 0:
-            kargs['style'] = kargs['style'] | wx.TE_PROCESS_ENTER
+    if flag == 0:
+        kargs['style'] = kargs['style'] | wx.TE_PROCESS_ENTER
 
-        wx.TextCtrl.__init__(self, *args, **kargs)
+    self._baseclass.__init__(self, *args, **kargs)
 
-        self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
-        #self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
+    self.Bind(wx.EVT_KEY_DOWN, self.onKeyPressed)
+    # self.Bind(wx.EVT_LEFT_DOWN, self.onDragInit)
 
-        if flag == 0:
-            self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
+    if flag == 0:
+        self.Bind(wx.EVT_TEXT_ENTER, self.onEnter)
 
-        dt1 = TextDropTarget(self)
-        self.SetDropTarget(dt1)
-        if len(args) > 2:
-            min_w = max([len(args[2]), 8])
-        else:
-            min_w = 8
-        txt_w = self.Parent.GetTextExtent('A'*min_w)[0]
-        txt_h = self.Size[1] * nlines
-        self.SetMinSize((txt_w, txt_h))
+    dt1 = TextDropTarget(self)
+    self.SetDropTarget(dt1)
+    if len(args) > 2:
+        min_w = max([len(args[2]), 8])
+    else:
+        min_w = 8
+    txt_w = self.Parent.GetTextExtent('A'*min_w)[0]
+    txt_h = self.Size[1] * nlines
+    self.SetMinSize((txt_w, txt_h))
 
-        self.changing_event = changing_event
-        self._send_setfocus_event = False
-        self._value_at_getfocus = ''
-        if setfocus_event:
-            self._send_setfocus_event = True
-        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+    self.changing_event = changing_event
+    self._send_setfocus_event = False
+    self._value_at_getfocus = ''
+    if setfocus_event:
+        self._send_setfocus_event = True
+    self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
+    self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
 
-        self._wxval = None
+    self._wxval = None
 
-    '''
-    def Paste(self):
-        print('paste called')
-        wx.TextCtrl.Paste(self)
-    '''
+
+class _textctrl_mixin():
+    def __init__(self, BaseClass):
+        self.__baseclass = BaseClass
+
+    @property
+    def _baseclass(self):
+        try:
+            return self.__baseclass
+        except BaseException:
+            return wx.TextCtrl
 
     def onKeyPressed(self, event):
         tw = wx.GetApp().TopWindow
-        if tw.appearanceconfig.setting['generate_more_refresh']:
+        if hasattr(tw, "appearanceconfig") and tw.appearanceconfig.setting['generate_more_refresh']:
             wx.CallAfter(self.Update)
 
         key = event.GetKeyCode()
@@ -1680,6 +1686,16 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             controlDown = event.ControlDown()
         shiftDown = event.ShiftDown()
         altDown = event.AltDown()
+
+        def _get_current_line():
+            linelen0 = np.cumsum(
+                [len(x)+1 for x in self.GetValue().split("\n")])
+            linelen1 = [len(x)+1 for x in self.GetValue().split("\n")]
+            ip = self.GetInsertionPoint()
+            for x, y in enumerate(linelen0):
+                if y > ip:
+                    break
+            return x
 
         if key == wx.WXK_LEFT:
             if shiftDown:
@@ -1725,14 +1741,63 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         elif key == 66 and controlDown:  # ctrl + B
             self.SetInsertionPoint(self.GetInsertionPoint()-1)
             return
-        elif key == 65 and controlDown:  # ctrl + A (beginning)
-            # print 'move to front'
-            self.SetInsertionPoint(0)
-            self.SetSelection(0, 0)
+
+        elif key == 80 and controlDown:  # ctrl + P
+            cl = _get_current_line()
+            if cl == 0:
+                return
+            linelen = [len(x)+1 for x in self.GetValue().split("\n")]
+            linest = np.cumsum(
+                [0]+[len(x)+1 for x in self.GetValue().split("\n")])
+            ci = self.GetInsertionPoint()
+            pp = ci - linest[cl]
+            if linelen[cl-1] > pp:
+                pp = linest[cl-1] + pp
+            else:
+                pp = linest[cl-1] + linelen[cl-1]-1
+            self.SetInsertionPoint(pp)
+            self.SetSelection(pp, pp)
             return
-        elif key == 69 and controlDown:  # ctrl + E
-            self.SetInsertionPoint(self.GetLastPosition())
+
+        elif key == 78 and controlDown:  # ctrl + N
+            cl = _get_current_line()
+            linelen = [len(x)+1 for x in self.GetValue().split("\n")]
+            if cl == len(linelen)-1:
+                return
+            linest = np.cumsum(
+                [0]+[len(x)+1 for x in self.GetValue().split("\n")])
+            ci = self.GetInsertionPoint()
+            pp = ci - linest[cl]
+            if linelen[cl+1] > pp:
+                pp = linest[cl+1] + pp
+            else:
+                pp = linest[cl+1] + linelen[cl+1]-1
+            self.SetInsertionPoint(pp)
+            self.SetSelection(pp, pp)
             return
+
+        elif key == 65 and controlDown:  # ctrl + A (beginning of line)
+            cl = _get_current_line()
+            linelen = np.cumsum(
+                [len(x)+1 for x in self.GetValue().split("\n")])
+            if cl == 0:
+                pp = 0
+            else:
+                pp = linelen[cl-1]
+
+            self.SetInsertionPoint(pp)
+            self.SetSelection(pp, pp)
+            return
+        elif key == 69 and controlDown:  # ctrl + E (end of line)
+            cl = _get_current_line()
+            linelen = np.cumsum(
+                [len(x)+1 for x in self.GetValue().split("\n")])
+            pp = linelen[cl]
+
+            self.SetInsertionPoint(pp-1)
+            self.SetSelection(pp-1, pp-1)
+            return
+
         elif key == 75 and controlDown:  # ctrl + K
             ### works only for single line ###
             self.SetSelection(self.GetInsertionPoint(),
@@ -1833,7 +1898,7 @@ class TextCtrlCopyPaste(wx.TextCtrl):
             }
 
         try:
-            wxval = wx.TextCtrl.GetValue(self)
+            wxval = self._baseclass.GetValue(self)
             val = str(wxval)
         except UnicodeEncodeError:
             try:
@@ -1848,12 +1913,9 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         self._wxval = None
 
         if self._use_escape:
-            if six.PY2:
-                return val.decode('string_escape')
-            else:
-                if isinstance(val, str):
-                    val = val.encode()
-                return val.decode('unicode_escape')
+            if isinstance(val, str):
+                val = val.encode()
+            return val.decode('unicode_escape')
         else:
             return val
 
@@ -1863,18 +1925,69 @@ class TextCtrlCopyPaste(wx.TextCtrl):
         except UnicodeEncodeError:
             pass
         if self._use_escape:
-            if six.PY2:
-                wx.TextCtrl.SetValue(self, value.encode('string_escape'))
-            else:
-                wx.TextCtrl.SetValue(self, value.encode('unicode_escape'))
+            self._baseclass.SetValue(self, value.encode('unicode_escape'))
         else:
-            wx.TextCtrl.SetValue(self, value)
+            self._baseclass.SetValue(self, value)
 
     def set_value_error(self):
         self.SetForegroundColour(wx.RED)
 
     def clear_value_error(self):
         self.SetForegroundColour(wx.BLACK)
+
+
+class TextCtrlCopyPaste(wx.TextCtrl, _textctrl_mixin):
+    def __init__(self, *args, **kargs):
+        _textctrl_mixin.__init__(self, wx.TextCtrl)
+        textctrl_mixin_do_init(self, *args, **kargs)
+
+    def SetValue(self, value):
+        return _textctrl_mixin.SetValue(self, value)
+
+    def GetValue(self):
+        return _textctrl_mixin.GetValue(self)
+
+    def onDragInit(self, e):
+        return _textctrl_mixin.onDragInit(self, e)
+
+    def onKillFocus(self, evt):
+        return _textctrl_mixin.onKillFocus(self, evt)
+
+    def onSetFocus(self, evt):
+        return _textctrl_mixin.onSetFocus(self, evt)
+
+    def onKeyPressed(self, event):
+        return _textctrl_mixin.onKeyPressed(self, event)
+
+    def onEnter(self, evt):
+        return _textctrl_mixin.onEnter(self, evt)
+
+
+class RichTextCtrlCopyPaste(RichTextCtrl, _textctrl_mixin):
+    def __init__(self, *args, **kargs):
+        _textctrl_mixin.__init__(self, RichTextCtrl)
+        textctrl_mixin_do_init(self, *args, **kargs)
+
+    def SetValue(self, value):
+        return _textctrl_mixin.SetValue(self, value)
+
+    def GetValue(self):
+        return _textctrl_mixin.GetValue(self)
+
+    def onDragInit(self, e):
+        return _textctrl_mixin.onDragInit(self, e)
+
+    def onKillFocus(self, evt):
+        return _textctrl_mixin.onKillFocus(self, evt)
+
+    def onSetFocus(self, evt):
+        return _textctrl_mixin.onSetFocus(self, evt)
+
+    def onKeyPressed(self, event):
+        return _textctrl_mixin.onKeyPressed(self, event)
+
+    def onEnter(self, evt):
+        return _textctrl_mixin.onEnter(self, evt)
 
 
 class TextCtrlCopyPasteFloat(TextCtrlCopyPaste):
@@ -1996,7 +2109,7 @@ class TextCtrlCopyPasteHistory(TextCtrlCopyPaste):
         TextCtrlCopyPaste.__init__(self, *args, **kargs)
         self._key_history_st1 = []
         self._key_history_st2 = []
-        #self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
+        # self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
         self.Bind(wx.EVT_CONTEXT_MENU, self.onContext)
 
     def onCopy(self, evt):
@@ -2145,7 +2258,7 @@ class Slider(wx.Panel):
         super(Slider, self).__init__(parent, id)
         ##
         # internally it translates (minV, maxV)
-        ##  to (0, datamax)
+        # to (0, datamax)
         ##
         self.minV = setting["minV"]
         self.maxV = setting["maxV"]
@@ -2323,7 +2436,7 @@ class CSlider(CustomSingleSlider):
         super(CSlider, self).__init__(parent, id)
         ##
         # internally it translates (minV, maxV)
-        ##  to (0, datamax)
+        # to (0, datamax)
         ##
         self._range = [float(setting["minV"]),
                        float(setting["maxV"])]
@@ -2358,7 +2471,7 @@ class CSliderWithText(wx.Panel):
         wx.Panel.__init__(self, parent, id)
         ##
         # internally it translates (minV, maxV)
-        ##  to (0, datamax)
+        # to (0, datamax)
         ##
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2375,7 +2488,7 @@ class CSliderWithText(wx.Panel):
         sizer.Add(self.t1, 0)
         sizer.Add(self.s1, 1, wx.EXPAND)
         self.Bind(wx.EVT_TEXT_ENTER, self._Update, self.t1)
-        #self.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.thumbrelease, self.s1)
+        # self.Bind(wx.EVT_SCROLL_THUMBRELEASE, self.thumbrelease, self.s1)
         self.SetSizer(sizer)
 
     def SetValue(self, value):
@@ -2414,7 +2527,7 @@ class CDoubleSlider(CustomDoubleSlider):
         super(CDoubleSlider, self).__init__(parent, id)
         ##
         # internally it translates (minV, maxV)
-        ##  to (0, datamax)
+        # to (0, datamax)
         ##
         self._range = [float(setting["minV"]),
                        float(setting["maxV"])]
@@ -3049,7 +3162,7 @@ class ComboBoxWithNew(ComboBoxCompact):
                 continue
             self.Append(c)
         index = min(index, len(ch)-1)
-        #print("setting index", index)
+        # print("setting index", index)
         self.SetSelection(index)
 
 
@@ -3807,7 +3920,7 @@ class MDSSource0(wx.Panel):
     def onPageClose(self, evt):
         ipage = self.nb.GetSelection()
         label = self.nb.GetPageText(ipage).strip()
-        #print(label, 'closing')
+        # print(label, 'closing')
         if str(label) in ['x', 'y', 'z', 'xerr', 'yerr']:
             ret = dialog.message(self,
                                  '"'+label+'"' + " is reserved and cannot be deleted",
@@ -3983,12 +4096,9 @@ class MDSSource(wx.Panel):
                             if isinstance(child, FigMds)]
                 sessions[ichild].onDataSetting(evt)
 
-            if six.PY2:
-                ll = l.decode('string_escape')
-            else:
-                if isinstance(l, str):
-                    l = l.encode()
-                ll = l.decode('unicode_escape')
+            if isinstance(l, str):
+                l = l.encode()
+            ll = l.decode('unicode_escape')
 
             l4.append([ll, None, 141, {"label": "Edit...",
                                        'func': handler,
@@ -4313,7 +4423,7 @@ class EditListCore(object):
                                       nlines=nlines)
                 if val[1] is not None:
                     w.SetValue(val[1])
-                #self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
+                # self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 p = w
             elif val[2] == 235:
                 try:
@@ -4323,10 +4433,24 @@ class EditListCore(object):
                 w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
                                       style=wx.TE_MULTILINE,
                                       nlines=nlines)
-                #self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
+                # self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
                 w._use_escape = False
                 if val[1] is not None:
                     w.SetValue(val[1])
+                p = w
+            elif val[2] == 2235:
+                try:
+                    nlines = val[3]['nlines']
+                except:
+                    nlines = 5
+                w = RichTextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
+                                          style=wx.richtext.RE_MULTILINE,
+                                          nlines=nlines)
+                # self.Bind(wx.EVT_TEXT_ENTER, self._textctrl_enter, w)
+                w._use_escape = False
+                if val[1] is not None:
+                    w.SetValue(val[1])
+                w.SetSizeHints((1, 32*nlines))
                 p = w
             elif val[2] == 1:
                 if len(val) == 4:
@@ -4808,7 +4932,7 @@ class EditListCore(object):
 
             w.Fit()
             if UpdateUI is not None:
-                #print("setting update event")
+                # print("setting update event")
                 w.Bind(wx.EVT_UPDATE_UI, UpdateUI)
 
             self.widgets.append((w, txt))
@@ -4939,7 +5063,7 @@ class EditListCore(object):
         pass
 
 
-#from wx.lib.scrolledpanel import ScrolledPanel as SP
+# from wx.lib.scrolledpanel import ScrolledPanel as SP
 
 
 class ScrolledEditListPanel(EditListCore, SP):
@@ -5463,7 +5587,9 @@ if __name__ == "__main__":
             ["color map", 3, 12, {}],
             ["color map", 3, 12, {}],
             ["color map", 3, 12, {}]]
-#    list = [ ["Max", (True, 'r'), 3006, ({"text": "Clip"}, {})]]
+    list = [["Max", (True, 'r'), 3006, ({"text": "Clip"}, {})]]
+    list = [["Server", "cmodws60.psfc.mit.edu", 235],
+            ["Server", "cmodws60.psfc.mit.edu", 2235],]
 #   e=Example(None, 'example', list=list, style='no button')
     e = Example(None, 'example', list=list, tip=[
                 "tip for " + str(x) for x in range(len(list))])
