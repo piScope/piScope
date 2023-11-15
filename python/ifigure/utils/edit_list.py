@@ -3067,8 +3067,9 @@ class ComboBoxCompact(wx.ComboBox):
         else:
             txt_w = max([self.Parent.GetTextExtent(s.strip())[0]
                          for s in comboStrings])
+            extra_w = self.Parent.GetTextExtent("AA")[0]
             txt_h = self.Size[1]
-            self.SetMinSize((txt_w+txt_h+10, txt_h))
+            self.SetMinSize((txt_w+txt_h+extra_w, txt_h))
 
 #        args[0].SetSize((txt_w-txt_h,-1))
 #        self.SetMinSize((10,-1))
