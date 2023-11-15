@@ -2760,6 +2760,10 @@ class ComboBoxModifiedELP(Panel):
         sizer.Add(self.elp, 1, wx.EXPAND, 0)
         self.cb.Bind(wx.EVT_COMBOBOX, self.onHit)
 
+        tip = setting.pop('cb_tip', None)
+        if tip is not None:
+            panel_SetToolTip(self.cb, tip)
+
     def onHit(self, evt):
         sel = str(self.cb.GetValue())
         index = self.cb_values.index(sel)
@@ -2797,10 +2801,19 @@ class SelectableELP(Panel):
         if setting is None:
             setting = ({}, {})
         self._call_fit = setting[0].pop('call_fit', True)
+
         st = wx.StaticText(self, wx.ID_ANY, setting[0]['text'])
+
         self.cb = ComboBoxCompact(self, wx.ID_ANY, style=wx.CB_READONLY)
         self.cb.Bind(wx.EVT_COMBOBOX, self.onHit)
         self.cb.Clear()
+
+        tip = setting[0].pop('cb_tip', None)
+        if tip is not None:
+            panel_SetToolTip(self.cb, tip)
+            if len(setting[0]['text']) > 0:
+                panel_SetToolTip(st, tip)
+
         for x in setting[0]['choices']:
             self.cb.Append(x)
         self.cb.adjust_size()
@@ -4136,6 +4149,7 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
+
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4347,9 +4361,6 @@ class EditListCore(object):
                 txt = wx.StaticText(parent[-1], wx.ID_ANY, val[0])
                 sizer.Add(txt, (row, 0), span,
                           wx.ALL | wx.ALIGN_CENTER_VERTICAL, edge)
-                if tip is not None and len(tip) > k:
-                    if tip[k] is not None:
-                        panel_SetToolTip(txt, tip[k])
             else:
                 txt = None
                 col = 0
@@ -4940,6 +4951,13 @@ class EditListCore(object):
                 else:
                     w = wx.StaticText(
                         parent[-1], wx.ID_ANY, 'Custom UI is not defined!')
+
+            if tip is not None and len(tip) > k:
+                if tip[k] is not None:
+                    if txt is not None:
+                        panel_SetToolTip(txt, tip[k])
+                    else:
+                        panel_SetToolTip(w, tip[k])
 
             w.Fit()
             if UpdateUI is not None:
