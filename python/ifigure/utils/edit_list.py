@@ -2724,8 +2724,10 @@ class RadioButtons(wx.Panel):
 class ELP(Panel):
     def __init__(self, parent, id, setting=None):
         Panel.__init__(self, parent, id)
-        self.elp = EditListPanel(self, setting["elp"],
-                                 call_sendevent=self, edge=0)
+        self.elp = (EditListPanel(self, setting["elp"], setting["tip"], call_sendevent=self, edge=0)
+                    if "tip" in setting else
+                    EditListPanel(self, setting["elp"], call_sendevent=self, edge=0))
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         sizer.Add(self.elp, 1, wx.EXPAND, 0)
@@ -2749,8 +2751,9 @@ class ComboBoxModifiedELP(Panel):
         Panel.__init__(self, parent, id)
 
         self.cb = ComboBoxCompact(self, wx.ID_ANY, style=wx.CB_READONLY)
-        self.elp = EditListPanel(self, setting["elp"],
-                                 call_sendevent=self)
+        self.elp = (EditListPanel(self, setting["elp"], setting["tip"], call_sendevent=self)
+                    if "tip" in setting else
+                    EditListPanel(self, setting["elp"], call_sendevent=self))
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         sizer.Add(self.cb,  0)
@@ -2801,7 +2804,8 @@ class SelectableELP(Panel):
         for x in setting[0]['choices']:
             self.cb.Append(x)
         self.cb.adjust_size()
-        self.elps = [EditListPanel(self, ss['elp'])
+        self.elps = [(EditListPanel(self, ss['elp'], tip=ss['tip']) if 'tip' in ss else
+                      EditListPanel(self, ss['elp']))
                      for ss in setting[1:]]
         for elp in self.elps:
             elp.Layout()
@@ -2889,11 +2893,14 @@ class CheckBoxModifiedELP(Panel):
         self.btn = CheckBox(self, id, setting[0]["text"])
         self._ff = False
         self._forward_logic = True
-        self.elp = EditListPanel(self, setting[1]["elp"])
+        self.elp = (EditListPanel(self, setting[1]["elp"], tip=setting[1]["tip"])
+                    if "tip" in setting[1] else EditListPanel(self, setting[1]["elp"]))
 #        self.elp.Hide()
         self.elp.Layout()
         if len(setting) == 3:
-            self.elp2 = EditListPanel(self, setting[2]["elp"])
+            self.elp2 = (EditListPanel(self, setting[2]["elp"], tip=setting[2]["tip"])
+                         if "tip" in setting[1] else EditListPanel(self, setting[2]["elp"]))
+
 #           self.elp2.Hide()
             self.elp2.Layout()
             self._ff = True
@@ -4128,7 +4135,6 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
-
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4278,11 +4284,15 @@ class EditListCore(object):
             if setting.pop("no_tlw_resize", True):
                 kwargs["style"] = wx.CP_NO_TLW_RESIZE
             keepwidth = setting.pop("tlb_resize_samewidth", False)
+            colour = setting.pop("colour", wx.Colour(235, 235, 235, 255))
             cp = CollapsiblePane0(self, wx.ID_ANY, label=label,
                                   keepwidth=keepwidth,
                                   **kwargs)
+
             sizer0.Add(cp, 0, wx.RIGHT | wx.LEFT | wx.EXPAND)
             p = cp.GetPane()
+            cp.SetBackgroundColour(colour)
+            p.SetBackgroundColour(colour)
             sizer = wx.GridBagSizer()
             bsizers.append(sizer)
 
@@ -5589,7 +5599,7 @@ if __name__ == "__main__":
             ["color map", 3, 12, {}]]
     list = [["Max", (True, 'r'), 3006, ({"text": "Clip"}, {})]]
     list = [["Server", "cmodws60.psfc.mit.edu", 235],
-            ["Server", "cmodws60.psfc.mit.edu", 2235],]
+            ["Server", "cmodws60.psfc.mit.edu", 2235], ]
 #   e=Example(None, 'example', list=list, style='no button')
     e = Example(None, 'example', list=list, tip=[
                 "tip for " + str(x) for x in range(len(list))])
