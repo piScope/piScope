@@ -1929,6 +1929,9 @@ class _textctrl_mixin():
         else:
             self._baseclass.SetValue(self, value)
 
+        if self._validator is not None:
+            wx.CallAfter(self.call_validator)
+
     def set_value_error(self):
         self.SetForegroundColour(wx.RED)
 
