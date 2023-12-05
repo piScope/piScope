@@ -78,6 +78,7 @@ def piscope():
     if len(sys.argv[1:]) >= 1:
         rflag = False
         lflag = False
+        eflag = False
         for p in sys.argv[1:]:
             if p == '-h':
                 print('[Usage: ifigure -s -r command -h file]')
@@ -103,6 +104,8 @@ def piscope():
                 server = ifigure.server.Server()
                 server.start()
                 continue
+            elif p == '-e': ## this is backword compatibility (ignored)
+                eflag = True
             elif p == '-d':
                 use_console = False
                 redirect_std = False
@@ -149,6 +152,8 @@ def piscope():
                 elif lflag:
                     launcher_file = p.strip()
                     lflag = False
+                elif eflag:
+                    eflag = False
                 else:
                     if os.path.exists(p):
                         file = p
@@ -280,11 +285,15 @@ def piscope():
             print(('deleting :', wdir))
             shutil.rmtree(wdir)
 #   MDSWorkerPool(type=worker_mode).reset()
-    print('main loop finished')
-    print('following is for debug to check if normal exit')
+    print('Exiting piScope (main loop finished)')
+    from .ifigure_config import tempdir
+    if os.path.exists(tempdir) and len(os.listdir(tempdir))==0:
+        print(' --- removing workdirectory :' + tempdir)
+        os.rmdir(tempdir)
+    print(' --- ebug to check if normal exit (list of remaining threads)')
     import threading
     import time
     time.sleep(1)
     for t in threading.enumerate():
-        print(t)
-    print((wx.GetTopLevelWindows()))
+        print(" --- "+str(t))
+    print(" --- "+str(wx.GetTopLevelWindows()))

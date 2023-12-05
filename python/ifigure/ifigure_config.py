@@ -156,7 +156,7 @@ for item0 in os.listdir(tempdir_base):
             try:
                 dname = os.path.join(tempdir_base, item0)
                 for item2 in os.listdir(dname):
-                    if item2.startswith('###untitled_'):
+                    if item2.startswith('###untitled_') or item2.startswith('.###ifigure_'):
                         f = os.path.join(tempdir_base, item0, item2)
                         shutil.rmtree(f)
                 if len(os.listdir(dname)) == 0:
@@ -167,6 +167,7 @@ for item0 in os.listdir(tempdir_base):
                         print('Failed to remove crush dir')
             except:
                 pass
+
 try:
     import socket
     name = socket.gethostname().split('.')[0]
