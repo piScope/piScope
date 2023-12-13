@@ -163,11 +163,11 @@ def find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi, return_all = Fals
     if True:
        rgrid3 = np.linspace(rgrid[3], rgrid[-3], len(rgrid)*2)
        zgrid3 = np.linspace(zgrid[3], zgrid[-3], len(zgrid)*2)
-       f = RectBivariateSpline(rgrid, zgrid, psirz)
+       f = RectBivariateSpline(rgrid, zgrid, psirz.transpose())
        X3, Y3 = np.meshgrid(rgrid3, zgrid3)
        #psirz3 = [f(X3.flatten(), Y3.flatten()).reshape(X3.shape)
        psirz3 = np.hstack([f(x, y) for x, y in zip(X3.flatten(), Y3.flatten())]).reshape(X3.shape)
-       psirz3 = np.transpose(psirz3)
+       #psirz3 = np.transpose(psirz3)
        c = cntr.Cntr(X3, Y3, psirz3)
        rgrid = rgrid3
        zgrid = zgrid3
