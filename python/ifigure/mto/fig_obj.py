@@ -1645,7 +1645,10 @@ class FigObj(TreeDict, MetadataHolder):
             if isMPL2 and p == 'axis_bgcolor':
                 p = 'facecolor'
             if hasattr(a, 'get_'+p):
-                vals[p0] = (getattr(a, 'get_'+p))()
+                if callable(getattr(a, 'get_'+p)):
+                    vals[p0] = (getattr(a, 'get_'+p))()
+                else:
+                    vals[p0] = getattr(a, 'get_'+p)
             elif hasattr(a, p):
                 vals[p0] = getattr(a, p)
         return vals
@@ -1654,7 +1657,10 @@ class FigObj(TreeDict, MetadataHolder):
         for key in vals:
             #          if isMPL2 and key == 'axis_bgcolor': key = 'facecolor'
             if hasattr(a, 'set_'+key):
-                (getattr(a, 'set_'+key))(vals[key])
+                if callable(getattr(a, 'set_'+key)):
+                    (getattr(a, 'set_'+key))(vals[key])
+                else:
+                    setattr(a, 'set_'+key, vals[key])
             elif hasattr(a,  key):
                 setattr(a, key, vals[key])
 

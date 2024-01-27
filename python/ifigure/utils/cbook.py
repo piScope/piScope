@@ -3,7 +3,6 @@ from __future__ import print_function
 
 #  load image file
 #   this could be widget toolkit dependent
-import scipy
 import sys
 import six
 import os

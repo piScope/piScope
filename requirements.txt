@@ -1,5 +1,3 @@
-#attrdict
-#numba-scipy
 matplotlib >= 3.6.2
 hgapi
 PyOpenGL
@@ -10,5 +8,6 @@ pdfrw
 wxPython
 future
 autopep8
+scipy
 
 
