@@ -535,7 +535,7 @@ class FigAxspan(FigObj, XUser, YUser):
         action = UndoRedoFigobjMethod(self._artists[0],
                                       'data', (xdata, ydata))
 
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry([action])
         return 1
 #

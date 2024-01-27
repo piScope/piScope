@@ -2126,7 +2126,7 @@ class FigInsetAxes(FigAxes):
 
         h = [UndoRedoFigobjMethod(a, 'inset_rect', rect)
              for a in self._artists]
-        canvas = evt.guiEvent.GetEventObject()
+        canvas = evt.guiEvent_memory.GetEventObject()
         window = canvas.GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(h,
                                                        menu_name='move')

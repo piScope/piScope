@@ -207,7 +207,7 @@ class FigAnnotate(FigObj):
         return redraw
 
     def dragdone_a(self, a, evt, shift=None):
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw = super(FigAnnotate, self).dragdone_a(a, evt, shift=shift)
         dx = evt.x - self._st_p[0]
         dy = evt.y - self._st_p[1]

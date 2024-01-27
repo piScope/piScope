@@ -2402,7 +2402,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
     def buttonrelease(self, event):
         #print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)
-        event.guiEvent = evt
+        event.guiEvent_memory = evt
 
         if self.draghandler is not None:
             self.draghandler.unbind_mpl()
@@ -2662,7 +2662,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         double_click = False
 
         # check double click
-        if event.guiEvent.LeftUp():
+        if event.guiEvent_memory.LeftUp():
             # print(time.time()-self._previous_lclick)
             if ((time.time() - self._previous_lclick) < dcinterval and
                     not self.draghandler.dragging):
@@ -2704,7 +2704,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             # left click (deselect all if _picked is false)
             if self._picked:
                 already_selected = False
-                shift_down = event.guiEvent.ShiftDown()
+                shift_down = event.guiEvent_memory.ShiftDown()
                 for item in self.selection:
                     if item() is not None:
                         figobj = item().figobj
@@ -2726,7 +2726,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                     if figobj.isCompound() and not double_click:
                         figobj._artists[0].mask_array_idx(shift_down)
 
-                    if not event.guiEvent.ShiftDown() and not double_click:
+                    if not event.guiEvent_memory.ShiftDown() and not double_click:
                         self.unselect_all()
 
                     if figobj is not None:
@@ -2760,7 +2760,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                         if (any([s().figobj.isCompound() for s in self.selection
                                  if s() is not None and
                                  s().figobj is not None])
-                                and event.guiEvent.ShiftDown()):
+                                and event.guiEvent_memory.ShiftDown()):
                             #
                             pass
                         else:

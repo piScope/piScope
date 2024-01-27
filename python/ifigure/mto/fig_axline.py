@@ -341,7 +341,7 @@ class FigAxline(FigObj, XUser, YUser):
         action = UndoRedoFigobjMethod(self._artists[0],
                                       'data',
                                       (np.array(xdata), np.array(ydata)))
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry([action])
         return 1
 
