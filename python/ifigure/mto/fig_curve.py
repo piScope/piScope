@@ -592,7 +592,7 @@ class FigCurve(FigObjGPHolder):
         return v+a.figobj_hl
 
     def dragdone_a(self, a, evt, shift=None, scale=None):
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw, scale0 = super(FigCurve, self).dragdone_a(a, evt,
                                                           shift=shift, scale=scale)
         if self._drag_mode == 3:
@@ -618,7 +618,7 @@ class FigCurve(FigObjGPHolder):
             h = h + self.scale_artist(scale0, action=True)
 
 #        hist = self.get_root_parent().app.history
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
         hist.start_record()
         for item in h:

@@ -371,7 +371,7 @@ class FigSpline(FigObj, XUser, YUser):
         x, y = self.get_dragged_node(evt)
 #        app = evt.guiEvent.GetEventObject().GetTopLevelParent()
 #        hist = app.history
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
         hist.start_record()
         action1 = UndoRedoFigobjMethod(a, 'splinenode', (x, y))

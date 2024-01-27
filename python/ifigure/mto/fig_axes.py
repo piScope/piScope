@@ -134,10 +134,15 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
                     "elev", "dist", "_upvec", "_use_clip",
                     "_use_frustum", "_show_3d_axes"]
         else:
-            return ["frame_on",  # "axis_bgcolor",
-                    "lighting", "azim",
-                    "elev", "dist", "_upvec", "_use_clip",
-                    "_use_frustum", "_show_3d_axes"]
+            if self._3D:
+                return ["lighting", "azim",
+                        "elev", "dist", "_upvec", "_use_clip",
+                        "_use_frustum", "_show_3d_axes"]
+            else:
+                return ["frame_on",  # "axis_bgcolor",
+                        "lighting", "azim",
+                        "elev", "dist", "_upvec", "_use_clip",
+                        "_use_frustum", "_show_3d_axes"]
 
     @classmethod  # define _attr values to be saved
     def attr_in_file(self):
@@ -2121,7 +2126,7 @@ class FigInsetAxes(FigAxes):
 
         h = [UndoRedoFigobjMethod(a, 'inset_rect', rect)
              for a in self._artists]
-        canvas = evt.guiEvent.GetEventObject()
+        canvas = evt.guiEvent_memory.GetEventObject()
         window = canvas.GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry(h,
                                                        menu_name='move')

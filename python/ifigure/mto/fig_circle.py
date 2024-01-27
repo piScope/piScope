@@ -331,10 +331,10 @@ class FigCircle(FigObjGPHolder):
         return redraw, scale
 
     def dragdone_a(self, a, evt, shift=None, scale=None):
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw, scale0 = super(FigCircle, self).dragdone_a(a, evt,
                                                            shift=shift, scale=scale)
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
 #        hist = selfget_root_parent().app.history
         h = []

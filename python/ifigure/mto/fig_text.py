@@ -437,13 +437,13 @@ class FigText(FigObjGPHolder):
 
     def dragdone_a(self, a, evt, sfift=None, scale=None):
         if self._picker_a_type == 'area':
-            shift = evt.guiEvent.ShiftDown()
+            shift = evt.guiEvent_memory.ShiftDown()
         else:
             shift = True
         redraw, scale0 = super(FigText, self).dragdone_a(a, evt,
                                                          shift=shift, scale=scale)
 
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
 
 #        hist = self.get_root_parent().app.history
         h = self.scale_artist(scale0, action=True)

@@ -469,7 +469,7 @@ class FigPlotC(FigPlot, FigControl):
         y[self._figc_hit] = evt.ydata
         action = UndoRedoFigobjMethod(self._artists[0],
                                       'data', (x, y))
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         GlobalHistory().get_history(window).make_entry([action])
         return 1
 
