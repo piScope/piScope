@@ -3,7 +3,6 @@ from __future__ import print_function
 
 #  load image file
 #   this could be widget toolkit dependent
-import scipy
 import sys
 import six
 import os
@@ -1049,11 +1048,18 @@ def test(a=None, b=None, c=None):
     print(c)
 
 
+try:
+    from scipy import genfromtxt as genfromtxt
+except ImportError:
+    from numpy import genfromtxt as genfromtxt
+
+
 def loadct(num, **kwargs):
     file = os.path.join(ifigure.__path__[0], 'resources', 'idl_colors.txt',)
-    output = scipy.genfromtxt(file,
-                              skip_header=256*num,
-                              skip_footer=(39-num)*256)/255.
+
+    output = genfromtxt(file,
+                        skip_header=256*num,
+                        skip_footer=(39-num)*256)/255.
     return matplotlib.colors.LinearSegmentedColormap.from_list('idl'+str(num),
                                                                output, **kwargs)
 
@@ -1091,10 +1097,10 @@ def tex_escape(text):
     }
     if six.PY2:
         regex = re.compile('|'.join(re.escape(unicode(key))
-                           for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
+                                    for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
     else:
         regex = re.compile('|'.join(re.escape(key)
-                           for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
+                                    for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
 
     return regex.sub(lambda match: conv[match.group()], text)
 

@@ -109,7 +109,7 @@ def arrow3d(base, r1, r2, ort, l, h, m=13, pivot='tail', d1d2=None):
     t1 = np.stack((p[:-1], q[:-1], p[1:]), axis=1)
     t2 = np.stack((p[1:], q[:-1], q[1:]), axis=1)
     t3 = np.stack((p2[:-1], p3[:-1], p2[1:]), axis=1)
-    #t2 = np.dstack((p[1:], q[:-1], q[1:]))
+    # t2 = np.dstack((p[1:], q[:-1], q[1:]))
     t1 = np.vstack((t1, t2, t3))
     return t1
 
@@ -295,7 +295,7 @@ class Axes3DMod(Axes3D):
         """
         Copied form Axes3D to play with self.dist
         """
-        #self._dist = camera_distance
+        # self._dist = camera_distance
 
         if elev is None:
             self.elev = self.initial_elev
@@ -476,11 +476,11 @@ class Axes3DMod(Axes3D):
         if self._gl_mask_artist is None:
             return
         arr = self._gl_mask_artist.get_array()
-        #b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
-        #b = fftconvolve(arr[:, :, 3], conv_kernel, mode='same') + arr[:, :, 3]
+        # b = convolve2d(arr[:,:,3], conv_kernel, mode = 'same') + arr[:,:,3]
+        # b = fftconvolve(arr[:, :, 3], conv_kernel, mode='same') + arr[:, :, 3]
         from scipy.ndimage import gaussian_filter
         b = gaussian_filter(arr[:, :, 3], sigma=1) + arr[:, :, 3]
-        #b = np.sqrt(b)
+        # b = np.sqrt(b)
         b[b > amask] = amask
 
         c = self.figure.canvas.hl_color
@@ -504,7 +504,7 @@ class Axes3DMod(Axes3D):
     def set_mouse_button(self, rotate_btn=1, zoom_btn=3, pan_btn=2):
         self._pan_btn = np.atleast_1d(pan_btn)
         self._rotate_btn = np.atleast_1d(rotate_btn)
-        #self._zoom_btn = np.atleast_1d(zoom_btn)
+        # self._zoom_btn = np.atleast_1d(zoom_btn)
         self._zoom_btn = []
 
     def _button_press(self, evt):
@@ -545,7 +545,7 @@ class Axes3DMod(Axes3D):
 
     def calc_range_change_zoom3d(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
-        #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
+        # from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
         # return test(self, xdata, ydata, sxdata, sydata)
         dx = - (xdata + sxdata) / 2.0
         dy = - (ydata + sydata) / 2.0
@@ -572,7 +572,7 @@ class Axes3DMod(Axes3D):
 
     def calc_range_change_wheel(self, xdata, ydata, sxdata, sydata, updown):
         # this is to debug this method...
-        #from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
+        # from ifigure.matplotlib_mod.calc_range_change_by_pan_test import test
         # return test(self, xdata, ydata, sxdata, sydata)
 
         r = -0.15 if updown == 'down' else 0.15
@@ -658,9 +658,9 @@ class Axes3DMod(Axes3D):
                            np.sin(relev)))
             rightvec = np.cross(self._upvec, p1)  # right on screen
 
-            #p2 = np.array((np.sin(razim), -np.cos(razim), 0))
-            #p3 = np.cross(p1, p2)
-            #dx, dy, dz = p2*dx + p3*dy
+            # p2 = np.array((np.sin(razim), -np.cos(razim), 0))
+            # p3 = np.cross(p1, p2)
+            # dx, dy, dz = p2*dx + p3*dy
             dx, dy, dz = -rightvec * dx - self._upvec * dy
             minx, maxx, miny, maxy, minz, maxz = self.get_w_lims()
             dx = (maxx - minx) * dx
@@ -673,7 +673,7 @@ class Axes3DMod(Axes3D):
 
         # Zoom
         elif self.button_pressed in self._zoom_btn:
-            #print("in zoom")
+            # print("in zoom")
             # zoom view
             # hmmm..this needs some help from clipping....
             # this section not used..?
@@ -932,7 +932,7 @@ class Axes3DMod(Axes3D):
 #        from ifigure.interactive import figure
 #        v = figure()
 #        v.plot(X, Z)
-        #facecolor = kwargs.pop('facecolor', (0,0,1,1))
+        # facecolor = kwargs.pop('facecolor', (0,0,1,1))
         X, Y, Z = np.broadcast_arrays(X, Y, Z)
         polyc = self.plot_surface(X, Y, Z, *args, **kwargs)
         polyc._revolve_data = (X, Y, Z)
@@ -1193,7 +1193,7 @@ class Axes3DMod(Axes3D):
             elif idxset.shape[-1] < 3:
                 norms = n1a
             else:
-                #print("doing this")
+                # print("doing this")
                 # print(time.perf_counter())
                 data = np.ones(idxset.flatten().shape[0])
                 jj = np.tile(np.arange(idxset.shape[0]), idxset.shape[-1])
@@ -1236,7 +1236,7 @@ class Axes3DMod(Axes3D):
             a = Poly3DCollectionGL(v[idxset[:2, ...]], **kwargs)
 
         # For GL aritsts, it is not necesasry to put in collections??
-        #Axes3D.add_collection3d(self, a)
+        # Axes3D.add_collection3d(self, a)
         Axes3D.add_artist(self, a)
         a.do_stencil_test = False
 
@@ -1274,7 +1274,7 @@ class Axes3DMod(Axes3D):
         zp = R[2] + np.sin(relev) * self.dist
         E = np.array((xp, yp, zp))
 
-        #self.eye = E
+        # self.eye = E
         self._vvec = R - E
         self._vvec = self._vvec / np.sqrt(np.sum(self._vvec**2))
 
@@ -1286,7 +1286,7 @@ class Axes3DMod(Axes3D):
         viewM = view_transformation(E, R, V)
 
         zfront, zback = -self.dist, self.dist
-        #zfront, zback = self.dist-1, self.dist+1
+        # zfront, zback = self.dist-1, self.dist+1
 
         if self._use_frustum:
             perspM = persp_transformation(zfront, zback)
@@ -1297,7 +1297,7 @@ class Axes3DMod(Axes3D):
                                [0, 1, 0, 0],
                                [0, 0, b, a],
                                [0, 0, 0, self.dist]
-                               ###[0, 0, -1/10000., self.dist]
+                               # [0, 0, -1/10000., self.dist]
                                ])
 
         if self._ignore_screen_aspect_ratio:
@@ -1359,7 +1359,7 @@ class Axes3DMod(Axes3D):
         x1, y1 = transform_point(
             self.transData.inverted(), x1s, y1s)
 
-        #print("position here", x0, y0, x1, y1)
+        # print("position here", x0, y0, x1, y1)
         # dd is the screen space move I want to make
         dd = np.array([-x1 + x0, -y1 + y0])
 
@@ -1385,8 +1385,8 @@ class Axes3DMod(Axes3D):
         # M = self.get_proj()
 
         def ptf2(x, dx):
-            #xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
-            #xx1 = xvec[:2]/xvec[3]
+            # xvec = np.dot(M, np.array([x[0], x[1], x[2], 1]))
+            # xx1 = xvec[:2]/xvec[3]
             xvec = np.dot(M, np.array(
                 [x[0] + dx[0], x[1] + dx[1], x[2] + dx[2], 1]))
             xx2 = xvec[:2] / xvec[3]
@@ -1472,9 +1472,9 @@ class Axes3DMod(Axes3D):
                       verticalalignment='center',
                       horizontalalignment='center')
 
-            #self.texts.append(a4)
-            #self.texts.append(a5)
-            #self.texts.append(a6)
+            # self.texts.append(a4)
+            # self.texts.append(a5)
+            # self.texts.append(a6)
             self.add_artist(a4)
             self.add_artist(a5)
             self.add_artist(a6)
@@ -1549,14 +1549,17 @@ class Axes3DMod(Axes3D):
                     a().set_zorder(zorder + 5)
 
                 # adjust padding based on lable/ticklable sizes
-                xmax = max(*([x.get_size() for x in self.xaxis.get_majorticklabels()] + [0]))
-                ymax = max(*([x.get_size() for x in self.yaxis.get_majorticklabels()] + [0]))
-                zmax = max(*([x.get_size() for x in self.zaxis.get_majorticklabels()] + [0]))
+                xmax = max(*([x.get_size()
+                           for x in self.xaxis.get_majorticklabels()] + [0]))
+                ymax = max(*([x.get_size()
+                           for x in self.yaxis.get_majorticklabels()] + [0]))
+                zmax = max(*([x.get_size()
+                           for x in self.zaxis.get_majorticklabels()] + [0]))
                 self.xaxis.labelpad = (xmax + self.xaxis.label.get_size())/2.0
                 self.yaxis.labelpad = (ymax + self.yaxis.label.get_size())/2.0
                 self.zaxis.labelpad = (zmax + self.zaxis.label.get_size())/2.0
 
-            #zorder = max([a.get_zorder() for a in artists])
+            # zorder = max([a.get_zorder() for a in artists])
             # print(zorder)
 
             gl_obj = [a for a in artists if hasattr(a, 'is_gl')]
@@ -1577,18 +1580,20 @@ class Axes3DMod(Axes3D):
                     ymin, ymax = self.get_ylim3d()
                     zmin, zmax = self.get_zlim3d()
 
-                    cc = np.array([(xmin+xmax)/2.0, (ymin+ymax)/2.0, (zmin+zmax)/2.0])
+                    cc = np.array(
+                        [(xmin+xmax)/2.0, (ymin+ymax)/2.0, (zmin+zmax)/2.0])
                     l1 = self._lighting["clip_limit1"]
                     l2 = self._lighting["clip_limit2"].copy()
 
-                    nn  = l1*np.array([xmax-xmin, ymax-ymin, zmax-zmin])
-                    nn2  = np.sqrt(np.sum(nn*nn))
+                    nn = l1*np.array([xmax-xmin, ymax-ymin, zmax-zmin])
+                    nn2 = np.sqrt(np.sum(nn*nn))
 
                     if nn2 != 0:
                         l2[0] = -(l2[0] + np.sum(l1*cc))/nn2
                         l1 = nn/nn2
 
-                    glcanvas.set_lighting(clip_limit1=l1, clip_limit2=l2, **params)
+                    glcanvas.set_lighting(
+                        clip_limit1=l1, clip_limit2=l2, **params)
 #                   glcanvas.set_lighting(**self._lighting)
 
                     glcanvas._gl_scale = self._gl_scale
@@ -1600,11 +1605,14 @@ class Axes3DMod(Axes3D):
             assert False, "Unsupported Renderer"
 
         # axes3D seems to change frameon status....
-        frameon = self.get_frame_on()
-        self.set_frame_on(False)
+        if callable(self.get_frame_on):
+            frameon = self.get_frame_on()
+            self.set_frame_on(False)
+        else:
+            pass  # matplotlib > 3.8
 
         if self._gl_scale != 1.0:
-            #print(("gl_scale", self._gl_scale))
+            # print(("gl_scale", self._gl_scale))
             xmin, xmax = self.get_xlim3d()
             ymin, ymax = self.get_ylim3d()
             zmin, zmax = self.get_zlim3d()
@@ -1625,7 +1633,11 @@ class Axes3DMod(Axes3D):
             self.set_ylim3d([ymin, ymax])
             self.set_zlim3d([zmin, zmax])
 
-        self.set_frame_on(frameon)
+        if callable(self.set_frame_on):
+            self.set_frame_on(frameon)
+        else:
+            pass  # matplotlib > 3.8
+
         return val
 
     def _screen_move_to_3d_move(self, delta_in_axesnorm):
@@ -1663,7 +1675,7 @@ class Axes3DMod(Axes3D):
         v1 = np.cross(nx, [1, 0, 0]) * vrange
         v2 = np.cross(nx, [0, 1, 0]) * vrange
         v3 = np.cross(nx, [0, 0, 1]) * vrange
-        #print("v1, v2, v3", v1,  v2, v3)
+        # print("v1, v2, v3", v1,  v2, v3)
 
         def screen_diff(vv):
             return (vec2sc((midx + vv[0], midy + vv[1], midz + vv[2])) -
@@ -1672,11 +1684,11 @@ class Axes3DMod(Axes3D):
         d2 = screen_diff(v2)
         d3 = screen_diff(v3)
 
-        #print(d1, d2, d3)
+        # print(d1, d2, d3)
         c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
         c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
         c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
-        #print("c1, c2, c3", c1,  c2, c3)
+        # print("c1, c2, c3", c1,  c2, c3)
         vv = [v1, v2, v3]
         dd = [d1, d2, d3]
 
@@ -1716,7 +1728,7 @@ class Axes3DMod(Axes3D):
             x = np.dot(Mnew, (vec[0], vec[1], vec[2], 1))
             return x[0:2] / x[-1]
 
-        #print("rot_center", vec2sc_old(self._gl_rot_center), vec2sc_new(self._gl_rot_center))
+        # print("rot_center", vec2sc_old(self._gl_rot_center), vec2sc_new(self._gl_rot_center))
 
         dd = vec2sc_new(self._gl_rot_center) - vec2sc_old(self._gl_rot_center)
         center_move = self._screen_move_to_3d_move(dd)

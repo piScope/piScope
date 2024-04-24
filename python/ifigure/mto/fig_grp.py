@@ -356,11 +356,11 @@ class FigGrp(FigObj):
 # dragdone : finish-up dragging
 
     def dragdone_a(self, a, evt, shift=None, scale=None):
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw, scale0 = super(FigGrp, self).dragdone_a(a, evt,
                                                         shift=shift, scale=scale)
 
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
 #        hist = self.get_root_parent().app.history
         h = self.scale_artist(scale0, action=True)

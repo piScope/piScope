@@ -1,6 +1,4 @@
-#attrdict
-#numba-scipy
-matplotlib >= 3.6.2
+matplotlib >= 3.8.3
 hgapi
 PyOpenGL
 netCDF4
@@ -10,5 +8,6 @@ pdfrw
 wxPython
 future
 autopep8
+scipy >= 1.12.0
 
 

@@ -400,7 +400,7 @@ class FigLegend(FigObjGPHolder):
         return redraw, scale
 
     def dragdone_a(self, a, evt, shift=None, scale=None):
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw, scale0 = super(FigLegend, self).dragdone_a(a, evt,
                                                            shift=shift, scale=scale)
         x = min(self._drag_rec[:2])
@@ -412,7 +412,7 @@ class FigLegend(FigObjGPHolder):
         h = [UndoRedoFigobjMethod(a, 'legendloc',
                                   (True, self.getp('legendloc'), pos))]
 
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
         self._hit_a = None
         self._picker_a_mode = 0

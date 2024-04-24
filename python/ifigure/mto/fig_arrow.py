@@ -432,7 +432,7 @@ class FigArrow(FigObjGPHolder):
 
     def dragdone_a(self, a, evt, shift=None, scale=None):
 
-        shift = evt.guiEvent.ShiftDown()
+        shift = evt.guiEvent_memory.ShiftDown()
         redraw, scale0 = super(FigArrow, self).dragdone_a(a, evt,
                                                           shift=shift, scale=scale)
 
@@ -458,7 +458,7 @@ class FigArrow(FigObjGPHolder):
         else:
             h = h + self.scale_artist(scale, action=True)
 
-        window = evt.guiEvent.GetEventObject().GetTopLevelParent()
+        window = evt.guiEvent_memory.GetEventObject().GetTopLevelParent()
         hist = GlobalHistory().get_history(window)
 
         hist.start_record()
