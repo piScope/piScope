@@ -1,10 +1,9 @@
 #!/usr/bin/env python
+from setuptools import setup, find_packages
 import os
 import re
 
 rootdir = os.path.abspath(os.path.dirname(__file__))
-
-from setuptools import setup, find_packages
 
 
 def version():
@@ -17,6 +16,7 @@ def version():
             return mo.group(1)
     raise RuntimeError('Unable to find version string in %s.' % (VERSIONFILE,))
 
+
 def install_requires():
     fname = os.path.join(rootdir, 'requirements.txt')
     if not os.path.exists(fname):
@@ -26,9 +26,11 @@ def install_requires():
     fid.close()
     return requirements
 
+
 def long_description():
     with open(os.path.join(rootdir, 'README.md'), encoding='utf-8') as f:
         return f.read()
+
 
 platforms = """
 Mac OS X
@@ -39,18 +41,20 @@ metadata = {'name': 'piScope',
             'description': 'piScope data analysis workbench',
             'long_description': long_description(),
             'long_description_content_type': "text/markdown",
-            'download_url': 'https://github.com/piScope/piScope',            
+            'download_url': 'https://github.com/piScope/piScope',
             'author': 'S. Shiraiwa',
             'author_email': 'shiraiwa@princeton.edu',
             'classifiers': ['Development Status :: 4 - Beta',
                             'Intended Audience :: Developers',
                             'Topic :: Scientific/Engineering :: Physics',
-                            'License :: OSI Approved :: GNU General Public License v3 (GPLv3)', 
+                            'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
                             'Programming Language :: Python :: 3.7',
                             'Programming Language :: Python :: 3.8',
                             'Programming Language :: Python :: 3.9',
-                            'Programming Language :: Python :: 3.10', ],
+                            'Programming Language :: Python :: 3.10'
+                            'Programming Language :: Python :: 3.11', ],
             }
+
 
 def run_setup():
     setup_args = metadata.copy()
@@ -60,16 +64,18 @@ def run_setup():
     setup(
         install_requires=install_req,
         packages=packages,
-        package_dir = {'': 'python'},
+        package_dir={'': 'python'},
         extras_require={},
-        package_data={"ifigure.resources":["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"],
-                      "ifigure.matplotlib_mod":["*.frag", "*.vert", "*.geom"]},
+        package_data={"ifigure.resources": ["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"],
+                      "ifigure.matplotlib_mod": ["*.frag", "*.vert", "*.geom"]},
         include_package_data=True,
-        entry_points={'console_scripts':["piscope = ifigure:piscope"]},
+        entry_points={'console_scripts': ["piscope = ifigure:piscope"]},
         **setup_args)
+
 
 def main():
     run_setup()
-            
+
+
 if __name__ == '__main__':
     main()
