@@ -1,4 +1,4 @@
-matplotlib >= 3.8.3
+matplotlib >= 3.8.3 < 3.9.0
 hgapi
 PyOpenGL
 netCDF4
