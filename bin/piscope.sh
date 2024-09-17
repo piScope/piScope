@@ -82,7 +82,10 @@ DIR=$(dirname $MEDIR)
 #APP=$DIR/python/ifigure/piscope.py
 
 # python add script directory in search path 
-APP=$DIR/python/piscope.py
+#APP=$DIR/python/piscope.py
+
+PYTHONPATH=$DIR/python:$PYTHONPATH
+MODULE=ifigure
 
 VERMAJOR=$($INTERPRETER -c "import sys;print(sys.version_info.major)")
 VERMINOR=$($INTERPRETER -c "import sys;print(sys.version_info.minor)")
@@ -101,12 +104,12 @@ fi
 UNBUFFER=$(command -v unbuffer)
 
 if ! [ -x "$UNBUFFER" ]; then
-    $INTERPRETER -x $PY_DEBUG $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+    $INTERPRETER -x $PY_DEBUG -m $MODULE $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
 else
     if ! [ -z ${SUPPRESS_GTK+x} ];then
-       unbuffer $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
+       unbuffer $INTERPRETER -m $MODULE $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1 2>&1 | unbuffer -p grep -v "Gtk-" | unbuffer -p grep -v -e "^$"
     else
-       $INTERPRETER $APP $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
+       $INTERPRETER -m $MODULE $EXTRA $EXTRA2 $EXTRA3 $EXTRA4 $EXTRA5 -r $COM $1
    fi
 fi
 
