@@ -4266,9 +4266,20 @@ class GL_View(Panel):
 
 
 class StaticText(wx.StaticText):
+    def __init__(self, *args, **kwargs):
+        wx.StaticText.__init__(self, *args, **kwargs)
+        self._nlines = -1
+        self.need_refresh = False
+
     def SetValue(self, text):
         if text is not None:
             self.SetLabel(text)
+            nlines = len(text.split('\n'))
+            if self._nlines > 0 and self._nlines != nlines:
+                self.need_refresh = True
+            else:
+                self.need_refresh = False
+            self._nlines = nlines
 
     def GetValue(self):
         return self.GetLabel()
@@ -4967,7 +4978,7 @@ class EditListCore(object):
                 # print("setting update event")
                 w.Bind(wx.EVT_UPDATE_UI, UpdateUI)
 
-            self.widgets.append((w, txt))
+            self.widgets.append((val[2], w, txt))
             self.widgets_enable.append(enabled)
             alignright = setting.pop('alignright', alignright)
 
@@ -4990,12 +5001,12 @@ class EditListCore(object):
 
     def GetValue(self):
         v = []
-        for w, txt in self.widgets:
+        for wc, w, txt in self.widgets:
             v.append(w.GetValue())
         return v
 
     def AddCurrentToHistory(self):
-        for w, txt in self.widgets:
+        for wc, w, txt in self.widgets:
             if hasattr(w, "add_current_to_history"):
                 w.add_current_to_history()
 
@@ -5004,7 +5015,7 @@ class EditListCore(object):
             return
 
         i = 0
-        for w, txt in self.widgets:
+        for wc, w, txt in self.widgets:
             if w.IsEnabled():
                 try:
                     err = w.SetValue(value[i])
@@ -5024,6 +5035,10 @@ class EditListCore(object):
                 elif err is None:
                     pass
                     # print 'no check in setvalue'
+                if wc == 2:
+                    if w.need_refresh:
+                        wx.CallAfter(self.Layout)
+                        w.need_refresh = False
             en = self.widgets_enable[i]
             if not en:
                 w.Enable(False)
@@ -5038,7 +5053,7 @@ class EditListCore(object):
         ll = [x for x in ll if x[0] is None or not x[0].startswith("->")]
         ll = [x for x in ll if x[0] is None or not x[0].startswith("<-")]
 
-        for w, txt in self.widgets:
+        for wc, w, txt in self.widgets:
             if txt is not None:
                 label = ll[i][0] if ll[i][0] is not None else ""
                 txt.SetLabel(label)
@@ -5059,7 +5074,7 @@ class EditListCore(object):
     def send_some_event(self, evtobj, evt0, eventtype):
         i = 0
 #        print evtobj, self.widgets
-        for w, txt in self.widgets:
+        for wc, w, txt in self.widgets:
             if w == evtobj:
                 break
             i = i+1
@@ -5078,7 +5093,7 @@ class EditListCore(object):
         elif isinstance(value, int):
             value = [value]*len(self.widgets)
         for k, pair in enumerate(self.widgets):
-            w, txt = pair
+            wc, w, txt = pair
             en = self.widgets_enable[k]
             if len(value) == k:
                 break
@@ -5093,7 +5108,6 @@ class EditListCore(object):
 
     def _textctrl_enter(self, evt):
         pass
-
 
 # from wx.lib.scrolledpanel import ScrolledPanel as SP
 

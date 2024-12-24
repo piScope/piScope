@@ -1,4 +1,4 @@
-matplotlib >= 3.8.3, < 3.9.0
+matplotlib >= 3.7, < 3.9.0
 hgapi
 PyOpenGL
 netCDF4
@@ -8,6 +8,6 @@ pdfrw
 wxPython
 future
 autopep8
-scipy >= 1.12.0
+scipy 
 
 

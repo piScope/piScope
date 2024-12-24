@@ -18,7 +18,7 @@ and for the above purposes, &pi;Scope is equipped with
  * interactively annotate figure using text, arrow, lines,,,
  * draw 3D (OpenGL) in matplotlib canvas.
 
-&pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM (https://piscope.psfc.mit.edu/index.php/Petra-M)
+&pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM.
      
 Requirements
 *  Python >3.6
@@ -34,8 +34,6 @@ Typical pip command list...
  pip install wxPython
  pip install piScope
 ```
-
-Wiki page : http://piscope.psfc.mit.edu/
 
 Directories:
 * ../python/ifigure             core program

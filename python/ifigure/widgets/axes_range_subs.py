@@ -66,7 +66,6 @@
 '''
 
 
-
 import weakref
 import numpy as np
 # request builder
@@ -184,7 +183,7 @@ class RangeRequestMaker(object):
             for i, g in enumerate(axparams):
                 p = g.get_rangeparam()
                 if i < len(ranges):
-                     r = ranges[i]
+                    r = ranges[i]
                 else:
                     r = ranges[-1]
                 p[1] = auto
@@ -312,6 +311,7 @@ class RangeRequestMaker(object):
         GlobalHistory().get_history(window).make_entry(
             a, finish_action=f, menu_name=menu_name)
 
+
 class AdjustableRangeHolder(object):
     '''
     a class to be inheriged by FigAxes
@@ -436,6 +436,8 @@ class AdjustableRangeHolder(object):
 
         data = []
         newrange = {}
+
+        max_range_width = 0.0
         # 0) first do xrange
         for ax in self._xaxis:
             base, auto, range, scale, symloglin, symscale, mode = _a2param(ax)
@@ -459,6 +461,8 @@ class AdjustableRangeHolder(object):
                     range = (range[0]-0.5, range[0]+0.5)
             p = [base, auto, range, scale, symloglin, symscale, ] + list(mode)
             newrange[ax] = range
+
+            max_range_width = max(max_range_width, abs(range[1]-range[0]))
             data.append((ax.name, p))
         # 1) second do yrange
         for ay in self._yaxis:
@@ -489,6 +493,8 @@ class AdjustableRangeHolder(object):
                     range = (range[0]-0.5, range[0]+0.5)
             p = [base, auto, range, scale, symloglin, symscale, ] + list(mode)
             newrange[ay] = range
+
+            max_range_width = max(max_range_width, abs(range[1]-range[0]))
             data.append((ay.name, p))
         # 2-1) third do zrange
         for az in self._zaxis:
@@ -521,7 +527,9 @@ class AdjustableRangeHolder(object):
                         range[1] is None):
                     range = (0, 1)
                 if (range[0] == range[1]):
-                    range = (range[0]-0.5, range[0]+0.5)
+                    #range = (range[0]-0.5, range[0]+0.5)
+                    range = (range[0]-max_range_width/2.,
+                             range[0]+max_range_width/2.)
             p = [base, auto, range, scale, symloglin, symscale] + list(mode)
             data.append((az.name, p))
         # 2-2) third do crange
@@ -561,7 +569,8 @@ class AdjustableRangeHolder(object):
                         delta = 1 - np.nextafter(1.0, 0.0)
                         range = (-abs(delta), abs(delta))
                     else:
-                        range = (range[0]-abs(range[0])/10, range[0]+abs(range[0])/10)
+                        range = (range[0]-abs(range[0])/10,
+                                 range[0]+abs(range[0])/10)
             p = [base, auto, range, scale, symloglin, symscale, ] + list(mode)
             data.append((ac.name, p))
         return data
