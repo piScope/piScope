@@ -4978,7 +4978,7 @@ class EditListCore(object):
                 # print("setting update event")
                 w.Bind(wx.EVT_UPDATE_UI, UpdateUI)
 
-            self.widgets.append((val[2], w, txt))
+            self.widgets.append((w, txt, val[2]))
             self.widgets_enable.append(enabled)
             alignright = setting.pop('alignright', alignright)
 
@@ -5001,12 +5001,12 @@ class EditListCore(object):
 
     def GetValue(self):
         v = []
-        for wc, w, txt in self.widgets:
+        for w, txt, wc in self.widgets:
             v.append(w.GetValue())
         return v
 
     def AddCurrentToHistory(self):
-        for wc, w, txt in self.widgets:
+        for w, txt, wc in self.widgets:
             if hasattr(w, "add_current_to_history"):
                 w.add_current_to_history()
 
@@ -5015,7 +5015,7 @@ class EditListCore(object):
             return
 
         i = 0
-        for wc, w, txt in self.widgets:
+        for w, txt, wc in self.widgets:
             if w.IsEnabled():
                 try:
                     err = w.SetValue(value[i])
@@ -5053,7 +5053,7 @@ class EditListCore(object):
         ll = [x for x in ll if x[0] is None or not x[0].startswith("->")]
         ll = [x for x in ll if x[0] is None or not x[0].startswith("<-")]
 
-        for wc, w, txt in self.widgets:
+        for w, txt, wc in self.widgets:
             if txt is not None:
                 label = ll[i][0] if ll[i][0] is not None else ""
                 txt.SetLabel(label)
@@ -5074,7 +5074,7 @@ class EditListCore(object):
     def send_some_event(self, evtobj, evt0, eventtype):
         i = 0
 #        print evtobj, self.widgets
-        for wc, w, txt in self.widgets:
+        for w, txt, wc in self.widgets:
             if w == evtobj:
                 break
             i = i+1
@@ -5093,7 +5093,7 @@ class EditListCore(object):
         elif isinstance(value, int):
             value = [value]*len(self.widgets)
         for k, pair in enumerate(self.widgets):
-            wc, w, txt = pair
+            w, txt, wc = pair
             en = self.widgets_enable[k]
             if len(value) == k:
                 break
