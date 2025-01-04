@@ -99,7 +99,7 @@ class PythonSTCPopUp(wx.Menu):
                  ('Delete', parent.onDeleteBack, None),
                  ('---', None, None,),
                  ('Select All', parent.onSelectAll, None),
-                 ('Wrap', parent.onWrapText, None),]
+                 ('Wrap', parent.onWrapText, None), ]
         if hasattr(parent.GetParent().GetParent(), 'ToggleFindPanel'):
             if not parent.GetParent().GetParent().get_findpanel_shown():
                 menus.extend([('---', None, None,),
@@ -107,8 +107,8 @@ class PythonSTCPopUp(wx.Menu):
         if parent.doc_name.endswith('.py'):
             menus = menus + [('---', None, None),
                              ('Shift region right', parent.onRegionRight, None),
-                             ('Shift region left',  parent.onRegionLeft, None), 
-                             ('Format (autopep8)',  parent.onAutopep8, None), ]            
+                             ('Shift region left',  parent.onRegionLeft, None),
+                             ('Format (autopep8)',  parent.onAutopep8, None), ]
             if parent.check_if_in_script_editor():
                 if parent.get_td() is not None:
                     menus = menus + [
@@ -151,7 +151,7 @@ class PythonSTCPopUp(wx.Menu):
         menus.append((make_label('F77'), self.onSetF77Syntax, None))
         menus.append((make_label('None'), self.onSetNoneSyntax, None))
         menus.append(('!', None, None))
-        menus.append(('Toggle insert/overwrite', self.toggle_overtype, None))        
+        menus.append(('Toggle insert/overwrite', self.toggle_overtype, None))
 
 #                menus = menus + [('--debugger di',   None, None),]
 #       if parent.GetModify():
@@ -180,6 +180,7 @@ class PythonSTCPopUp(wx.Menu):
     def toggle_overtype(self, evt):
         value = not self.parent.GetOvertype()
         self.parent.SetOvertype(value)
+
 
 class PythonSTC(stc.StyledTextCtrl):
 
@@ -321,7 +322,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
 #        self.Bind(wx.EVT_LEFT_UP, self.onLeftUp)
         self.Bind(wx.EVT_RIGHT_UP, self.onRightUp)
-        self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown) 
+        self.Bind(wx.EVT_RIGHT_DOWN, self.onRightDown)
         #self.Bind(wx.EVT_ENTER_WINDOW, self.onMouseEnter)
         #self.Bind(wx.EVT_LEAVE_WINDOW, self.onMouseLeave)
 
@@ -347,7 +348,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.ctrl_X = False
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
-        
+
     def _exit_search_mode(self):
         self._mark = -1
         self._search = 0
@@ -355,22 +356,22 @@ class PythonSTC(stc.StyledTextCtrl):
         self._search_st = -1
 
     def onSetFocus(self, evt):
-        #print("set focus")                
+        #print("set focus")
         evt.Skip()
 
     def onKillFocus(self, evt):
         self._exit_search_mode()
         #print("kill focus")
         evt.Skip()
-        
+
     def onMouseEnter(self, evt):
-        #print("mouse enter")        
+        #print("mouse enter")
         evt.Skip()
-        
+
     def onMouseLeave(self, evt):
         #print("mouse leave")
         evt.Skip()
-        
+
     def onLeftDown(self, e):
         #print("left down")
         self._exit_search_mode()
@@ -1055,6 +1056,7 @@ class PythonSTC(stc.StyledTextCtrl):
 
 #        e.Skip()
 
+
     def onRightDown(self, evt):
         #print("right down")
         evt.Skip()
@@ -1073,7 +1075,7 @@ class PythonSTC(stc.StyledTextCtrl):
         self.PopupMenu(m,
                        (evt.GetX(), evt.GetY()))
         m.Destroy()
-        #evt.Skip()
+        # evt.Skip()
 
     def ShowDebugMargin(self, enter):
         if enter:
@@ -1159,7 +1161,6 @@ class PythonSTC(stc.StyledTextCtrl):
         l1 = self.LineFromPosition(sp)
         l2 = self.LineFromPosition(ep)
 
-
         EOL = self.GetEOLMode()
         if EOL == wx.stc.STC_EOL_CR:
             s = '\r'
@@ -1169,34 +1170,34 @@ class PythonSTC(stc.StyledTextCtrl):
             s = '\n'
 
         lines = self.GetText().split(s)
-        
+
         # this case process all lines
         if l1 == 0 and l2 == 0:
             l1 = 0
             l2 = len(lines)-1
-            
+
         for x in range(l1, l2+1):
             lines[x] = s.join(textwrap.wrap(lines[x], width=60))
 
         self.SetText(s.join(lines))
-        
+
         self.ScrollToLine(sline)
-        
+
         evt.Skip()
 
     def onAutopep8(self, evt):
         import autopep8
-        
-        sline = self.GetFirstVisibleLine()        
+
+        sline = self.GetFirstVisibleLine()
 
         txt = self.GetText()
 
         txt = autopep8.fix_code(txt)
 
         self.SetText(txt)
-        
+
         self.ScrollToLine(sline)
-        
+
         evt.Skip()
 
 #    def turn_on_debugger(self):
@@ -1771,6 +1772,7 @@ class ScriptEditor(wx.Panel):
         p.MarkerAdd(line-1, DebugCurrentLine)
         p.GotoLine(line-1)
 
+
 class ScriptEditorFrame(FrameWithWindowList):
     def __init__(self, *args, **kargs):
         kargs["style"] = (wx.CAPTION |
@@ -2000,7 +2002,3 @@ class ScriptEditorFrame(FrameWithWindowList):
 
     def onQuit(self, evt=None):
         wx.GetApp().TopWindow.Close()
-
-        
-        
-        

@@ -8,11 +8,19 @@ class FindPanel(wx.Panel):
         wx.Panel.__init__(self, parent, id,
                           style=wx.FRAME_FLOAT_ON_PARENT | wx.CLOSE_BOX)
 
-        self.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.SetSizer(hsizer)
+
+        self.btn_cl = wx.Button(self, wx.ID_CLOSE, 'x', style=wx.BU_EXACTFIT)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+
+        hsizer.Add(sizer0, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
+        hsizer.Add(self.btn_cl, 0, wx.ALL | wx.ALIGN_TOP)
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-        self.GetSizer().Add(sizer, 1, wx.EXPAND | wx.ALL, 1)
-        self.GetSizer().Add(sizer2, 1, wx.EXPAND | wx.ALL, 1)
+        sizer0.Add(sizer, 1, wx.EXPAND | wx.ALL, 1)
+        sizer0.Add(sizer2, 1, wx.EXPAND | wx.ALL, 1)
         label = wx.StaticText(self)
         label.SetLabel('Find : ')
         label2 = wx.StaticText(self)
@@ -27,7 +35,6 @@ class FindPanel(wx.Panel):
         gsizer = GridSizer(1, 2)
         gsizer.Add(self.btn_bw, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         gsizer.Add(self.btn_fw, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        self.btn_cl = wx.Button(self, wx.ID_ANY, 'x', size=(25, -1))
 
         #from ifigure.ifigure_config import icondir
         #imageFile =os.path.join(icondir, '16x16', 'close.png')
@@ -47,7 +54,6 @@ class FindPanel(wx.Panel):
         sizer.Add(label, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sizer.Add(self.txt, 1, wx.ALL | wx.EXPAND)
         sizer.Add(gsizer, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
-        sizer.Add(self.btn_cl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sizer2.Add(label2, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL)
         sizer2.Add(self.txt2, 1, wx.ALL | wx.EXPAND)
         sizer2.Add(self.btn_replace, 0, wx.ALL | wx.EXPAND)
