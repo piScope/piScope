@@ -689,7 +689,8 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         if self.book is not None:
             self.book.set_open(False)
             s = self.canvas.get_canvas_screen_size()
-            self.book._screen_size = (s[0], s[1])
+            if s[0] > 0 and s[1] > 0:
+                self.book._screen_size = (s[0], s[1])
             self.canvas.set_figure(None)
 
     def adjust_frame_size(self):

@@ -1990,8 +1990,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.toolbar.Hide3DMenu()
 
     def get_canvas_screen_size(self):
-        s = self.canvas.GetClientSize()
-        return s
+        if self.canvas is not None:
+            s = self.canvas.GetClientSize()
+            return s
+        return -1, -1
 
     def set_canvas_screen_size(self, s):
         self.canvas.SetClientSize(s)
