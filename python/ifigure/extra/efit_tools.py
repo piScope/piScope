@@ -14,8 +14,13 @@ def kname(shot, t):
 
 kind = 'cubic'
 
-from scipy.interpolate import RectBivariateSpline
-from scipy.interpolate import interp1d
+from scipy.interpolate import RectBivariateSpline, make_interp_spline
+
+def interp1d(x, y, kind='linear'):
+    if kind=='linear':
+        return make_interp_spline(x, y, k=1)
+    elif kind=='cubic':
+        return make_interp_spline(x, y, k=3)    
 
 from scipy.optimize import curve_fit
 from scipy.interpolate import CubicSpline
