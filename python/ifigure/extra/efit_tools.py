@@ -201,7 +201,7 @@ def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi, weight="r"):
        "1": compute average as the poloidal path integral w/o the R factor.
        "1/r": original implementation.
     '''
-    from scipy.interpolate import interp2d, interp1d
+    from scipy.interpolate import RectBivariateSpline
 
     path = find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi)
 
@@ -209,11 +209,11 @@ def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi, weight="r"):
     dr = rgrid[1]-rgrid[0]
     dz = zgrid[1]-zgrid[0]
     dpsidz, dpsidr = np.gradient(psirz)
-    br = interp2d(rgrid, zgrid, -dpsidz/dz/R)
-    bz = interp2d(rgrid, zgrid, dpsidr/dr/R)
+    br = RectBivariateSpline(rgrid, zgrid, -dpsidz/dz/R)
+    bz = RectBivariateSpline(rgrid, zgrid, dpsidr/dr/R)
     bp = np.array([np.sqrt(br(x, y)**2+bz(x, y)**2)  for x, y in zip(path[:,0], path[:,1])]).flatten()
 
-    q = interp2d(rgrid, zgrid, q)
+    q = RectBivariateSpline(rgrid, zgrid, q)
     qq = np.array([q(x,y) for x, y in zip(path[:,0], path[:,1])]).flatten()
 
     # create half grid data
