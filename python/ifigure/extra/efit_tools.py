@@ -189,12 +189,17 @@ def find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi, return_all = Fals
         if path_contain(seg, [rmaxis, zmaxis]):
             return seg
 
-def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi):
+def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi, weight="r"):
     '''
     compute flux surface averaged value of
     quantity q. 
     q: 2D array
     psi: psi on which average is taken
+
+    weight:
+       "r": (default) 3D volumetric average.
+       "1": compute average as the poloidal path integral w/o the R factor.
+       "1/r": original implementation.
     '''
     from scipy.interpolate import interp2d, interp1d
 
@@ -218,7 +223,15 @@ def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi):
     r = (path[1:,0]+path[:-1,0])/2
 
     # integration
-    l = np.sum(qq*dl/bp/r)/np.sum(dl/bp/r)
+    if mode == 'r'
+        l = np.sum(qq*dl/bp*r)/np.sum(dl/bp*r)
+    elif mode == '1':
+        l = np.sum(qq*dl/bp)/np.sum(dl/bp)
+    elif mode == '1/r':
+        l = np.sum(qq*dl/bp/r)/np.sum(dl/bp/r)
+    else:
+        assert False, "unknown option"
+
     return l
 
 
