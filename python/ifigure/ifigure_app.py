@@ -1394,7 +1394,9 @@ class ifigure_app(BookViewerFrame):
             local_lc.acquire()
         local_lc.release()
 
-        dprint1("ending program...(window close)")
+        print("#### piScope Applicaiton window closed: project: "
+              + os.path.basename(self.proj.eval("filename")))
+
         from ifigure.widgets.debugger import is_waiting
         if is_waiting():
             self.script_editor.d_panel.StopDebugger()
