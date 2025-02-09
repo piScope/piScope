@@ -14,7 +14,14 @@ def kname(shot, t):
 
 kind = 'cubic'
 
-from scipy.interpolate import interp2d, interp1d
+from scipy.interpolate import RectBivariateSpline, make_interp_spline
+
+def interp1d(x, y, kind='linear'):
+    if kind=='linear':
+        return make_interp_spline(x, y, k=1)
+    elif kind=='cubic':
+        return make_interp_spline(x, y, k=3)    
+
 from scipy.optimize import curve_fit
 from scipy.interpolate import CubicSpline
 
@@ -49,7 +56,7 @@ def path_contain(path, xy, check = False, cyclic = True):
     '''
     if cyclic:
         path = ensure_cyclic(path)
-    import numpy as np
+
     dx = path[:,0] - xy[0]
     dy = path[:,1] - xy[1]
     d1 = np.sqrt(dx[:-1]**2 + dy[:-1]**2)
@@ -75,7 +82,7 @@ def calc_area(path, xy = [0., 0.]):
     '''
     calc area inside path
     '''
-    import numpy as np
+
     dx = path[:,0] - xy[0]
     dy = path[:,1] - xy[1]
     d1 = np.sqrt(dx[:-1]**2 + dy[:-1]**2)
@@ -156,8 +163,6 @@ def find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi, return_all = Fals
         except ImportError:
             import ifigure.utils.find_contours as cntr        
 
-    from scipy.interpolate import interp2d
-    from scipy.interpolate import interp2d, interp1d, RectBivariateSpline
 
     #if False:
     if True:
@@ -189,26 +194,29 @@ def find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi, return_all = Fals
         if path_contain(seg, [rmaxis, zmaxis]):
             return seg
 
-def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi):
+def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi, weight="r"):
     '''
     compute flux surface averaged value of
     quantity q. 
     q: 2D array
     psi: psi on which average is taken
-    '''
-    from scipy.interpolate import interp2d, interp1d
 
+    weight:
+       "r": (default) 3D volumetric average.
+       "1": compute average as the poloidal path integral w/o the R factor.
+       "1/r": original implementation.
+    '''
     path = find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis, psi)
 
     R, Z = np.meshgrid(rgrid, zgrid) 
     dr = rgrid[1]-rgrid[0]
     dz = zgrid[1]-zgrid[0]
     dpsidz, dpsidr = np.gradient(psirz)
-    br = interp2d(rgrid, zgrid, -dpsidz/dz/R)
-    bz = interp2d(rgrid, zgrid, dpsidr/dr/R)
+    br = RectBivariateSpline(rgrid, zgrid, -dpsidz/dz/R)
+    bz = RectBivariateSpline(rgrid, zgrid, dpsidr/dr/R)
     bp = np.array([np.sqrt(br(x, y)**2+bz(x, y)**2)  for x, y in zip(path[:,0], path[:,1])]).flatten()
 
-    q = interp2d(rgrid, zgrid, q)
+    q = RectBivariateSpline(rgrid, zgrid, q)
     qq = np.array([q(x,y) for x, y in zip(path[:,0], path[:,1])]).flatten()
 
     # create half grid data
@@ -218,7 +226,15 @@ def flux_average(rgrid, zgrid, psirz, rmaxis, zmaxis, q, psi):
     r = (path[1:,0]+path[:-1,0])/2
 
     # integration
-    l = np.sum(qq*dl/bp/r)/np.sum(dl/bp/r)
+    if mode == 'r'
+        l = np.sum(qq*dl/bp*r)/np.sum(dl/bp*r)
+    elif mode == '1':
+        l = np.sum(qq*dl/bp)/np.sum(dl/bp)
+    elif mode == '1/r':
+        l = np.sum(qq*dl/bp/r)/np.sum(dl/bp/r)
+    else:
+        assert False, "unknown option"
+
     return l
 
 
@@ -479,8 +495,7 @@ def rz2psi(gfile, r=None, z=None, func=False):
     zgrid = gfile.get_contents("table","zgrid")
     psirz = gfile.get_contents("table","psirz")
 
-    from scipy.interpolate import interp2d, interp1d
-    fpsi = interp2d(rgrid, zgrid, psirz, kind='cubic')
+    fpsi = RectBivariateSpline(rgrid, zgrid, psirz)
     if func: return fpsi
     return fpsi(r, z)
 
@@ -491,8 +506,8 @@ def rz2npsi(gfile, r=0, z=0, func = False):
     ssimag = gfile.get_contents("table","ssimag")
     ssibry = gfile.get_contents("table","ssibry")
     psirz = (psirz - ssimag)/(ssibry-ssimag)
-    from scipy.interpolate import interp2d, interp1d
-    fpsi = interp2d(rgrid, zgrid, psirz, kind='cubic')
+
+    fpsi = RectBivariateSpline(rgrid, zgrid, psirz)
     if func: return fpsi
     return fpsi(r, z)
 
@@ -521,7 +536,7 @@ def psi2psit(gfile, x):
 
     psit = _compute_psit(gfile)
     psi = np.linspace(ssimag, ssibry, len(psit))
-    from scipy.interpolate import interp1d
+
     fx = interp1d(psi, psit)
     return fx(x)
 
@@ -534,7 +549,7 @@ def psit2psi(gfile, x):
 
     psit = _compute_psit(gfile)
     psi = np.linspace(ssimag, ssibry, len(psit))
-    from scipy.interpolate import interp1d
+
     fx = interp1d(psit, psi)
     return fx(x)
 
@@ -549,7 +564,7 @@ def npsi2npsit(gfile, x, func = False):
     if x<=0.0: return 0.
     psit = _compute_npsit(gfile)
     psi = np.linspace(0., 1., len(psit))
-    from scipy.interpolate import interp1d
+
     fx = interp1d(psi, psit)
     if func: return fx
     return fx(x)
@@ -563,7 +578,7 @@ def npsit2npsi(gfile, x, func = False):
 
     psit = _compute_npsit(gfile)
     psi = np.linspace(0., 1., len(psit))
-    from scipy.interpolate import interp1d
+
     fx = interp1d(psit, psi)
     if func: return fx
     return fx(x)
@@ -642,9 +657,6 @@ def compute_theta(gfile, npsi = 0, path = None, method = 'straight_field_line'):
             if path[km,1] < zmaxis and path[k,1] >= zmaxis:
                 return k+1
 
-    import numpy as np
-    from scipy.interpolate import interp2d, interp1d
-
     rgrid = gfile.get_contents("table","rgrid")
     zgrid = gfile.get_contents("table","zgrid")
     psirz = gfile.get_contents("table","psirz")
@@ -671,7 +683,7 @@ def compute_theta(gfile, npsi = 0, path = None, method = 'straight_field_line'):
         '''
         # insert outer midplane 
 
-        fpsi = interp2d(rgrid, zgrid, psirz)
+        fpsi = RectBivariateSpline(rgrid, zgrid, psirz)
         psimid = np.array([fpsi(r, zmaxis) for r in rgrid if r > rmaxis])
         rmid = np.array([r for r in rgrid if r > rmaxis])
         f = interp1d(psimid.flatten(), rmid.flatten())
@@ -689,8 +701,8 @@ def compute_theta(gfile, npsi = 0, path = None, method = 'straight_field_line'):
     dr = rgrid[1]-rgrid[0]
     dz = zgrid[1]-zgrid[0]
     dpsidz, dpsidr = np.gradient(psirz)
-    br = interp2d(rgrid, zgrid, -dpsidz/dz/R)
-    bz = interp2d(rgrid, zgrid, dpsidr/dr/R)
+    br = RectBivariateSpline(rgrid, zgrid, -dpsidz/dz/R)
+    bz = RectBivariateSpline(rgrid, zgrid, dpsidr/dr/R)
 
     br = np.array([br(x, y) for x, y in zip(path[:,0], path[:,1])]).flatten()
     bz = np.array([bz(x, y) for x, y in zip(path[:,0], path[:,1])]).flatten()
@@ -924,14 +936,11 @@ def fit_boundary(gfile = None, path = None, plot = False,
     else:
         assert False, "unknown fitting metod:"+ fit
 
-    from scipy.interpolate import interp2d, interp1d
     g = interp1d(theta, theta0)
     
     return f, g, theta0, r, R0, Z0
 
 def plot_theta(gfile, method = 'straight_field_line',rho = [0.1, 0.99], **kargs):
-    from scipy.interpolate import interp1d
-    import numpy as np
     npsis = np.linspace(rho[0], rho[1], 15)**2
     thetas = np.linspace(0, 2*np.pi, 60)
 
@@ -967,8 +976,6 @@ def fit_flux_coords(gfile,
     '''
     plot result of fit_boundary
     '''
-    from scipy.interpolate import interp1d
-    import numpy as np
     npsis = np.linspace(rho[0], rho[1], rsegs)**2
     thetas = np.linspace(0, 2*np.pi, psegs+1)[:-1]
 

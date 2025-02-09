@@ -285,7 +285,7 @@ def piscope():
             print(('deleting :', wdir))
             shutil.rmtree(wdir)
 #   MDSWorkerPool(type=worker_mode).reset()
-    print('Exiting piScope (main loop finished)')
+    print('#### Exiting piScope (main loop finished)')
     from .ifigure_config import tempdir
     if os.path.exists(tempdir) and len(os.listdir(tempdir))==0:
         print(' --- removing workdirectory :' + tempdir)
