@@ -26,7 +26,8 @@ import sys
 import numpy as np
 import ifigure.utils.cbook as cbook
 import ifigure.widgets.canvas.custom_picker as cpicker
-from scipy.interpolate import griddata, bisplrep, bisplev, interp2d
+from ifigure.utils.interpolate import interp2d
+from scipy.interpolate import griddata
 from ifigure.utils.cbook import ProcessKeywords
 from ifigure.utils.triangulation_wrapper import tri_args
 from matplotlib.cm import ScalarMappable
