@@ -1394,8 +1394,12 @@ class ifigure_app(BookViewerFrame):
             local_lc.acquire()
         local_lc.release()
 
-        print("#### piScope Applicaiton window closed: project: "
-              + os.path.basename(self.proj.eval("filename")))
+        filename = self.proj.eval("filename")
+        if filename is not None:
+            print("#### piScope Applicaiton window closed: project: "
+                   + os.path.basename(filename))
+        else:
+            print("#### piScope Applicaiton window closed: project: project not saved")
 
         from ifigure.widgets.debugger import is_waiting
         if is_waiting():
