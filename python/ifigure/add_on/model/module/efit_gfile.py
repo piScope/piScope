@@ -201,7 +201,8 @@ def add_extra_data(val):
     val["jtrz"] = (xx*pc+fc/xx/mu0)/1e6  # 1e6=(MA/m2)
 
     k = (val["zmaxis"] - rgrid[0])/(rgrid[1] - rgrid[0])
-    from scipy.interpolate import interp2d
+
+    from ifigure.utils.interpolate import interp2d
 
     f = interp2d(rgrid, zgrid, psirz, kind='cubic')
     val['npsimid'] = np.array([(f(r, val["zmaxis"]) - ssimag)/(ssibry - ssimag)
