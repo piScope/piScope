@@ -761,6 +761,10 @@ class ifigure_app(BookViewerFrame):
             self.redirector.turn_on()
 
     def open_file(self, file, call_close=False):
+        current_file = self.proj.getvar('filename')
+        if current_file == file:
+            return
+
         tmp_top = TopTreeDict()
         tmp_top.set_app(self)
         proj = tmp_top.LoadFromFile(file, sb=self.sb)
@@ -1397,7 +1401,7 @@ class ifigure_app(BookViewerFrame):
         filename = self.proj.eval("filename")
         if filename is not None:
             print("#### piScope Applicaiton window closed: project: "
-                   + os.path.basename(filename))
+                  + os.path.basename(filename))
         else:
             print("#### piScope Applicaiton window closed: project: project not saved")
 
