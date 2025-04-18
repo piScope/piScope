@@ -1452,6 +1452,9 @@ class TreeDict(object):
                 elif os.path.isfile(fullpath):
                     f = os.remove
                     rmgeneric(fullpath, f)
+                elif os.path.islink(fullpath):
+                    f = os.remove
+                    rmgeneric(fullpath, f)
 
 #       if self._can_have_child:
         ifigure.events.SendFileSystemChangedEvent(self)
