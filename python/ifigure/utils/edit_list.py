@@ -3493,22 +3493,26 @@ class ArrowStyleCombobox(wxBitmapComboBox):
         from ifigure.ifigure_config import arrowstyle_list
         from ifigure.ifigure_config import icondir
         self.choice_list = arrowstyle_list()
-        choices = []
-        kargs["choices"] = choices
+
+        kargs["choices"] = [x[0] for x in self.choice_list]
         kargs["style"] = wx.CB_READONLY
         parent = args[0]
         id = args[1]
+        value = self.choice_list[3][0]
         super(ArrowStyleCombobox, self).__init__(parent, id,
-                                                 '', (-1, -1), (150, -1),  **kargs)
-        for name, style in self.choice_list:
+                                                 value, (-1, -1), (150, -1),  **kargs)
+
+        for n, data in enumerate(self.choice_list):
+            name, style = data
             dirname = os.path.dirname(ifigure.__file__)
             nname = b64encode(name.encode('latin-1')).decode()
             imageFile = os.path.join(icondir, 'image',
                                      'arrow_' + nname + '.png')
             bitmap = wx.Bitmap(imageFile)
-            super(ArrowStyleCombobox, self).Append(name, bitmap, name)
+            # super(ArrowStyleCombobox, self).Append(name, bitmap, name)
+            super(ArrowStyleCombobox, self).SetItemBitmap(n, bitmap)
+
         self.SetSelection(3)
-#        self.SetValue('-')
 
     def SetValue(self, value):
         for name, style in self.choice_list:
@@ -3879,7 +3883,8 @@ class MDSSource0(wx.Panel):
         self.elp = EditListPanel(self, self.l, call_sendevent=self,
                                  edge=0)
         self.bt_var = wx.BitmapButton(self, wx.ID_ANY,
-                                      MDSSource0.bitmaps[0])  # 'Add Variable...')
+                                      # Add Variable...
+                                      MDSSource0.bitmaps[0])
 #       self.elp.Show()
         from ifigure.widgets.script_editor import Notebook
         self.nb = aui.AuiNotebook(self, wx.ID_ANY)  # , style=aui.AUI_NB_TOP)
@@ -4151,7 +4156,6 @@ class MDSSource(wx.Panel):
 #        evt.SetEventObject(self)
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
-
 
     def data_setting_closed(self):
         pass
