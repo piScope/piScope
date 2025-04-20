@@ -269,7 +269,7 @@ class PyConnection(TreeDict):
                                                            'nocheck')
         if nocheck is None:
             nocheck = False
-        src = '\{' + ','.join(srcs) + '\}'
+        src = r'\{' + ','.join(srcs) + r'\}'
 
         if use_ssh:
             opts = ' '.join(self.get_multiplex_opts())

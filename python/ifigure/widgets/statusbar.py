@@ -235,7 +235,7 @@ class StatusBar(StatusBarWithXY):
                 self.mem = mem/1024  # maxos
             else:
                 self.mem = mem/1024  # linux
-            self.nproc = threading.activeCount()
+            self.nproc = threading.active_count()
             self.SetStatusText(self.make_txt(), len(self.icon)+1)
         else:
             self.timer.Stop()

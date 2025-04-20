@@ -11,19 +11,21 @@ from __future__ import print_function
 #
 
 import logging
-import imp
 import os
 import weakref
 import traceback
 import ifigure.utils.cbook as cbook
 
+from importlib.machinery import SourceFileLoader
 
 def load_module_file(file):
     logging.basicConfig(level=logging.DEBUG)
     try:
-        m = imp.load_source('ifigure.add_on.tmp', file)
+        m = SourceFileLoader('ifigure.add_on.tmp', file).load_module()
+        #m = imp.load_source('ifigure.add_on.tmp', file)
         name = m.module_name
-        m = imp.load_source('ifigure.add_on.'+name, file)
+        m = SourceFileLoader('ifigure.add_on.'+name, file).load_module()
+        #m = imp.load_source('ifigure.add_on.'+name, file)
         mtime = os.path.getmtime(file)
         return m, mtime
     except Exception:
