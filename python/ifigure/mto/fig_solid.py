@@ -522,8 +522,38 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
     def canvas_menu(self):
         m = FigObj.canvas_menu(self)
         m2 = GLCompound.canvas_menu(self)
-        return m[:1]+m2+m[1:]
+        if (self.get_gl_hl_use_array_idx() and
+                len(self.getSelectedIndex()) > 0):
+            m3 = [("Generate subset plot",  self.onPlotSubset, None), ]
+            return m[:1]+m2+m3+m[1:]
+        else:
+            return m[:1]+m2+m[1:]
 
+    def onPlotSubset(self, evt):
+        '''
+        create subset plot
+        '''
+        cmp = self.getSelectedIndex()
+
+        subset = self.get_subset(cmp)
+        if len(subset) == 4:
+            v, idx, cdata, s2 = subset
+        else:
+            v, idx, cdata = subset
+
+        kwargs = {}
+        arr = self.getvar('array_idx')
+        kwargs['array_idx'] = arr[np.in1d(arr, cmp)]
+        if cdata is None:
+            kwargs['cz'] = False
+        else:
+            kwargs['cz'] = True
+            kwargs['cdata'] = cdata
+
+        from ifigure.interactive import figure
+        win = figure()
+        win.threed('on')
+        win.solid(v, idx, **kwargs)
 
 #
 # change rotation center in 3D plot
