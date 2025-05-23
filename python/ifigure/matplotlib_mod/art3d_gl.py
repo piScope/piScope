@@ -34,7 +34,7 @@ cc = ColorConverter()
 # an image produced by GL backend, so that it become
 # consistent with the axes drawn by Axes3D.
 frame_range = np.array([-0.095, -0.095, 1.1, 1.10])+0.01
-#frame_range = np.array([0, 0, 1, 1])
+# frame_range = np.array([0, 0, 1, 1])
 
 
 def finish_gl_drawing(glcanvas, renderer, tag, trans):
@@ -102,7 +102,7 @@ def draw_wrap(func):
                 return
             x0, y0, id_dict, im, imd, im2 = axes._gl_id_data
             gc = renderer.new_gc()
-            #print("drawing stored image", axes.figobj)
+            # print("drawing stored image", axes.figobj)
             renderer.draw_image(gc, round(x0), round(y0), axes._gl_img)
             gc.restore()
         else:
@@ -364,7 +364,7 @@ class LineGL(ArtGL, Line3D):
             glcanvas.start_draw_request(self)
 
             # 3dpath = (self.get_xdata(), self.get_ydata(), self_zdata())
-            #path = Path(self._xy)
+            # path = Path(self._xy)
             if self._invalidz:
                 self.set_3d_properties(zs=self.get_zdata(), zdir='z')
                 if glcanvas.has_vbo_data(self):
@@ -411,7 +411,7 @@ class LineGL(ArtGL, Line3D):
                 m_edgecolor = self.get_markeredgecolor()
                 m_edgewidth = self.get_markeredgewidth()
                 m_size = renderer.points_to_pixels(self._markersize)
-                #marker_path is bitmap (texture)
+                # marker_path is bitmap (texture)
                 # marker_trans is marker_size and other info (liken marker_every)
                 marker_path = self.update_marker_texture(renderer)
                 marker_trans = (m_size,)
@@ -474,6 +474,10 @@ class AxesImageGL(ArtGL, AxesImage):
         super(AxesImage, self).set_cmap(*args, **kwargs)
         self._gl_rgbacache_id = None
 
+    def set_alpha(self, *args, **kwargs):
+        super(AxesImage, self).set_alpha(*args, **kwargs)
+        self._gl_rgbacache_id = None
+
     def make_hl_artist(self, container):
         idx = [0, 1, 2, 3]
         x = [self._gl_3dpath[0][k] for k in idx]
@@ -515,12 +519,18 @@ class AxesImageGL(ArtGL, AxesImage):
             if self._gl_3dpath is not None:
                 try:
                     im = self.to_rgba(self._A)
-                    im = (im*255).astype(int)
+                    im = (im*255).astype(np.ubyte)
                 except:
                     # this is for an old version of matplotlib
                     im = self.make_image(renderer.get_image_magnification())
                 idx_none = im[..., 3] == 0
                 im[idx_none, 0:3] = 255
+
+                idx_not_none = im[..., 3] != 0
+
+                alpha = 255 if self.get_alpha() is None else int(self.get_alpha()*255)
+                im[idx_not_none, 3] = alpha
+
                 self._im_cache = im
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
@@ -530,6 +540,7 @@ class AxesImageGL(ArtGL, AxesImage):
                         d = glcanvas.get_vbo_data(self)
                         for x in d:
                             x['im_update'] = True
+
                 renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
                                        np.transpose(self._im_cache, (1, 0, 2)),
                                        interp=self._gl_interp,
@@ -764,7 +775,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         convert a path on flat surface
         to 3d path
         '''
-        #print("calling convert 2dpath to 3dpath")
+        # print("calling convert 2dpath to 3dpath")
         x1 = []
         y1 = []
         z1 = []
@@ -896,7 +907,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             self._gl_cz = False
 
     def update_scalarmappable(self):
-        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        # print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
 
         if self._gl_solid_facecolor is not None:
             f = cc.to_rgba(self._gl_solid_facecolor)
@@ -945,8 +956,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 else:
                     self._gl_edgecolor[:, -1] = self._alpha
 
-        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
-        #print('update_scalarmappable', self._gl_facecolor, self._gl_edgecolor)
+        # print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        # print('update_scalarmappable', self._gl_facecolor, self._gl_edgecolor)
         Poly3DCollection.update_scalarmappable(self)
 
     def update_idxset(self, idxset):
