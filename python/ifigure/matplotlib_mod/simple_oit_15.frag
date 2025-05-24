@@ -233,14 +233,14 @@ void main() {
         */
      }
      vec4 vColor = vColor0;
-
+     vec4 vColor01 = vColor0;
+     
      if (uisImage == 1){
          vColor = texture(uImageTex, texCoord.st);
 	 if (vColor[3] == 0){
 	     discard;
 	 }
-	 vColor[3] = 1;
-
+	 vColor01[3] = vColor[3];
      }
      
      float isVisible = 0.0;
@@ -382,7 +382,7 @@ void main() {
 	;
 	float weight =  clamp(3e3*pow(z, 3), 1e-2, 3e3)/3e3;
 	//float weight =  1.;
-        FragData1 = vec4(color.rgb * weight, vColor0[3]);
+        FragData1 = vec4(color.rgb * weight, vColor01[3]);
         FragData0.r = vColor0[3] * weight;
 
         //weight = clamp(0.03 / (1e-5 + pow(z*500./ 200, 4.0)), 1e-2, 3e3);

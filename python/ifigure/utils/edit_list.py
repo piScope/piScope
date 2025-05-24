@@ -1339,7 +1339,7 @@ class ColorMapButton(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = colormap_list()
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -1364,7 +1364,7 @@ class ColorMapButtonExtra(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = ['idl'+str(x) for x in range(40)]
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -2495,7 +2495,7 @@ class CSliderWithText(wx.Panel):
         self.SetSizer(sizer)
 
     def SetValue(self, value):
-        self.s1.SetValue(value)
+        self.s1.SetValue(int(value))
         self.t1.SetValue(str(value))
 
     def GetValue(self):
