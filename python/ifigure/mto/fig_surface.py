@@ -372,7 +372,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
 #   Setter/Getter
 #
     def set_cmap(self, value, a):
-        a.set_cmap(et_cmap(value))
+        a.set_cmap(get_cmap(value))
         self.setp('cmap', value)
         ca = self.get_caxisparam()
         ca.set_cmap(value)
