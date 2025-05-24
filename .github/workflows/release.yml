@@ -23,6 +23,7 @@ jobs:
           #
           export PATH=/opt/python/cp37-cp37m/bin:$PATH
 
+          pip install -U packaging
           pip3 install wheel six auditwheel twine build
 
           rm -rf dist/*
