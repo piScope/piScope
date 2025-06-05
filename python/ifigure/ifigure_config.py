@@ -44,7 +44,7 @@ if isMPL2:
     import matplotlib.pyplot
     matplotlib.pyplot.style.use('classic')
 
-pickle_protocol = 2    
+pickle_protocol = 5
 
 def artist_property_checker(obj, prop, values=None):
     #print('inspecting', obj, prop)
