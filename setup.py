@@ -37,6 +37,7 @@ Mac OS X
 Linux
 """
 metadata = {'name': 'piScope',
+            'license':'GPL-3-only',
             'version': version(),
             'description': 'piScope data analysis workbench',
             'long_description': long_description(),
@@ -47,7 +48,6 @@ metadata = {'name': 'piScope',
             'classifiers': ['Development Status :: 4 - Beta',
                             'Intended Audience :: Developers',
                             'Topic :: Scientific/Engineering :: Physics',
-                            'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
                             'Programming Language :: Python :: 3.7',
                             'Programming Language :: Python :: 3.8',
                             'Programming Language :: Python :: 3.9',

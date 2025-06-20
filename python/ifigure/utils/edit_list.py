@@ -1339,7 +1339,7 @@ class ColorMapButton(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = colormap_list()
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -1364,7 +1364,7 @@ class ColorMapButtonExtra(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = ['idl'+str(x) for x in range(40)]
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -2495,7 +2495,7 @@ class CSliderWithText(wx.Panel):
         self.SetSizer(sizer)
 
     def SetValue(self, value):
-        self.s1.SetValue(value)
+        self.s1.SetValue(int(value))
         self.t1.SetValue(str(value))
 
     def GetValue(self):
@@ -3143,6 +3143,7 @@ class ComboBoxWithNew(ComboBoxCompact):
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
 
     def onHit(self, evt):
+        print("on hit")
         sel = self.GetValue()
         if sel == 'New...':
             from ifigure.widgets.dialog import textentry
@@ -3183,7 +3184,7 @@ class ComboBoxWithNew(ComboBoxCompact):
         ch = ch + ['New...']
         for c in ch:
             if len(c) == 0:
-                continue
+                c = " "
             self.Append(c)
         index = min(index, len(ch)-1)
         # print("setting index", index)
@@ -4578,6 +4579,7 @@ class EditListCore(object):
                 s = setting["choices"]
                 s = [x for x in s if x != 'New...']
                 s = s + ['New...']
+                s = [" " if len(x)==0 else x for x in s]
                 choices_cb = setting.pop("choices_cb", None)
                 w = ComboBoxWithNew(parent[-1], wx.ID_ANY, style=setting["style"],
                                     choices=s,
