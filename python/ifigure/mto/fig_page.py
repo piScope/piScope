@@ -199,8 +199,8 @@ class FigPage(FigObj):
             alist = artist
 
         if self._title_artist is not None:
-            self._artists[0].texts.remove(self._title_artist)
-            self._title_artist.figure = None
+            #self._artists[0].texts.remove(self._title_artist)
+            self._title_artist.remove()
             self._title_artist = None
 
         self.store_loaded_property()
