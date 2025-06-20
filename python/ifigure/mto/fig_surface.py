@@ -308,14 +308,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
             for a in artistlist:
                 # GL canvas check this if artist is still alive.
                 a.axes = None
-                try:
-                    a.set_figure(None)
-                except:
-                    a.figure = None
-                try:
-                    a.remove()
-                except:
-                    dprint1("remove failed")
+                a.remove()
 
         if self._coarse_artist is not None:
             col = self.get_figaxes()._artists[0].collections

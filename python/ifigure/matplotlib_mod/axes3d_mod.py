@@ -467,7 +467,7 @@ class Axes3DMod(Axes3D):
                     m = (im == k)
 
                 c = self.figure.canvas.hl_color
-                arr[:, :, :3][m] = np.array(c, copy=False)
+                arr[:, :, :3][m] = np.array(c, copy=None)
                 arr[:, :, 3][m] = amask
                 break
         # blur the mask,,,
@@ -1160,7 +1160,7 @@ class Axes3DMod(Axes3D):
         else:
             v = args[0]   # vertex
             vv = v
-            idxset = np.array(args[1], dtype=int, copy=False)
+            idxset = np.array(args[1], dtype=int, copy=None)
             # element index (element_idx, point_in_element)
             nverts = v.shape[0]
             ncounts = idxset.shape[1]

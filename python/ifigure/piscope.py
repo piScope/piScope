@@ -1,6 +1,5 @@
 def piscope():
     import multiprocessing as mp
-    import pkg_resources  # somehow importing this later cause warning message
     import mpl_toolkits
     import sys
     import os
