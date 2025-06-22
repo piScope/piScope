@@ -50,7 +50,7 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         im = frombyte(im, 1)
         if not im.flags.writeable:
             im = im.copy()
-        
+
         if not isMPL2:
             im.is_grayscale = False  # this is needed to print in MPL1.5
         renderer.draw_image(gc, round(x), round(y), im)
@@ -1092,6 +1092,8 @@ def poly_collection_3d_to_gl(obj):
 
 class Polygon3DGL(ArtGL, Polygon):
     def __init__(self, xyz, **kargs):
+        ArtGL.__init__(self)
+
         self._gl_3dpath = kargs.pop('gl_3dpath', None)
         self._gl_lighting = kargs.pop('gl_lighting', True)
         xy = xyz[:, 0:2]
@@ -1163,4 +1165,5 @@ def polygon_2d_to_gl(obj, zs, zdir):
     obj.do_stencil_test = True
     obj._gl_lighting = True
     obj.set_3d_properties(zs=zs, zdir=zdir)
+    ArtGL.__init__(obj)
     return obj

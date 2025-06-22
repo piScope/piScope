@@ -229,7 +229,6 @@ class FigFill(FigObj, XUser, YUser, ZUser):
         except:
             pass
         try:
-            print(kywds)
             if self._mpl_cmd == 'fill':
                 self._artists = container.fill(x, y, **kywds)
             elif self._mpl_cmd == 'fill_between':
@@ -344,6 +343,8 @@ class FigFill(FigObj, XUser, YUser, ZUser):
                 # this is for Polygon object
                 figure = self.get_figpage()._artists[0]
                 v = artist.get_verts()
+                if len(v) == 0:
+                    return False, {}
                 hl = matplotlib.lines.Line2D(v[:, 0], v[:, 1], marker='s',
                                              color='k', linestyle='None',
                                              markerfacecolor='none',

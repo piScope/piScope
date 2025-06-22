@@ -378,9 +378,9 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         return [self._mappable]
 
     def reset_artist(self):
-        print('resetting contour artist')
+        #print('resetting contour artist')
         self.del_artist(delall=True)
-# (why not)  self.delp('loaded_property')
+
         self.setp('use_var', True)
         self.generate_artist()
 
@@ -419,6 +419,13 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                     hl = alist[0].make_hl_artist(container)
                     facecolor = 'none'
                     self._hit_path = None
+                elif hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+                    v = self._hit_path3d[0]
+                    hl = container.plot(v[:,0], v[:,1], v[:,2], marker='s',
+                                        color='k', linestyle='None',
+                                        markerfacecolor='None',
+                                        markeredgewidth=0.5,
+                                        scalex=False, scaley=False)
                 else:
                     hl = container.plot(x, y, marker='s',
                                         color='k', linestyle='None',
@@ -556,25 +563,15 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 return False, {}
         else:
-            # if isinstance(artist, PathCollection):
-            #
-            #  For PathCollection, we do this test first
-            #
-            #    for path in artist.get_paths():
-            #        if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
-            #            self._hit_path = path
-            #            return True, {'child_artist': artist}
-
-            for path in artist.get_paths():
-                #               for line plot, hit test is done for each path vertices
-                #               path.contains_points does not check if the point is "on the line"
-                #               this does assume that line generated from path is simple line
-                #               segment without discontinueity and cuvrves (IOW, paht.codes = None)
-
+            for k, path in enumerate(artist.get_paths()):
                 xy = trans.transform(path.vertices)
                 ans, hit = CheckLineHit(xy[:, 0], xy[:, 1], evt.x, evt.y)
+
                 if ans:
                     self._hit_path = path
+                    self._hit_path3d = None
+                    if hasattr(artist, "_3dverts_codes"):
+                        self._hit_path3d = artist._3dverts_codes[k]
                     return True, {'child_artist': artist}
 #                if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
 #                     self._hit_path = path
@@ -622,10 +619,17 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 
     def onExportPath(self, event):
         if self._hit_path is not None:
-            v = self._hit_path.vertices
-            fig_val = {"xdata": v[:, 0],
-                       "ydata": v[:, 1]}
-            text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']'
+            if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+                v = self._hit_path3d[0]
+                fig_val = {"xdata": v[:, 0],
+                          "ydata": v[:, 1],
+                          "zdata": v[:, 2]}
+                text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\'], fig_val[\'zdata\']'
+            else:
+                v = self._hit_path.vertices
+                fig_val = {"xdata": v[:, 0],
+                           "ydata": v[:, 1]}
+                text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']'
             self._export_shell(fig_val, 'fig_val', text)
 
     def onCopyPath(self, event):
@@ -633,15 +637,43 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         from ifigure.mto.fig_fill import FigFill
         if self._hit_path is not None:
             canvas = event.GetEventObject()
-            v = self._hit_path.vertices
-            if self.getp('FillMode'):
-                obj = FigFill(v[:, 0], v[:, 1])
+            objs = []
+
+            if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+               v = self._hit_path3d[0]
+               code = self._hit_path3d[1]
+               idx = np.where(code == 1)[0]
+
+               vx = v[:,0]
+               vy = v[:,1]
+               vz = v[:,2]
+               for xx, yy, zz in zip(np.split(vx, idx),
+                                     np.split(vy, idx),
+                                     np.split(vz, idx)):
+                   if len(xx) == 0:
+                       continue
+                   objs.append(FigPlot(xx, yy, zz, 'k'))
+
             else:
-                obj = FigPlot(v[:, 0], v[:, 1], 'k')
+               v = self._hit_path.vertices
+               code = self._hit_path.codes
+
+               idx = np.where(code == 1)[0]
+
+               vx = v[:,0]
+               vy = v[:,1]
+
+               for xx, yy in zip(np.split(vx, idx),
+                                 np.split(vy, idx)):
+                   if len(xx) == 0:
+                       continue
+                   objs.append(FigPlot(xx, yy, 'k'))
+
             ax = self.get_figaxes()
             name = ax.get_next_name('Contour_path')
-            ax.add_child(name, obj)
-            obj.realize()
+            for obj in objs:
+                ax.add_child(name, obj)
+                obj.realize()
 
             ax.set_bmp_update(False)
             canvas.draw()
@@ -942,4 +974,3 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         return v
         # should return like  (False, [8.0, (False, [(1.0, 0.0, 0.0, 1.0)]),
         # True, 5.0, u'%1.3f', '0'])
-
