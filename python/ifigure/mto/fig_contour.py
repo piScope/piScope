@@ -46,7 +46,6 @@ import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigContour')
 
 def_clabel_param = {
-
     'use_clabel': False,
     'fontsize': 10,
     'fixed_color': False,
@@ -54,7 +53,8 @@ def_clabel_param = {
     'inline': True,
     'inline_spacing': 5,
     'fmt': '%1.3f',
-    'skip': 0}
+    'skip': 0,
+    'alpha': 1}
 
 default_kargs = {'use_tri': False,
                  'FillMode': False,
@@ -66,11 +66,11 @@ default_kargs = {'use_tri': False,
 class FigContour(FigObj, XUser, YUser, CUser, ZUser):
     def __new__(cls, *args, **kywds):
         """
-        contour : contour plot 
-        contour(z, n)  
-        contour(x, y, z, n)  
-        contour(z, v)  
-        contour(x, y, z, v)  
+        contour : contour plot
+        contour(z, n)
+        contour(x, y, z, n)
+        contour(z, v)
+        contour(x, y, z, v)
 
         n: number of levels
         v: a list of contour levels
@@ -79,7 +79,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             if not hasattr(obj, '_tri'):
                 obj._tri = None  # this can go away!?
             obj._clabels = []
-            obj._clabel_param = def_clabel_param
+            obj._clabel_param = def_clabel_param.copy()
             obj._nouse_expression = False
             obj._hit_path = None
             obj._expression = ''
@@ -300,18 +300,37 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 method = container.tricontourf
             else:
                 method = container.tricontour
+            methodline = container.tricontour
         else:
             if FillMode:
                 method = container.contourf
             else:
                 method = container.contour
+            methodline = container.contour
         try:
             self._mappable = method(*args, **kywds)
-            #self._artists = self._mappable.collections[:]
             self._artists = [self._mappable,]
             self.set_rasterized()
             for a in self.get_mappable():
                 cax.set_crangeparam_to_artist(a)
+
+            if self._clabel_param['use_clabel']:
+               if FillMode:
+                   lmappable = methodline(*args, **kywds)
+               else:
+                   lmappable = self._mappable
+               args, kargs = self._make_clabel_param()
+               self._clabels = container.clabel(lmappable, *args, **kargs)
+               talpha = float(self._clabel_param['alpha'])
+               for t in self._clabels:
+                   t.set_alpha(talpha)
+               if FillMode:
+                    lmappable.remove()
+                    for t in self._clabels:
+                        container.add_artist(t)
+               else:
+                    self._clabels = []
+
         except Exception:
             logging.exception(
                 "FigContour:generate_artist : artist generation failed")
@@ -329,18 +348,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             path.figobj_hl = []
             path.set_zorder(self.getp('zorder'))
 
-        if self._clabel_param['use_clabel'] and not FillMode:
-            args, kargs = self._make_clabel_param()
-            wx.CallLater(1, self.call_clabel, *args, **kargs)
-
-#           self._artists[0].figobj=self
-#           self._artists[0].figobj_hl=[]
-
-#    def refresh_artist_data(self):
-#        if not self.isempty():
-#           self.del_artist()
-#       if self.isempty() and not self._suppress:
-#            self.generate_artist()
 
     def del_artist(self, artist=None, delall=False):
         #
@@ -355,17 +362,16 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             artistlist = self._artists
 
         self.store_loaded_property()
-#        if not self.hasp("loaded_property"):
-#             self.load_data2(self.save_data2({}))
-#        self.highlight_artist(False)
-        for a in artistlist:
-            a.remove()
 
         for t in self._clabels:
             t.remove()
         self._clabels = []
-        if self._mappable is not None:
-            self._mappable = None
+
+        for a in artistlist:
+            a.remove()
+
+        self._mappable = None
+
         super(FigContour, self).del_artist(artistlist)
 
     def get_mappable(self):
@@ -460,18 +466,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 #
 #   Setter/Getter
 #
-#    def set_contour_nlevel(self, value, a):
-#        self.setp('n', value)
-#        self.del_artist(delall=True)
-#        self.delp('loaded_property')
-#        self.generate_artist()
-#        sel = [weakref.ref(self._artists[0])]
-#        import wx
-#        app = wx.GetApp().TopWindow
-#        ifigure.events.SendSelectionEvent(self, w=app, selections=sel)
-#    def get_contour_nlevel(self, a):
-#        return self.getp('n')
-
     def set_contour_nlevel2(self, value, a=None):
         self._nouse_expression = not value[0]
 #        print value
@@ -576,6 +570,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 #               path.contains_points does not check if the point is "on the line"
                 #               this does assume that line generated from path is simple line
                 #               segment without discontinueity and cuvrves (IOW, paht.codes = None)
+
                 xy = trans.transform(path.vertices)
                 ans, hit = CheckLineHit(xy[:, 0], xy[:, 1], evt.x, evt.y)
                 if ans:
@@ -907,6 +902,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         self._clabel_param['inline_spacing'] = float(gui_param[1][3])
         self._clabel_param['fmt'] = str(gui_param[1][4])
         self._clabel_param['skip'] = int(gui_param[1][5])
+        self._clabel_param['alpha'] = float(gui_param[1][6])
 
     def _make_clabel_param(self):
         keys = ['fontsize', 'colors', 'inline', 'inline_spacing', 'fmt']
@@ -918,7 +914,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         else:
             k = int(self._clabel_param['skip'])
             args = (self._mappable.levels[:(
-                self._mappable.levels.size/k)*k].reshape(-1, k)[:, 0],)
+                self._mappable.levels.size//k)*k].reshape(-1, k)[:, 0],)
         kargs['use_clabeltext'] = True
         return args, kargs
 
@@ -940,20 +936,10 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                  self._clabel_param['inline'],
                  float(self._clabel_param['inline_spacing']),
                  str(self._clabel_param['fmt']),
-                 str(self._clabel_param['skip']), ])
+                 str(self._clabel_param['skip']),
+                 str(self._clabel_param['alpha']), ])
 
         return v
         # should return like  (False, [8.0, (False, [(1.0, 0.0, 0.0, 1.0)]),
         # True, 5.0, u'%1.3f', '0'])
 
-    def call_clabel(self, *args,  **kargs):
-        for t in self._clabels:
-            t.remove()
-        self._clabels = []
-        container = self.get_container()
-        self._clabels = container.clabel(self._mappable, *args, **kargs)
-
-        self.set_bmp_update(False)
-        ifigure.events.SendPVDrawRequest(self, w=None,
-                                         wait_idle=True, refresh_hl=False)
-        return self._clabels
