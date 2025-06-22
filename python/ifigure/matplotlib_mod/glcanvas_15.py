@@ -1178,8 +1178,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.uint8)).reshape(
                 him, wim, -1)
-            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
-            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
+            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 255
+            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 255
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0)
 
@@ -1210,8 +1210,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.float32).reshape(
                     him, wim, -1)) * 255.
-            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
-            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
+            idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 255
+            idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 255
             #depth = np.fromstring(data3, np.float32).reshape(him, wim)
             depth = np.frombuffer(
                 bytes(data3),

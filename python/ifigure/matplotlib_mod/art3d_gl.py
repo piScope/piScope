@@ -48,6 +48,9 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
+        if not im.flags.writeable:
+            im = im.copy()
+        
         if not isMPL2:
             im.is_grayscale = False  # this is needed to print in MPL1.5
         renderer.draw_image(gc, round(x), round(y), im)
@@ -71,6 +74,9 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
+        if not im.flags.writeable:
+            im = im.copy()
+
         if not isMPL2:
             im.is_grayscale = False  # this is needed to print in MPL1.5
 
@@ -126,7 +132,7 @@ class ArtGL(object):
         self._gl_array_idx = kargs.pop('array_idx', None)
         if self._gl_array_idx is not None:
             self._gl_array_idx = np.array(self._gl_array_idx, dtype=int,
-                                          copy=False)
+                                          copy=None)
         self._gl_pickable = True
         self._gl_hl_use_array_idx = False
         self._gl_marker_tex = weakref.WeakKeyDictionary()

@@ -308,14 +308,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
             for a in artistlist:
                 # GL canvas check this if artist is still alive.
                 a.axes = None
-                try:
-                    a.set_figure(None)
-                except:
-                    a.figure = None
-                try:
-                    a.remove()
-                except:
-                    dprint1("remove failed")
+                a.remove()
 
         if self._coarse_artist is not None:
             col = self.get_figaxes()._artists[0].collections
@@ -372,7 +365,7 @@ class FigSurface(FigObj, XUser, YUser, ZUser, CUser):
 #   Setter/Getter
 #
     def set_cmap(self, value, a):
-        a.set_cmap(et_cmap(value))
+        a.set_cmap(get_cmap(value))
         self.setp('cmap', value)
         ca = self.get_caxisparam()
         ca.set_cmap(value)

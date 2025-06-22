@@ -522,8 +522,53 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
     def canvas_menu(self):
         m = FigObj.canvas_menu(self)
         m2 = GLCompound.canvas_menu(self)
-        return m[:1]+m2+m[1:]
+        if self.get_gl_hl_use_array_idx():
+            if len(self.getSelectedIndex()) > 0:
+                m3 = [("Generate subset plot from selection",  self.onPlotSubsetS, None),
+                      ("Generate subset plot",  self.onPlotSubsetV, None), ]
+            else:
+                m3 = [("Generate subset plot",  self.onPlotSubsetV, None), ]
+            return m[:1]+m2+m3+m[1:]
+        else:
+            return m[:1]+m2+m[1:]
 
+    def _on_plot_subset(self, cmp):
+        '''
+        create subset plot
+        '''
+        subset = self.get_subset(cmp)
+        if len(subset) == 4:
+            v, idx, cdata, s2 = subset
+        else:
+            v, idx, cdata = subset
+
+        kwargs = {}
+        arr = self.getvar('array_idx')
+        kwargs['array_idx'] = arr[np.in1d(arr, cmp)]
+        if cdata is None:
+            kwargs['cz'] = False
+        else:
+            kwargs['cz'] = True
+            kwargs['cdata'] = cdata
+
+        from ifigure.interactive import figure
+        win = figure()
+        win.threed('on')
+        win.solid(v, idx, **kwargs)
+
+    def onPlotSubsetV(self, evt):
+        '''
+        create subset plot from visible part
+        '''
+        cmp = self.shown_component
+        self._on_plot_subset(cmp)
+
+    def onPlotSubsetS(self, evt):
+        '''
+        create subset plot
+        '''
+        cmp = self.getSelectedIndex()
+        self._on_plot_subset(cmp)
 
 #
 # change rotation center in 3D plot
