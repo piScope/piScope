@@ -2024,7 +2024,7 @@ class TextCtrlCopyPasteEval(TextCtrlCopyPaste):
             from ifigure.mto.treedict import td_name_space
             self.ns = {key: td_name_space[key] for key in td_name_space}
 
-        super(TextCtrlCopyPaste, self).__init__(*arg, **kargs)
+        super(TextCtrlCopyPasteEval, self).__init__(*arg, **kargs)
 
     def onEnter(self, evt):
         try:

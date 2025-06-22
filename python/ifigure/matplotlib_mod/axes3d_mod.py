@@ -766,6 +766,7 @@ class Axes3DMod(Axes3D):
         offset = kwargs['offset'] if 'offset' in kwargs else None
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contour(self, *args, **kwargs)
+        '''
         for z, linec in zip(np.argsort(cset.levels), cset.collections):
             convert_to_gl(linec)
             linec.convert_2dpath_to_3dpath(z, zdir='z')
@@ -777,6 +778,7 @@ class Axes3DMod(Axes3D):
                     linec._gl_offset = (0, z * 0.001, 0)
                 else:
                     linec._gl_offset = (0, 0, z * 0.001)
+        '''
         return cset
 
     def imshow(self, *args, **kwargs):
@@ -799,6 +801,7 @@ class Axes3DMod(Axes3D):
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contourf(self, *args, **kwargs)
         edgecolor = kwargs.pop('edgecolor', [1, 1, 1, 0])
+        '''
         for z, linec in zip(np.argsort(cset.levels), cset.collections):
             convert_to_gl(linec)
             linec.convert_2dpath_to_3dpath(z, zdir='z')
@@ -811,6 +814,7 @@ class Axes3DMod(Axes3D):
                 else:
                     linec._gl_offset = (0, 0, z * 0.001)
             linec.set_edgecolor((edgecolor,))
+        '''
         return cset
 
     def quiver(self, *args, **kwargs):

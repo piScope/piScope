@@ -1820,7 +1820,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             array_idx = np.arange(l)
         vertex_id = np.array(array_idx, dtype=np.float32,
-                             copy=False).transpose().flatten()
+                             copy=None).transpose().flatten()
         vbos['vertex_id'] = get_vbo(vertex_id,
                                     usage='GL_STATIC_DRAW')
         return vbos

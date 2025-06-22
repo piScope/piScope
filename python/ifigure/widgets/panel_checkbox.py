@@ -47,7 +47,7 @@ class PanelCheckbox(object):
 
     def add_panel(self, cls, name, message, idx, keepsize=False, *args):
         """
-           config = ("name": name, 
+           config = ("name": name,
                      "member": PanelCheckBox() or panel
 
         """
@@ -132,7 +132,10 @@ class PanelCheckbox(object):
         self.sp.Bind(wx.EVT_SPLITTER_DOUBLECLICKED, self.onSashChanged)
         self.sp.Bind(wx.EVT_SPLITTER_UNSPLIT, self.onSashChanged)
 
-        self.sp.SetMinimumPaneSize(1)
+        # minimum 50 is chosen to avoid
+        #  Gtk-Critical assertion 'size >= 0' failed in GtkScrollbar
+        self.sp.SetMinimumPaneSize(50)
+
 #        self.sp.Bind(wx.EVT_SPLITTER_SASH_POS_CHANGING, self.onSashChanging)
 #        self.sp.Bind(wx.EVT_SCROLLBAR, self.onSashDragged)
         return p1, p2

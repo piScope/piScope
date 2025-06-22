@@ -345,6 +345,11 @@ def norm_d(x0, y0, x1, y1, x2, y2):
     l1 = np.sqrt(v1[0]*v1[0]+v1[1]*v1[1])
     l2 = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
 
+    if l1 == 0:
+        return 0., 0.
+    if l2 == 0:
+        return 0., 0.
+
     cos = (v1[0]*v2[0]+v1[1]*v2[1])/l1/l2
 
     d = l1*np.sqrt(1. - cos*cos)

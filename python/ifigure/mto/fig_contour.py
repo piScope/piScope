@@ -307,7 +307,8 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 method = container.contour
         try:
             self._mappable = method(*args, **kywds)
-            self._artists = self._mappable.collections[:]
+            #self._artists = self._mappable.collections[:]
+            self._artists = [self._mappable,]
             self.set_rasterized()
             for a in self.get_mappable():
                 cax.set_crangeparam_to_artist(a)
@@ -359,12 +360,11 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 #        self.highlight_artist(False)
         for a in artistlist:
             a.remove()
-            self._mappable.collections.remove(a)
+
         for t in self._clabels:
             t.remove()
         self._clabels = []
-        if (self._mappable is not None and
-                len(self._mappable.collections) == 0):
+        if self._mappable is not None:
             self._mappable = None
         super(FigContour, self).del_artist(artistlist)
 
