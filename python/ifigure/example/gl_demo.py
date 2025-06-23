@@ -87,6 +87,16 @@ def contourf_demo(**kwargs):
     threed('on')
     contourf(X, Y, Z)
 
+def contourf_demo2(**kwargs):
+    figure()
+    hold('on')
+    threed('on')
+    X = np.linspace(-5, 5, 100)
+    Y = np.linspace(-5, 5, 100)
+    X, Y = np.meshgrid(X, Y)
+    R = np.sqrt(X**2 + Y**2)
+    contourf(X, Y, Z, cmap='coolwarm', shade='linear')
+
 
 def contour_demo2(**kwargs):
     import mpl_toolkits.mplot3d.axes3d as axes3d

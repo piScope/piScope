@@ -413,9 +413,6 @@ class LineGL(ArtGL, Line3D):
             if len(self._marker.get_path()) != 0:
                 marker_path = None
                 marker_trans = None
-                m_facecolor = self.get_markerfacecolor()
-                m_edgecolor = self.get_markeredgecolor()
-                m_edgewidth = self.get_markeredgewidth()
                 m_size = renderer.points_to_pixels(self._markersize)
                 # marker_path is bitmap (texture)
                 # marker_trans is marker_size and other info (liken marker_every)
@@ -1166,4 +1163,151 @@ def polygon_2d_to_gl(obj, zs, zdir):
     obj._gl_lighting = True
     obj.set_3d_properties(zs=zs, zdir=zdir)
     ArtGL.__init__(obj)
+    return obj
+
+def quadcontourset3d_to_gl(obj):
+    class QuadContourSet3DGL(ArtGL, obj.__class__):
+        def __init__(self, xyz, **kargs):
+            ArtGL.__init__(self)
+            QuadContourSet3D.__init__(self, xy, **kargs)
+            self.do_stencil_test = True
+
+            self._fc_need_update = True
+            self._ec_need_update = True
+
+        def _split_path(self, facecolors, levels, paths):
+            self._gl_pathgroups = []
+            self._gl_facecolors = []
+            self._gl_levels = []
+
+            for fc, level, path in zip(facecolors, levels, paths):
+                p, c = path
+                if len(p) == 0:
+                    continue
+
+                pos1 = np.where(c == 1)[0][1:]
+
+                data = None
+                pathgroup = []
+                added = False
+                for v in np.split(p, pos1):
+                    x = v[:, 0]
+                    y = v[:, 1]
+                    x = np.hstack((x, x[0]))
+                    y = np.hstack((y, y[0]))
+
+                    area = np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
+
+                    if area > 0:
+                        if data is not None:
+                            pathgroup.append(data)
+                            added = True
+                        data = v
+                        added = False
+                    else:
+                        data = np.vstack((data, v))
+
+                if not added:
+                    pathgroup.append(data)
+
+                self._gl_pathgroups.append(pathgroup)
+                self._gl_facecolors.append(fc)
+                self._gl_levels.append(level)
+
+        def _split_path_simple(self, edgecolors, levels, paths):
+            self._gl_pathgroups = []
+            self._gl_edgecolors = []
+            self._gl_levels = []
+
+            for ec, level, path in zip(edgecolors, levels, paths):
+                p, c = path
+                if len(p) == 0:
+                    continue
+
+                pos1 = np.where(c == 1)[0][1:]
+
+                data = None
+                pathgroup = []
+                added = False
+                for v in np.split(p, pos1):
+                    pathgroup.append(v)
+
+                self._gl_pathgroups.append(pathgroup)
+                self._gl_edgecolors.append(ec)
+                self._gl_levels.append(level)
+
+        def split_path(self):
+            if len(self._facecolors) > 0:
+                self._split_path(self._facecolors, self._levels, self._3dverts_codes)
+
+            else:
+                self._split_path_simple(self._edgecolors, self._levels, self._3dverts_codes)
+
+        def update_scalarmappable(self):
+            self._fc_need_update = True
+            self._ec_need_update = True
+            super(QuadContourSet3DGL, self).update_scalarmappable()
+
+            self.split_path()
+
+        @draw_wrap
+        def draw(self, renderer):
+            if isSupportedRenderer(renderer):
+                renderer.use_gl = True
+                glcanvas = get_glcanvas()
+                if self.axes is not None:
+                    tag = self.axes
+                    trans = self.axes.transAxes
+                elif self.figure is not None:
+                    tag = self.figure
+                    trans = self.figure.transFigure
+
+                gc = renderer.new_gc()
+
+                glcanvas.frame_request(self, trans)
+                glcanvas.start_draw_request(self)
+
+                if glcanvas.has_vbo_data(self):
+                   d = glcanvas.get_vbo_data(self)
+                   if self._invalidz:
+                       for x in d:
+                           x['v'].need_update = True
+                   if self._fc_need_update:
+                       for x in d:
+                           x['fc'].need_update = True
+
+                if len(self._facecolors) ==  len(self._gl_pathgroups):
+                    for c, pathgroup in zip(self._facecolors, self._gl_pathgroups):
+                         for path in pathgroup:
+                             renderer.gl_draw_path(gc, path.transpose(),  trans, rgbFace=c,
+                                                   stencil_test=True)
+
+                print(len(self._edgecolors),  len(self._gl_pathgroups))
+                if len(self._edgecolors) ==  len(self._gl_pathgroups):
+                    for c, pathgroup in zip(self._edgecolors, self._gl_pathgroups):
+                         for path in pathgroup:
+                             renderer.gl_draw_path(gc, path.transpose(),  trans,
+                                                   rgbEdge = c, stencil_test=True)
+
+                glcanvas.end_draw_request()
+
+                self._invalidz = False
+                self._fc_need_update = False
+                self._ec_need_update = False
+
+                gc.restore()
+                renderer.use_gl = False
+                finish_gl_drawing(glcanvas, renderer, tag, trans)
+
+            else:
+                QuadContourSet3D(self, renderer)
+
+    obj.__class__ = QuadContourSet3DGL
+    ArtGL.__init__(obj)
+
+    obj._invalidz = True
+    obj.do_stencil_test = True
+    obj._gl_lighting = True
+    obj.split_path()
+
     return obj

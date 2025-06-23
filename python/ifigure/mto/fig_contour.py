@@ -292,6 +292,9 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             if self.get_figaxes().get_3d():
                 kywds['offset'] = self.getvar('offset')
                 kywds['zdir'] = self.getvar('zdir')
+                is3D = True
+            else:
+                is3D = False
         except:
             pass
 
@@ -307,6 +310,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 method = container.contour
             methodline = container.contour
+
         try:
             self._mappable = method(*args, **kywds)
             self._artists = [self._mappable,]
@@ -330,10 +334,13 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                         container.add_artist(t)
                else:
                     self._clabels = []
-
         except Exception:
             logging.exception(
                 "FigContour:generate_artist : artist generation failed")
+
+        if is3D:
+            from ifigure.matplotlib_mod.art3d_gl import quadcontourset3d_to_gl
+            self._mappable = quadcontourset3d_to_gl(self._mappable)
 
         if lp is not None:
             #              print lp
