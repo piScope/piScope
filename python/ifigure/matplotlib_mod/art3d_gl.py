@@ -396,6 +396,7 @@ class LineGL(ArtGL, Line3D):
             if len(self._gl_3dpath) == 3:
                 renderer.gl_draw_path(gc, self._gl_3dpath,  trans,
                                       rgbFace=self._facecolor,
+                                      rgbEdge=ln_color_rgba,
                                       linestyle=self._linestyle)
             else:
                 fc = None if self._facecolor is None else [self._facecolor]
@@ -1143,6 +1144,7 @@ class Polygon3DGL(ArtGL, Polygon):
             self._invalidz = False
             renderer.gl_draw_path(gc, self._verts3d,  trans,
                                   rgbFace=rgbFace,
+                                  rgbEdge=rgbFace,
                                   stencil_test=self.do_stencil_test)
 #           glcanvas.update_gc(self, gc)
             glcanvas.end_draw_request()
@@ -1174,6 +1176,7 @@ def quadcontourset3d_to_gl(obj):
 
             self._fc_need_update = True
             self._ec_need_update = True
+            self._gl_linestyle = ''
 
         def _split_path(self, facecolors, levels, paths):
             self._gl_pathgroups = []
@@ -1211,7 +1214,7 @@ def quadcontourset3d_to_gl(obj):
                     pathgroup.append(data)
 
                 self._gl_pathgroups.append(pathgroup)
-                self._gl_facecolors.append(fc)
+                self._gl_facecolors.append(tuple(fc))
                 self._gl_levels.append(level)
 
         def _split_path_simple(self, edgecolors, levels, paths):
@@ -1233,7 +1236,7 @@ def quadcontourset3d_to_gl(obj):
                     pathgroup.append(v)
 
                 self._gl_pathgroups.append(pathgroup)
-                self._gl_edgecolors.append(ec)
+                self._gl_edgecolors.append(tuple(ec))
                 self._gl_levels.append(level)
 
         def split_path(self):
@@ -1250,6 +1253,32 @@ def quadcontourset3d_to_gl(obj):
 
             self.split_path()
 
+        def check_need_update(self, glcanvas):
+            if glcanvas.has_vbo_data(self):
+                d = glcanvas.get_vbo_data(self)
+                if self._invalidz:
+                    for x in d:
+                        x['v'].need_update = True
+
+                if len(self._gl_facecolors) == len(self._gl_pathgroups):
+                    if self._fc_need_update:
+                         for x in d:
+                             x['fc'].need_update = True
+        def reset_need_update(self):
+            self._invalidz = False
+            self._fc_need_update = False
+            self._ec_need_update = False
+
+        def set_linestyle(self, value):
+            super(QuadContourSet3DGL, self).set_linestyle(value)
+            if value == 'dashed':
+                self._gl_linestyle = '--'
+            elif value == 'dotted':
+                self._gl_linestyle = ':'
+            elif value == 'dashdot':
+                self._gl_linestyle = '-.'
+            else:
+                self._gl_linestyle = ''
         @draw_wrap
         def draw(self, renderer):
             if isSupportedRenderer(renderer):
@@ -1264,36 +1293,30 @@ def quadcontourset3d_to_gl(obj):
 
                 gc = renderer.new_gc()
 
+
                 glcanvas.frame_request(self, trans)
                 glcanvas.start_draw_request(self)
 
-                if glcanvas.has_vbo_data(self):
-                   d = glcanvas.get_vbo_data(self)
-                   if self._invalidz:
-                       for x in d:
-                           x['v'].need_update = True
-                   if self._fc_need_update:
-                       for x in d:
-                           x['fc'].need_update = True
+                self.check_need_update(glcanvas)
 
-                if len(self._facecolors) ==  len(self._gl_pathgroups):
-                    for c, pathgroup in zip(self._facecolors, self._gl_pathgroups):
+                if len(self._gl_facecolors) == len(self._gl_pathgroups):
+                    for c, pathgroup in zip(self._gl_facecolors, self._gl_pathgroups):
                          for path in pathgroup:
-                             renderer.gl_draw_path(gc, path.transpose(),  trans, rgbFace=c,
+                             renderer.gl_draw_path(gc, path.transpose(), trans, rgbFace=c,
                                                    stencil_test=True)
-
-                print(len(self._edgecolors),  len(self._gl_pathgroups))
-                if len(self._edgecolors) ==  len(self._gl_pathgroups):
-                    for c, pathgroup in zip(self._edgecolors, self._gl_pathgroups):
+                elif len(self._gl_edgecolors) == len(self._gl_pathgroups):
+                    gc.set_linewidth(self.get_linewidth()[0])
+                    for c, pathgroup in zip(self._gl_edgecolors, self._gl_pathgroups):
                          for path in pathgroup:
-                             renderer.gl_draw_path(gc, path.transpose(),  trans,
-                                                   rgbEdge = c, stencil_test=True)
+                             renderer.gl_draw_path(gc, path.transpose(), trans,
+                                                   rgbEdge=c,
+                                                   stencil_test=True,
+                                                   linestyle=self._gl_linestyle)
+                else:
+                    pass # no grapphics in this case (should not come here)
 
                 glcanvas.end_draw_request()
-
-                self._invalidz = False
-                self._fc_need_update = False
-                self._ec_need_update = False
+                self.reset_need_update()
 
                 gc.restore()
                 renderer.use_gl = False
@@ -1308,6 +1331,10 @@ def quadcontourset3d_to_gl(obj):
     obj._invalidz = True
     obj.do_stencil_test = True
     obj._gl_lighting = True
+    obj._gl_edgecolors = []
+    obj._gl_facecolors = []
+    obj._gl_levels = []
+    obj._gl_linestyle = ''
     obj.split_path()
 
     return obj

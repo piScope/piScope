@@ -1579,6 +1579,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         linestyle = kwargs.get('linestyle', None)
         lw = gc.get_linewidth()
         if rgbFace is None:
+            if rgbEdge is None:
+                return
             if lw > 0:
                 if (linestyle == '-' or self._p_shader != self.shader):
                     self.draw_path_drawarray(vbos, gc, path, rgbEdge,  **kwargs)
