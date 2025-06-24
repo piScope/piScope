@@ -702,7 +702,6 @@ class BitmapButtons(wx.Panel):
         for m in self.Controls:
             s = m['bitmap'].GetSize()
             m['obj'].Enable(value)
-            m['obj'].SetClientSize((s[0]+8, s[1]+8))
 
     def check_if_need2expand(self):
         size = self.gsizer.CalcRowsCols()
@@ -754,7 +753,8 @@ class BitmapButtons(wx.Panel):
                 array = array.copy()
                 array = array.reshape(w, h, -1)
             else:
-                array = imagearray[name]
+                array = imagearray[name].copy()
+
             array[:2, :, 0] = 0
             array[-2:, :, 0] = 0
             array[:, :2, 0] = 0
@@ -771,6 +771,7 @@ class BitmapButtons(wx.Panel):
             image = wxEmptyImage(h, w)
             image.SetData(array.tobytes())
             bitmap2 = image.ConvertToBitmap()
+
             btn = wx.BitmapButton(self, bitmap=bitmap)
             self._btn[i] = btn
             self.gsizer.Add(btn, 0, wx.ALL, 0)
@@ -810,13 +811,11 @@ class BitmapButtons(wx.Panel):
 
         # if isnumber(val) and not isnumber(self._btn_name[0]):
         #    val = str(val)
-        if isstringlike(val) and val in self._btn_name:
+        #if isstringlike(val) and val in self._btn_name:
+        if val in self._btn_name:
             j = self._btn_name.index(val)
-            # print 'found', j
             self._btn[j].SetBitmapLabel(self.Controls[j]["bitmap2"])
-        # else:
-        #    # check error
-        #    print val, self._btn_name
+
         self._val = val
 
     def GetValue(self, val):
