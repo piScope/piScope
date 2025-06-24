@@ -1167,13 +1167,14 @@ def polygon_2d_to_gl(obj, zs, zdir):
     ArtGL.__init__(obj)
     return obj
 
-def quadcontourset3d_to_gl(obj):
-    class QuadContourSet3DGL(ArtGL, obj.__class__):
-        def __init__(self, xyz, **kargs):
-            ArtGL.__init__(self)
-            QuadContourSet3D.__init__(self, xy, **kargs)
-            self.do_stencil_test = True
+contour_glclasses = {}
 
+def quadcontourset3d_to_gl(obj):
+    class ContourSetGLMixIn(ArtGL):
+        def __init__(self, mainclass):
+            ArtGL.__init__(self)
+            self._mainclass_ = mainclass
+            self.do_stencil_test = True
             self._fc_need_update = True
             self._ec_need_update = True
             self._gl_linestyle = ''
@@ -1182,6 +1183,7 @@ def quadcontourset3d_to_gl(obj):
             self._gl_pathgroups = []
             self._gl_facecolors = []
             self._gl_levels = []
+            self._gl_vcounts = []
 
             for fc, level, path in zip(facecolors, levels, paths):
                 p, c = path
@@ -1192,6 +1194,7 @@ def quadcontourset3d_to_gl(obj):
 
                 data = None
                 pathgroup = []
+                vcount = []
                 added = False
                 for v in np.split(p, pos1):
                     x = v[:, 0]
@@ -1199,23 +1202,29 @@ def quadcontourset3d_to_gl(obj):
                     x = np.hstack((x, x[0]))
                     y = np.hstack((y, y[0]))
 
+
                     area = np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
 
-                    if area > 0:
+                    if area >= 0:
                         if data is not None:
                             pathgroup.append(data)
+                            vcount.append(vv)
                             added = True
                         data = v
+                        vv = [len(v)]
                         added = False
                     else:
                         data = np.vstack((data, v))
+                        vv.append(len(v))
 
                 if not added:
                     pathgroup.append(data)
+                    vcount.append(vv)
 
                 self._gl_pathgroups.append(pathgroup)
                 self._gl_facecolors.append(tuple(fc))
                 self._gl_levels.append(level)
+                self._gl_vcounts.append(vcount)
 
         def _split_path_simple(self, edgecolors, levels, paths):
             self._gl_pathgroups = []
@@ -1249,7 +1258,7 @@ def quadcontourset3d_to_gl(obj):
         def update_scalarmappable(self):
             self._fc_need_update = True
             self._ec_need_update = True
-            super(QuadContourSet3DGL, self).update_scalarmappable()
+            self._mainclass_.update_scalarmappable(self)
 
             self.split_path()
 
@@ -1300,10 +1309,11 @@ def quadcontourset3d_to_gl(obj):
                 self.check_need_update(glcanvas)
 
                 if len(self._gl_facecolors) == len(self._gl_pathgroups):
-                    for c, pathgroup in zip(self._gl_facecolors, self._gl_pathgroups):
-                         for path in pathgroup:
+                    for c, pathg, vcs in zip(self._gl_facecolors, self._gl_pathgroups, self._gl_vcounts):
+                         for path, vc in zip(pathg, vcs):
                              renderer.gl_draw_path(gc, path.transpose(), trans, rgbFace=c,
-                                                   stencil_test=True)
+                                                   stencil_test=True,
+                                                   vcounts=vc)
                 elif len(self._gl_edgecolors) == len(self._gl_pathgroups):
                     gc.set_linewidth(self.get_linewidth()[0])
                     for c, pathgroup in zip(self._gl_edgecolors, self._gl_pathgroups):
@@ -1325,16 +1335,25 @@ def quadcontourset3d_to_gl(obj):
             else:
                 QuadContourSet3D(self, renderer)
 
-    obj.__class__ = QuadContourSet3DGL
-    ArtGL.__init__(obj)
+    pcls  = obj.__class__
+    glclsname = pcls.__name__+'GL'
+    if glclsname not in contour_glclasses:
+        attrs = {"_invalidz": True,
+                  "_gl_lighting": True,
+                  "_gl_edgecolors": [],
+                  "_gl_facecolors": [],
+                  "_gl_levels": [],
+                  "_gl_linestyle": '',
+                  "do_stencil_test": True,}
 
-    obj._invalidz = True
-    obj.do_stencil_test = True
-    obj._gl_lighting = True
-    obj._gl_edgecolors = []
-    obj._gl_facecolors = []
-    obj._gl_levels = []
-    obj._gl_linestyle = ''
+        cls = type(glclsname, (ContourSetGLMixIn, pcls,),
+                   attrs)
+        contour_glclasses[glclsname] = cls
+    else:
+        cls = contour_glclasses[glclsname]
+
+    obj.__class__ = cls
+    ContourSetGLMixIn.__init__(obj, pcls)
     obj.split_path()
 
     return obj

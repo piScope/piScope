@@ -1394,7 +1394,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             self.set_uniform(glUniform1i, 'uUseArrayID', 0)
 
-    def draw_polygon(self, vbos, gc, f, c, facecolor=None, edgecolor=None):
+    def draw_polygon(self, vbos, gc, firsts, counts, facecolor=None, edgecolor=None):
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
         self.EnableNormal(vbos)
@@ -1407,7 +1407,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glClear(GL_STENCIL_BUFFER_BIT)
         glStencilFunc(GL_ALWAYS, 1, 1)
         glStencilOp(GL_INCR, GL_INCR, GL_INCR)
-        glDrawArrays(GL_TRIANGLE_FAN, f, c)
+        for f, c in zip(firsts, counts):
+            glDrawArrays(GL_TRIANGLE_FAN, f, c)
 
         self.set_depth_test()
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
@@ -1419,7 +1420,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe != 2:
             if self._wireframe == 1:
                 glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
-            glDrawArrays(GL_TRIANGLE_FAN, f, c)
+            for f, c in zip(firsts, counts):
+                glDrawArrays(GL_TRIANGLE_FAN, f, c)
             if self._wireframe == 1:
                 glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
 
@@ -1436,7 +1438,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe == 2:
             glDisable(GL_DEPTH_TEST)
         glDepthMask(GL_FALSE)
-        glDrawArrays(GL_LINE_STRIP, f, c)
+        for f, c in zip(firsts, counts):
+            glDrawArrays(GL_LINE_STRIP, f, c)
         self.set_depth_mask()
         if self._wireframe == 2:
             self.set_depth_test()
@@ -1591,7 +1594,9 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     kwargs['atlas'] = atlas
                     self.draw_path_drawarray(vbos, gc, path, rgbEdge, **kwargs)
         else:
-            self.draw_polygon(vbos, gc, 0, vbos['counts'], facecolor=rgbFace,
+            counts = kwargs.get('vcounts', vbos['counts'])
+            firsts = np.hstack((0, np.cumsum(counts)))[:-1]
+            self.draw_polygon(vbos, gc, firsts, counts, facecolor=rgbFace,
                               edgecolor=gc._rgb)
 
             mode = 3  # polygon
@@ -1860,7 +1865,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['fc'] is not None:
             if stencil_test:
                 for f, c in zip(first, counts):
-                    self.draw_polygon(vbos, gc, f, c)
+                    self.draw_polygon(vbos, gc, [f], [c])
             else:
                 self.select_shader(self.shader)
                 glBindVertexArray(vbos['vao'])

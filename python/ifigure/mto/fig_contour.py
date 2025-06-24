@@ -418,40 +418,27 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 y = (de[2], de[2], de[3], de[3], de[2])
 
                 facecolor = 'k'
-                if isinstance(alist[0], Poly3DCollectionGL):
-                    hl = alist[0].make_hl_artist(container)
-                    facecolor = 'none'
-                    self._hit_path = None
-                elif isinstance(alist[0], Line3DCollectionGL):
-                    hl = alist[0].make_hl_artist(container)
-                    facecolor = 'none'
-                    self._hit_path = None
-                elif hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+
+                if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
                     v = self._hit_path3d[0]
                     hl = container.plot(v[:,0], v[:,1], v[:,2], marker='s',
                                         color='k', linestyle='None',
                                         markerfacecolor='None',
                                         markeredgewidth=0.5,
                                         scalex=False, scaley=False)
+                    alist[0].add_hl_mask()
                 else:
-                    hl = container.plot(x, y, marker='s',
-                                        color='k', linestyle='None',
-                                        markerfacecolor='None',
-                                        markeredgewidth=0.5,
-                                        scalex=False, scaley=False)
-                for item in hl:
-                    alist[0].figobj_hl.append(item)
-
-                if self._hit_path is not None:
                     v = self._hit_path.vertices
                     hl = container.plot(v[:, 0], v[:, 1], marker='s',
                                         color='k', linestyle='None',
                                         markerfacecolor='None',
                                         markeredgewidth=0.5,
                                         scalex=False, scaley=False)
-                    for item in hl:
-                        alist[0].figobj_hl.append(item)
 
+                for item in hl:
+                    alist[0].figobj_hl.append(item)
+
+                '''
                 hlp = Rectangle((de[0], de[2]),
                                 de[1]-de[0],
                                 de[3]-de[2],
@@ -466,16 +453,13 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                     hlp.set_clip_on(True)
                 figure.patches.append(hlp)
                 alist[0].figobj_hl.append(hlp)
+                '''
         else:
             for a in alist:
                 if len(a.figobj_hl) == 0:
                     continue
-                for hl in a.figobj_hl[:-1]:
+                for hl in a.figobj_hl:
                     hl.remove()
-                if isinstance(alist[0], Poly3DCollectionGL):
-                    a.figobj_hl[-1].remove()
-                else:
-                    figure.patches.remove(a.figobj_hl[-1])
                 a.figobj_hl = []
 #
 #   Setter/Getter

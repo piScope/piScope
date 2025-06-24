@@ -1068,7 +1068,7 @@ class Axes3DMod(Axes3D):
 
         '''
         from .art3d_gl import poly_collection_3d_to_gl
-        from matplotlib.tri.triangulation import Triangulation
+        from matplotlib.tri import Triangulation
 
         cz = kwargs.pop('cz', False)
         cdata = kwargs.pop('cdata', None)

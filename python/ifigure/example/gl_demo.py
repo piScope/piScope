@@ -88,25 +88,31 @@ def contourf_demo(**kwargs):
     contourf(X, Y, Z)
 
 def contourf_demo2(**kwargs):
-    figure()
-    hold('on')
-    threed('on')
-    X = np.linspace(-5, 5, 100)
-    Y = np.linspace(-5, 5, 100)
+    from ifigure.interactive import contourf, threed, figure
+
+    v = figure()
+    v.threed('on')
+    X = np.linspace(-5, 5, 300)
+    Y = np.linspace(-5, 5, 300)
     X, Y = np.meshgrid(X, Y)
     R = np.sqrt(X**2 + Y**2)
-    contourf(X, Y, Z, cmap='coolwarm', shade='linear')
+    Z = np.cos(R*2)*np.exp(-R**2/10)
+    #v.contourf(X, Y, Z, cmap='coolwarm')
+    Z = np.hstack((Z,Z))
+    v.contourf(Z, cmap='coolwarm')
 
 
 def contour_demo2(**kwargs):
     import mpl_toolkits.mplot3d.axes3d as axes3d
-    from ifigure.interactive import contourf, threed, figure, hold
+    from ifigure.interactive import contourf, contour, threed, figure, hold
     X, Y, Z = axes3d.get_test_data(0.05)
     v = figure(gl=True)
     threed('on')
     hold('on')
-    contourf(X, Y, Z)
-    contourf(X, Y, Z, zdir='x', offset=-40)
+    contour(X, Y, Z)
+    contour(X, Y, Z, zdir='x', offset=-40)
+    contour(X, Y, Z, zdir='y', offset= 40)
+    contour(X, Y, Z, zdir='z', offset=-100)
 
 
 def revolve_demo(**kwargs):
@@ -207,10 +213,10 @@ def solid_demo(**kwargs):
     lighting(light=0.5, ambient=0.5)
 
 
-def trisurf3d_demo(**kwargs):
+def triplots_demo(**kwargs):
     from matplotlib import cm
     import numpy as np
-    from ifigure.interactive import figure, threed, trisurf, nsec, isec, lighting
+    from ifigure.interactive import figure, threed, trisurf, nsec, isec, lighting, tricontourf
 
     # preparing the data, the same as mplot3d demo
     n_angles = 36
@@ -223,7 +229,7 @@ def trisurf3d_demo(**kwargs):
     z = np.sin(-x*y)
 
     v = figure()
-    nsec(3)
+    nsec(4)
     isec(0)
     threed('on')
     trisurf(x, y, z, cmap=cm.jet, linewidth=0.2, cz=True)
@@ -235,6 +241,9 @@ def trisurf3d_demo(**kwargs):
     threed('on')
     trisurf(x, y, z*0, cmap=cm.jet, linewidth=0.2,
             cz=True, cdata=z, edgecolor=None)
+    isec(3)
+    threed('on')
+    tricontourf(x, y, z)
 
 
 def trisurf3d_demo2(**kwargs):
@@ -294,13 +303,13 @@ def trisurf3d_demo2(**kwargs):
 
 def quiver_demo(**kwargs):
     '''
-    quiver_demo(length = 1.0, 
+    quiver_demo(length = 1.0,
                 normalize = True,
                 facecolor = 'b',
                 edgecolor = None,
                 arrow_length_ratio = 0.3,
                 shaftsize = 0.01,
-                headsize = 0.01)    
+                headsize = 0.01)
 
     '''
     from ifigure.interactive import quiver, threed, figure, lighting, view, isec, nsec

@@ -913,8 +913,7 @@ class BookViewerInteractive(object):
             obj = cls(*args, **kargs)
         except ValueError as x:
             traceback.print_exc()
-            if hasattr(x, 'message'):
-                print(x.message)
+            print(x)
             return
 
         x = convert_2_real_array(obj.getvar('x'))
@@ -996,7 +995,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigTriplot(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1013,7 +1012,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigSpline(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1025,7 +1024,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigContour(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1036,7 +1035,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigContour(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1046,7 +1045,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigScatter(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1130,7 +1129,7 @@ class BookViewerInteractive(object):
                     obj.add_child(name, obj2)
                 wx.CallAfter(obj2.call_adjust_range)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1143,7 +1142,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigTricontour(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1154,7 +1153,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigTricontour(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1167,7 +1166,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigImage(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1182,7 +1181,7 @@ class BookViewerInteractive(object):
             else:
                 obj = FigQuiver(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1194,7 +1193,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigQuiver3D(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1241,7 +1240,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigSpec(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1251,7 +1250,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigTripcolor(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1261,7 +1260,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigAxline(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1272,7 +1271,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigAxlineC(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1282,7 +1281,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigAxspan(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1293,7 +1292,7 @@ class BookViewerInteractive(object):
         try:
             obj = FigAxspanC(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1311,7 +1310,7 @@ class BookViewerInteractive(object):
 
             obj = FigText(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
 
         return obj
@@ -1329,7 +1328,7 @@ class BookViewerInteractive(object):
             #kargs['autonext'] = False
             obj = FigArrow(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
@@ -1342,7 +1341,7 @@ class BookViewerInteractive(object):
                 kargs['trans'] = ['figure']*4
             obj = FigArrow(*args, **kargs)
         except ValueError as x:
-            print(x.message)
+            print(x)
             return
         return obj
 
