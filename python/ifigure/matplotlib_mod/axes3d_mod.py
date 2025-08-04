@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from packaging import version
 
+from ifigure.utils.cross2d import *
 from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 import time
@@ -1688,10 +1689,9 @@ class Axes3DMod(Axes3D):
         d2 = screen_diff(v2)
         d3 = screen_diff(v3)
 
-        # print(d1, d2, d3)
-        c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
-        c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
-        c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
+        c1 = abs(cross2d(norm_vec(d2), norm_vec(d3)))
+        c2 = abs(cross2d(norm_vec(d1), norm_vec(d3)))
+        c3 = abs(cross2d(norm_vec(d1), norm_vec(d2)))
         # print("c1, c2, c3", c1,  c2, c3)
         vv = [v1, v2, v3]
         dd = [d1, d2, d3]
