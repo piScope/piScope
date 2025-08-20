@@ -1838,7 +1838,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         array_idx = kwargs.pop("array_idx", None)
         l = np.array(path[0]).flatten().shape[0]
         if array_idx is not None:
-            array_idx = np.array(array_idx, copy=False).flatten()
+            array_idx = np.array(array_idx, copy=None).flatten()
             if array_idx.shape[0] != l:
                 assert False, "array_idx length should be the same as the number of elements"
         else:
@@ -2231,13 +2231,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             idxset0 = np.array(
                 paths[4],
-                copy=False).astype(
-                np.uint32,
-                copy=False).flatten()
+                copy=None, dtype=np.uint32).flatten()
             if edge_idx is not None:
                 edge_idx = np.array(
-                    edge_idx, copy=False).astype(
-                    np.uint32, copy=False).flatten()
+                    edge_idx, copy=None, dtype=np.uint32).flatten()
 
             if len(paths[4][0]) == 4:
                 idxset0 = idxset0.reshape(-1, 4)
@@ -2373,8 +2370,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             elif len(facecolor)*paths[4].shape[1]  == len(paths[0]):
                 # non index array/flat
                 c = paths[4].shape[1]
-                col = np.array(facecolor, copy=False).astype(
-                    np.float32, copy=False)
+                col = np.array(facecolor, copy=None, dtype=np.float32)
                 col = np.hstack([col] * c)
             else:
                 col = np.repeat(np.array(facecolor).astype(np.float32),
@@ -2391,8 +2387,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if len(edgecolor) == 0:
                 edgecolor = np.array([[1, 1, 1, 0]]).astype(np.float32)
             if len(edgecolor) == len(paths[0]):
-                col = np.array(edgecolor, copy=False).astype(
-                    np.float32, copy=False)
+                col = np.array(edgecolor, copy=None, dtype=np.float32)
             else:
                 col = np.repeat(np.array(edgecolor).astype(np.float32),
                                 nindex * counts)
@@ -2408,7 +2403,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             nverts = len(paths[0])
 
             if array_idx is not None:
-                array_idx = np.array(array_idx, copy=False).flatten()
+                array_idx = np.array(array_idx, copy=None).flatten()
 
                 if array_idx.shape[0] == nverts:
                     pass
@@ -2418,7 +2413,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     assert False, "array_idx length should be the same as the number of vertex:" + str(array_idx.shape) + " : "  + str(nverts) + " : " + str(l)
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
-                                     copy=False).transpose().flatten()
+                                     copy=None).transpose().flatten()
 
                 if vbos['vertex_id'] is None:
                     vbos['vertex_id'] = get_vbo(vertex_id,
