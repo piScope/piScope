@@ -811,7 +811,7 @@ class BitmapButtons(wx.Panel):
 
         # if isnumber(val) and not isnumber(self._btn_name[0]):
         #    val = str(val)
-        #if isstringlike(val) and val in self._btn_name:
+        # if isstringlike(val) and val in self._btn_name:
         if val in self._btn_name:
             j = self._btn_name.index(val)
             self._btn[j].SetBitmapLabel(self.Controls[j]["bitmap2"])
@@ -2480,6 +2480,7 @@ class CSliderWithText(wx.Panel):
         self.minV = setting["minV"]
         self.maxV = setting["maxV"]
         self.datamax = (self.maxV-self.minV)/setting["res"]
+        self._use_int = True if (setting["res"] % 1) == 0 else False
 
         self.s1 = CSlider(self, wx.ID_ANY, setting=setting)
         txt = str(setting.pop("val", ''))
@@ -2494,7 +2495,10 @@ class CSliderWithText(wx.Panel):
         self.SetSizer(sizer)
 
     def SetValue(self, value):
-        self.s1.SetValue(int(value))
+        if self._use_int:
+            self.s1.SetValue(int(value))
+        else:
+            self.s1.SetValue(float(value))
         self.t1.SetValue(str(value))
 
     def GetValue(self):
@@ -4157,6 +4161,7 @@ class MDSSource(wx.Panel):
 #        self.elp.Enable(False)
 #        self._figmds().onDataSetting(evt)
 
+
     def data_setting_closed(self):
         pass
 #        self.elp.Enable(True)
@@ -4578,7 +4583,7 @@ class EditListCore(object):
                 s = setting["choices"]
                 s = [x for x in s if x != 'New...']
                 s = s + ['New...']
-                s = [" " if len(x)==0 else x for x in s]
+                s = [" " if len(x) == 0 else x for x in s]
                 choices_cb = setting.pop("choices_cb", None)
                 w = ComboBoxWithNew(parent[-1], wx.ID_ANY, style=setting["style"],
                                     choices=s,
