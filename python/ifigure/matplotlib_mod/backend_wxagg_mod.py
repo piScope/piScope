@@ -554,3 +554,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             bp = self.Parent._cutplane_btns
             if bp is not None:
                 bp.Refresh()
+
+    def get_bitmap_width_height(self):
+        w, h = self.bitmap.GetSize()
+        return w, h

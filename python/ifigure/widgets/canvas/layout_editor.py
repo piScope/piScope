@@ -345,7 +345,7 @@ class layout_editor(object):
                 rect2s.append(rect2)
         for num, rect1 in enumerate(rect1s):
             x, y = self._area2xy(rect1)
-            w, h = self.mpl_canvas.get_width_height()
+            w, h = self.mpl_canvas.get_bitmap_width_height()
             x1 = (np.array(x)*(w-2)+1)/w
             y1 = (np.array(y)*(h-2)+1)/h
             hl = Line2D(x1, y1, marker=None,
@@ -415,7 +415,7 @@ class layout_editor(object):
                      area[2]*(1.-pm[0]-pm[1]),
                      area[3]*(1.-pm[2]-pm[3]), ]
             x, y = self._area2xy(rect1)
-            w, h = self.mpl_canvas.get_width_height()
+            w, h = self.mpl_canvas.get_bitmap_width_height()
             x1 = (np.array(x)*(w-2)+1)/w
             y1 = (np.array(y)*(h-2)+1)/h
             hl = Line2D(x1, y1, marker=None,
@@ -470,7 +470,7 @@ class layout_editor(object):
         # edge hit check
 #       h = self.figure.get_figheight()*self.figure.get_dpi()
 #       w = self.figure.get_figwidth()*self.figure.get_dpi()
-        w, h = self.mpl_canvas.get_width_height()
+        w, h = self.mpl_canvas.get_bitmap_width_height()
         event = _fix_event_data(w, h, event)
 
         self.edge_hit = []
@@ -527,7 +527,7 @@ class layout_editor(object):
         self.SetEditorValue()
 
     def buttonrelease(self, event):
-        w, h = self.mpl_canvas.get_width_height()
+        w, h = self.mpl_canvas.get_bitmap_width_height()
         event = _fix_event_data(w, h, event)
         # cleaning...
         if self._mid is not None:
@@ -605,7 +605,7 @@ class layout_editor(object):
         pass
 
     def motion(self, event):
-        w, h = self.mpl_canvas.get_width_height()
+        w, h = self.mpl_canvas.get_bitmap_width_height()
         event = _fix_event_data(w, h, event)
 
         if event.xdata is None or event.ydata is None:

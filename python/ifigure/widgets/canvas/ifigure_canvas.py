@@ -182,7 +182,7 @@ class ifigure_DropTarget(wx.TextDropTarget):
         class event(object):
             pass
         evt = event()
-        w, h = self._canvas().canvas.get_width_height()
+        w, h = self._canvas().canvas.get_bitmap_width_height()
         self._canvas().canvas.motion_notify_event(x, h - y, evt)
         #sp.dnd_sp(x, y, self._canvas())
         return default
@@ -666,7 +666,7 @@ class ifigure_canvas_draghandler_pan(draghandler_base2):
                 self.pan_mode = 0
             else:
                 x0, y0 = figaxes.getp('area')[:2]
-                w, h = canvas.get_width_height()
+                w, h = canvas.get_bitmap_width_height()
                 for figaxes2 in figaxes.get_parent().walk_axes():
                     for a in figaxes2._artists:
                         x1, y1 = figaxes2.getp('area')[:2]
@@ -685,7 +685,7 @@ class ifigure_canvas_draghandler_pan(draghandler_base2):
                 figaxes.set_bmp_update(False)
             else:
                 x0, y0 = figaxes.getp('area')[:2]
-                w, h = canvas.get_width_height()
+                w, h = canvas.get_bitmap_width_height()
                 for figaxes2 in figaxes.get_parent().walk_axes():
                     for a in figaxes2._artists:
                         x1, y1 = figaxes2.getp('area')[:2]
@@ -2695,12 +2695,15 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             return
         if event.button == 3:
             # context menu
-            scr_size = self.canvas.get_width_height()
+            scr_size = self.canvas.get_bitmap_width_height()
             m = ifigure_popup(self, xy=(event.x, event.y),
                               xydata=(event.xdata, event.ydata))
+
+            print(scr_size, event.x, event.y, event.xdata, event.ydata)
             if m._menus != 0:
+                scale = self.canvas.GetContentScaleFactor()
                 self.canvas.PopupMenu(m,  # ifigure_popup(self),
-                                      [event.x, scr_size[1] - event.y])
+                                      [event.x/scale, (scr_size[1] - event.y)/scale])
             m.Destroy()
         if event.button == 1:
             # left click (deselect all if _picked is false)
@@ -3770,7 +3773,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
     def px2norm(self, x, y):
         # conversion from screen pixel to normal
-        scr_size = self.canvas.get_width_height()
+        scr_size = self.canvas.get_bitmap_width_height()
         return [float(x) / float(scr_size[0]), float(y) / float(scr_size[1])]
 
     def motion_event(self, evt):
