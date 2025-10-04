@@ -702,7 +702,6 @@ class BitmapButtons(wx.Panel):
         for m in self.Controls:
             s = m['bitmap'].GetSize()
             m['obj'].Enable(value)
-            m['obj'].SetClientSize((s[0]+8, s[1]+8))
 
     def check_if_need2expand(self):
         size = self.gsizer.CalcRowsCols()
@@ -754,7 +753,8 @@ class BitmapButtons(wx.Panel):
                 array = array.copy()
                 array = array.reshape(w, h, -1)
             else:
-                array = imagearray[name]
+                array = imagearray[name].copy()
+
             array[:2, :, 0] = 0
             array[-2:, :, 0] = 0
             array[:, :2, 0] = 0
@@ -771,6 +771,7 @@ class BitmapButtons(wx.Panel):
             image = wxEmptyImage(h, w)
             image.SetData(array.tobytes())
             bitmap2 = image.ConvertToBitmap()
+
             btn = wx.BitmapButton(self, bitmap=bitmap)
             self._btn[i] = btn
             self.gsizer.Add(btn, 0, wx.ALL, 0)
@@ -810,13 +811,11 @@ class BitmapButtons(wx.Panel):
 
         # if isnumber(val) and not isnumber(self._btn_name[0]):
         #    val = str(val)
-        if isstringlike(val) and val in self._btn_name:
+        # if isstringlike(val) and val in self._btn_name:
+        if val in self._btn_name:
             j = self._btn_name.index(val)
-            # print 'found', j
             self._btn[j].SetBitmapLabel(self.Controls[j]["bitmap2"])
-        # else:
-        #    # check error
-        #    print val, self._btn_name
+
         self._val = val
 
     def GetValue(self, val):
@@ -1339,7 +1338,7 @@ class ColorMapButton(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = colormap_list()
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -1364,7 +1363,7 @@ class ColorMapButtonExtra(BitmapButtons):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         cmaps = ['idl'+str(x) for x in range(40)]
-        self.gsizer = FlexGridSizer(len(cmaps)/6+1, 6)
+        self.gsizer = FlexGridSizer(len(cmaps)//6+1, 6)
         sizer.Add(self.gsizer, 0, wx.ALL, 0)
 
         self.check_if_need2expand()
@@ -2024,7 +2023,7 @@ class TextCtrlCopyPasteEval(TextCtrlCopyPaste):
             from ifigure.mto.treedict import td_name_space
             self.ns = {key: td_name_space[key] for key in td_name_space}
 
-        super(TextCtrlCopyPaste, self).__init__(*arg, **kargs)
+        super(TextCtrlCopyPasteEval, self).__init__(*arg, **kargs)
 
     def onEnter(self, evt):
         try:
@@ -2481,6 +2480,7 @@ class CSliderWithText(wx.Panel):
         self.minV = setting["minV"]
         self.maxV = setting["maxV"]
         self.datamax = (self.maxV-self.minV)/setting["res"]
+        self._use_int = True if (setting["res"] % 1) == 0 else False
 
         self.s1 = CSlider(self, wx.ID_ANY, setting=setting)
         txt = str(setting.pop("val", ''))
@@ -2495,7 +2495,10 @@ class CSliderWithText(wx.Panel):
         self.SetSizer(sizer)
 
     def SetValue(self, value):
-        self.s1.SetValue(value)
+        if self._use_int:
+            self.s1.SetValue(int(value))
+        else:
+            self.s1.SetValue(float(value))
         self.t1.SetValue(str(value))
 
     def GetValue(self):
@@ -3494,22 +3497,26 @@ class ArrowStyleCombobox(wxBitmapComboBox):
         from ifigure.ifigure_config import arrowstyle_list
         from ifigure.ifigure_config import icondir
         self.choice_list = arrowstyle_list()
-        choices = []
-        kargs["choices"] = choices
+
+        kargs["choices"] = [x[0] for x in self.choice_list]
         kargs["style"] = wx.CB_READONLY
         parent = args[0]
         id = args[1]
+        value = self.choice_list[3][0]
         super(ArrowStyleCombobox, self).__init__(parent, id,
-                                                 '', (-1, -1), (150, -1),  **kargs)
-        for name, style in self.choice_list:
+                                                 value, (-1, -1), (150, -1),  **kargs)
+
+        for n, data in enumerate(self.choice_list):
+            name, style = data
             dirname = os.path.dirname(ifigure.__file__)
             nname = b64encode(name.encode('latin-1')).decode()
             imageFile = os.path.join(icondir, 'image',
                                      'arrow_' + nname + '.png')
             bitmap = wx.Bitmap(imageFile)
-            super(ArrowStyleCombobox, self).Append(name, bitmap, name)
+            # super(ArrowStyleCombobox, self).Append(name, bitmap, name)
+            super(ArrowStyleCombobox, self).SetItemBitmap(n, bitmap)
+
         self.SetSelection(3)
-#        self.SetValue('-')
 
     def SetValue(self, value):
         for name, style in self.choice_list:
@@ -3880,7 +3887,8 @@ class MDSSource0(wx.Panel):
         self.elp = EditListPanel(self, self.l, call_sendevent=self,
                                  edge=0)
         self.bt_var = wx.BitmapButton(self, wx.ID_ANY,
-                                      MDSSource0.bitmaps[0])  # 'Add Variable...')
+                                      # Add Variable...
+                                      MDSSource0.bitmaps[0])
 #       self.elp.Show()
         from ifigure.widgets.script_editor import Notebook
         self.nb = aui.AuiNotebook(self, wx.ID_ANY)  # , style=aui.AUI_NB_TOP)
@@ -4575,7 +4583,7 @@ class EditListCore(object):
                 s = setting["choices"]
                 s = [x for x in s if x != 'New...']
                 s = s + ['New...']
-                s = [" " if len(x)==0 else x for x in s]
+                s = [" " if len(x) == 0 else x for x in s]
                 choices_cb = setting.pop("choices_cb", None)
                 w = ComboBoxWithNew(parent[-1], wx.ID_ANY, style=setting["style"],
                                     choices=s,

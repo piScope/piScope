@@ -34,7 +34,7 @@ cc = ColorConverter()
 # an image produced by GL backend, so that it become
 # consistent with the axes drawn by Axes3D.
 frame_range = np.array([-0.095, -0.095, 1.1, 1.10])+0.01
-#frame_range = np.array([0, 0, 1, 1])
+# frame_range = np.array([0, 0, 1, 1])
 
 
 def finish_gl_drawing(glcanvas, renderer, tag, trans):
@@ -48,6 +48,9 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
+        if not im.flags.writeable:
+            im = im.copy()
+
         if not isMPL2:
             im.is_grayscale = False  # this is needed to print in MPL1.5
         renderer.draw_image(gc, round(x), round(y), im)
@@ -71,6 +74,9 @@ def finish_gl_drawing(glcanvas, renderer, tag, trans):
         gc = renderer.new_gc()
         x, y = trans.transform(frame_range[0:2])
         im = frombyte(im, 1)
+        if not im.flags.writeable:
+            im = im.copy()
+
         if not isMPL2:
             im.is_grayscale = False  # this is needed to print in MPL1.5
 
@@ -102,7 +108,7 @@ def draw_wrap(func):
                 return
             x0, y0, id_dict, im, imd, im2 = axes._gl_id_data
             gc = renderer.new_gc()
-            #print("drawing stored image", axes.figobj)
+            # print("drawing stored image", axes.figobj)
             renderer.draw_image(gc, round(x0), round(y0), axes._gl_img)
             gc.restore()
         else:
@@ -126,7 +132,7 @@ class ArtGL(object):
         self._gl_array_idx = kargs.pop('array_idx', None)
         if self._gl_array_idx is not None:
             self._gl_array_idx = np.array(self._gl_array_idx, dtype=int,
-                                          copy=False)
+                                          copy=None)
         self._gl_pickable = True
         self._gl_hl_use_array_idx = False
         self._gl_marker_tex = weakref.WeakKeyDictionary()
@@ -364,7 +370,7 @@ class LineGL(ArtGL, Line3D):
             glcanvas.start_draw_request(self)
 
             # 3dpath = (self.get_xdata(), self.get_ydata(), self_zdata())
-            #path = Path(self._xy)
+            # path = Path(self._xy)
             if self._invalidz:
                 self.set_3d_properties(zs=self.get_zdata(), zdir='z')
                 if glcanvas.has_vbo_data(self):
@@ -390,6 +396,7 @@ class LineGL(ArtGL, Line3D):
             if len(self._gl_3dpath) == 3:
                 renderer.gl_draw_path(gc, self._gl_3dpath,  trans,
                                       rgbFace=self._facecolor,
+                                      rgbEdge=ln_color_rgba,
                                       linestyle=self._linestyle)
             else:
                 fc = None if self._facecolor is None else [self._facecolor]
@@ -407,11 +414,8 @@ class LineGL(ArtGL, Line3D):
             if len(self._marker.get_path()) != 0:
                 marker_path = None
                 marker_trans = None
-                m_facecolor = self.get_markerfacecolor()
-                m_edgecolor = self.get_markeredgecolor()
-                m_edgewidth = self.get_markeredgewidth()
                 m_size = renderer.points_to_pixels(self._markersize)
-                #marker_path is bitmap (texture)
+                # marker_path is bitmap (texture)
                 # marker_trans is marker_size and other info (liken marker_every)
                 marker_path = self.update_marker_texture(renderer)
                 marker_trans = (m_size,)
@@ -474,6 +478,10 @@ class AxesImageGL(ArtGL, AxesImage):
         super(AxesImage, self).set_cmap(*args, **kwargs)
         self._gl_rgbacache_id = None
 
+    def set_alpha(self, *args, **kwargs):
+        super(AxesImage, self).set_alpha(*args, **kwargs)
+        self._gl_rgbacache_id = None
+
     def make_hl_artist(self, container):
         idx = [0, 1, 2, 3]
         x = [self._gl_3dpath[0][k] for k in idx]
@@ -515,12 +523,18 @@ class AxesImageGL(ArtGL, AxesImage):
             if self._gl_3dpath is not None:
                 try:
                     im = self.to_rgba(self._A)
-                    im = (im*255).astype(int)
+                    im = (im*255).astype(np.ubyte)
                 except:
                     # this is for an old version of matplotlib
                     im = self.make_image(renderer.get_image_magnification())
                 idx_none = im[..., 3] == 0
                 im[idx_none, 0:3] = 255
+
+                idx_not_none = im[..., 3] != 0
+
+                alpha = 255 if self.get_alpha() is None else int(self.get_alpha()*255)
+                im[idx_not_none, 3] = alpha
+
                 self._im_cache = im
                 gc = renderer.new_gc()
                 gc.set_alpha(self.get_alpha())
@@ -530,6 +544,7 @@ class AxesImageGL(ArtGL, AxesImage):
                         d = glcanvas.get_vbo_data(self)
                         for x in d:
                             x['im_update'] = True
+
                 renderer.gl_draw_image(gc, self._gl_3dpath,  trans,
                                        np.transpose(self._im_cache, (1, 0, 2)),
                                        interp=self._gl_interp,
@@ -764,7 +779,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
         convert a path on flat surface
         to 3d path
         '''
-        #print("calling convert 2dpath to 3dpath")
+        # print("calling convert 2dpath to 3dpath")
         x1 = []
         y1 = []
         z1 = []
@@ -896,7 +911,7 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
             self._gl_cz = False
 
     def update_scalarmappable(self):
-        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        # print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
 
         if self._gl_solid_facecolor is not None:
             f = cc.to_rgba(self._gl_solid_facecolor)
@@ -945,8 +960,8 @@ class Poly3DCollectionGL(ArtGL, Poly3DCollection):
                 else:
                     self._gl_edgecolor[:, -1] = self._alpha
 
-        #print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
-        #print('update_scalarmappable', self._gl_facecolor, self._gl_edgecolor)
+        # print('update_scalarmappable', self._gl_solid_facecolor, self._gl_solid_edgecolor, self._gl_cz, self._gl_facecolordata)
+        # print('update_scalarmappable', self._gl_facecolor, self._gl_edgecolor)
         Poly3DCollection.update_scalarmappable(self)
 
     def update_idxset(self, idxset):
@@ -1075,6 +1090,8 @@ def poly_collection_3d_to_gl(obj):
 
 class Polygon3DGL(ArtGL, Polygon):
     def __init__(self, xyz, **kargs):
+        ArtGL.__init__(self)
+
         self._gl_3dpath = kargs.pop('gl_3dpath', None)
         self._gl_lighting = kargs.pop('gl_lighting', True)
         xy = xyz[:, 0:2]
@@ -1127,6 +1144,7 @@ class Polygon3DGL(ArtGL, Polygon):
             self._invalidz = False
             renderer.gl_draw_path(gc, self._verts3d,  trans,
                                   rgbFace=rgbFace,
+                                  rgbEdge=rgbFace,
                                   stencil_test=self.do_stencil_test)
 #           glcanvas.update_gc(self, gc)
             glcanvas.end_draw_request()
@@ -1146,4 +1164,196 @@ def polygon_2d_to_gl(obj, zs, zdir):
     obj.do_stencil_test = True
     obj._gl_lighting = True
     obj.set_3d_properties(zs=zs, zdir=zdir)
+    ArtGL.__init__(obj)
+    return obj
+
+contour_glclasses = {}
+
+def quadcontourset3d_to_gl(obj):
+    class ContourSetGLMixIn(ArtGL):
+        def __init__(self, mainclass):
+            ArtGL.__init__(self)
+            self._mainclass_ = mainclass
+            self.do_stencil_test = True
+            self._fc_need_update = True
+            self._ec_need_update = True
+            self._gl_linestyle = ''
+
+        def _split_path(self, facecolors, levels, paths):
+            self._gl_pathgroups = []
+            self._gl_facecolors = []
+            self._gl_levels = []
+            self._gl_vcounts = []
+
+            for fc, level, path in zip(facecolors, levels, paths):
+                p, c = path
+                if len(p) == 0:
+                    continue
+
+                pos1 = np.where(c == 1)[0][1:]
+
+                data = None
+                pathgroup = []
+                vcount = []
+                added = False
+                for v in np.split(p, pos1):
+                    x = v[:, 0]
+                    y = v[:, 1]
+                    x = np.hstack((x, x[0]))
+                    y = np.hstack((y, y[0]))
+
+
+                    area = np.sum(x[:-1]*y[1:] - x[1:]*y[:-1])
+
+                    if area >= 0:
+                        if data is not None:
+                            pathgroup.append(data)
+                            vcount.append(vv)
+                            added = True
+                        data = v
+                        vv = [len(v)]
+                        added = False
+                    else:
+                        data = np.vstack((data, v))
+                        vv.append(len(v))
+
+                if not added:
+                    pathgroup.append(data)
+                    vcount.append(vv)
+
+                self._gl_pathgroups.append(pathgroup)
+                self._gl_facecolors.append(tuple(fc))
+                self._gl_levels.append(level)
+                self._gl_vcounts.append(vcount)
+
+        def _split_path_simple(self, edgecolors, levels, paths):
+            self._gl_pathgroups = []
+            self._gl_edgecolors = []
+            self._gl_levels = []
+
+            for ec, level, path in zip(edgecolors, levels, paths):
+                p, c = path
+                if len(p) == 0:
+                    continue
+
+                pos1 = np.where(c == 1)[0][1:]
+
+                data = None
+                pathgroup = []
+                added = False
+                for v in np.split(p, pos1):
+                    pathgroup.append(v)
+
+                self._gl_pathgroups.append(pathgroup)
+                self._gl_edgecolors.append(tuple(ec))
+                self._gl_levels.append(level)
+
+        def split_path(self):
+            if len(self._facecolors) > 0:
+                self._split_path(self._facecolors, self._levels, self._3dverts_codes)
+
+            else:
+                self._split_path_simple(self._edgecolors, self._levels, self._3dverts_codes)
+
+        def update_scalarmappable(self):
+            self._fc_need_update = True
+            self._ec_need_update = True
+            self._mainclass_.update_scalarmappable(self)
+
+            self.split_path()
+
+        def check_need_update(self, glcanvas):
+            if glcanvas.has_vbo_data(self):
+                d = glcanvas.get_vbo_data(self)
+                if self._invalidz:
+                    for x in d:
+                        x['v'].need_update = True
+
+                if len(self._gl_facecolors) == len(self._gl_pathgroups):
+                    if self._fc_need_update:
+                         for x in d:
+                             x['fc'].need_update = True
+        def reset_need_update(self):
+            self._invalidz = False
+            self._fc_need_update = False
+            self._ec_need_update = False
+
+        def set_linestyle(self, value):
+            super(QuadContourSet3DGL, self).set_linestyle(value)
+            if value == 'dashed':
+                self._gl_linestyle = '--'
+            elif value == 'dotted':
+                self._gl_linestyle = ':'
+            elif value == 'dashdot':
+                self._gl_linestyle = '-.'
+            else:
+                self._gl_linestyle = ''
+        @draw_wrap
+        def draw(self, renderer):
+            if isSupportedRenderer(renderer):
+                renderer.use_gl = True
+                glcanvas = get_glcanvas()
+                if self.axes is not None:
+                    tag = self.axes
+                    trans = self.axes.transAxes
+                elif self.figure is not None:
+                    tag = self.figure
+                    trans = self.figure.transFigure
+
+                gc = renderer.new_gc()
+
+
+                glcanvas.frame_request(self, trans)
+                glcanvas.start_draw_request(self)
+
+                self.check_need_update(glcanvas)
+
+                if len(self._gl_facecolors) == len(self._gl_pathgroups):
+                    for c, pathg, vcs in zip(self._gl_facecolors, self._gl_pathgroups, self._gl_vcounts):
+                         for path, vc in zip(pathg, vcs):
+                             renderer.gl_draw_path(gc, path.transpose(), trans, rgbFace=c,
+                                                   stencil_test=True,
+                                                   vcounts=vc)
+                elif len(self._gl_edgecolors) == len(self._gl_pathgroups):
+                    gc.set_linewidth(self.get_linewidth()[0])
+                    for c, pathgroup in zip(self._gl_edgecolors, self._gl_pathgroups):
+                         for path in pathgroup:
+                             renderer.gl_draw_path(gc, path.transpose(), trans,
+                                                   rgbEdge=c,
+                                                   stencil_test=True,
+                                                   linestyle=self._gl_linestyle)
+                else:
+                    pass # no grapphics in this case (should not come here)
+
+                glcanvas.end_draw_request()
+                self.reset_need_update()
+
+                gc.restore()
+                renderer.use_gl = False
+                finish_gl_drawing(glcanvas, renderer, tag, trans)
+
+            else:
+                QuadContourSet3D(self, renderer)
+
+    pcls  = obj.__class__
+    glclsname = pcls.__name__+'GL'
+    if glclsname not in contour_glclasses:
+        attrs = {"_invalidz": True,
+                  "_gl_lighting": True,
+                  "_gl_edgecolors": [],
+                  "_gl_facecolors": [],
+                  "_gl_levels": [],
+                  "_gl_linestyle": '',
+                  "do_stencil_test": True,}
+
+        cls = type(glclsname, (ContourSetGLMixIn, pcls,),
+                   attrs)
+        contour_glclasses[glclsname] = cls
+    else:
+        cls = contour_glclasses[glclsname]
+
+    obj.__class__ = cls
+    ContourSetGLMixIn.__init__(obj, pcls)
+    obj.split_path()
+
     return obj

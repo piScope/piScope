@@ -89,8 +89,8 @@ class GLCompound(object):
         idxset = self.getvar('idxset')
 
         mask = np.array([ii in component for ii in array_idx],
-                        copy=False)
-        mask2 = np.array([all(mask[iv]) for iv in idxset], copy=False)
+                        copy=None)
+        mask2 = np.array([all(mask[iv]) for iv in idxset], copy=None)
 
         s = idxset[mask2]
         ii, arr = np.unique(s.flatten(), return_inverse=True)
@@ -103,7 +103,7 @@ class GLCompound(object):
 
         if self.hasvar('edge_idx') and self.getvar('edge_idx') is not None:
             idxset = self.getvar('edge_idx')
-            mask2 = np.array([all(mask[iv]) for iv in idxset], copy=False)
+            mask2 = np.array([all(mask[iv]) for iv in idxset], copy=None)
             s2 = idxset[mask2]
             mapper = {x: k for k, x in enumerate(ii)}
             ss2 = np.array([mapper[x] for x in s2.flatten()])
@@ -124,7 +124,7 @@ class GLCompound(object):
         if array_idx is None:
             return
         array_idx = array_idx.copy()
-        mask = np.isin(array_idx, np.array(ll, copy=False))
+        mask = np.isin(array_idx, np.array(ll, copy=None))
         array_idx[mask] *= -1
         for a in self._artists:
             a._gl_hit_array_id = list(ll)
@@ -132,7 +132,7 @@ class GLCompound(object):
                 a._gl_array_idx = array_idx
             else:
                 array_idx = np.abs(a._gl_array_idx)
-                mask = np.isin(array_idx, np.array(ll, copy=False))
+                mask = np.isin(array_idx, np.array(ll, copy=None))
                 array_idx[mask] *= -1
                 a._gl_array_idx = array_idx
             a._update_a = True

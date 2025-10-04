@@ -13,6 +13,6 @@ def safename(value):
         
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
     value = value.decode('utf-8', 'surrogateescape')
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    valee = re.sub('[-\s]+', '-', value)
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    valee = re.sub(r'[-\s]+', '-', value)
     return value

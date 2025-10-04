@@ -63,9 +63,9 @@ from optparse import OptionParser
 multiline_quoted_string = re.compile(r'(\'\'\'|\"\"\")')
 not_quoted_string = re.compile(r'(\".*\'\'\'.*\"|\'.*\"\"\".*\')')
 trailing_newlines = re.compile(r'\n\n')
-shebang = re.compile('^#\!.*$')
-encoding = re.compile(".*coding[:=]\s*([-\w.]+)")
-multiline_indicator = re.compile('\\\\(\s*#.*)?\n')
+shebang = re.compile(r'^#\!.*$')
+encoding = re.compile(r".*coding[:=]\s*([-\w.]+)")
+multiline_indicator = re.compile(r'\\\\(\s*#.*)?\n')
 # The above also removes trailing comments: "test = 'blah \ # comment here"
 
 # These aren't used but they're a pretty good reference:
@@ -299,8 +299,8 @@ def join_multiline_pairs(text, pair="()"):
     linecount = 0
 
     # Regular expressions
-    opener_regex = re.compile('\%s' % opener)
-    closer_regex = re.compile('\%s' % closer)
+    opener_regex = re.compile(r'\%s' % opener)
+    closer_regex = re.compile(r'\%s' % closer)
 
     output = ""
 

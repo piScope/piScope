@@ -2241,6 +2241,14 @@ class MyApp(wx.App):
     def get_ifig_app(self):
         return self._ifig_app
 
+    def get_dpi(self):
+        system_dpi = self.GetTopWindow().GetDPI()
+        dpi = int((system_dpi[0] + system_dpi[1])/2.0)
+
+
+        dpi = int(72*(dpi/72)**(0.3))
+        return dpi
+
     def MacReopenApp(self):
         if self.GetTopWindow().IsShown():
             self.GetTopWindow().Raise()

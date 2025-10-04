@@ -67,10 +67,10 @@ class RendererGLMixin(object):
     def gl_draw_markers(self, gc, marker_path, marker_trans,
                         path, transform, rgbFace=None, **kwargs):
         self.get_glcanvas().store_draw_request('markers', gc, marker_path, marker_trans,
-                                               path, rgbFace, **kwargs)
+                                               path, transform,  **kwargs)
 
-    def gl_draw_path(self, gc, path, transform, rgbFace=None, **kwargs):
-        self.get_glcanvas().store_draw_request('path', gc, path, rgbFace, **kwargs)
+    def gl_draw_path(self, gc, path, transform, rgbFace=None, rgbEdge=None, **kwargs):
+        self.get_glcanvas().store_draw_request('path', gc, path, rgbFace, rgbEdge, **kwargs)
 
     def gl_draw_path_collection(self, gc, frozen, paths,
                                 transform, offset, transOffset,

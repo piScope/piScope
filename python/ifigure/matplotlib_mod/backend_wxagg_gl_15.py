@@ -1027,11 +1027,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glClearColor(0, 0, 0, 1.0)
             glClear(GL_COLOR_BUFFER_BIT)
             '''
-           self.set_uniform(glUniform1i, 'uisClear', 1)        
+           self.set_uniform(glUniform1i, 'uisClear', 1)
            glBlendFunc(GL_ONE, GL_ZERO)
            glDisable(GL_DEPTH_TEST)
            glDepthMask(GL_TRUE)
-           self._do_depth_test = False        
+           self._do_depth_test = False
            self.do_draw_artists(tag, do_clear=(0,0,0,1))
            self._do_depth_test = True
            self.set_uniform(glUniform1i, 'uisClear', 0)
@@ -1689,16 +1689,16 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if linewidth[0] > 0.0 and not self._shadow:
             glLineWidth(linewidth[0]*multisample)
-            ''' 
+            '''
             if linewidth[0] < 1.5:
                glLineWidth(max(linewidth[0]-0.5, 0.5))
-               glEnable(GL_LINE_SMOOTH)                        
+               glEnable(GL_LINE_SMOOTH)
                glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
                glDepthMask(GL_FALSE)
                glEnable(GL_BLEND)
                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
             else:
-               glDisable(GL_LINE_SMOOTH)                        
+               glDisable(GL_LINE_SMOOTH)
             '''
             #
             vbos['ec'].bind()

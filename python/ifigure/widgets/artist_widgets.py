@@ -146,8 +146,10 @@ mm2 = [['size', '10',  104,  s_fontsize],
         {"minV": 1., "maxV": 30., "val": 5, "res": 1, "text_box": False}],
        ['format', '%1.3f',   0, {}],
        ['skip', '0', 24,
-        {"minV": 0., "maxV": 5., "val": 0, "res": 1, "text_box": True}], ]
-init_v = [8.0, (False, [(0.0, 0.0, 0.0, 1.0)]), True, 5.0, u'%1.3f', '0']
+        {"minV": 0., "maxV": 5., "val": 0, "res": 1, "text_box": True}],
+       ["alpha",  1.0 , 105, {}, ],
+       ]
+init_v = [8.0, (False, [(0.0, 0.0, 0.0, 1.0)]), True, 5.0, u'%1.3f', '0',  1.0]
 s_decimate = {"text": 'on'}
 listparam['decimate'] = ["decimate", True,  3, s_decimate, 'decimate', 2]
 

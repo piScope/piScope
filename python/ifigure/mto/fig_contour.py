@@ -46,7 +46,6 @@ import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigContour')
 
 def_clabel_param = {
-
     'use_clabel': False,
     'fontsize': 10,
     'fixed_color': False,
@@ -54,7 +53,8 @@ def_clabel_param = {
     'inline': True,
     'inline_spacing': 5,
     'fmt': '%1.3f',
-    'skip': 0}
+    'skip': 0,
+    'alpha': 1}
 
 default_kargs = {'use_tri': False,
                  'FillMode': False,
@@ -66,11 +66,11 @@ default_kargs = {'use_tri': False,
 class FigContour(FigObj, XUser, YUser, CUser, ZUser):
     def __new__(cls, *args, **kywds):
         """
-        contour : contour plot 
-        contour(z, n)  
-        contour(x, y, z, n)  
-        contour(z, v)  
-        contour(x, y, z, v)  
+        contour : contour plot
+        contour(z, n)
+        contour(x, y, z, n)
+        contour(z, v)
+        contour(x, y, z, v)
 
         n: number of levels
         v: a list of contour levels
@@ -79,7 +79,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             if not hasattr(obj, '_tri'):
                 obj._tri = None  # this can go away!?
             obj._clabels = []
-            obj._clabel_param = def_clabel_param
+            obj._clabel_param = def_clabel_param.copy()
             obj._nouse_expression = False
             obj._hit_path = None
             obj._expression = ''
@@ -292,6 +292,9 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             if self.get_figaxes().get_3d():
                 kywds['offset'] = self.getvar('offset')
                 kywds['zdir'] = self.getvar('zdir')
+                is3D = True
+            else:
+                is3D = False
         except:
             pass
 
@@ -300,20 +303,44 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 method = container.tricontourf
             else:
                 method = container.tricontour
+            methodline = container.tricontour
         else:
             if FillMode:
                 method = container.contourf
             else:
                 method = container.contour
+            methodline = container.contour
+
         try:
             self._mappable = method(*args, **kywds)
-            self._artists = self._mappable.collections[:]
+            self._artists = [self._mappable,]
             self.set_rasterized()
             for a in self.get_mappable():
                 cax.set_crangeparam_to_artist(a)
+
+            if self._clabel_param['use_clabel']:
+               if FillMode:
+                   lmappable = methodline(*args, **kywds)
+               else:
+                   lmappable = self._mappable
+               args, kargs = self._make_clabel_param()
+               self._clabels = container.clabel(lmappable, *args, **kargs)
+               talpha = float(self._clabel_param['alpha'])
+               for t in self._clabels:
+                   t.set_alpha(talpha)
+               if FillMode:
+                    lmappable.remove()
+                    for t in self._clabels:
+                        container.add_artist(t)
+               else:
+                    self._clabels = []
         except Exception:
             logging.exception(
                 "FigContour:generate_artist : artist generation failed")
+
+        if is3D:
+            from ifigure.matplotlib_mod.art3d_gl import quadcontourset3d_to_gl
+            self._mappable = quadcontourset3d_to_gl(self._mappable)
 
         if lp is not None:
             #              print lp
@@ -328,18 +355,6 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             path.figobj_hl = []
             path.set_zorder(self.getp('zorder'))
 
-        if self._clabel_param['use_clabel'] and not FillMode:
-            args, kargs = self._make_clabel_param()
-            wx.CallLater(1, self.call_clabel, *args, **kargs)
-
-#           self._artists[0].figobj=self
-#           self._artists[0].figobj_hl=[]
-
-#    def refresh_artist_data(self):
-#        if not self.isempty():
-#           self.del_artist()
-#       if self.isempty() and not self._suppress:
-#            self.generate_artist()
 
     def del_artist(self, artist=None, delall=False):
         #
@@ -354,27 +369,25 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             artistlist = self._artists
 
         self.store_loaded_property()
-#        if not self.hasp("loaded_property"):
-#             self.load_data2(self.save_data2({}))
-#        self.highlight_artist(False)
-        for a in artistlist:
-            a.remove()
-            self._mappable.collections.remove(a)
+
         for t in self._clabels:
             t.remove()
         self._clabels = []
-        if (self._mappable is not None and
-                len(self._mappable.collections) == 0):
-            self._mappable = None
+
+        for a in artistlist:
+            a.remove()
+
+        self._mappable = None
+
         super(FigContour, self).del_artist(artistlist)
 
     def get_mappable(self):
         return [self._mappable]
 
     def reset_artist(self):
-        print('resetting contour artist')
+        #print('resetting contour artist')
         self.del_artist(delall=True)
-# (why not)  self.delp('loaded_property')
+
         self.setp('use_var', True)
         self.generate_artist()
 
@@ -405,33 +418,27 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                 y = (de[2], de[2], de[3], de[3], de[2])
 
                 facecolor = 'k'
-                if isinstance(alist[0], Poly3DCollectionGL):
-                    hl = alist[0].make_hl_artist(container)
-                    facecolor = 'none'
-                    self._hit_path = None
-                elif isinstance(alist[0], Line3DCollectionGL):
-                    hl = alist[0].make_hl_artist(container)
-                    facecolor = 'none'
-                    self._hit_path = None
-                else:
-                    hl = container.plot(x, y, marker='s',
+
+                if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+                    v = self._hit_path3d[0]
+                    hl = container.plot(v[:,0], v[:,1], v[:,2], marker='s',
                                         color='k', linestyle='None',
                                         markerfacecolor='None',
                                         markeredgewidth=0.5,
                                         scalex=False, scaley=False)
-                for item in hl:
-                    alist[0].figobj_hl.append(item)
-
-                if self._hit_path is not None:
+                    alist[0].add_hl_mask()
+                else:
                     v = self._hit_path.vertices
                     hl = container.plot(v[:, 0], v[:, 1], marker='s',
                                         color='k', linestyle='None',
                                         markerfacecolor='None',
                                         markeredgewidth=0.5,
                                         scalex=False, scaley=False)
-                    for item in hl:
-                        alist[0].figobj_hl.append(item)
 
+                for item in hl:
+                    alist[0].figobj_hl.append(item)
+
+                '''
                 hlp = Rectangle((de[0], de[2]),
                                 de[1]-de[0],
                                 de[3]-de[2],
@@ -446,32 +453,17 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                     hlp.set_clip_on(True)
                 figure.patches.append(hlp)
                 alist[0].figobj_hl.append(hlp)
+                '''
         else:
             for a in alist:
                 if len(a.figobj_hl) == 0:
                     continue
-                for hl in a.figobj_hl[:-1]:
+                for hl in a.figobj_hl:
                     hl.remove()
-                if isinstance(alist[0], Poly3DCollectionGL):
-                    a.figobj_hl[-1].remove()
-                else:
-                    figure.patches.remove(a.figobj_hl[-1])
                 a.figobj_hl = []
 #
 #   Setter/Getter
 #
-#    def set_contour_nlevel(self, value, a):
-#        self.setp('n', value)
-#        self.del_artist(delall=True)
-#        self.delp('loaded_property')
-#        self.generate_artist()
-#        sel = [weakref.ref(self._artists[0])]
-#        import wx
-#        app = wx.GetApp().TopWindow
-#        ifigure.events.SendSelectionEvent(self, w=app, selections=sel)
-#    def get_contour_nlevel(self, a):
-#        return self.getp('n')
-
     def set_contour_nlevel2(self, value, a=None):
         self._nouse_expression = not value[0]
 #        print value
@@ -562,24 +554,15 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
             else:
                 return False, {}
         else:
-            # if isinstance(artist, PathCollection):
-            #
-            #  For PathCollection, we do this test first
-            #
-            #    for path in artist.get_paths():
-            #        if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
-            #            self._hit_path = path
-            #            return True, {'child_artist': artist}
-
-            for path in artist.get_paths():
-                #               for line plot, hit test is done for each path vertices
-                #               path.contains_points does not check if the point is "on the line"
-                #               this does assume that line generated from path is simple line
-                #               segment without discontinueity and cuvrves (IOW, paht.codes = None)
+            for k, path in enumerate(artist.get_paths()):
                 xy = trans.transform(path.vertices)
                 ans, hit = CheckLineHit(xy[:, 0], xy[:, 1], evt.x, evt.y)
+
                 if ans:
                     self._hit_path = path
+                    self._hit_path3d = None
+                    if hasattr(artist, "_3dverts_codes"):
+                        self._hit_path3d = artist._3dverts_codes[k]
                     return True, {'child_artist': artist}
 #                if path.contains_point((evt.x, evt.y), transform=trans, radius=6):
 #                     self._hit_path = path
@@ -627,10 +610,17 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 
     def onExportPath(self, event):
         if self._hit_path is not None:
-            v = self._hit_path.vertices
-            fig_val = {"xdata": v[:, 0],
-                       "ydata": v[:, 1]}
-            text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']'
+            if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+                v = self._hit_path3d[0]
+                fig_val = {"xdata": v[:, 0],
+                          "ydata": v[:, 1],
+                          "zdata": v[:, 2]}
+                text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\'], fig_val[\'zdata\']'
+            else:
+                v = self._hit_path.vertices
+                fig_val = {"xdata": v[:, 0],
+                           "ydata": v[:, 1]}
+                text = '#Exporting data as fig_val[\'xdata\'], fig_val[\'ydata\']'
             self._export_shell(fig_val, 'fig_val', text)
 
     def onCopyPath(self, event):
@@ -638,15 +628,43 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         from ifigure.mto.fig_fill import FigFill
         if self._hit_path is not None:
             canvas = event.GetEventObject()
-            v = self._hit_path.vertices
-            if self.getp('FillMode'):
-                obj = FigFill(v[:, 0], v[:, 1])
+            objs = []
+
+            if hasattr(self, "_hit_path3d") and self._hit_path3d is not None:
+               v = self._hit_path3d[0]
+               code = self._hit_path3d[1]
+               idx = np.where(code == 1)[0]
+
+               vx = v[:,0]
+               vy = v[:,1]
+               vz = v[:,2]
+               for xx, yy, zz in zip(np.split(vx, idx),
+                                     np.split(vy, idx),
+                                     np.split(vz, idx)):
+                   if len(xx) == 0:
+                       continue
+                   objs.append(FigPlot(xx, yy, zz, 'k'))
+
             else:
-                obj = FigPlot(v[:, 0], v[:, 1], 'k')
+               v = self._hit_path.vertices
+               code = self._hit_path.codes
+
+               idx = np.where(code == 1)[0]
+
+               vx = v[:,0]
+               vy = v[:,1]
+
+               for xx, yy in zip(np.split(vx, idx),
+                                 np.split(vy, idx)):
+                   if len(xx) == 0:
+                       continue
+                   objs.append(FigPlot(xx, yy, 'k'))
+
             ax = self.get_figaxes()
             name = ax.get_next_name('Contour_path')
-            ax.add_child(name, obj)
-            obj.realize()
+            for obj in objs:
+                ax.add_child(name, obj)
+                obj.realize()
 
             ax.set_bmp_update(False)
             canvas.draw()
@@ -907,6 +925,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         self._clabel_param['inline_spacing'] = float(gui_param[1][3])
         self._clabel_param['fmt'] = str(gui_param[1][4])
         self._clabel_param['skip'] = int(gui_param[1][5])
+        self._clabel_param['alpha'] = float(gui_param[1][6])
 
     def _make_clabel_param(self):
         keys = ['fontsize', 'colors', 'inline', 'inline_spacing', 'fmt']
@@ -918,7 +937,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         else:
             k = int(self._clabel_param['skip'])
             args = (self._mappable.levels[:(
-                self._mappable.levels.size/k)*k].reshape(-1, k)[:, 0],)
+                self._mappable.levels.size//k)*k].reshape(-1, k)[:, 0],)
         kargs['use_clabeltext'] = True
         return args, kargs
 
@@ -940,20 +959,9 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
                  self._clabel_param['inline'],
                  float(self._clabel_param['inline_spacing']),
                  str(self._clabel_param['fmt']),
-                 str(self._clabel_param['skip']), ])
+                 str(self._clabel_param['skip']),
+                 str(self._clabel_param['alpha']), ])
 
         return v
         # should return like  (False, [8.0, (False, [(1.0, 0.0, 0.0, 1.0)]),
         # True, 5.0, u'%1.3f', '0'])
-
-    def call_clabel(self, *args,  **kargs):
-        for t in self._clabels:
-            t.remove()
-        self._clabels = []
-        container = self.get_container()
-        self._clabels = container.clabel(self._mappable, *args, **kargs)
-
-        self.set_bmp_update(False)
-        ifigure.events.SendPVDrawRequest(self, w=None,
-                                         wait_idle=True, refresh_hl=False)
-        return self._clabels

@@ -92,8 +92,10 @@ def string_split_ig(s, sep):
             del t[i]
     return t
     '''
+
+
 def eval_form2020(s):
-    #form2020= '(5e16.9)'
+    # form2020= '(5e16.9)'
     d = 16
     ret = []
     for i in range(5):
@@ -333,7 +335,7 @@ def load_file(file=None):
         val["rbbbs"] = rzbbbs[:, 0]
         val["zbbbs"] = rzbbbs[:, 1]
     else:
-        from python_lib.analysis.efit_tools import find_psi_contour
+        from ifigure.extra.efit_tools import find_psi_contour
         rzbbbs = find_psi_contour(rgrid, zgrid, psirz, rmaxis, zmaxis,
                                   ssibry, return_all=False)
 
@@ -421,6 +423,9 @@ def load_file(file=None):
             nm[sec][varname] = nm[sec][varname]+parseStr(s)
         if line0.endswith('/'):
             sec = None
+
+    f.close()
+
     xx, yy = np.meshgrid(rgrid, zgrid)
 #   isPlasma = xx.copy()
     sss = len(rgrid)*len(zgrid)
@@ -742,7 +747,7 @@ def onPlotMid(self, e=None):
     zmaxis = self_obj[:]["table"]["zmaxis"]
 
     btmid = self_obj[:]["table"]["btmid"]
-    #brmid = self_obj[:]["table"]["brmid"]
+    # brmid = self_obj[:]["table"]["brmid"]
     bzmid = self_obj[:]["table"]["bzmid"]
     jtmid = self_obj[:]["table"]["jtmid"]
     pressmid = self_obj[:]["table"]["pressmid"]
@@ -759,27 +764,27 @@ def onPlotMid(self, e=None):
     v.update(False)
     v.isec(0)
     obj = v.plot(x, bzmid)
-    v.title("$B_{\mathrm{tor, z}}\/\mathrm{(T)}$")
+    v.title(r"$B_{\mathrm{tor, z}}\/\mathrm{(T)}$")
     obj._name = 'bz'
     # obj=FigPlot(x,bzmid)
-    #axes.add_child('bz', obj)
+    # axes.add_child('bz', obj)
     obj = v.plot(x, btmid)
     obj._name = 'bt'
 #    obj=FigPlot(x,sqrt(bt_mid*bt_mid+br_mid*br_mid+bz_mid*bz_mid))
 #    axes.add_child('ball', obj)
 
     v.isec(1)
-    v.title("$J_{\mathrm{tor}}\/\mathrm{(MA/m^2)}$")
+    v.title(r"$J_{\mathrm{tor}}\/\mathrm{(MA/m^2)}$")
     obj = v.plot(x, jtmid)
     obj._name = 'jtor'
 
     v.isec(2)
-    v.title("$P\/\mathrm{(MPa)}$")
+    v.title(r"$P\/\mathrm{(MPa)}$")
     obj = v.plot(x, pressmid/1e6)
     obj._name = 'pres'
 
     v.isec(3)
-    v.title("$\mathrm{safety\,factor}$")
+    v.title(r"$\mathrm{safety\,factor}$")
     obj = v.plot(x, qmid)
     obj._name = 'qpsi'
 
@@ -880,7 +885,8 @@ def onPlotEq(self, e=None, viewer=None):
 
     if no_lim_b:
         return
-    from python_lib.analysis.efit_tools import flux_average, npsi2psi, npsi2npsit
+
+    from ifigure.extra.efit_tools import flux_average, npsi2psi, npsi2npsit
 
     npsis = np.linspace(0.02, 0.99, 20)
     psis = [npsi2psi(self_obj, npsi) for npsi in npsis]

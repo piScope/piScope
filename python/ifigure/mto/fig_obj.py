@@ -1377,6 +1377,8 @@ class FigObj(TreeDict, MetadataHolder):
              self._st_extent[2]]
         self.drag_a_add_hl(a, x, y)
 #        if self._drag_hl is None:
+
+        self._drag_a_data = None
         return redraw
 
     # drag : to show transient usr feedback during drag
@@ -1393,6 +1395,7 @@ class FigObj(TreeDict, MetadataHolder):
         '''
         if shift is None:
             shift = evt.guiEvent.ShiftDown()
+
         loc = self._picker_a_loc
         rec = [x for x in self._st_extent]
 
@@ -1445,6 +1448,8 @@ class FigObj(TreeDict, MetadataHolder):
 #        self._drag_hl.set_ydata(y)
 
         redraw = 0  # request to draw canvas 0|1|??
+
+        self._drag_a_data = redraw, scale
         return redraw, scale
 
     def drag_a_get_hl(self, a):
@@ -1481,11 +1486,13 @@ class FigObj(TreeDict, MetadataHolder):
         can used it to provide "live-update" of object 
         while drag is happening.
         '''
-#        if self._drag_hl is None: return
-        redraw, scale = self.drag_a(a, evt, shift=shift, scale=scale)
+        if self._drag_a_data is not None:
+            redraw, scale = self._drag_a_data
+        else:
+            # fall back...just in case
+            redraw, scale = self.drag_a(a, evt, shift=shift, scale=scale)
         self.drag_a_rm_hl(a)
-#        self.dragdone_a_clean(a)
-#        self.highlight_artist(True, artist=[a])
+
         return 0, scale
 
 # scale_artist : scale artist by using sclae...
@@ -1772,6 +1779,7 @@ class FigObj(TreeDict, MetadataHolder):
         w = n2[0][0]-n1[0][0]
         h = n2[0][1]-n1[0][1]
         rect = [n1[0][0], n1[0][1], w, h]
+
         return rect
 
     def convert_transform_point(self, t1, t2, p):

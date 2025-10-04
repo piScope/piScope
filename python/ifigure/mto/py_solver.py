@@ -18,7 +18,6 @@ from __future__ import print_function
 import os
 import wx
 import time
-import imp
 import sys
 import logging
 import weakref

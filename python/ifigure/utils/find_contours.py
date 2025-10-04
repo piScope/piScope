@@ -5,7 +5,7 @@ import numpy as np
 try:
    from skimage import measure
 except ImportError:
-   assert False, "Can not import skimage. Consider pip install skimage."
+   assert False, "Can not import skimage. Consider pip install scikit-image."
 
 def findthem(data, level, xgrid=None, ygrid=None, transpose=True):
     if transpose:

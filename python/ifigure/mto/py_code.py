@@ -57,7 +57,6 @@ from ifigure.mto.treedict import TreeDict
 import ifigure
 import os
 import time
-import imp
 import sys
 import logging
 import weakref

@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from packaging import version
 
+from ifigure.utils.cross2d import *
 from ifigure.matplotlib_mod.canvas_common import camera_distance
 
 import time
@@ -467,7 +468,7 @@ class Axes3DMod(Axes3D):
                     m = (im == k)
 
                 c = self.figure.canvas.hl_color
-                arr[:, :, :3][m] = np.array(c, copy=False)
+                arr[:, :, :3][m] = np.array(c, copy=None)
                 arr[:, :, 3][m] = amask
                 break
         # blur the mask,,,
@@ -766,6 +767,7 @@ class Axes3DMod(Axes3D):
         offset = kwargs['offset'] if 'offset' in kwargs else None
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contour(self, *args, **kwargs)
+        '''
         for z, linec in zip(np.argsort(cset.levels), cset.collections):
             convert_to_gl(linec)
             linec.convert_2dpath_to_3dpath(z, zdir='z')
@@ -777,6 +779,7 @@ class Axes3DMod(Axes3D):
                     linec._gl_offset = (0, z * 0.001, 0)
                 else:
                     linec._gl_offset = (0, 0, z * 0.001)
+        '''
         return cset
 
     def imshow(self, *args, **kwargs):
@@ -799,6 +802,7 @@ class Axes3DMod(Axes3D):
         zdir = kwargs['zdir'] if 'zdir' in kwargs else 'z'
         cset = Axes3D.contourf(self, *args, **kwargs)
         edgecolor = kwargs.pop('edgecolor', [1, 1, 1, 0])
+        '''
         for z, linec in zip(np.argsort(cset.levels), cset.collections):
             convert_to_gl(linec)
             linec.convert_2dpath_to_3dpath(z, zdir='z')
@@ -811,6 +815,7 @@ class Axes3DMod(Axes3D):
                 else:
                     linec._gl_offset = (0, 0, z * 0.001)
             linec.set_edgecolor((edgecolor,))
+        '''
         return cset
 
     def quiver(self, *args, **kwargs):
@@ -1064,7 +1069,7 @@ class Axes3DMod(Axes3D):
 
         '''
         from .art3d_gl import poly_collection_3d_to_gl
-        from matplotlib.tri.triangulation import Triangulation
+        from matplotlib.tri import Triangulation
 
         cz = kwargs.pop('cz', False)
         cdata = kwargs.pop('cdata', None)
@@ -1160,7 +1165,7 @@ class Axes3DMod(Axes3D):
         else:
             v = args[0]   # vertex
             vv = v
-            idxset = np.array(args[1], dtype=int, copy=False)
+            idxset = np.array(args[1], dtype=int, copy=None)
             # element index (element_idx, point_in_element)
             nverts = v.shape[0]
             ncounts = idxset.shape[1]
@@ -1684,10 +1689,9 @@ class Axes3DMod(Axes3D):
         d2 = screen_diff(v2)
         d3 = screen_diff(v3)
 
-        # print(d1, d2, d3)
-        c1 = abs(np.cross(norm_vec(d2), norm_vec(d3)))
-        c2 = abs(np.cross(norm_vec(d1), norm_vec(d3)))
-        c3 = abs(np.cross(norm_vec(d1), norm_vec(d2)))
+        c1 = abs(cross2d(norm_vec(d2), norm_vec(d3)))
+        c2 = abs(cross2d(norm_vec(d1), norm_vec(d3)))
+        c3 = abs(cross2d(norm_vec(d1), norm_vec(d2)))
         # print("c1, c2, c3", c1,  c2, c3)
         vv = [v1, v2, v3]
         dd = [d1, d2, d3]

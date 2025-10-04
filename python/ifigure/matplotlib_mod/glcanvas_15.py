@@ -46,7 +46,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
     def __init__(self, parent):
         self.init = False
-        
+
         if version.parse(wx.__version__) >= version.parse('4.1'):
             dispAttrs = wx.glcanvas.GLAttributes()
 
@@ -66,7 +66,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                        glcanvas.WX_GL_MAJOR_VERSION, 3,
                        glcanvas.WX_GL_MINOR_VERSION, 2, -1]
             glcanvas.GLCanvas.__init__(self, parent, -1, attribs)
-            
+
         if MyGLCanvas.context is None:
             if version.parse(wx.__version__) >= version.parse('4.1'):
                 ctxAttrs = wx.glcanvas.GLContextAttrs()
@@ -167,13 +167,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self._current_uniform[name] = (func, args, kwargs)
 
 
-        '''            
+        '''
         if name == 'uUseClip':
             print("Setting Clip", args, kwargs)
         if name == 'uClipLimit1':
             print("Clip1", args, kwargs)
-        if name == 'uAmbient':            
-            print("uAmbient", args, kwargs)              
+        if name == 'uAmbient':
+            print("uAmbient", args, kwargs)
         '''
         func(loc, *args, **kwargs)
 
@@ -427,11 +427,11 @@ class MyGLCanvas(glcanvas.GLCanvas):
             return
         if self._p_shader != self.shader:
             return
-        
+
         #print('set_lighting', light, clip_limit1)
         glUniform4fv(self.shader.uniform_loc['uAmbient'], 1,
                      (ambient, ambient, ambient, 1.0))
-        
+
         self.set_uniform(glUniform3fv, 'uClipLimit1', 1, clip_limit1)
         self.set_uniform(glUniform3fv, 'uClipLimit2', 1, clip_limit2)
         glUniform4fv(self.shader.uniform_loc['uLightDir'], 1, light_direction)
@@ -703,7 +703,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             self.set_uniform(glUniform1i, 'uUseClip', 1)
         else:
             self.set_uniform(glUniform1i, 'uUseClip', 0)
-        ''' 
+        '''
         self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
         glDrawBuffers(2, [GL_COLOR_ATTACHMENT0,
                           GL_COLOR_ATTACHMENT1])
@@ -1178,6 +1178,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.uint8)).reshape(
                 him, wim, -1)
+            idmap = np.asarray(idmap, dtype=np.uint16)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -1210,6 +1211,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.float32).reshape(
                     him, wim, -1)) * 255.
+            idmap = np.asarray(idmap, dtype=np.uint16)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             #depth = np.fromstring(data3, np.float32).reshape(him, wim)
@@ -1394,7 +1396,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             self.set_uniform(glUniform1i, 'uUseArrayID', 0)
 
-    def draw_polygon(self, vbos, gc, f, c, facecolor=None, edgecolor=None):
+    def draw_polygon(self, vbos, gc, firsts, counts, facecolor=None, edgecolor=None):
         glBindVertexArray(vbos['vao'])
         self.EnableVertex(vbos)
         self.EnableNormal(vbos)
@@ -1407,7 +1409,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glClear(GL_STENCIL_BUFFER_BIT)
         glStencilFunc(GL_ALWAYS, 1, 1)
         glStencilOp(GL_INCR, GL_INCR, GL_INCR)
-        glDrawArrays(GL_TRIANGLE_FAN, f, c)
+        for f, c in zip(firsts, counts):
+            glDrawArrays(GL_TRIANGLE_FAN, f, c)
 
         self.set_depth_test()
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
@@ -1419,7 +1422,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe != 2:
             if self._wireframe == 1:
                 glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
-            glDrawArrays(GL_TRIANGLE_FAN, f, c)
+            for f, c in zip(firsts, counts):
+                glDrawArrays(GL_TRIANGLE_FAN, f, c)
             if self._wireframe == 1:
                 glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
 
@@ -1436,7 +1440,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if self._wireframe == 2:
             glDisable(GL_DEPTH_TEST)
         glDepthMask(GL_FALSE)
-        glDrawArrays(GL_LINE_STRIP, f, c)
+        for f, c in zip(firsts, counts):
+            glDrawArrays(GL_LINE_STRIP, f, c)
         self.set_depth_mask()
         if self._wireframe == 2:
             self.set_depth_test()
@@ -1460,7 +1465,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.EnableNormal(vbos)
         lw = gc.get_linewidth()
 
-        w = vbos['count']
+        w = vbos['counts']
         void1, void2, w0, h0 = glGetIntegerv(GL_VIEWPORT)
 
         atlas_tex = glGenTextures(1)
@@ -1531,7 +1536,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.select_shader(self.shader)
         return atlas
 
-    def draw_path_drawarray(self, vbos, gc, path, rgbFace=None,
+    def draw_path_drawarray(self, vbos, gc, path, rgbEdge,
                             stencil_test=True, linestyle='None',
                             atlas=None):
 
@@ -1542,7 +1547,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         lw = gc.get_linewidth()
 
         self.setLineWidth(lw * multisample)
-        self.setSolidColor(gc._rgb)
+        self.setSolidColor(rgbEdge)
         if self._wireframe == 2:
             glDisable(GL_DEPTH_TEST)
 
@@ -1564,7 +1569,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         else:
             self.set_uniform(glUniform1i, 'uLineStyle', -1)
 
-        glDrawArrays(GL_LINE_STRIP, 0, vbos['count'])
+        glDrawArrays(GL_LINE_STRIP, 0, vbos['counts'])
 
         self.set_uniform(glUniform1i, 'uLineStyle', -1)
         self.setSolidColor(-1)
@@ -1575,31 +1580,36 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(0)
         self.select_shader(self.shader)
 
-    def draw_path(self, vbos, gc, *args, **kwargs):
-        rgbFace = kwargs.get('rgbFace', None)
+    def draw_path(self, vbos, gc, path, rgbFace, rgbEdge, *args, **kwargs):
         linestyle = kwargs.get('linestyle', None)
         lw = gc.get_linewidth()
         if rgbFace is None:
+            if rgbEdge is None:
+                return
             if lw > 0:
                 if (linestyle == '-' or self._p_shader != self.shader):
-                    self.draw_path_drawarray(vbos, gc, *args, **kwargs)
+                    self.draw_path_drawarray(vbos, gc, path, rgbEdge,  **kwargs)
                 elif linestyle == 'None':
                     return
                 else:
-                    atlas = self.draw_path_atlas(vbos, gc, *args)
+                    atlas = self.draw_path_atlas(vbos, gc, path, *args)
                     kwargs['atlas'] = atlas
-                    self.draw_path_drawarray(vbos, gc, *args, **kwargs)
+                    self.draw_path_drawarray(vbos, gc, path, rgbEdge, **kwargs)
         else:
-            self.draw_polygon(vbos, gc, 0, vbos['count'], facecolor=rgbFace,
+            counts = kwargs.get('vcounts', vbos['counts'])
+            firsts = np.hstack((0, np.cumsum(counts)))[:-1]
+            self.draw_polygon(vbos, gc, firsts, counts, facecolor=rgbFace,
                               edgecolor=gc._rgb)
 
             mode = 3  # polygon
         return
 
-    def makevbo_path(self, vbos, gc, path, *args, **kwargs):
+    def makevbo_path(self, vbos, gc, path, rgbFace, rgbEdge, *args, **kwargs):
         if vbos is None:
-            vbos = {'v': None, 'count': None, 'n': None}
+            vbos = {'v': None, 'counts': None, 'n': None, 'fc': None}
             vbos['vao'] = glGenVertexArrays(1)
+
+        facecolor = rgbFace
 
         glBindVertexArray(vbos['vao'])
         if vbos['v'] is None or vbos['v'].need_update:
@@ -1608,7 +1618,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             # 0, 0, 0 is to make length longer by 1 vetex
             # for styled_drawing
             xyz = np.hstack((xyz, 0, 0, 0))
-            count = len(path[0])
+            counts = len(path[0])
             xyz = np.array(xyz, dtype=np.float32)
 
             if len(path) > 3:
@@ -1632,8 +1642,24 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     vbos['n'].set_array(norms)
             else:
                 vbos['n'] = None
-            vbos['count'] = count
+            vbos['counts'] = counts
             vbos['v'].need_update = False
+
+        if ((vbos['fc'] is None or vbos['fc'].need_update) and
+                facecolor is not None):
+
+            counts = vbos['counts']
+            if len(facecolor) == 0:
+                facecolor = np.array([[1, 1, 1, 0]])
+
+            col = [facecolor] * counts
+            col = np.hstack(col).astype(np.float32)
+            if vbos['fc'] is None:
+                vbos['fc'] = get_vbo(col, usage='GL_STATIC_DRAW')
+            else:
+                vbos['fc'].set_array(col)
+            vbos['fc'].need_update = False
+
         glBindVertexArray(0)
         return vbos
 
@@ -1643,7 +1669,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if always_noclip:
             self.set_uniform(glUniform1i, 'uUseClip', 0)
-        
+
         self.select_shader(self.lshader)
         self.select_shader(self.shader)
         glBindVertexArray(vbos['vao'])
@@ -1675,14 +1701,14 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         if self._use_clip and always_noclip:
             self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
-        
+
         glBindVertexArray(0)
 
     def makevbo_image(self, vbos, gc, path, trans, im,
                       interp='nearest',
                       always_noclip=False):
         if vbos is None:
-            vbos = vbos_dict({'v': None, 'count': None, 'n': None, 'im': None,
+            vbos = vbos_dict({'v': None, 'counts': None, 'n': None, 'im': None,
                               'uv': None, 'im_update': False})
             vbos['vao'] = glGenVertexArrays(1)
 
@@ -1704,7 +1730,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 vbos['n'].set_array(norms)
             if vbos['uv'] is None:
                 vbos['uv'] = get_vbo(uv, usage='GL_STATIC_DRAW')
-            vbos['count'] = 4
+            vbos['counts'] = 4
             vbos['v'].need_update = False
         if vbos['im'] is None or vbos['im_update']:
             if interp == 'linear':
@@ -1727,7 +1753,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         return vbos
 
     def draw_markers(self, vbos, gc, marker_path, marker_trans, path,
-                     trans, rgbFace=None, array_idx=None):
+                     trans, array_idx=None):
 
         marker_size = marker_trans[0]
         h, w, void = marker_path.shape
@@ -1758,7 +1784,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             glDisable(GL_DEPTH_TEST)
         self.set_uniform(glUniform1i, 'uisMarker', 1)
         self.setLineWidth(1)
-        
+
         if self.has_pointsprite:
             glEnable(GL_PROGRAM_POINT_SIZE)
             glEnable(GL_POINT_SPRITE)
@@ -1782,15 +1808,15 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glDepthFunc(GL_LEQUAL)
 
-        glDrawArrays(GL_POINTS, 0, vbos['count'])
+        glDrawArrays(GL_POINTS, 0, vbos['counts'])
         #glDrawArrays(GL_LINES,  0, vbos['count'])
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0., 0.))
         self.set_uniform(glUniform1i, 'uAlphaTest', 0)
 
         if self.has_pointsprite:
-            glDisable(GL_PROGRAM_POINT_SIZE)            
-            glDisable(GL_POINT_SPRITE)        
+            glDisable(GL_PROGRAM_POINT_SIZE)
+            glDisable(GL_POINT_SPRITE)
 
         self.set_uniform(glUniform1i, 'uisMarker', 0)
         self.set_uniform(glUniform1i, 'uUseArrayID', 0)
@@ -1804,23 +1830,23 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glBindVertexArray(0)
 
     def makevbo_markers(self, vbos, gc, marker_path, maker_trans,
-                        path, *args, **kwargs):
+                        path, trans, *args, **kwargs):
 
         vbos = self.makevbo_path(vbos, gc,
                                  (np.array(path[0]).flatten(),
                                   np.array(path[1]).flatten(),
                                   np.array(path[2]).flatten()),
-                                 *args, **kwargs)
+                                  None, None, *args, **kwargs)
         array_idx = kwargs.pop("array_idx", None)
         l = np.array(path[0]).flatten().shape[0]
         if array_idx is not None:
-            array_idx = np.array(array_idx, copy=False).flatten()
+            array_idx = np.array(array_idx, copy=None).flatten()
             if array_idx.shape[0] != l:
                 assert False, "array_idx length should be the same as the number of elements"
         else:
             array_idx = np.arange(l)
         vertex_id = np.array(array_idx, dtype=np.float32,
-                             copy=False).transpose().flatten()
+                             copy=None).transpose().flatten()
         vbos['vertex_id'] = get_vbo(vertex_id,
                                     usage='GL_STATIC_DRAW')
         return vbos
@@ -1841,7 +1867,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if vbos['fc'] is not None:
             if stencil_test:
                 for f, c in zip(first, counts):
-                    self.draw_polygon(vbos, gc, f, c)
+                    self.draw_polygon(vbos, gc, [f], [c])
             else:
                 self.select_shader(self.shader)
                 glBindVertexArray(vbos['vao'])
@@ -2081,7 +2107,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 if self._use_clip and always_noclip:
                     self.set_uniform(glUniform1i, 'uUseClip', self._use_clip)
                 return
-        
+
         if vbos['eprimitive'] == GL_TRIANGLES:
             self.select_shader(self.tshader)
         else:
@@ -2207,13 +2233,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             idxset0 = np.array(
                 paths[4],
-                copy=False).astype(
-                np.uint32,
-                copy=False).flatten()
+                copy=None, dtype=np.uint32).flatten()
             if edge_idx is not None:
                 edge_idx = np.array(
-                    edge_idx, copy=False).astype(
-                    np.uint32, copy=False).flatten()
+                    edge_idx, copy=None, dtype=np.uint32).flatten()
 
             if len(paths[4][0]) == 4:
                 idxset0 = idxset0.reshape(-1, 4)
@@ -2349,8 +2372,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             elif len(facecolor)*paths[4].shape[1]  == len(paths[0]):
                 # non index array/flat
                 c = paths[4].shape[1]
-                col = np.array(facecolor, copy=False).astype(
-                    np.float32, copy=False)
+                col = np.array(facecolor, copy=None, dtype=np.float32)
                 col = np.hstack([col] * c)
             else:
                 col = np.repeat(np.array(facecolor).astype(np.float32),
@@ -2367,8 +2389,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             if len(edgecolor) == 0:
                 edgecolor = np.array([[1, 1, 1, 0]]).astype(np.float32)
             if len(edgecolor) == len(paths[0]):
-                col = np.array(edgecolor, copy=False).astype(
-                    np.float32, copy=False)
+                col = np.array(edgecolor, copy=None, dtype=np.float32)
             else:
                 col = np.repeat(np.array(edgecolor).astype(np.float32),
                                 nindex * counts)
@@ -2384,7 +2405,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             nverts = len(paths[0])
 
             if array_idx is not None:
-                array_idx = np.array(array_idx, copy=False).flatten()
+                array_idx = np.array(array_idx, copy=None).flatten()
 
                 if array_idx.shape[0] == nverts:
                     pass
@@ -2394,8 +2415,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     assert False, "array_idx length should be the same as the number of vertex:" + str(array_idx.shape) + " : "  + str(nverts) + " : " + str(l)
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
-                                     copy=False).transpose().flatten()
-                
+                                     copy=None).transpose().flatten()
+
                 if vbos['vertex_id'] is None:
                     vbos['vertex_id'] = get_vbo(vertex_id,
                                                 usage='GL_STATIC_DRAW')

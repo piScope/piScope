@@ -32,17 +32,28 @@ frameart_zbase = -100000  # a big number so that it is draw first.
 
 
 class FigPage(FigObj):
-    def __init__(self, figsize=(0.15, 0.1), dpi=72, src=None,
+    def __init__(self, figsize=(0.15, 0.1), dpi=-1, src=None,
                  *args, **kywds):
         # list of page obj
         # this is for text, suptitle, and legend
         ###  placed in figure
         self.figobj = []
         super(FigPage, self).__init__()
+
+        if dpi != -1:
+            import warnings
+            warnings.warn(
+                "Screen DPI is set from system"
+                "manually setting DPI is not supported in FigPage",
+            UserWarning,
+            stacklevel=2)
+
+        #self.setp("dpi", dpi)
+
         # left, righ, top, bottom (fraction of rect)
         self.setp("def_margin", [0.15, 0.1, 0.15, 0.15])
         self.setp("figsize", figsize)
-        self.setp("dpi", dpi)
+
         self.setp("args", args)
         self.setp("kywds", kywds)
         self.setp("suptitle_labelinfo",  ['', 'black', 'default',
@@ -170,9 +181,10 @@ class FigPage(FigObj):
         # internally managed by matplotlib
         # does not change
         if self.isempty():
+            dpi = wx.GetApp().get_dpi()
             dprint2("generatieng figure")
             artist = Figure(figsize=self.getp("figsize"),
-                            dpi=self.getp("dpi"),
+                            dpi=dpi,
                             *(self.getp("args")),
                             **(self.getvar("kywds")))
             self._artists.append(artist)
@@ -199,8 +211,8 @@ class FigPage(FigObj):
             alist = artist
 
         if self._title_artist is not None:
-            self._artists[0].texts.remove(self._title_artist)
-            self._title_artist.figure = None
+            #self._artists[0].texts.remove(self._title_artist)
+            self._title_artist.remove()
             self._title_artist = None
 
         self.store_loaded_property()

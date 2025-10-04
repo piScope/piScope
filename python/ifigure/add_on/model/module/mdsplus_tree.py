@@ -83,7 +83,7 @@ def split_str(s, pattern):
 
 
 def make_treedicts(tree, this):
-    arr = split_str(tree[0], '[\:.]')
+    arr = split_str(tree[0], r'[\:.]')
 
     treename = arr[0][1:]
 
@@ -96,7 +96,7 @@ def make_treedicts(tree, this):
     print(("tree nodes :", len(tree)))
 
     for k in range(len(tree)-1):
-        arr = split_str(tree[k+1], '[\:.]')
+        arr = split_str(tree[k+1], r'[\:.]')
         p = dicttop
         for key in arr[1:]:
             p.setdefault(key, MDSPlusTree())

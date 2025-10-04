@@ -1024,7 +1024,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.uint8)).reshape(
                 him, wim, -1)
-
+            idmap = np.asarray(idmap, dtype=np.uint16)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER)
@@ -1057,7 +1057,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                 np.frombuffer(
                     bytes(data2), dtype=np.float32).reshape(
                     him, wim, -1)) * 255.
-
+            idmap = np.asarray(idmap, dtype=np.uint16)
             idmap2 = idmap[:, :, 2] + idmap[:, :, 3] * 256
             idmap0 = idmap[:, :, 0] + idmap[:, :, 1] * 256
             #depth = np.fromstring(data3, np.float32).reshape(him, wim)
@@ -1528,13 +1528,13 @@ class MyGLCanvas(glcanvas.GLCanvas):
         array_idx = kwargs.pop("array_idx", None)
         l = np.array(path[0]).flatten().shape[0]
         if array_idx is not None:
-            array_idx = np.array(array_idx, copy=False).flatten()
+            array_idx = np.array(array_idx, copy=None).flatten()
             if array_idx.shape[0] != l:
                 assert False, "array_idx length should be the same as the number of elements"
         else:
             array_idx = np.arange(l)
         vertex_id = np.array(array_idx, dtype=np.float32,
-                             copy=False).transpose().flatten()
+                             copy=None).transpose().flatten()
         vbos['vertex_id'] = get_vbo(vertex_id,
                                     usage='GL_STATIC_DRAW')
         return vbos
@@ -1952,8 +1952,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             if edge_idx is not None:
                 idxsete = np.array(
-                    edge_idx, copy=False).astype(
-                    np.uint32, copy=False).flatten()
+                    edge_idx, copy=None, dtype=np.uint32).flatten()
                 vbos['ie'] = get_vbo(idxsete, usage='GL_STATIC_DRAW',
                                      target='GL_ELEMENT_ARRAY_BUFFER')
             else:
@@ -1977,8 +1976,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
             if edge_idx is not None:
                 idxsete = np.array(
-                    edge_idx, copy=False).astype(
-                    np.uint32, copy=False).flatten()
+                    edge_idx, copy=None, dtype=np.uint32).flatten()
                 vbos['ie'].set_array(idxsete)
             else:
                 vbos['ie'] = None
@@ -1998,8 +1996,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             elif len(facecolor) * paths[4].shape[1] == len(paths[0]):
                 # non index array/flat
                 c = paths[4].shape[1]
-                col = np.array(facecolor, copy=False).astype(
-                    np.float32, copy=False)
+                col = np.array(facecolor, copy=None, dtype=np.float32)
                 col = np.hstack([col] * c)
             else:
                 col = [facecolor] * np.sum(counts)  # single color
@@ -2034,7 +2031,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
             l = len(counts)
             nverts = len(paths[0])
             if array_idx is not None:
-                array_idx = np.array(array_idx, copy=False).flatten()
+                array_idx = np.array(array_idx, copy=None).flatten()
                 if array_idx.shape[0] == nverts:
                     pass
                 elif array_idx.shape[0] == l:
@@ -2043,7 +2040,7 @@ class MyGLCanvas(glcanvas.GLCanvas):
                     assert False, "array_idx length should be the same as the number of vertex"
                 vertex_id = np.array(array_idx,
                                      dtype=np.float32,
-                                     copy=False).transpose().flatten()
+                                     copy=None).transpose().flatten()
 
                 if vbos['vertex_id'] is None:
                     vbos['vertex_id'] = get_vbo(vertex_id,

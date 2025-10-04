@@ -11,7 +11,7 @@ def dnd_sp(x, y, canvas):
     # print x,y,figure
 
     figure = canvas._figure
-    dx, dy = canvas.canvas.get_width_height()
+    dx, dy = canvas.canvas.get_bitmap_width_height()
     evt = event()
     evt.xdata = x/float(dx)
     evt.ydata = y/float(dy)

@@ -1065,12 +1065,12 @@ def loadct(num, **kwargs):
 
 
 def register_idl_colormaps():
-    from matplotlib.cm import register_cmap
+    import matplotlib as mpl
     names = []
     for x in range(40):
         cmap = loadct(x)
         name = 'idl'+str(x)
-        register_cmap(name=name, cmap=cmap)
+        mpl.colormaps.register(cmap, name=name)
         names.append(name)
     return names
 
@@ -1137,7 +1137,7 @@ def tex_escape_equation(text):
     arr2 = [x if i % 2 else tex_escape(x) for i, x in enumerate(arr)]
     delim = ['$']*(len(arr)-1)
     if len(delim) % 2:
-        delim[-1] = '\$'
+        delim[-1] = r'\$'
     return ''.join([x+y for x, y in zip(arr2, delim+[''])])
 #    if arr[0] != '':
 #       return ''.join([x+y for x, y in zip(arr2, delim+[''])])

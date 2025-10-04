@@ -161,7 +161,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         CanvasAgg._on_size(self, evt)
 
     def draw(self, drawDC=None, nogui_reprint=False):
-        #print("draw here")
+        # print("draw here")
         if self.figure is None:
             return
         if self.figure.figobj is None:
@@ -170,14 +170,14 @@ class FigureCanvasWxAggMod(CanvasAgg):
         for fig_axes in self._auto_update_ax:
             fig_axes.set_bmp_update(False)
 
-        #st =time.time()
+        # st =time.time()
         if not self.resize_happend:
             s = self.draw_by_bitmap()
             # this makes draw_event
             self.figure.draw_from_bitmap(self.renderer)
             self._isDrawn = True
             if not nogui_reprint:
-                #print('draw calling gui_repaint')
+                # print('draw calling gui_repaint')
                 self.gui_repaint(drawDC=drawDC)
 
     def draw_all(self, drawDC=None):
@@ -276,7 +276,6 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
         copy_to_cb(bmp_obj)
 
-
     def draw_by_bitmap(self):
         last_size = self.figure.figobj._last_draw_size
         if (self.GetClientSize()[0] != last_size[0] or
@@ -334,7 +333,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.call_draw_image(gc,
                              self.iothers[1], self.iothers[2], self.iothers[0])
 
-####    self.call_draw_image(gc, 0, 0, self.make_final_image())
+# self.call_draw_image(gc, 0, 0, self.make_final_image())
 
         self._isDrawn = True
 
@@ -436,12 +435,18 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self.figure.frameon = o
 
     def _prepare_bitmap(self):
-        try:   # MPL 3.6.1 and after
-            from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap
-            self.bitmap = _rgba_to_wx_bitmap(self.get_renderer().buffer_rgba())
-        except ImportError:
-            from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
-            self.bitmap = _convert_agg_to_wx_bitmap(self.get_renderer(), None)
+        try:
+            self.bitmap = self._create_bitmap()
+
+        except:
+            try:   # MPL 3.6.1 and after
+                from matplotlib.backends.backend_wxagg import _rgba_to_wx_bitmap
+                self.bitmap = _rgba_to_wx_bitmap(
+                    self.get_renderer().buffer_rgba())
+            except ImportError:
+                from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
+                self.bitmap = _convert_agg_to_wx_bitmap(
+                    self.get_renderer(), None)
 
     def _sorted_axes_list(self):
         # a list of (zorder, func_to_call, list_of_args)
@@ -461,7 +466,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
 
     def _bufferstring2image(self, box=None):
         # print 'enterig buffer strin'
-        #st = time.time()
+        # st = time.time()
         w, h = self.renderer.get_canvas_width_height()
         if isMPL_before_1_2:
             img = np.fromstring(self.renderer.buffer_rgba(0, 0), np.uint8)
@@ -549,3 +554,7 @@ class FigureCanvasWxAggMod(CanvasAgg):
             bp = self.Parent._cutplane_btns
             if bp is not None:
                 bp.Refresh()
+
+    def get_bitmap_width_height(self):
+        w, h = self.bitmap.GetSize()
+        return w, h

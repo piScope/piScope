@@ -55,7 +55,7 @@ def label_picker(axes, evt):
 
 def axes_picker(artist, evt, canvas=None):
     from ifigure.mto.fig_grp import FigGrp
-    
+
     if canvas is None:
         canvas = evt.guiEvent.GetEventObject()  # backend_wxagg
     tb = canvas.GetParent().toolbar  # toolbar
@@ -157,7 +157,7 @@ def figlabel_picker(fig, evt):
 
 
 def fig_picker(artist, evt):
-    from ifigure.mto.fig_grp import FigGrp        
+    from ifigure.mto.fig_grp import FigGrp
     from ifigure.mto.fig_axes import FigAxes
 
     canvas = evt.guiEvent.GetEventObject()  # backend_wxagg
@@ -256,6 +256,9 @@ def CheckLineHit(x, y, x0, y0, trans=None, itrans=None):
     def non_trans(args):
         return args
 
+    if len(x) == 0 or len(y) == 0:
+        return False, 0
+
     if trans is None:
         trans = non_trans
         itrans = non_trans
@@ -274,24 +277,23 @@ def CheckLineHit(x, y, x0, y0, trans=None, itrans=None):
     x1d, x2d = sorted([x1dt, x2dt])
     y1d, y2d = sorted([y1dt, y2dt])
 
-    try:
-        ic = np.where((x > x1d) & (x < x2d) & (y > y1d) & (y < y2d))[0][0]
-    except:
+    ic = np.where((x > x1d) & (x < x2d) & (y > y1d) & (y < y2d))[0]
+
+    if len(ic) == 0:
         ic = None
-        if x.shape[0] > 100:
+        if x.shape[0] > 255:
             return False, 0
+    else:
+        ic = ic[0]
 
     if ic is not None:
         return True, ic
+
     xys = np.vstack((x, y)).transpose()
 
     d = [np.linalg.norm(trans(xy)-[x0d, y0d]) for xy in xys]
 
-    # print d
-    try:
-        ic = np.where(d == min(d))[0][0]
-    except:
-        return False, 0
+    ic = np.argmin(d)
 
     if len(x) == 1:
         return False, 0
@@ -345,6 +347,11 @@ def norm_d(x0, y0, x1, y1, x2, y2):
     l1 = np.sqrt(v1[0]*v1[0]+v1[1]*v1[1])
     l2 = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
 
+    if l1 == 0:
+        return 0., 0.
+    if l2 == 0:
+        return 0., 0.
+
     cos = (v1[0]*v2[0]+v1[1]*v2[1])/l1/l2
 
     d = l1*np.sqrt(1. - cos*cos)
@@ -352,15 +359,15 @@ def norm_d(x0, y0, x1, y1, x2, y2):
 
 
 def check_inner(x0, y0, x1, y1, x2, y2):
-
+    #  check if (x0, y0) is inbetween (x1, y1) and (x2, y2)
     v1 = (x0-x1, y0-y1)
     v2 = (x2-x1, y2-y1)
-    if (v1[0]*v2[0]+v1[1]*v2[1]) < 0:
+    if (v1[0]*v2[0]+v1[1]*v2[1]) <= 0:
         return False
 
     v1 = (x0-x2, y0-y2)
     v2 = (x1-x2, y1-y2)
-    if (v1[0]*v2[0]+v1[1]*v2[1]) < 0:
+    if (v1[0]*v2[0]+v1[1]*v2[1]) <= 0:
         return False
 
     return True
