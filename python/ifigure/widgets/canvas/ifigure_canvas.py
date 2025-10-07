@@ -1455,7 +1455,7 @@ class ifigure_popup(wx.Menu):
         #        print 'set frame art'
         canvas = e.GetEventObject()
         for item in canvas.selection:
-            print(item())
+            #print(item())
             if item() is not None:
                 item().figobj.set_frameart(True)
         canvas.draw_all()
@@ -2700,7 +2700,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             m = ifigure_popup(self, xy=(event.x, event.y),
                               xydata=(event.xdata, event.ydata))
 
-            print(scr_size, event.x, event.y, event.xdata, event.ydata)
             if m._menus != 0:
                 scale = self.canvas.GetContentScaleFactor()
                 self.canvas.PopupMenu(m,  # ifigure_popup(self),
