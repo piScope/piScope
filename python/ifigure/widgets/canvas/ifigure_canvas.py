@@ -1654,6 +1654,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         self.toolbar = navibar(self)
         self.spacer1 = spacer_panel(self).set_color([0, 0, 0])
+
+        # make sure that dpi is set here.
+        # this is because matplotlib backend may scale figreu._dpi internally
+        self._figure.set_dpi(wx.GetApp().get_dpi())
         if turn_on_gl:
             try:
                 from ifigure.matplotlib_mod.backend_wxagg_gl import FigureCanvasWxAggModGL as CanvasGL
