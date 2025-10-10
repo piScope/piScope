@@ -1838,7 +1838,7 @@ class _textctrl_mixin():
 
     def call_validator(self, value=None):
         if value is None:
-            value  =self.GetValue()
+            value = self.GetValue()
         if self._validator(value,
                            self._validator_param,
                            self):
@@ -3148,7 +3148,6 @@ class ComboBoxWithNew(ComboBoxCompact):
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
 
     def onHit(self, evt):
-        print("on hit")
         sel = self.GetValue()
         if sel == 'New...':
             from ifigure.widgets.dialog import textentry
