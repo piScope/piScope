@@ -20,19 +20,15 @@ and for the above purposes, &pi;Scope is equipped with
 
 &pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM.
      
-Requirements
-*  Python >3.6
-*  wxPython 4.2
-*  matplotlib 3.6.2
-*  PyOpenGL
-*  ... and others.
-
-Typical pip command list...
+### Install
 
 ```
- pip install attrdict
- pip install wxPython
  pip install piScope
+
+ or
+ 
+ git clone git@github.com:piScope/piScope.git; cd piScope
+ pip install .
 ```
 
 Directories:
