@@ -62,7 +62,7 @@ except BaseException:
     PyDeadObjectError = RuntimeError
 import matplotlib
 import numpy as np
-#from numpy import arange, sin, pi
+# from numpy import arange, sin, pi
 from matplotlib.lines import Line2D
 from matplotlib.patches import Ellipse, PathPatch
 import matplotlib.path
@@ -100,7 +100,7 @@ from ifigure.widgets.undo_redo_history import (GlobalHistory,
 
 # uncomment the following to use wx rather than wxagg
 # matplotlib.use('WX')
-#from ifigure.matplotlib_mod.backend_wx_mod import FigureCanvasWxMod as Canvas
+# from ifigure.matplotlib_mod.backend_wx_mod import FigureCanvasWxMod as Canvas
 # matplotlib.use('WXAGG') ## this is moved to piscope.py
 from ifigure.matplotlib_mod.backend_wxagg_mod import FigureCanvasWxAggMod as Canvas
 turn_on_gl = False
@@ -108,8 +108,8 @@ turn_on_gl = False
 # comment out the following to use wx rather than wxagg
 # standard Toolbar is not used anymore
 # matplotlib.use('WXAgg')
-#from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as Canvas
-#from matplotlib.backends.backend_wx import NavigationToolbar2Wx as Toolbar
+# from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as Canvas
+# from matplotlib.backends.backend_wx import NavigationToolbar2Wx as Toolbar
 
 dprint1, dprint2, dprint3 = debug.init_dprints('iFigureCanvas')
 
@@ -184,7 +184,7 @@ class ifigure_DropTarget(wx.TextDropTarget):
         evt = event()
         w, h = self._canvas().canvas.get_bitmap_width_height()
         self._canvas().canvas.motion_notify_event(x, h - y, evt)
-        #sp.dnd_sp(x, y, self._canvas())
+        # sp.dnd_sp(x, y, self._canvas())
         return default
 
     def OnLeave(self, *args):
@@ -799,9 +799,10 @@ class ifigure_canvas_draghandler_3d_sel(draghandler_base2,
         rect = [int(x1), int(y1), int(x2 - x1), int(y2 - y1)]
 
         self._rect = rect
-        self._shiftdown = evt.guiEvent.ShiftDown()
-        self._controldown = evt.guiEvent.ControlDown()
-        self._altdown = evt.guiEvent.AltDown()
+        if evt.guiEvent_memory is not None:
+            self._shiftdown = evt.guiEvent_memory.ShiftDown()
+            self._controldown = evt.guiEvent_memory.ControlDown()
+            self._altdown = evt.guiEvent_memory.AltDown()
 
     def _calc_xy(self, evt):
         dx = evt.x - self.st_event.x
@@ -1454,7 +1455,6 @@ class ifigure_popup(wx.Menu):
         #        print 'set frame art'
         canvas = e.GetEventObject()
         for item in canvas.selection:
-            print(item())
             if item() is not None:
                 item().figobj.set_frameart(True)
         canvas.draw_all()
@@ -1474,7 +1474,6 @@ class ifigure_popup(wx.Menu):
 
     def onArrange(self, e):
         canvas = e.GetEventObject()
-        print(('arrange', e.ExtraInfo))
 
         dx = [0] * len(canvas.selection)
         dy = [0] * len(canvas.selection)
@@ -1501,7 +1500,7 @@ class ifigure_popup(wx.Menu):
         else:
             import numpy as np
             b2 = np.linspace(min(b), max(b), len(b))
-            idx = [x[0] for x in sorted(enumerate(b), key=lambda x:x[1])]
+            idx = [x[0] for x in sorted(enumerate(b), key=lambda x: x[1])]
             b3 = [b2[i] for i in idx]
             d = [b[i] - b3[i] for i in range(len(b))]
         h = []
@@ -1653,6 +1652,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         self.toolbar = navibar(self)
         self.spacer1 = spacer_panel(self).set_color([0, 0, 0])
+
+        # make sure that dpi is set here.
+        # this is because matplotlib backend may scale figreu._dpi internally
+        self._figure.set_dpi(wx.GetApp().get_dpi())
         if turn_on_gl:
             try:
                 from ifigure.matplotlib_mod.backend_wxagg_gl import FigureCanvasWxAggModGL as CanvasGL
@@ -1714,7 +1717,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         # dt=ifigure_DropTarget(self)
         # self.canvas.SetDropTarget(dt)
-        #self.Bind(wx.EVT_SIZE, self.HandleResize)
+        # self.Bind(wx.EVT_SIZE, self.HandleResize)
 
         from ifigure.ifigure_config import icondir
         if len(bitmaps) == 0:
@@ -1729,10 +1732,10 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.Bind(CANVAS_EVT_DRAWREQUEST, self.onDrawRequest)
         self.canvas.Bind(wx.EVT_SET_FOCUS, self.onCanvasFocus)
         self.canvas.Bind(wx.EVT_KILL_FOCUS, self.onCanvasKillFocus)
-        #self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.onCanvasFocus)
-        #self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
+        # self.canvas.Bind(wx.EVT_ENTER_WINDOW, self.onCanvasFocus)
+        # self.canvas.Bind(wx.EVT_LEAVE_WINDOW, self.onCanvasKillFocus)
 
-        #self.canvas.Bind(wx.EVT_CHAR, self.test)
+        # self.canvas.Bind(wx.EVT_CHAR, self.test)
         self._cursor_icon = None
 
     def test(self, evt):
@@ -1759,13 +1762,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self._hold_once = value
 
     def onCanvasFocus(self, e):
-        #print('get focus')
+        # print('get focus')
         if self.canvas is not None:
             self.mpl_connect(mode=self._mpl_mode)
         e.Skip()
 
     def onCanvasKillFocus(self, e):
-        #print('kill focus')
+        # print('kill focus')
         #       self.mpl_connect(mode = self._mpl_mode)
         if self.canvas is not None:
             self.mpl_disconnect()
@@ -1858,7 +1861,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             return
         self.mpl_disconnect()
         self._mpl_mode = mode
-        #print("setting mode", mode)
+        # print("setting mode", mode)
         if mode == 'normal':
             self._mplc = [self.canvas.mpl_connect('button_press_event',
                                                   self.buttonpress),
@@ -2233,7 +2236,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         frame = self.GetTopLevelParent()
         if frame is None:
             return
-        #frame = cbook.FindFrame(self)
+        # frame = cbook.FindFrame(self)
         if event.step < 0:
             frame.onNextPage(event.guiEvent)
         if event.step > 0:
@@ -2297,7 +2300,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.dodrag(event)
 
     def mousedrag_panzoom(self, event):
-        #print('mousedrag_panzoom', time.time()-self._previous_lclick)
+        # print('mousedrag_panzoom', time.time()-self._previous_lclick)
         if time.time() - self._previous_lclick < scinterval_th:
             # too short interval is ignored
             return
@@ -2339,7 +2342,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 [
                     (axes.figobj.getp('zorder'),
                      axes) for axes in self._figure.axes if axes.figobj._floating],
-                key=lambda x:x[0])]
+                key=lambda x: x[0])]
 
         if len(floating_axes) != 0:
             fixed_axes_zordermax = max([axes.figobj.getp(
@@ -2353,7 +2356,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         alist = [a for a in
                  reversed(sorted([(o.getp('zorder'), o)
-                                  for o in figax_list], key=lambda x:x[0]))]
+                                  for o in figax_list], key=lambda x: x[0]))]
 
         if len(alist) == 0:
             return
@@ -2402,7 +2405,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.buttonpress0(event)
 
     def buttonrelease(self, event):
-        #print("button release", event.guiEvent)
+        # print("button release", event.guiEvent)
         evt = guiEventCopy(event.guiEvent)
         event.guiEvent_memory = evt
 
@@ -2523,7 +2526,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self.toolbar.mode in ['rect', 'text', 'line', 'curve', 'curve2',
                                   'circle', 'legend', 'colorbar',
                                   'eps', 'arrow']):
-            #dprint1('toolbar mode ' + self.toolbar.mode)
+            # dprint1('toolbar mode ' + self.toolbar.mode)
             self._insert_mode = True
             self._insert_st_event = event
             if self.toolbar.mode == 'arrow':
@@ -2658,7 +2661,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self.draghandler.d_mode = 'a'
 
     def buttonrelease0(self, event):
-        #print("button release0")
+        # print("button release0")
         self._alt_shift_hit = False
         self._skip_blur_hl = False
         double_click = False
@@ -2699,7 +2702,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             m = ifigure_popup(self, xy=(event.x, event.y),
                               xydata=(event.xdata, event.ydata))
 
-            print(scr_size, event.x, event.y, event.xdata, event.ydata)
             if m._menus != 0:
                 scale = self.canvas.GetContentScaleFactor()
                 self.canvas.PopupMenu(m,  # ifigure_popup(self),
@@ -2826,8 +2828,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                   isinstance(self.selection[0]().figobj, FigText)):
                 # 'text double click'
                 self.handle_double_click_text(event)
-            elif(len(self.selection) == 1 and
-                 isinstance(self.selection[0]().figobj, FigLegend)):
+            elif (len(self.selection) == 1 and
+                  isinstance(self.selection[0]().figobj, FigLegend)):
                 self.selection[0]().figobj.double_click_on_canvas(event, self)
             else:
                 self.handle_double_click_ax(event)
@@ -2859,7 +2861,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             # apparently this event is not returned on linux...
             self._wheel_end_range = axes.get_w_lims()
             requests = self.make_range_request_pan(axes.figobj, auto=False)
-            #requests = self.expand_requests(requests)
+            # requests = self.expand_requests(requests)
             axes._on_move_done()
             self.send_range_action(requests, '3D zoom')
 
@@ -2921,7 +2923,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 f._artists) > 0 and f._artists[0]._gl_pickable]
 
         selection_idx = []
-        #print("figobj", figobj, selected)
+        # print("figobj", figobj, selected)
         if len(selected) == 0 and len(figobj) == 0:
             return
         # elif len(selected) == 0 and len(figobj) > 1:
@@ -2939,7 +2941,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             for f in figobj:
                 hit, a, all_covered, selected_idx = f.rect_contains(
                     rect, check_selected_all_covered=altdown)
-                #print(hit, a, all_covered, selected_idx)
+                # print(hit, a, all_covered, selected_idx)
                 if hit:
                     alist.append(a)
                     if shiftdown:
@@ -2970,10 +2972,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                                   self.selection,
                                                   selected_index=selected_idx)
 
-    def handle_double_click_mpltext(self, event):
+    def handle_double_click_mpltext(self, evt):
         target_artist = self._mpl_artist_click[0]
         current_txt = target_artist().get_text()
-        y = abs(event.y - self.canvas.GetClientSize()[1])
 
         def finish_text_edit(
                 x,
@@ -2990,14 +2991,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             GlobalHistory().get_history(window).make_entry([a1])
 
         box = target_artist().get_window_extent().get_points()
-        self.ask_text_input(box[0][0] + 5, y,
+        x = (box[0][0] + 5)/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value=current_txt, callback=finish_text_edit)
         self._mpl_artist_click = None
 
-    def handle_double_click_text(self, event):
+    def handle_double_click_text(self, evt):
         target_artist = self.selection[0]
         current_txt = target_artist().get_text()
-        y = abs(event.y - self.canvas.GetClientSize()[1])
 
         def finish_text_edit(x, y, txt, target_artist=target_artist, obj=self):
             self = obj
@@ -3005,8 +3009,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                         'text', txt)
             window = self.GetTopLevelParent()
             GlobalHistory().get_history(window).make_entry([a1])
+
         box = target_artist().get_window_extent().get_points()
-        self.ask_text_input(box[0][0] + 5, y,
+        x = (box[0][0] + 5)/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value=current_txt, callback=finish_text_edit)
 
     def handle_double_click_ax(self, event):
@@ -3105,7 +3114,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #               len(self.selection)> 1):
             if len(self.selection) > 1:
                 for a in item().figobj_hl:
-                    #box = a.get_window_extent(a.figure._cachedRenderer)
+                    # box = a.get_window_extent(a.figure._cachedRenderer)
                     box = a.get_window_extent(a.figure.canvas.get_renderer())
                     hl_range = [min([box.xmin, hl_range[0]]),
                                 max([box.xmax, hl_range[1]]),
@@ -3204,7 +3213,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         self._figure.figobj.update_artist()
         self._drawing = True
 #          self.canvas.draw(nogui_reprint = True)
-        #import traceback
+        # import traceback
         # traceback.print_stack()
 
         try:
@@ -3710,7 +3719,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 if x().figobj is evt.GetTreeDict():
                     tmp.append(weakref.ref(evt.a2))
             self.selection = []
-            #for x in self.selection: self.selection.remove(x)
+            # for x in self.selection: self.selection.remove(x)
             for x in tmp:
                 self.selection.append(x)
 
@@ -4357,6 +4366,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         parent = self._figure.figobj
         if parent is None:
             return
+        if self._insert_st_event is None:
+            return
         if (abs(self._insert_st_event.x - evt.x) < 5 and
                 abs(self._insert_st_event.y - evt.y) < 5):
             return
@@ -4555,8 +4566,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             window = self.GetTopLevelParent()
             GlobalHistory().get_history(window).make_entry(h)
 
-        y = abs(evt.y - self.canvas.GetClientSize()[1])
-        self.ask_text_input(evt.x, y,
+        x = evt.x/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value='', callback=finish_text_insert)
 
     def find_ax_4_insert(self, evt):
@@ -4738,7 +4752,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self._txt_box = GrowableTextCtrl(self, wx.ID_ANY, ' ',
                                              size=(0, 0))
 
-        self._txt_box.SetPosition((x, y))
+        self._txt_box.SetPosition((int(x), int(y)))
         self._txt_box.setText(value)
         self._txt_box.SetFocus()
         self._txt_box.Refresh()
@@ -4769,8 +4783,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             obj._txt_box.Refresh()
         self.Bind(EVT_GTC_ENTER, finish_text_input)
         self._txt_box.Bind(wx.EVT_KILL_FOCUS, finish_text_input)
-        #self._txt_box.Bind(wx.EVT_KILL_FOCUS, exit_text_input)
-        #self._txt_box.Bind(wx.EVT_KILL_FOCUS, keep_focus)
+        # self._txt_box.Bind(wx.EVT_KILL_FOCUS, exit_text_input)
+        # self._txt_box.Bind(wx.EVT_KILL_FOCUS, keep_focus)
 
     def onKey3(self, evt):
         print('key_event')
@@ -4823,7 +4837,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
-
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

@@ -1836,8 +1836,10 @@ class _textctrl_mixin():
         if self._validator is not None:
             wx.CallAfter(self.call_validator)
 
-    def call_validator(self):
-        if self._validator(self.GetValue(),
+    def call_validator(self, value=None):
+        if value is None:
+            value = self.GetValue()
+        if self._validator(value,
                            self._validator_param,
                            self):
             self.clear_value_error()
@@ -1845,10 +1847,10 @@ class _textctrl_mixin():
             self.set_value_error()
 
     def onEnter(self, evt):
+        self._value_at_getfocus = self.GetValue()
         call_send_event(self, evt)
 
     def onSetFocus(self, evt):
-        # print 'get focus', self, self.GetValue()
         self._value_at_getfocus = self.GetValue()
         if self._send_setfocus_event:
             call_send_setfocus_event(self, evt)
@@ -1929,7 +1931,7 @@ class _textctrl_mixin():
             self._baseclass.SetValue(self, value)
 
         if self._validator is not None:
-            wx.CallAfter(self.call_validator)
+            self.call_validator(value)
 
     def set_value_error(self):
         self.SetForegroundColour(wx.RED)
@@ -3146,7 +3148,6 @@ class ComboBoxWithNew(ComboBoxCompact):
             self.Bind(wx.EVT_COMBOBOX_DROPDOWN, self.onDropDown)
 
     def onHit(self, evt):
-        print("on hit")
         sel = self.GetValue()
         if sel == 'New...':
             from ifigure.widgets.dialog import textentry
