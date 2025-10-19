@@ -1455,7 +1455,6 @@ class ifigure_popup(wx.Menu):
         #        print 'set frame art'
         canvas = e.GetEventObject()
         for item in canvas.selection:
-            #print(item())
             if item() is not None:
                 item().figobj.set_frameart(True)
         canvas.draw_all()
@@ -1475,7 +1474,6 @@ class ifigure_popup(wx.Menu):
 
     def onArrange(self, e):
         canvas = e.GetEventObject()
-        print(('arrange', e.ExtraInfo))
 
         dx = [0] * len(canvas.selection)
         dy = [0] * len(canvas.selection)
@@ -2974,10 +2972,9 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                                   self.selection,
                                                   selected_index=selected_idx)
 
-    def handle_double_click_mpltext(self, event):
+    def handle_double_click_mpltext(self, evt):
         target_artist = self._mpl_artist_click[0]
         current_txt = target_artist().get_text()
-        y = abs(event.y - self.canvas.GetClientSize()[1])
 
         def finish_text_edit(
                 x,
@@ -2994,14 +2991,17 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             GlobalHistory().get_history(window).make_entry([a1])
 
         box = target_artist().get_window_extent().get_points()
-        self.ask_text_input(box[0][0] + 5, y,
+        x = (box[0][0] + 5)/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value=current_txt, callback=finish_text_edit)
         self._mpl_artist_click = None
 
-    def handle_double_click_text(self, event):
+    def handle_double_click_text(self, evt):
         target_artist = self.selection[0]
         current_txt = target_artist().get_text()
-        y = abs(event.y - self.canvas.GetClientSize()[1])
 
         def finish_text_edit(x, y, txt, target_artist=target_artist, obj=self):
             self = obj
@@ -3009,8 +3009,13 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                                         'text', txt)
             window = self.GetTopLevelParent()
             GlobalHistory().get_history(window).make_entry([a1])
+
         box = target_artist().get_window_extent().get_points()
-        self.ask_text_input(box[0][0] + 5, y,
+        x = (box[0][0] + 5)/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value=current_txt, callback=finish_text_edit)
 
     def handle_double_click_ax(self, event):
@@ -4361,6 +4366,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         parent = self._figure.figobj
         if parent is None:
             return
+        if self._insert_st_event is None:
+            return
         if (abs(self._insert_st_event.x - evt.x) < 5 and
                 abs(self._insert_st_event.y - evt.y) < 5):
             return
@@ -4559,8 +4566,11 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             window = self.GetTopLevelParent()
             GlobalHistory().get_history(window).make_entry(h)
 
-        y = abs(evt.y - self.canvas.GetClientSize()[1])
-        self.ask_text_input(evt.x, y,
+        x = evt.x/self.canvas.GetContentScaleFactor()
+        y = abs(evt.y/self.canvas.GetContentScaleFactor()
+                - self.canvas.GetClientSize()[1])
+
+        self.ask_text_input(x, y,
                             value='', callback=finish_text_insert)
 
     def find_ax_4_insert(self, evt):
@@ -4742,7 +4752,7 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
             self._txt_box = GrowableTextCtrl(self, wx.ID_ANY, ' ',
                                              size=(0, 0))
 
-        self._txt_box.SetPosition((x, y))
+        self._txt_box.SetPosition((int(x), int(y)))
         self._txt_box.setText(value)
         self._txt_box.SetFocus()
         self._txt_box.Refresh()
@@ -4827,7 +4837,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 #        hist.start_record()
 #        hist.add_history(UndoRedoGroupUngroupFigobj(figobjs=obj, mode=0))
 #        hist.stop_record()
-
 
     def ungroup(self):
         obj = [ref().figobj for ref in self.selection]

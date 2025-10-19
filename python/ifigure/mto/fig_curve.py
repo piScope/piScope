@@ -772,7 +772,7 @@ class FigCurve(FigObjGPHolder):
 
     def get_closepoly(self, a=None):
         Path = mpath.Path
-        return self.get_path()[-1][0] == mpath.Path.CLOSEPOLY
+        return bool(self.get_path()[-1][0] == mpath.Path.CLOSEPOLY)
 
     def get_path(self):
         gp = self.get_gp(0)
