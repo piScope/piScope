@@ -53,7 +53,7 @@ import ifigure.events
 from ifigure.utils.mp_tarzip import MPTarzip
 import ifigure.utils.debug as debug
 import wx
-#import wx.py, wx.lib
+# import wx.py, wx.lib
 #
 
 import sys
@@ -72,7 +72,7 @@ import ifigure
 # application global
 ###
 ifigure._cursor_config = {}  # cursor configuration
-### populated in load_pref
+# populated in load_pref
 ifigure._visual_config = {}
 #                         {'1dcolor1': 'red',
 #                          '1dcolor2': 'blue',
@@ -90,7 +90,7 @@ use_console = False
 #
 dprint1, dprint2, dprint3 = debug.init_dprints('iFigureApp')
 
-#from ifigure.mdsplus.mdsscope import MDSScope
+# from ifigure.mdsplus.mdsscope import MDSScope
 
 
 try:
@@ -103,7 +103,7 @@ try:
     # The Python OpenGL package can be found at
     # http://PyOpenGL.sourceforge.net/
     from OpenGL.GL import *
-    #from OpenGL.GLUT import *
+    # from OpenGL.GLUT import *
     haveOpenGL = True
 except ImportError:
     haveOpenGL = False
@@ -237,6 +237,10 @@ class ifigure_app(BookViewerFrame):
 
         self.SetMenuBar(self.menuBar)
 
+        from ifigure.ifigure_config import icondir as path
+        icon_path = os.path.join(path, 'app_logo_small.png')
+        self.SetIcon(wx.Icon(icon_path, wx.BITMAP_TYPE_PNG))
+
         self.Layout()
 
         if not hide:
@@ -348,7 +352,7 @@ class ifigure_app(BookViewerFrame):
         # File Menu
         newmenu = wx.Menu()
         menu_AppendSubMenu(self.filemenu, wx.ID_ANY, 'New', newmenu)
-        #menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
+        # menu_Append(self.filemenu, wx.ID_ANY, 'New', newmenu)
         self.add_menu(newmenu, wx.ID_ANY,
                       "piScope", "Start new piScope application",
                       self.onNewApp)
@@ -369,7 +373,7 @@ class ifigure_app(BookViewerFrame):
                       self.onNewDoc)
         openmenu = wx.Menu()
         menu_AppendSubMenu(self.filemenu, wx.ID_ANY, 'Open', openmenu)
-        #menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        # menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_ANY,
                       "Project...", "Open an existing project",
                       self.onOpen)
@@ -397,7 +401,7 @@ class ifigure_app(BookViewerFrame):
         #            "Open Recent", self._recentmenu)
         # m = self.filemenu.AppendSubMenu(self._recentmenu,
         #                                "Open Recent")
-        #globals()['ID_RECENT'] = m.GetId()
+        # globals()['ID_RECENT'] = m.GetId()
 
         self.filemenu.AppendSeparator()
         self.append_save_project_menu(self.filemenu)
@@ -454,7 +458,7 @@ class ifigure_app(BookViewerFrame):
 
         panelmenu = wx.Menu()
         menu_AppendSubMenu(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
-        #menu_Append(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
+        # menu_Append(self.viewmenu, wx.ID_ANY, 'Panels', panelmenu)
         self.gui_tree.append_menu(panelmenu)
         self.viewmenu.AppendSeparator()
         self.gui_tree.update_check()
@@ -868,7 +872,7 @@ class ifigure_app(BookViewerFrame):
         self._set_proj(ProjectTop())
         # return None
         book = self.proj.onAddBook()
-        #book._keep_data_in_tree = True
+        # book._keep_data_in_tree = True
         ipage = book.add_page()
         self.ipage = ipage
         f_page = book.get_page(ipage)
@@ -1135,7 +1139,7 @@ class ifigure_app(BookViewerFrame):
         self.SetTitle(title)
 
     def set_proj_saved(self, value):
-        #import traceback
+        # import traceback
         # traceback.print_stack()
         proj = self.proj
         if not value:
@@ -1244,7 +1248,7 @@ class ifigure_app(BookViewerFrame):
 #        dlg_preference(components, self)
 #        for c in components:
 #            c.save_setting()
-        #dprint1('preference panel is not yet implemented')
+        # dprint1('preference panel is not yet implemented')
 
     def onAbout(self, e):
         import ifigure
@@ -2244,7 +2248,6 @@ class MyApp(wx.App):
     def get_dpi(self):
         system_dpi = self.GetTopWindow().GetDPI()
         dpi = int((system_dpi[0] + system_dpi[1])/2.0)
-
 
         dpi = int(72*(dpi/72)**(0.3))
         return dpi

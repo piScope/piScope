@@ -10,11 +10,15 @@ def piscope():
     import warnings
 
     import platform
-    if platform.system() == 'Darwin':
+
+    if sys.platform == 'Darwin':
         mp.set_start_method('spawn')
-    else:
+    elif sys.platform in ("linux", "linux2"):
+        os.environ["PYOPENGL_PLATFORM"] = "egl"
         if 'forkserver' in mp.get_all_start_methods():
             mp.set_start_method('forkserver')
+    else:
+        pass
 
     matplotlib.use('WXAGG')
 
@@ -103,7 +107,7 @@ def piscope():
                 server = ifigure.server.Server()
                 server.start()
                 continue
-            elif p == '-e': ## this is backword compatibility (ignored)
+            elif p == '-e':  # this is backword compatibility (ignored)
                 eflag = True
             elif p == '-d':
                 use_console = False
@@ -199,9 +203,9 @@ def piscope():
     if file is not None:
         if file[-4:] == '.pfz':
             ifig_app.proj_tree_viewer.update_widget()
-            #ifig_app.open_file(file, call_close=True)
+            # ifig_app.open_file(file, call_close=True)
             # ifig_app.set_proj_saved(True)
-            #wx.CallAfter(ifig_app.onOpen, path =file)
+            # wx.CallAfter(ifig_app.onOpen, path =file)
             # somehow this seems work, but others may not open
             # figure windows associated to the project file
             wx.CallLater(10, ifig_app.onOpen, path=file)
@@ -286,7 +290,7 @@ def piscope():
 #   MDSWorkerPool(type=worker_mode).reset()
     print('#### Exiting piScope (main loop finished)')
     from .ifigure_config import tempdir
-    if os.path.exists(tempdir) and len(os.listdir(tempdir))==0:
+    if os.path.exists(tempdir) and len(os.listdir(tempdir)) == 0:
         print(' --- removing workdirectory :' + tempdir)
         os.rmdir(tempdir)
     print(' --- ebug to check if normal exit (list of remaining threads)')

@@ -54,3 +54,4 @@ version = { attr = "ifigure.__version__" }
 [tool.setuptools.package-data]
 "ifigure.resources" = ["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"]
 "ifigure.matplotlib_mod" = ["*.frag", "*.vert", "*.geom"]
+
