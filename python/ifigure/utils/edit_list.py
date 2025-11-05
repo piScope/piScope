@@ -1722,6 +1722,7 @@ class _textctrl_mixin():
         elif key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
             return
+
         elif key == 87 and controlDown:  # ctrl + X (cut)
             self.Cut()
 
@@ -1805,31 +1806,6 @@ class _textctrl_mixin():
         else:
             event.Skip()
 
-        '''
-        ### these two are not necessary sinse event.skip will handle it ###
-        elif key == wx.WXK_BACK:
-            ### works only for single line ###
-            a, b = self.GetSelection()
-            if a != b:
-                self.Remove(a, b)
-                #return
-            else:
-                ptx = self.GetInsertionPoint()
-                if ptx > 0:
-                    self.Remove(ptx-1, ptx)
-                #return
-        elif key == wx.WXK_DELETE:
-            ### works only for single line ###
-            a, b = self.GetSelection()
-            if a != b:
-                self.Remove(a, b)
-                #return
-            else:
-                ptx = self.GetInsertionPoint()
-                if ptx < self.GetLastPosition():
-                    self.Remove(ptx, ptx+1)
-                #return
-        '''
         if self.changing_event:
             call_send_changing_event(self, event)
 

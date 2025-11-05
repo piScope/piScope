@@ -10,6 +10,7 @@ class GrowableTextCtrl(TextCtrlCopyPaste):
     def __init__(self, *args, **kargs):
         #        kargs['style']=wx.TE_PROCESS_ENTER|wx.TE_MULTILINE
         kargs['style'] = wx.TE_MULTILINE
+
         super(GrowableTextCtrl, self).__init__(*args, **kargs)
         self.SetBackgroundColour('yellow')
         self._use_escape = False
@@ -39,8 +40,12 @@ class GrowableTextCtrl(TextCtrlCopyPaste):
             return pos[0], pos[1], pos[0]+size[0], pos[1]+size[1]
 
         l = self.GetInsertionPoint()
+        a, b = self.GetSelection()
         self.SetValue(txt)
-        self.SetInsertionPoint(l)
+        if a==b:
+            self.SetInsertionPoint(l)
+        else:
+            self.SetSelection(a, b)
 
         num = self.GetNumberOfLines()
         length = max(self.GetLineLength(x) for x in range(num))
@@ -66,6 +71,42 @@ class GrowableTextCtrl(TextCtrlCopyPaste):
         evt2 = wx.PyCommandEvent(GTC_ENTER, wx.ID_ANY)
         evt2.SetEventObject(self)
         wx.PostEvent(self, evt2)
+
+    def Copy(self):
+        selected_text = self.GetStringSelection()
+        if (wx.TheClipboard.Open()):
+            wx.TheClipboard.SetData(wx.TextDataObject(selected_text))
+            wx.TheClipboard.Close()
+        else:
+            pass
+
+    def Cut(self):
+        selected_text = self.GetStringSelection()
+
+        a, b = self.GetSelection()
+        if a != b:
+           self.Remove(a, b)
+        if (wx.TheClipboard.Open()):
+            wx.TheClipboard.SetData(wx.TextDataObject(selected_text))
+            wx.TheClipboard.Close()
+        else:
+            wx.MessageBox("Could not open the clipboard.", "Error", wx.OK | wx.ICON_ERROR)
+
+    def Paste(self):
+        clipboard_text = ""
+        if wx.TheClipboard.Open():
+            if wx.TheClipboard.IsSupported(wx.DataFormat(wx.DF_TEXT)):
+               text_data = wx.TextDataObject()
+               if wx.TheClipboard.GetData(text_data):
+                    clipboard_text = text_data.GetText()
+            wx.TheClipboard.Close()
+        else:
+            wx.MessageBox("Could not open the clipboard.", "Error", wx.OK | wx.ICON_ERROR)
+
+        if clipboard_text:
+            insertion_point = self.GetInsertionPoint()
+            self.WriteText(clipboard_text)
+
 
 
 class test_frame(wx.Frame):

@@ -2983,6 +2983,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
                 target_artist=target_artist,
                 obj=self,
                 figobj=self._mpl_artist_click[1]().figobj):
+            if obj.canvas is None:  # handle the case when window is closed
+                return
             self = obj
             from ifigure.widgets.undo_redo_history import UndoRedoAxesArtistProperty
             a1 = UndoRedoAxesArtistProperty(target_artist(),
@@ -3004,6 +3006,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         current_txt = target_artist().get_text()
 
         def finish_text_edit(x, y, txt, target_artist=target_artist, obj=self):
+            if obj.canvas is None:  # handle the case when window is closed
+                return
             self = obj
             a1 = UndoRedoArtistProperty(target_artist(),
                                         'text', txt)
@@ -4540,6 +4544,8 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
         '''
 
         def finish_text_insert(x, y, txt, evt=evt, obj=self):
+            if obj.canvas is None:  # handle the case when window is closed
+                return
             self = obj
             nx, ny = self.px2norm(evt.x, evt.y)
             parent = self.find_ax_4_insert(evt)
