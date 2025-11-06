@@ -221,8 +221,8 @@ def showtraceback(parent=None, txt='', title="Error", traceback='None\n',
     if center_on_screen:
         dlg.CentreOnScreen()
     dlg.update(txt + '\n'+traceback)
-    ret = dlg.ShowModal()
 
+    ret = dlg.ShowModal()
     dlg.Destroy()
 
 
@@ -235,5 +235,9 @@ def progressbar(parent, message, title, count, modeless=False):
 
     def close_dlg(evt, dlg=dlg):
         dlg.Destroy()
+
     dlg.Bind(wx.EVT_CLOSE, close_dlg)
+
+    wx.GetApp().add_dialog(parent, dlg)
+
     return dlg

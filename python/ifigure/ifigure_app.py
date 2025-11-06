@@ -2162,6 +2162,8 @@ class ifigure_app(BookViewerFrame):
 class MyApp(wx.App):
     def __init__(self, *args, **kwargs):
         self._palettes = weakref.WeakKeyDictionary()
+        self._child_dlg = weakref.WeakKeyDictionary()
+
         self.AppWindow = None
         wx.App.__init__(self, *args, **kwargs)
 
@@ -2176,6 +2178,8 @@ class MyApp(wx.App):
             self._ifig_app.Bind(wx.EVT_MENU, self.MacQuit,
                                 id=self.GetMacExitMenuItemId())
         return True
+    def add_dialog(self, parent, child):
+        self._child_dlg[parent] = child
 
     def add_palette(self, window):
         if not window.GetParent() in self._palettes:
@@ -2231,14 +2235,23 @@ class MyApp(wx.App):
                     if x.IsShown():
                         continue
                     try:
-                        x.Show()
-                        # x.Raise()
+                        x.ShowWithoutActivating()
+                        if x in self._child_dlg:
+                            dlg = self._child_dlg[x]
+                            dlg.Show()
+                            x.Raise()
+                            #dlg.Raise()
+
                     except BaseException:
                         pass
             else:
                 for x in self._palettes[key]:
                     try:
                         x.Hide()
+                        if x in self._child_dlg:
+                            dlg = self._child_dlg[x]
+                            dlg.Hide()
+
                     except BaseException:
                         pass
 
