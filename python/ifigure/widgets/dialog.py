@@ -226,8 +226,12 @@ def showtraceback(parent=None, txt='', title="Error", traceback='None\n',
     dlg.Destroy()
 
 
-def progressbar(parent, message, title, count):
-    dlg = wx.ProgressDialog(title, message, count, parent)
+def progressbar(parent, message, title, count, modeless=False):
+    if modeless:
+        style = 0
+    else:
+        style = wx.PD_AUTO_HIDE|wx.PD_APP_MODAL
+    dlg = wx.ProgressDialog(title, message, count, parent, style=style)
 
     def close_dlg(evt, dlg=dlg):
         dlg.Destroy()
