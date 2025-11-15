@@ -1416,8 +1416,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
         glStencilFunc(GL_EQUAL, 1, 1)
         glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO)
-        if facecolor is not None:
-            glColor(facecolor)
+        #if facecolor is not None:
+        #    glColor(facecolor)
 
         if self._wireframe != 2:
             if self._wireframe == 1:
@@ -1429,8 +1429,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glDisable(GL_STENCIL_TEST)
         glDepthFunc(GL_LEQUAL)
-        if edgecolor is not None:
-            glColor(edgecolor)
+        #if edgecolor is not None:
+        #    glColor(edgecolor)
 #        if not self._shadow :
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0.005, 0.))

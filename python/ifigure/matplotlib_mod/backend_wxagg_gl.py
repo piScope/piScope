@@ -181,7 +181,8 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
         value = self.hl_color
         vv = list([float(x) for x in value]) + [1.0]
         vv[3] = 0.65
-        FigureCanvasWxAggModGL.glcanvas._hl_color = tuple(vv[:4])
+        if FigureCanvasWxAggModGL.glcanvas is not None:
+            FigureCanvasWxAggModGL.glcanvas._hl_color = tuple(vv[:4])
 
     def _onPaint(self, evt):
         #        self.glcanvas.OnPaint(evt)
