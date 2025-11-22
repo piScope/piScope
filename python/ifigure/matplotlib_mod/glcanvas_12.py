@@ -1299,9 +1299,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.DisableVertexAttrib('vertex_id')
         self.DisableVertexAttrib('Vertex2')
 
-    def draw_path(self, vbos, gc, path, rgbFace=None,
-                  stencil_test=True, linestyle='None'):
-
+    def draw_path(self, vbos, gc, path, rgbFace, rgbEdge, *args, **kwargs):
+        linestyle = kwargs.get('linestyle', None)
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
         glVertexPointer(3, GL_FLOAT, 0, None)
@@ -1316,7 +1315,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if lw > 0:
             glLineWidth(lw * multisample)
         if rgbFace is None:
-            glColor(gc._rgb)
+            if rgbEdge is None:
+                return
+            #glColor(gc._rgb)
+            glColor(rgbEdge)
             if self._wireframe == 2:
                 glDisable(GL_DEPTH_TEST)
             if lw != 0:
