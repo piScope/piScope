@@ -1194,8 +1194,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
         glStencilFunc(GL_EQUAL, 1, 1)
         glStencilOp(GL_KEEP, GL_KEEP, GL_ZERO)
-        if facecolor is not None:
-            glColor(facecolor)
+        #if facecolor is not None:
+        #    glColor(facecolor)
 
         if self._wireframe != 2:
             if self._wireframe == 1:
@@ -1206,8 +1206,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
 
         glDisable(GL_STENCIL_TEST)
         glDepthFunc(GL_LEQUAL)
-        if edgecolor is not None:
-            glColor(edgecolor)
+        #if edgecolor is not None:
+        #    glColor(edgecolor)
 #        if not self._shadow :
         self.set_uniform(glUniform4fv, 'uViewOffset', 1,
                          (0, 0, 0.005, 0.))
@@ -1299,9 +1299,8 @@ class MyGLCanvas(glcanvas.GLCanvas):
         self.DisableVertexAttrib('vertex_id')
         self.DisableVertexAttrib('Vertex2')
 
-    def draw_path(self, vbos, gc, path, rgbFace=None,
-                  stencil_test=True, linestyle='None'):
-
+    def draw_path(self, vbos, gc, path, rgbFace, rgbEdge, *args, **kwargs):
+        linestyle = kwargs.get('linestyle', None)
         glEnableClientState(GL_VERTEX_ARRAY)
         vbos['v'].bind()
         glVertexPointer(3, GL_FLOAT, 0, None)
@@ -1316,7 +1315,10 @@ class MyGLCanvas(glcanvas.GLCanvas):
         if lw > 0:
             glLineWidth(lw * multisample)
         if rgbFace is None:
-            glColor(gc._rgb)
+            if rgbEdge is None:
+                return
+            #glColor(gc._rgb)
+            glColor(rgbEdge)
             if self._wireframe == 2:
                 glDisable(GL_DEPTH_TEST)
             if lw != 0:

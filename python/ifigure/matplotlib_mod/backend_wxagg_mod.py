@@ -71,20 +71,23 @@ class FigureCanvasWxAggMod(CanvasAgg):
         self._auto_update_ax = []
         self._hl_color = (0, 0, 0,)
 
-        super(FigureCanvasWxAggMod, self).__init__(*args, **kargs)
-
         # self.Unbind(wx.EVT_SIZE)
         self.iframe = None
         self.iothers = None
         self.axes_image = None
         self.figure_image = None
         self.resize_happend = False
-        self.timer = wx.Timer(self)
+
         self.empty_bytes = []
 #        self.Bind(wx.EVT_MOUSE_EVENTS, self.onMouseWheel)
-        self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
+
         self._wheel_cb = None
         self._pre_rot = 0
+
+        super(FigureCanvasWxAggMod, self).__init__(*args, **kargs)
+
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_MOUSEWHEEL, self.onMouseWheel)
 
     def __del__(self):
         dprint2("FigureCanvasWxAggMod __del__")

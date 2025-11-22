@@ -141,11 +141,11 @@ class FrameWithWindowList(wx.Frame):
             w1 = w
             h1 = h
             sw, sh = self.GetSize()
-            #print("window", w, h, sw, sh)
+            # print("window", w, h, sw, sh)
             check = [False, False, False, False]
             for i in range(wx.Display.GetCount()):
                 x0, y0, xd, yd = wx.Display(i).GetGeometry()
-                #print("display", x0, y0, xd, yd)
+                # print("display", x0, y0, xd, yd)
                 #
                 #  Make sure that window is "visible".
                 #
@@ -163,7 +163,7 @@ class FrameWithWindowList(wx.Frame):
 
             if not any(check):
                 dprint2("adjusting window position", (w, h))
-                #self.SetPosition((w1, h1))
+                # self.SetPosition((w1, h1))
                 self.SetPosition((10, 10))
 
         # if hasattr(self, 'canvas'):
@@ -286,7 +286,7 @@ class FrameWithWindowList(wx.Frame):
 #                      self.onHelpItem)
 
     def append_help2_menu(self, helpmenu):
-        ## helpmenu = viewmenu
+        # helpmenu = viewmenu
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, wx.ID_FORWARD,
                       "Next window (F1)", "Bring next window forward",
@@ -301,7 +301,7 @@ class FrameWithWindowList(wx.Frame):
             (wx.ACCEL_NORMAL,  wx.WXK_F1, wx.ID_FORWARD))
 
     def append_std_viewmenu2(self, helpmenu):
-        ## helpmenu = viewmenu
+        # helpmenu = viewmenu
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, wx.ID_FORWARD,
                       "Next window (F1)", "Bring next window forward",
@@ -313,11 +313,11 @@ class FrameWithWindowList(wx.Frame):
         self._windowmenu = wx.Menu()
         item = helpmenu.AppendSubMenu(self._windowmenu, 'Viewers...')
         self.ID_WINDOWS = item.GetId()
-        #item = wx.MenuItem(helpmenu, ID_WINDOWS, 'Viewers...', subMenu=self._windowmenu)
+        # item = wx.MenuItem(helpmenu, ID_WINDOWS, 'Viewers...', subMenu=self._windowmenu)
         # helpmenu.Append(item)
-        #menu_AppendSubMenu(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
+        # menu_AppendSubMenu(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
 
-        #menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
+        # menu_Append(helpmenu, ID_WINDOWS, 'Viewers...', self._windowmenu)
         helpmenu.AppendSeparator()
         self.add_menu(helpmenu, ID_HIDEAPP,
                       "Hide App",
@@ -524,8 +524,6 @@ class FramePlus(FrameWithWindowList):
         self._force_layout()
 
     def _force_layout(self):
-        # dprint1('_force_layout')
-        # trick to show graphic... ;D
         # self.Freeze()
         self.canvas.mpl_disconnect()
         size = self.GetSize()
@@ -538,8 +536,7 @@ class FramePlus(FrameWithWindowList):
         self.gui_tree.update_check()
         self.canvas.mpl_connect()
         # self.Thaw()
-
-
+        
 class BookViewerFrame(FramePlus, BookViewerInteractive):
     '''
     book viewer frame is a frame with
@@ -587,6 +584,9 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         BookViewerInteractive.__init__(self)
 
         self._sb_timer = wx.Timer(self)
+
+        if sys.platform == 'darwin':
+            self.deffered_force_layout()
 
     def __del__(self):
         '''
@@ -709,7 +709,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
 
     def add_bookmenus(self, editmenu, viewmenu):
         subm = wx.Menu()
-        #menu_AppendSubMenu(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
+        # menu_AppendSubMenu(editmenu, BookViewerFrame.ID_PM[0], 'Add Page', subm)
         if self.isismultipage:
             menu_AppendSubMenu(editmenu, wx.ID_ANY, 'Add Page', subm)
             self.add_menu(subm, BookViewerFrame.ID_PM[1],
@@ -783,7 +783,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
     def append_screen_ratio_menu(self, viewmenu):
         ratiomenu = wx.Menu()
         viewmenu.AppendSubMenu(ratiomenu, 'Canvas Size')
-        #menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
+        # menu_Append(viewmenu, wx.ID_ANY, 'Canvas Size', ratiomenu)
         self.add_menu(ratiomenu, wx.ID_ANY,
                       "Aspect = 3:4", "set canvas x y ratio to 3:4",
                       self.onCanvasRatio3_4)
@@ -1807,7 +1807,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
         from ifigure.matplotlib_mod.mpl_utils import call_savefig_method
 
         for k in range(self.num_page()):
-            #print('printing page: ' + str(k))
+            # print('printing page: ' + str(k))
             show_page(k)
             self.draw()
             name = ret0+'_'+str(k)+'.pdf'
@@ -1820,7 +1820,7 @@ class BookViewerFrame(FramePlus, BookViewerInteractive):
             output.write(output_stream)
 
         for k in range(self.num_page()):
-            #print("removing", ret0+'_'+str(k)+'.pdf')
+            # print("removing", ret0+'_'+str(k)+'.pdf')
             os.remove(ret0+'_'+str(k)+'.pdf')
 
     def isPropShown(self):
@@ -1946,7 +1946,7 @@ class BookViewer(BookViewerFrame):
 
         # this is added not to have windows "always on parent"
         args2 = [x for x in args]
-        #args2[0] = None
+        # args2[0] = None
         args = tuple(args2)
         ###
         super(BookViewer, self).__init__(*args, **kargs)
@@ -1998,7 +1998,7 @@ class BookViewer(BookViewerFrame):
                       self.onNewBook)
         openmenu = wx.Menu()
         self.filemenu.AppendSubMenu(openmenu, 'Open')
-        #menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
+        # menu_Append(self.filemenu, wx.ID_ANY, 'Open', openmenu)
         self.add_menu(openmenu, wx.ID_OPEN,
                       "Book...",
                       "Import Book file (.bfz). Current book is deleted from project",
@@ -2011,7 +2011,7 @@ class BookViewer(BookViewerFrame):
         self.append_save_project_menu(self.filemenu)
         exportmenu = wx.Menu()
         self.filemenu.AppendSubMenu(exportmenu, 'Export...')
-        #menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
+        # menu_Append(self.filemenu, wx.ID_ANY, 'Export...', exportmenu)
         self.export_book_menu = self.add_menu(exportmenu,
                                               BookViewerFrame.ID_EXPORTBOOK,
                                               "Export Book", "Export Book",
