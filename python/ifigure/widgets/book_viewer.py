@@ -134,7 +134,7 @@ class FrameWithWindowList(wx.Frame):
     def onActivate(self, evt):
         if evt.GetActive():
             wx.GetApp().process_child_focus(self)
-
+            #wx.GetApp().process_activated(self)
             from ifigure.utils.cbook import get_current_display_size
 
             w, h = self.GetPosition()
@@ -165,7 +165,8 @@ class FrameWithWindowList(wx.Frame):
                 dprint2("adjusting window position", (w, h))
                 #self.SetPosition((w1, h1))
                 self.SetPosition((10, 10))
-
+        #else:
+        #    wx.GetApp().process_deactivated(self)            
         # if hasattr(self, 'canvas'):
         #    self.canvas.activate_canvas(evt.GetActive())
 
@@ -414,7 +415,13 @@ class FramePlus(FrameWithWindowList):
         self._bind_idle = False
         self._attaching = False
         self.Bind(wx.EVT_SIZE, self.onResize)
-
+        
+        print("EVT_ERASE_BACKGROUND", self)
+        self.Bind(wx.EVT_ERASE_BACKGROUND, self.onEraseBackground)
+        
+    def onEraseBackground(self, evt):
+        pass
+        
     def onUpdateUI(self, evt):
         s = (FramePlus.ID_COPY, FramePlus.ID_PASTE,
              FramePlus.ID_COPYS, FramePlus.ID_PASTES)

@@ -2163,7 +2163,7 @@ class MyApp(wx.App):
     def __init__(self, *args, **kwargs):
         self._palettes = weakref.WeakKeyDictionary()
         self._child_dlg = weakref.WeakKeyDictionary()
-
+        self._trp = weakref.WeakKeyDictionary()
         self.AppWindow = None
         wx.App.__init__(self, *args, **kwargs)
 
@@ -2178,19 +2178,86 @@ class MyApp(wx.App):
             self._ifig_app.Bind(wx.EVT_MENU, self.MacQuit,
                                 id=self.GetMacExitMenuItemId())
         return True
+    
+    def set_transparent(self, w, value):
+        if w in self._trp:
+            if self._trp[w] != value:
+               w.SetTransparent(value)
+        else:
+            w.SetTransparent(value)
+        self._trp[w] = value
+    
     def add_dialog(self, parent, child):
         self._child_dlg[parent] = child
 
     def add_palette(self, window):
-        if not window.GetParent() in self._palettes:
-            self._palettes[window.GetParent()] = []
-        self._palettes[window.GetParent()].append(window)
+        parent = window.GetParent()
+        if not parent in self._palettes:
+            self._palettes[parent] = []
+        if window not in self._palettes[parent]:
+             self._palettes[parent].append(window)
         window.Bind(wx.EVT_ACTIVATE, self.on_palette_activate)
+        window.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
+        window.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+        
+        window._moving = False
+        window.SetDoubleBuffered(True)
+
+    def on_left_down(self, evt):
+        print("left_down")
+        plt = evt.GetEventObject()
+        plt._moving = True
+        
+    def on_left_up(self, evt):
+        print("left_up")        
+        plt = evt.GetEventObject()
+        plt._moving = False
+        
+    def on_palette_move(self, evt):
+        print("on_palette_move", evt.Dragging())
+        plt = evt.GetEventObject()
+        if evt.Dragging():
+            plt._moving = True
+        else:
+            plt._moving = False
+
         
     def on_palette_activate(self, evt):
-        w = evt.GetEventObject()
-        w.SetTransparent(255)
-
+        plt = evt.GetEventObject()
+        active = evt.GetActive() 
+        wx.CallLater(100, self._adj_plt, plt, active)
+                     
+    def _adj_plt(self, plt, active):
+        print("called adjust_palette_transparency")
+        if active:
+            print("pallete acitvate", plt, self.IsActive())
+            self.set_transparent(plt, 255)
+        else:
+            print("pallete deacitvate", plt, self.IsActive())
+            if plt._moving:
+                return
+            win, flag = self.check_palette_in_activegroup(plt)
+            if not flag:
+                self.set_transparent(plt, 80)            
+            print(win,flag)
+            
+    def check_palette_in_activegroup(self, plt):
+        def find_active_palette_owner():
+            for key in self._palettes:
+                if key.IsActive():
+                    return key
+                else:
+                    for x in self._palettes[key]:
+                        if x.IsActive():
+                            return key
+            return None
+        win = find_active_palette_owner()
+        if win in self._palettes:
+            if plt in self._palettes[win]:
+                return win, True
+        else:
+            return win, False
+        
     def raise_palette(self, window):
         if not window in self._palettes:
             return
@@ -2238,37 +2305,59 @@ class MyApp(wx.App):
             if key is window:
                 for x in self._palettes[key]:
                     if x.IsShown():
-                        x.SetTransparent(255)                        
-                    try:
+                        self.set_transparent(x, 255)
+                        #x.Raise()
+                    else:
                         x.ShowWithoutActivating()
                         if x in self._child_dlg:
                             dlg = self._child_dlg[x]
-                            if use_transparency:
-                                dlg.SetTransparent(255)
-                                x.Raise()
-                            else:
-                                dlg.Show()
-                                x.Raise()
-                            #dlg.Raise()
+                            dlg.Show()
+                            x.Raise()
 
-                    except BaseException:
-                        pass
+                    #except BaseException:
+                    #    pass
             else:
                 for x in self._palettes[key]:
-                    try:
+                    #try:
                         if use_transparency:
-                            x.SetTransparent(80)
+                            #x.Raise()
+                            x.Lower()
+                            #wx.CallLater(2000, x.SetTransparent, 80)
+                            self.set_transparent(x, 80)
+
                         else:
                             x.Hide()
                         if x in self._child_dlg:
                             dlg = self._child_dlg[x]
                             if use_transparency:
-                                dlg.SetTransparent(80)
-                            else:                         
+                                #wx.CallLater(2000, dlg.SetTransparent, 80)
+                                self.set_transparent(dlg, 80)
+                            else:
                                 dlg.Hide()
 
-                    except BaseException:
-                        pass
+                    #except BaseException:
+                    #    pass
+    def process_activated(self, window):
+        print("activated", window)        
+        self.clean_palette()
+        done = False
+        for key in self._palettes:
+            if key is window:
+                for x in self._palettes[key]:                
+                    self.set_transparent(x, 255)
+                done = True
+                break
+        if not done:
+           self.set_transparent(window, 255)
+        
+    def process_deactivated(self, window):
+        print("deactivated", window)
+        self.clean_palette()
+        done = False        
+        for key in self._palettes:
+            if window in self._palettes[key]:                                            
+                self.set_transparent(window, 80)
+
 
     def get_ifig_app(self):
         return self._ifig_app
