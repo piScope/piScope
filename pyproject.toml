@@ -32,8 +32,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://github.com/piScope"
-"Download" = "https://github.com/piScope"
+"Homepage" = "https://github.com/piScope/piScope"
+"Download" = "https://github.com/piScope/piScope"
 
 [project.scripts]
 piscope = "ifigure:piscope"
