@@ -2183,9 +2183,13 @@ class MyApp(wx.App):
 
     def add_palette(self, window):
         if not window.GetParent() in self._palettes:
-            self._palettes[window.GetParent()] = [window, ]
-        else:
-            self._palettes[window.GetParent()].append(window)
+            self._palettes[window.GetParent()] = []
+        self._palettes[window.GetParent()].append(window)
+        window.Bind(wx.EVT_ACTIVATE, self.on_palette_activate)
+        
+    def on_palette_activate(self, evt):
+        w = evt.GetEventObject()
+        w.SetTransparent(255)
 
     def raise_palette(self, window):
         if not window in self._palettes:
@@ -2228,18 +2232,23 @@ class MyApp(wx.App):
             del self._palettes[key]
 
     def process_child_focus(self, window):
+        use_transparency = True
         self.clean_palette()
         for key in self._palettes:
             if key is window:
                 for x in self._palettes[key]:
                     if x.IsShown():
-                        continue
+                        x.SetTransparent(255)                        
                     try:
                         x.ShowWithoutActivating()
                         if x in self._child_dlg:
                             dlg = self._child_dlg[x]
-                            dlg.Show()
-                            x.Raise()
+                            if use_transparency:
+                                dlg.SetTransparent(255)
+                                x.Raise()
+                            else:
+                                dlg.Show()
+                                x.Raise()
                             #dlg.Raise()
 
                     except BaseException:
@@ -2247,10 +2256,16 @@ class MyApp(wx.App):
             else:
                 for x in self._palettes[key]:
                     try:
-                        x.Hide()
+                        if use_transparency:
+                            x.SetTransparent(80)
+                        else:
+                            x.Hide()
                         if x in self._child_dlg:
                             dlg = self._child_dlg[x]
-                            dlg.Hide()
+                            if use_transparency:
+                                dlg.SetTransparent(80)
+                            else:                         
+                                dlg.Hide()
 
                     except BaseException:
                         pass
