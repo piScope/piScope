@@ -2182,10 +2182,11 @@ class MyApp(wx.App):
         self._child_dlg[parent] = child
 
     def add_palette(self, window):
-        if not window.GetParent() in self._palettes:
-            self._palettes[window.GetParent()] = [window, ]
-        else:
-            self._palettes[window.GetParent()].append(window)
+        parent = window.GetParent()
+        if not parent in self._palettes:
+            self._palettes[parent] = []
+        if window not in self._palettes[parent]:
+            self._palettes[parent].append(window)
 
     def raise_palette(self, window):
         if not window in self._palettes:
