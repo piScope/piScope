@@ -1864,7 +1864,7 @@ class TreeDict(object):
                     fid.close()
                     return None
 
-            tfid.extractall(path=tar_xpath)
+            tfid.extractall(path=tar_xpath, filter="data")
             tfid.close()
             fid.close()
 
@@ -2220,7 +2220,7 @@ class TopTreeDict(TreeDict):
         if do_expand:
             os.mkdir(tar_xpath2)
             # print 'expanding to', tar_xpath2
-            tfid.extractall(path=tar_xpath2)
+            tfid.extractall(path=tar_xpath2, filter="data")
             tfid.close()
             fid.close()
             for item in os.listdir(tar_xpath):

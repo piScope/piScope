@@ -17,15 +17,27 @@ import traceback
 import ifigure.utils.cbook as cbook
 
 from importlib.machinery import SourceFileLoader
+import importlib.util
+import sys
+
 
 def load_module_file(file):
     logging.basicConfig(level=logging.DEBUG)
     try:
-        m = SourceFileLoader('ifigure.add_on.tmp', file).load_module()
-        #m = imp.load_source('ifigure.add_on.tmp', file)
-        name = m.module_name
-        m = SourceFileLoader('ifigure.add_on.'+name, file).load_module()
-        #m = imp.load_source('ifigure.add_on.'+name, file)
+        # m = SourceFileLoader('ifigure.add_on.tmp', file).load_module()
+        # name = m.module_name
+        # m = SourceFileLoader('ifigure.add_on.'+name, file).load_module()
+
+        spec = importlib.util.spec_from_file_location(
+            "ifigure.add_on.tmp", file)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        name = 'ifigure.add_on.' + m.module_name
+        spec = importlib.util.spec_from_file_location(name, file)
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        sys.modules[name] = m
+
         mtime = os.path.getmtime(file)
         return m, mtime
     except Exception:
@@ -90,7 +102,7 @@ class AbsModule(object):
 #               object.__setattr__(self, mname,
 #                     m.__get__(self, self.__class__))
                     object.__setattr__(self, mname,
-#                                       MethodType(m, self, self.__class__))
+                                       #                                       MethodType(m, self, self.__class__))
                                        MethodType(m, self))
                     self._module_method.append(mname)
 #               print "adding method:", mname

@@ -116,6 +116,7 @@ class PyModule(py_code.PyCode, FileHolder):
     def load_module(self, file):
         try:
             self.set_path_pathmode(file)
+            print("file", file)
             self._obj = abs_module.AbsModule(file=file, obj=self)
             if self._obj._icon != '':
                 self._use_custom_image = True

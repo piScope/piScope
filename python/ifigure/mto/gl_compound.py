@@ -22,7 +22,7 @@ class GLCompound(object):
     def shown_component(self):
         h = self._hidden_component
         array_idx = np.unique(self.getvar('array_idx'))
-        idx = array_idx[np.in1d(array_idx, h, invert=True)]
+        idx = array_idx[np.isin(array_idx, h, invert=True)]
 
         return list(idx)
 
@@ -35,7 +35,7 @@ class GLCompound(object):
 
         if inverse:
             array_idx = np.unique(self.getvar('array_idx'))
-            idx = array_idx[np.in1d(array_idx, idx, invert=True)]
+            idx = array_idx[np.isin(array_idx, idx, invert=True)]
             idx = list(idx)
 
         self._hidden_component = idx
@@ -51,7 +51,7 @@ class GLCompound(object):
 
             if flat_mode:
                 mask = np.logical_not(
-                    np.in1d(
+                    np.isin(
                         np.abs(
                             a._gl_array_idx),
                         self._hidden_component))
@@ -59,7 +59,7 @@ class GLCompound(object):
                 new_idxset = new_idxset[mask].reshape(-1, idxset.shape[1])
 
             else:
-                mask = np.in1d(array_idx, self._hidden_component)
+                mask = np.isin(array_idx, self._hidden_component)
                 mask2 = np.logical_not(np.any(mask[idxset], axis=1))
                 new_idxset = idxset[mask2]
 
