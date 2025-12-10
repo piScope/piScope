@@ -438,7 +438,7 @@ class FigLegend(FigObjGPHolder):
         idx = self._tab_2_idx(tab)
         if len(self._get_texts()) > idx:
             self._get_texts()[idx].set_text(value)
-            h = self._artists[0].legendHandles[idx]
+            h = self._artists[0].legend_handles[idx]
             h.set_label(value)
             self.getp('legendlabel')[idx] = value
 
@@ -489,7 +489,7 @@ class FigLegend(FigObjGPHolder):
         text = self._get_texts()[idx]
         text.set_text(v[0])
         text.set_color(v[1])
-        h = self._artists[0].legendHandles[idx]
+        h = self._artists[0].legend_handles[idx]
         h.set_label(v[0])
         self.getp('legendlabel')[idx] = v[0]
 
