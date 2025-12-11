@@ -275,7 +275,6 @@ class FigLegend(FigObjGPHolder):
                     h().figobj.add_update_client(self)
                 else:
                     print('h() does not have figobj')
-#        xy = self.get_gp(0).get_device_point()
 
         lp = self.getp("loaded_property")
         if lp is not None:

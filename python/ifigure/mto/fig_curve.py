@@ -325,16 +325,21 @@ class FigCurve(FigObjGPHolder):
                 arrow.set_edgecolor(ec)
                 arrow.set_facecolor(ec)
             self.delp("loaded_property")
+
+        a.set_zorder(self.getp('zorder'))
         a.figobj = self
         a.figobj_hl = []
         return aaa
 
     def make_newartist0(self,  pin, draw_arrow=True):
-        p = [(item[0], item[1]) for item in pin]
+        trans = self.get_figpage()._artists[0].transFigure
+        itrans = trans.inverted()
+        p = [(item[0], itrans.transform(item[1])) for item in pin]
+
         codes, verts = zip(*p)
         path = matplotlib.path.Path(verts, codes)
         a = PathPatch(path, facecolor='none', fill=False,
-                      edgecolor='black', alpha=1)
+                      edgecolor='black', alpha=1, transform=trans)
         if not draw_arrow:
             return a
 
@@ -347,7 +352,8 @@ class FigCurve(FigObjGPHolder):
                                                    connectionstyle='arc3',
                                                    arrowstyle=self.getvar(
                                                        'arrow1')[1],
-                                                   mutation_scale=1,)
+                                                   mutation_scale=1,
+                                                   transform=trans)
             aaa.append(b)
         if self.getvar('arrow2')[0]:
             dx = np.array(verts[-2])-np.array(verts[-1])
@@ -357,7 +363,8 @@ class FigCurve(FigObjGPHolder):
                                                    connectionstyle='arc3',
                                                    arrowstyle=self.getvar(
                                                        'arrow2')[1],
-                                                   mutation_scale=1,)
+                                                   mutation_scale=1,
+                                                   transform=trans)
             aaa.append(c)
         return aaa
 

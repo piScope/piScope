@@ -158,8 +158,9 @@ class FigBox(FigObjGPHolder):
 
     def make_newartist(self):
         self.check_loaded_gp_data()
-        x1, y1 = self.get_gp(0).get_device_point()
-        x2, y2 = self.get_gp(1).get_device_point()
+
+        x1, y1, trans = self.get_norm_point(0)
+        x2, y2, trans = self.get_norm_point(1)
 
         xy = (min([x1, x2]), min([y1, y2]))
         w = abs(x1-x2)
@@ -171,7 +172,7 @@ class FigBox(FigObjGPHolder):
                 w = h
 
         a = Rectangle(xy, w, h, facecolor='none', fill=False,
-                      edgecolor='black', alpha=1)
+                      edgecolor='black', alpha=1, transform=trans)
 
         lp = self.getp("loaded_property")
         if lp is not None:
