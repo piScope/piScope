@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  fig_eps
 #
@@ -48,6 +47,7 @@ from six import itervalues, iteritems
 import subprocess as sp
 import numpy as np
 import ifigure.utils.cbook as cbook
+import ifigure.utils.geom as geom
 import ifigure.widgets.canvas.custom_picker as cpicker
 from scipy.interpolate import griddata
 from ifigure.utils.cbook import ProcessKeywords
@@ -105,9 +105,9 @@ class PdfFile_plus(PdfFile):
         self.endStream()
         # Write out the various deferred objects
         self.writeFonts()
-        self.writeObject(self.alphaStateObject,
-                         dict([(val[0], val[1])
-                               for val in itervalues(self.alphaStates)]))
+        #self.writeObject(self.alphaStateObject,
+        #                 dict([(val[0], val[1])
+        #                       for val in itervalues(self.alphaStates)]))
         self.writeHatches()
         self.writeGouraudTriangles()
         xobjects = dict(iter(itervalues(self.images)))
@@ -194,7 +194,7 @@ class PdfFile_plus(PdfFile):
         self.write(("%d 0 obj\n" % object.id).encode('ascii'))
         self.write(pdfRepr(contents))
         self.write(b"\nstream\n")
-        self.write(np.fromstring(stream, np.uint8))
+        self.write(np.frombuffer(stream.encode(), np.uint8))
         self.write(b"\nendstream\nendobj\n")
 
     def writePdfResources(self, pairs):
@@ -239,7 +239,7 @@ class PdfFile_plus(PdfFile):
                 self.reserveObject('length of pdf stream'),
                 dd)
             self.currentstream.compressobj = None
-            self.currentstream.write(np.fromstring(xobj.stream, np.uint8))
+            self.currentstream.write(np.frombuffer(xobj.stream.encode(), np.uint8))
             self.endStream()
             if '/Resources' in xobj:
                 self.writePdfResources(id_pairs)
@@ -251,9 +251,9 @@ class PdfFile_plus2(PdfFile_plus):
         self.endStream()
         # Write out the various deferred objects
         self.writeFonts()
-        self.writeObject(self.alphaStateObject,
-                         dict([(val[0], val[1])
-                               for val in six.itervalues(self.alphaStates)]))
+        #self.writeObject(self.alphaStateObject,
+        #                 dict([(val[0], val[1])
+        #                       for val in six.itervalues(self.alphaStates)]))
         self.writeHatches()
         self.writeGouraudTriangles()
         xobjects = dict(x[1:] for x in six.itervalues(self._images))
@@ -398,7 +398,8 @@ def create_figimagev(figure, X,
     '''
     add figimagev object to figure. Made based on figure::figimage
     '''
-    im = FigureImageV(figure, cmap, norm, xo, yo, origin, **kwargs)
+    im = FigureImageV(figure, cmap=cmap, norm=norm, offsetx=xo, offsety=yo,
+                      origin=origin, **kwargs)
     im.set_array(X)
     im.set_alpha(alpha)
     if norm is None:
@@ -439,6 +440,7 @@ class FigEPS(FigBox):
         for name in ('xy', 'org_epsfile'):
             obj.setvar(name, v[name])
         obj.setvar("kywds", kywds)
+
         return obj
 
     def __init__(self, *args, **kywds):
@@ -481,27 +483,30 @@ class FigEPS(FigBox):
             self.import_file()
 
         container = self.get_figpage()._artists[0]
-#        lp=self.getp("loaded_property")
+
         super(FigEPS, self).generate_artist()
 
         self.set_frameart(self.getp('frameart'))
 
     def make_newartist(self):
         self.check_loaded_gp_data()
-        if self._image_size == (-1, -1):
-            dx = self._eps_bbox[2] - self._eps_bbox[0]
-            dy = self._eps_bbox[3] - self._eps_bbox[1]
-            x1d, y1d = self.get_gp(0).get_device_point()
-            self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
-            self._image_scale_str = ('100', '100')
 
-        try:
-            self.call_convert()
-        except:
-            traceback.print_exc()
-            a = super(FigEPS, self).make_newartist()
-            a.set_alpha(0)
-            return a
+        dx = self._eps_bbox[2] - self._eps_bbox[0]
+        dy = self._eps_bbox[3] - self._eps_bbox[1]
+        x1d, y1d = self.get_gp(0).get_device_point()
+
+        if self._image_size == (-1, -1):
+            self._image_size = (self._image.shape[0], self._image.shape[1])
+            self._image_scale_str = ('100', '100')
+            dx = int(self._image_size[1])
+            dy = int(self._image_size[0])
+            self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
+
+        else:
+            x1d, y1d = self.get_gp(0).get_device_point()
+            dx = int(self._image_size[1] * float(self._image_scale_str[0])/100.)
+            dy = int(self._image_size[0] * float(self._image_scale_str[1])/100.)
+            self.get_gp(1).set_device_point(x1d+dx, y1d+dy)
 
         a = super(FigEPS, self).make_newartist()
         a.set_alpha(0)
@@ -509,8 +514,11 @@ class FigEPS(FigBox):
         x1d, y1d = self.get_gp(0).get_device_point()
         if self._image is not None:
             container = self.get_figpage()._artists[0]
-            b = create_figimagev(container, self._image, x1d,
-                                 y1d, alpha=self._image_alpha)
+
+            im = self._image_obj.resize((dx, dy))
+
+            b = create_figimagev(container, np.array(im), x1d, y1d,
+                                 alpha=self._image_alpha)
             self._image_artists = [b]
             b._image_scale = self._image_scale
             b._figobj = weakref.ref(self)
@@ -554,14 +562,40 @@ class FigEPS(FigBox):
                       os.path.join(wdir, bname),
                       os.path.join(wdir, pname)],
                      stdout=sp.PIPE, stderr=sp.STDOUT).communicate()[0]
-        print(o)
+
+
+        src = os.path.join(wdir, self.getvar('epsfile'))
+
+        from PIL import Image
+        img = Image.open(src)
+        self._image_obj = img.convert("RGBA")
+        self._image = np.array(img)
 
     def scale_artist(self, scale, action=True):
         h = super(FigEPS, self).scale_artist(scale, action=action)
+
+        st_extent = self.get_artist_extent(self._artists[0])
+        rec = geom.scale_rect(st_extent, scale)
+
+        ox = abs(self._eps_bbox[2] - self._eps_bbox[0])
+        oy = abs(self._eps_bbox[3] - self._eps_bbox[1])
+
+        dx = abs(rec[0]-rec[1])
+        dy = abs(rec[2]-rec[3])
+        s1 = str(dx/ox*100)
+        s2 = str(dy/oy*100)
+
         if action:
-            pass
+            from ifigure.widgets.undo_redo_history import UndoRedoFigobjMethod
+
+            a = self._artists[0]
+            value = self.get_epsscale(self._artists[0])
+            value = (value[0], value[1],s1, s2)
+            action = UndoRedoFigobjMethod(a, "epsscale", value)
+            h.append(action)
         else:
-            pass
+            self._image_scale_str = (s1, s2)
+
         return h
 
     def set_alpha(self, value, a):
@@ -594,70 +628,9 @@ class FigEPS(FigBox):
         self.refresh_artist()
 
     def get_epsscale(self, a):
-        ox = self._eps_bbox[2] - self._eps_bbox[0]
-        oy = self._eps_bbox[3] - self._eps_bbox[1]
-        ix = self._image.shape[1]
-        iy = self._image.shape[0]
-
-        dx = int(ox*float(self._image_scale_str[0])/100.)
-        dy = int(oy*float(self._image_scale_str[1])/100.)
-        if (ix != dx or iy != dy):
-            return (self._keep_aspect,
-                    self._resize_mode,
-                    float(ix)/ox*100.,
-                    float(iy)/oy*100.,)
-        else:
-            return (self._keep_aspect, self._resize_mode,
-                    self._image_scale_str[0],
-                    self._image_scale_str[1])
-
-    def call_convert(self):
-        x1d, y1d = self.get_gp(0).get_device_point()
-        x2d, y2d = self.get_gp(1).get_device_point()
-        ox = self._eps_bbox[2] - self._eps_bbox[0]
-        oy = self._eps_bbox[3] - self._eps_bbox[1]
-
-        if not self._resize_mode:
-            '''
-            this mode use geometric mean 
-            '''
-            r = (float(self._image_scale_str[1]) /
-                 float(self._image_scale_str[0]))
-
-            new_size1 = (abs(x1d - x2d), abs(x1d - x2d)*r*oy/ox)
-            new_size2 = (abs(y1d - y2d)*ox/oy/r, abs(y1d - y2d))
-            new_size = ((new_size1[0]*new_size2[0])**0.5,
-                        (new_size1[1]*new_size2[1])**0.5)
-            x1d, x2d = calc_newpos_from_anchor(
-                x1d, x2d, new_size[0], self._anchor_mode[0])
-            y1d, y2d = calc_newpos_from_anchor(
-                y1d, y2d, new_size[1], self._anchor_mode[1])
-            self.get_gp(0).set_device_point(x1d, y1d)
-            self.get_gp(1).set_device_point(x2d, y2d)
-        else:
-            new_size = (abs(x1d - x2d), abs(y1d-y2d))
-
-        new_size = [int(x) for x in new_size]
-        if (new_size[0] == self._image_size[0] and
-            new_size[1] == self._image_size[1] and
-                self._image is not None):
-            return
-
-        wdir = self.owndir()
-        des = os.path.join(wdir, 'tmp.png')
-        src = os.path.join(wdir, self.getvar('epsfile'))
-
-        params = []
-        params += ['-resize', str(int(new_size[0])) +
-                   'x'+str(int(new_size[1]))+'!']
-        # print 'calling convert',  params
-
-        app = self.get_root_parent().app
-        convert = app.helper.setting['convert']
-        sp.check_call([convert] + params + [src, des])
-        self._image = mpimage.imread(des)
-        self._image_size = new_size
-        self._image_scale = (new_size[0]/ox, new_size[1]/oy)
+        return (self._keep_aspect, self._resize_mode,
+                self._image_scale_str[0],
+                self._image_scale_str[1])
 
     def get_eps_bbox(self, src=None):
         if src is None:
@@ -667,7 +640,9 @@ class FigEPS(FigBox):
         app = self.get_root_parent().app
         gs = app.helper.setting['gs']
         o = sp.Popen(["gs", "-dNOPAUSE", "-dBATCH",
-                      "-q", "-sDEVICE=bbox", src], stdout=sp.PIPE, stderr=sp.STDOUT).communicate()[0]
+                      "-q", "-sDEVICE=bbox", src],
+                     stdout=sp.PIPE, stderr=sp.STDOUT,
+                     universal_newlines=True).communicate()[0]
         arr = o.split(' ')
         arr[4] = arr[4].split('\n')[0]
         return float(arr[1]), float(arr[2]), float(arr[3]), float(arr[4])
