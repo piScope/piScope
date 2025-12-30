@@ -1,11 +1,5 @@
-from __future__ import print_function
-
 import matplotlib
-try:
-    # matplotlib3 has this option
-    matplotlib.set_loglevel("error")
-except:
-    pass
+matplotlib.set_loglevel("error")
 
 import ifigure
 import matplotlib.cm
