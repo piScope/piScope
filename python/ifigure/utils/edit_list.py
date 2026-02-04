@@ -1665,6 +1665,7 @@ def textctrl_mixin_do_init(self, *args, **kargs):
 class _textctrl_mixin():
     def __init__(self, BaseClass):
         self.__baseclass = BaseClass
+        self.__undo_data = ""
 
     @property
     def _baseclass(self):
@@ -1685,6 +1686,9 @@ class _textctrl_mixin():
             controlDown = event.ControlDown()
         shiftDown = event.ShiftDown()
         altDown = event.AltDown()
+
+        print(key, controlDown, self.CanUndo(), self.GetValue())
+
 
         def _get_current_line():
             linelen0 = np.cumsum(
@@ -1719,7 +1723,13 @@ class _textctrl_mixin():
         elif key > 127:
             return
 
-        elif key == 67 and controlDown:  # ctrl + C (copy)
+        if key == 90 and controlDown:  # ctrl + Z (Undo)
+            self.SetValue(self._undo_data)
+            event.Skip()
+            return
+            #self.Undo()
+        self._undo_data = self.GetValue()
+        if key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
             return
 
