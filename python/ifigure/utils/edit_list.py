@@ -14,7 +14,7 @@ from __future__ import print_function
 #             3:  check box
 #               setting = {"text":'check box label'}
 from ifigure.widgets.miniframe_with_windowlist import WithWindowList_MixIn
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from wx import ScrolledWindow as SP
 from ifigure.utils.wx3to4 import GridSizer, FlexGridSizer, wxBitmapComboBox, wxEmptyImage, TextEntryDialog, panel_SetToolTip
 import ifigure.utils.debug as debug
@@ -1665,7 +1665,8 @@ def textctrl_mixin_do_init(self, *args, **kargs):
 class _textctrl_mixin():
     def __init__(self, BaseClass):
         self.__baseclass = BaseClass
-        self.__undo_data = ""
+        self._undo_data = deque(maxlen=30)
+        self._redo_data = deque(maxlen=30)
 
     @property
     def _baseclass(self):
@@ -1673,6 +1674,22 @@ class _textctrl_mixin():
             return self.__baseclass
         except BaseException:
             return wx.TextCtrl
+
+    def Txt_Undo(self):
+        if len(self._undo_data) > 0:
+            value = (self.GetInsertionPoint(), self.GetValue())
+            self._redo_data.append(value)
+            pt, txt = self._undo_data.pop()
+            self.SetValue(txt)
+            self.SetInsertionPoint(pt)
+
+    def Txt_Redo(self):
+        if len(self._redo_data) > 0:
+            value = (self.GetInsertionPoint(), self.GetValue())
+            self._undo_data.append(value)
+            pt, txt = self._redo_data.pop()
+            self.SetValue(txt)
+            self.SetInsertionPoint(pt)
 
     def onKeyPressed(self, event):
         tw = wx.GetApp().TopWindow
@@ -1686,9 +1703,6 @@ class _textctrl_mixin():
             controlDown = event.ControlDown()
         shiftDown = event.ShiftDown()
         altDown = event.AltDown()
-
-        print(key, controlDown, self.CanUndo(), self.GetValue())
-
 
         def _get_current_line():
             linelen0 = np.cumsum(
@@ -1724,11 +1738,16 @@ class _textctrl_mixin():
             return
 
         if key == 90 and controlDown:  # ctrl + Z (Undo)
-            self.SetValue(self._undo_data)
+            if shiftDown:
+                self.Txt_Redo()
+            else:
+                self.Txt_Undo()
             event.Skip()
             return
-            #self.Undo()
-        self._undo_data = self.GetValue()
+
+        value = (self.GetInsertionPoint(), self.GetValue())
+        self._undo_data.append(value)
+
         if key == 67 and controlDown:  # ctrl + C (copy)
             self.Copy()
             return

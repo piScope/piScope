@@ -26,6 +26,7 @@ from ifigure.widgets.advanced_config import AdvancedConfig
 from ifigure.utils.helper_app import HelperApp
 from ifigure.ifigure_config import iFigureConfig
 from ifigure.utils.postoffice import PostOffice
+from ifigure.utils.edit_list import _textctrl_mixin
 from ifigure.mto.py_file import PyText
 from ifigure.mto.py_code import PyModel
 from ifigure.mto.fig_obj import FigObj
@@ -1786,12 +1787,16 @@ class ifigure_app(BookViewerFrame):
 
     def onTD_EvtUndo(self, evt):
         fc = self.FindFocus()
+
         if fc is not None:
             if isinstance(fc, wx.stc.StyledTextCtrl):
                 fc.Undo()
                 return
             elif isinstance(fc, SimpleShell):
                 fc.Undo()
+                return
+            elif isinstance(fc, _textctrl_mixin):
+                fc.Txt_Undo()
                 return
 
         td = GlobalHistory().get_history(evt.GetEventObject()).undo()
@@ -1813,6 +1818,9 @@ class ifigure_app(BookViewerFrame):
                 return
             elif isinstance(fc, SimpleShell):
                 fc.Redo()
+                return
+            elif isinstance(fc, _textctrl_mixin):
+                fc.Txt_Redo()
                 return
 
 #       td=self.history.redo()
