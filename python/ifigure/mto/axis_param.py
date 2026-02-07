@@ -110,7 +110,7 @@ class AxisRangeParam(Memberholder):
         self.base = float(value[0])
         self.auto = value[1]
         self.mode = (value[6], value[7], value[8])
-        self.symloglin = value[4]
+        self.symloglin = abs(value[4])
         self.symloglinscale = value[5]
         self.scale = value[3]
 

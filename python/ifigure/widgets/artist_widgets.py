@@ -78,11 +78,15 @@ s_splineinterp = {"style": wx.CB_DROPDOWN,
                   "choices": ["linear", "spline"]}
 s_multialignment = {"style": wx.CB_DROPDOWN,
                     "choices": ["left", "center", "right"]}
+s_va = {"style": wx.CB_DROPDOWN,
+                   "choices": ['baseline', 'bottom', 'center', 'center_baseline', 'top']}
 
 
 ###
-listparam["multialignment"] = ["alignment", "left",
+listparam["multialignment"] = ["h. align.", "left",
                                4,  s_multialignment, 'multialignment', 2]
+listparam["va"] = ["v. align.", "bottom",
+                               4,  s_va, 'va', 2]
 listparam["spinterp"] = ["interpolation", "spline",
                          4, s_splineinterp, 'sp_interp', 2]
 listparam["axxpos"] = ["position", ("bottom", True, True, None),

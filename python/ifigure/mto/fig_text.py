@@ -79,6 +79,7 @@ class FigText(FigObjGPHolder):
         p.add_key("fontstyle",  'normal')
         p.add_key("fontweight", 'roman')
         p.add_key("multialignment", "left")
+        p.add_key("va", "bottom")
         p.add_key("clip", True)
         p.add_key("trans", ["figure", "figure"]*num_gp)
         p.add_key("transaxes", ["default"]*num_gp)
@@ -135,7 +136,7 @@ class FigText(FigObjGPHolder):
     def property_in_palette(self):
         return ["text", "box"], [["text", "size",
                                   "color", "fontfamily", "fontweight", "fontstyle",
-                                  "rotation", "alpha", "multialignment"],
+                                  "rotation", "alpha", "multialignment", "va"],
                                  ["fancybox", "fbcolor", "fbecolor", "fbstyle", "fbpad",
                                   "fbalpha"]]
 
@@ -144,7 +145,7 @@ class FigText(FigObjGPHolder):
         return ["use_var", "fancybox", "fbcolor", "fbecolor",
                 "fbstyle", "fbpad", "fbalpha", "zorder",
                 "fontstyle", "fontweight", "fontfamily",
-                "multialignment", "clip"]
+                "multialignment", "va", "clip"]
 
     @classmethod
     def load_classimage(self):
@@ -247,9 +248,9 @@ class FigText(FigObjGPHolder):
         self.check_loaded_gp_data()
 
         container = self.get_container()
-        xd, yd = self.get_device_point(0)
-        # print xd, yd, self.get_gp(0).x, self.get_gp(0).y
 
+        xd, yd, trans = self.get_norm_point(0)
+        kywds['transform'] = trans
         kywds['family'] = str(self.getp('fontfamily'))
         kywds['style'] = str(self.getp('fontstyle'))
         kywds['weight'] = str(self.getp('fontweight'))
@@ -259,10 +260,11 @@ class FigText(FigObjGPHolder):
 
         kywds['multialignment'] = str(self.getp('multialignment'))
         kywds['ha'] = str(self.getp('multialignment'))
+        kywds['va'] = str(self.getp('va'))
 
         if self._2d_text:
             self._artists = [container.text(xd, yd, s, **kywds)]
-            self._artists[0].set_transform(mpltransforms.IdentityTransform())
+            #self._artists[0].set_transform(mpltransforms.IdentityTransform())
         else:
             x, y, z, s = self._eval_s()
             self._artists = [container.text(x, y, z, s, **kywds)]
@@ -311,8 +313,7 @@ class FigText(FigObjGPHolder):
         x, y, z, s = self._eval_s()  # this handles "use_var"
         self._artists[0].set_text(s)
         if x is not None and y is not None:
-            #           self.set_gp_point(0, x, y)
-            xd, yd = self.get_device_point(0)
+            xd, yd, trans = self.get_norm_point(0)
             self._artists[0].set_x(xd)
             self._artists[0].set_y(yd)
 
@@ -506,6 +507,13 @@ class FigText(FigObjGPHolder):
 
     def get_multialignment(self, a):
         return self.getp('multialignment')
+
+    def set_va(self, value, a):
+        self.setp('va', str(value))
+        self.refresh_artist()
+
+    def get_va(self, a):
+        return self.getp('va')
 
     def save_data2(self, data=None):
         def check(obj, name):

@@ -244,11 +244,12 @@ class FigArrow(FigObjGPHolder):
         self.check_loaded_gp_data()
         width = self.getp("width")
         arrowstyle = self.getp("arrowstyle")
-        x1, y1 = self.get_gp(0).get_device_point()
-        x2, y2 = self.get_gp(1).get_device_point()
 
-        from matplotlib.transforms import IdentityTransform
-        trans = IdentityTransform()
+        x1, y1, trans = self.get_norm_point(0)
+        x2, y2, trans = self.get_norm_point(1)
+
+        # from matplotlib.transforms import IdentityTransform
+        # trans = IdentityTransform()
         styles = matplotlib.patches.ArrowStyle.get_styles()
         kywds = self.getvar('kywds')
         a = matplotlib.patches.FancyArrowPatch(posA=(x1, y1),

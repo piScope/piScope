@@ -43,7 +43,7 @@ class FigCircle(FigObjGPHolder):
                  figaxes1=None,  **kywds):
         '''
         Circle object:
-           xy : center 
+           xy : center
            h  : height of box
            w  : width of box
            figaxe1, figaxes2: None or full_path string
@@ -170,8 +170,8 @@ class FigCircle(FigObjGPHolder):
 
     def make_newartist(self):
         self.check_loaded_gp_data()
-        x1, y1 = self.get_gp(0).get_device_point()
-        x2, y2 = self.get_gp(1).get_device_point()
+        x1, y1, trans = self.get_norm_point(0)
+        x2, y2, trans = self.get_norm_point(1)
 
         xy = ((x1+x2)/2, (y1+y2)/2)
         w = abs(x1-x2)
@@ -183,7 +183,7 @@ class FigCircle(FigObjGPHolder):
                 h = w
         a = Ellipse(xy, w, h, angle=self.getp('angle'),
                     facecolor='none', fill=False,
-                    edgecolor='black', alpha=1)
+                    edgecolor='black', alpha=1, transform=trans)
 
         lp = self.getp("loaded_property")
         if lp is not None:

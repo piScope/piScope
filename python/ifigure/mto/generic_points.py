@@ -133,6 +133,9 @@ class GenericPointsHolder(object):
     def set_device_point(self, index, x, y):
         return self._gp_points[index].set_device_point(x, y)
 
+    def get_norm_point(self, index):
+        return self._gp_points[index].get_norm_point()
+
     def set_gppoint0(self, xy, a):
         self.set_gp_point(0, xy[0], xy[1])
         self.set_update_artist_request()
@@ -477,7 +480,7 @@ class GenericPoint(object):
         self.trans = value
 
     def get_gp_transform(self, dir='both', name=None):
-        ''' 
+        '''
         get transform of genericpoint
         '''
         def get_transform(figaxes, figpage, n):
@@ -562,6 +565,16 @@ class GenericPoint(object):
         x1, y1 = self.convert_trans_p((self.x, self.y), t, None)
         return int(x1), int(y1)
 
+    def get_norm_point(self):
+        # get point as normalized coordinate
+        t = self.get_gp_transform(dir='both')
+        x1, y1 = self.convert_trans_p((self.x, self.y), t, None)
+
+        trans = self.figpage()._artists[0].transFigure
+        n1 = np.array([x1, y1]).reshape(1, 2)
+        n1 = trans.inverted().transform(n1)
+        return n1[0][0], n1[0][1], trans
+
     def calc_new_points(self, dx, dy):
         '''
         calculate new x, y for transport of dx, dy
@@ -591,7 +604,7 @@ class GenericPoint(object):
 
     def convert_trans_p(self, p, t1=None, t2=None):
         '''
-        it dose 
+        it does
         1) transfomr to device using t1
         2) transform to new coord by t2.inverted()
         '''
