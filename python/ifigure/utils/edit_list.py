@@ -1675,7 +1675,7 @@ class _textctrl_mixin():
         except BaseException:
             return wx.TextCtrl
 
-    def Txt_Undo(self):
+    def TxtUndo(self):
         if len(self._undo_data) > 0:
             value = (self.GetInsertionPoint(), self.GetValue())
             self._redo_data.append(value)
@@ -1683,7 +1683,7 @@ class _textctrl_mixin():
             self.SetValue(txt)
             self.SetInsertionPoint(pt)
 
-    def Txt_Redo(self):
+    def TxtRedo(self):
         if len(self._redo_data) > 0:
             value = (self.GetInsertionPoint(), self.GetValue())
             self._undo_data.append(value)
@@ -1739,9 +1739,9 @@ class _textctrl_mixin():
 
         if key == 90 and controlDown:  # ctrl + Z (Undo)
             if shiftDown:
-                self.Txt_Redo()
+                self.TxtRedo()
             else:
-                self.Txt_Undo()
+                self.TxtUndo()
             event.Skip()
             return
 

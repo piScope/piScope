@@ -1796,7 +1796,7 @@ class ifigure_app(BookViewerFrame):
                 fc.Undo()
                 return
             elif isinstance(fc, _textctrl_mixin):
-                fc.Txt_Undo()
+                fc.TxtUndo()
                 return
 
         td = GlobalHistory().get_history(evt.GetEventObject()).undo()
@@ -1820,7 +1820,7 @@ class ifigure_app(BookViewerFrame):
                 fc.Redo()
                 return
             elif isinstance(fc, _textctrl_mixin):
-                fc.Txt_Redo()
+                fc.TxtRedo()
                 return
 
 #       td=self.history.redo()
