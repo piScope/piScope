@@ -1207,5 +1207,7 @@ except:
     def has_repo(obj):
         return False
 
-    class HGSupport(object):
+    class FakeHGSupport(object):
         pass
+    
+    HGSupport = FakeHGSupport
