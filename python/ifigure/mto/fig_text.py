@@ -547,6 +547,10 @@ class FigText(FigObjGPHolder):
         if not self.hasvar('multialignment'):
             self.setvar("multialignment", 'left')
             self.setp("multialignment", 'left')
+        if not self.hasvar('va'):
+            self.setvar("va", 'bottom')
+            self.setp("va", 'bottom')
+
 
         d = data['FigText']
         super(FigText, self).load_data2(data)
