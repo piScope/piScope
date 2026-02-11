@@ -3,18 +3,18 @@ from __future__ import print_function
 '''
    HGSupport is subclass to add Mercurial support to
    TreeDict objects. Currently following classes has
-   HGSupport. This class is intended to add HG capability to 
+   HGSupport. This class is intended to add HG capability to
    TreeDict object which has its own folder. At present,
    following class has HG Support
       PyFolder
-      PyModel   
+      PyModel
 
 
    HGSupport provides...
-    load_subtree_hg(parent, url='', name = '',  use_ssh=True):    
+    load_subtree_hg(parent, url='', name = '',  use_ssh=True):
     HGSupport
-       commit  
-       revert  : discard all changes in tree and files 
+       commit
+       revert  : discard all changes in tree and files
        clone   : make clone outside the project directory
 '''
 
@@ -57,7 +57,7 @@ try:
        os.environ['LANG'] = org_lang
 
     has_hg = True
-    
+
     def has_repo(obj):
         if not isinstance(obj, HGSupport):
             return False
@@ -1206,3 +1206,6 @@ except:
 
     def has_repo(obj):
         return False
+
+    class HGSupport(object):
+        pass
