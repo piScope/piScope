@@ -6,13 +6,11 @@ import wx
 import wx.grid
 from ifigure.utils.eval_node import EvalNode
 from ifigure.utils.cbook import ImageFiles, Write2Main, BuildPopUpMenu
-from distutils.version import LooseVersion
+
 from ifigure.utils.cbook import text_repr
 import ifigure.widgets.dialog as dialog
 
 from ifigure.utils.wx3to4 import isWX3, GridTableBase, TextEntryDialog
-
-isWX_before_2_9 = LooseVersion(wx.__version__) < LooseVersion("2.9")
 
 font_h = None
 font_w = None
@@ -631,10 +629,8 @@ class VarViewerG(wx.Panel):
         sizer.Add(self.grid, 1, wx.EXPAND, 0)
         sizer.Add(bottom, 0, wx.EXPAND)
 
-        if isWX_before_2_9:
-            pass
-        else:
-            self.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.onEdit)
+        self.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.onEdit)
+
         self.ct1.Bind(wx.EVT_TEXT_ENTER, self.onEditValue)
 
         rowWindow = self.grid.GetGridRowLabelWindow()
