@@ -30,7 +30,7 @@
 """
 # uncomment the following to use wx rather than wxagg
 from ifigure.utils.wx3to4 import image_SetAlpha, wxEmptyImage
-from distutils.version import LooseVersion
+
 import matplotlib
 import wx
 import weakref
@@ -54,8 +54,6 @@ import ctypes
 
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('FigureCanvasWxAggMod')
-
-isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
 
 class FigureCanvasWxAggMod(CanvasAgg):
@@ -471,14 +469,12 @@ class FigureCanvasWxAggMod(CanvasAgg):
         # print 'enterig buffer strin'
         # st = time.time()
         w, h = self.renderer.get_canvas_width_height()
-        if isMPL_before_1_2:
-            img = np.fromstring(self.renderer.buffer_rgba(0, 0), np.uint8)
+ 
+        obj = self.renderer.buffer_rgba()
+        if isinstance(obj, memoryview):
+            img = np.asarray(obj, np.uint8).copy()
         else:
-            obj = self.renderer.buffer_rgba()
-            if isinstance(obj, memoryview):
-                img = np.asarray(obj, np.uint8).copy()
-            else:
-                img = np.fromstring(obj, np.uint8)
+            img = np.fromstring(obj, np.uint8)
 
         # print h, w
         img = img.reshape((int(h), int(w), 4))
