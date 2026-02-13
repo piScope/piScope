@@ -1,7 +1,7 @@
 # uncomment the following to use wx rather than wxagg
 from matplotlib.backends.backend_agg import RendererAgg
 from ifigure.matplotlib_mod.backend_wxagg_mod import FigureCanvasWxAggMod
-from distutils.version import LooseVersion
+
 import numpy as np
 import time
 import wx
@@ -23,7 +23,6 @@ from operator import itemgetter
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('BackendWXAggGL')
 
-isMPL_before_1_2 = LooseVersion(matplotlib.__version__) < LooseVersion("1.2")
 
 use_gl_12 = True
 
