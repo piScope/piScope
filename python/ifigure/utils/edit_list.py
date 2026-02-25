@@ -2001,20 +2001,35 @@ class RichTextCtrlCopyPaste(RichTextCtrl, _textctrl_mixin):
 
 class TextCtrlCopyPasteFloat(TextCtrlCopyPaste):
     def GetValue(self):
-        #        print wx.TextCtrl.GetValue(self)
-        return float(wx.TextCtrl.GetValue(self))
+        try:
+            return  float(wx.TextCtrl.GetValue(self))
+        except ValueError:
+            pass
+        return 0.0
 
     def SetValue(self, value):
-        value = float(value).__repr__()
+        try:
+            value = float(value).__repr__()
+        except ValueError:
+            pass
+
         wx.TextCtrl.SetValue(self, value)
 
 
 class TextCtrlCopyPasteInt(TextCtrlCopyPaste):
     def GetValue(self):
-        return int(wx.TextCtrl.GetValue(self))
+        try:
+            return  int(wx.TextCtrl.GetValue(self))
+        except ValueError:
+            pass
+        return 0
 
     def SetValue(self, value):
-        value = int(value).__repr__()
+        try:
+            value = int(value).__repr__()
+        except ValueError:
+            pass
+
         wx.TextCtrl.SetValue(self, value)
 
 
