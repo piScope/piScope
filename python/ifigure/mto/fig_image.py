@@ -53,7 +53,7 @@ default_kargs = {'use_tri': False,
 
 class FigImage(FigObj, XUser, YUser, ZUser, CUser):
     """
-    image : show image 
+    image : show image
 
     image(z)
     image(x, y, z)
@@ -473,7 +473,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
     def get_artist_extent(self, a):
         '''
-        retrun the extent of artist in device 
+        retrun the extent of artist in device
         coordinate
 
         AxesImage object does not have get_window_extent
@@ -632,67 +632,79 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 "ydata": y}
 
     def interp_image(self, x, y, z):
+        # image interpolation for non triangulation mode
 
-        if isMPL2:
-            return x, y, z
-        else:
-            axes = self.get_container()
 
-            atrans = axes.transAxes.transform
-            idtrans = axes.transData.inverted().transform
-            p0, p1 = atrans([(0, 0), (1, 1)])
-            dx = np.floor(p1[0]-p0[0])+2
-            dy = np.floor(p1[1]-p0[1])+2
-            xp = idtrans(
-                np.transpose(
-                    np.vstack((np.floor(p0[0])+np.arange(int(dx)),
-                               np.linspace(p0[0], p1[0], dx)))))[:, 0]
-            yp = idtrans(
-                np.transpose(
-                    np.vstack((np.floor(p0[1])-1+np.zeros(int(dy)),
-                               np.linspace(p0[1], p1[1], dy)))))[:, 1]
+        if x.size*y.size == z.size:
+            # if the data is on a uniform grid. we use imshow.
+            dx = np.diff(x)
+            dy = np.diff(y)
+            if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
+                abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
 
-            # eliminate points outside the data range
-            #xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
-            #yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
+                return x, y, z
 
-            interp = self.getp("interp")
-            from scipy.interpolate import RegularGridInterpolator
-            if ((x.size*y.size == z.size and interp == 'nearest') or
-                    (x.size*y.size == z.size and interp == 'linear')):
-                f = RegularGridInterpolator((y, x), z, method=interp,
-                                            bounds_error=False, fill_value=np.nan)
-                XP, YP = np.meshgrid(xp, yp)
-                p1 = np.transpose(np.vstack((YP.flatten(), XP.flatten())))
-                zp = f(p1)
-                zp = zp.reshape((len(yp), len(xp))).astype(float)
-            elif (x.size*y.size != z.size or interp == 'nearest' or
-                  np.any(np.isnan(z))):
-                if interp == 'quintic':
-                    interp = 'cubic'
-                X, Y = np.meshgrid(x, y)
-                p1 = np.transpose(np.vstack((X.flatten(), Y.flatten())))
-                XP, YP = np.meshgrid(xp, yp)
-                interp = self.getp("interp")
-                # print 'griddata', interp
-                zp = griddata(p1, z.flatten(),
-                              (XP.flatten(), YP.flatten()),
-                              method=str(interp))
-                zp = zp.reshape((len(yp), len(xp))).astype(float)
+        # otherwise, we interplate to data for the screeen resoluiton.
+        axes = self.get_container()
 
-            else:
-                f = interp2d(x, y, z, kind=interp)
-                zp = f(xp, yp)
-    #           print(zp)
-    #        if interp == 'nearest':
-            # this hide the outside of image when even 'nearest' is
-            # used
-            zp[:, xp < np.min(x)] = np.nan
-            zp[:, xp > np.max(x)] = np.nan
-            zp[yp < np.min(y), :] = np.nan
-            zp[yp > np.max(y), :] = np.nan
+        atrans = axes.transAxes.transform
+        idtrans = axes.transData.inverted().transform
+        p0, p1 = atrans([(0, 0), (1, 1)])
+        dx = int(np.floor(p1[0]-p0[0])+2)
+        dy = int(np.floor(p1[1]-p0[1])+2)
+
+        xp = idtrans(
+            np.transpose(
+                np.vstack((np.floor(p0[0])+np.arange(int(dx)),
+                           np.linspace(p0[0], p1[0], dx)))))[:, 0]
+        yp = idtrans(
+            np.transpose(
+                np.vstack((np.floor(p0[1])-1+np.zeros(int(dy)),
+                           np.linspace(p0[1], p1[1], dy)))))[:, 1]
+
+        # eliminate points outside the data range
+        #xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
+        #yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
+
+        interp = self.getp("interp")
+
+        from scipy.interpolate import RegularGridInterpolator
+        if x.size*y.size == z.size:
+            f = RegularGridInterpolator((y, x), z, method=interp,
+                                        bounds_error=False, fill_value=np.nan)
+            XP, YP = np.meshgrid(xp, yp)
+            p1 = np.transpose(np.vstack((YP.flatten(), XP.flatten())))
+            zp = f(p1)
+            zp = zp.reshape((len(yp), len(xp))).astype(float)
 
             return xp, yp, zp
+
+        elif (x.size*y.size != z.size or interp == 'nearest' or
+              np.any(np.isnan(z))):
+            if interp == 'quintic':
+                interp = 'cubic'
+            X, Y = np.meshgrid(x, y)
+            p1 = np.transpose(np.vstack((X.flatten(), Y.flatten())))
+            XP, YP = np.meshgrid(xp, yp)
+            interp = self.getp("interp")
+            # print 'griddata', interp
+            zp = griddata(p1, z.flatten(),
+                          (XP.flatten(), YP.flatten()),
+                          method=str(interp))
+            zp = zp.reshape((len(yp), len(xp))).astype(float)
+
+        else:
+            f = interp2d(x, y, z, kind=interp)
+            zp = f(xp, yp)
+
+        # this hide the outside of image when even 'nearest' is
+        # used
+        zp[:, xp < np.min(x)] = np.nan
+        zp[:, xp > np.max(x)] = np.nan
+        zp[yp < np.min(y), :] = np.nan
+        zp[yp > np.max(y), :] = np.nan
+
+        return xp, yp, zp
 
     def get_data_extent(self):
         if self._data_extent is not None:
