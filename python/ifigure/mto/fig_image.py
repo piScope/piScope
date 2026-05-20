@@ -280,7 +280,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
                 setattr(self._artists[0].get_array(), '_xyp', (xp, yp))
             else:
-                #print('drawing tri image')
+                # print('drawing tri image')
                 if x.size*y.size == z.size:
                     x, y = np.meshgrid(x, y)
 
@@ -307,14 +307,14 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                                  np.min(y), np.max(y)]
         else:
             if self.getvar('use_tri'):
-                #print('redrawing tri image')
+                # print('redrawing tri image')
                 x, y, z = self.getp(('x', 'y', 'z'))
                 args, self._tri = tri_args(x, y, self._tri)
 
                 args.append(z.flatten().astype(float))
                 # astype(float) is patch work to open past files..
 
-                #kywds = self._var["kywds"]
+                # kywds = self._var["kywds"]
                 kywds = lp[0]
                 kywds['shading'] = self.getp('shading')
                 kywds['mask'] = self.getp('mask')
@@ -325,7 +325,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                         kywds[k] = lp[0][k]
 #                  print lp
 #                  kywds["clim"]=lp[0]["clim"]
-                del(kywds['array'])
+                del (kywds['array'])
                 self.set_artist(container.tripcolor(*args,
                                                     **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
@@ -634,13 +634,12 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
     def interp_image(self, x, y, z):
         # image interpolation for non triangulation mode
 
-
         if x.size*y.size == z.size:
             # if the data is on a uniform grid. we use imshow.
             dx = np.diff(x)
             dy = np.diff(y)
             if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
-                abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
+                    abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
 
                 return x, y, z
 
@@ -663,8 +662,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                            np.linspace(p0[1], p1[1], dy)))))[:, 1]
 
         # eliminate points outside the data range
-        #xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
-        #yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
+        # xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
+        # yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
 
         interp = self.getp("interp")
 
