@@ -637,7 +637,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         if (x.size*y.size == z.size and
             self.get_xaxisparam().scale == 'linear' and
             self.get_yaxisparam().scale == 'linear'):
-            
+
             # if the data is on a uniform grid and both x and y axes are
             # linear
             dx = np.diff(x)
@@ -647,7 +647,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
                 return x, y, z
 
-        # otherwise, we interplate to data for the screeen resoluiton.
+        # otherwise, we interplate to data on the regular grid data
+        # of the size, which depends on the screen resolution
         axes = self.get_container()
 
         atrans = axes.transAxes.transform
@@ -656,18 +657,11 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         dx = int(np.floor(p1[0]-p0[0])+2)
         dy = int(np.floor(p1[1]-p0[1])+2)
 
-        xp = idtrans(
-            np.transpose(
-                np.vstack((np.floor(p0[0])+np.arange(int(dx)),
-                           np.linspace(p0[0], p1[0], dx)))))[:, 0]
-        yp = idtrans(
-            np.transpose(
-                np.vstack((np.floor(p0[1])-1+np.zeros(int(dy)),
-                           np.linspace(p0[1], p1[1], dy)))))[:, 1]
+        d0, d1 = idtrans([p0, p1])
+        npts = max(dx, dy)
 
-        # eliminate points outside the data range
-        # xp = np.array([tmp for tmp in xp if (tmp > np.min(x) and tmp < np.max(x))])
-        # yp = np.array([tmp for tmp in yp if (tmp > np.min(y) and tmp < np.max(y))])
+        xp = np.linspace(d0[0], d1[0], npts)
+        yp = np.linspace(d0[1], d1[1], npts)
 
         interp = self.getp("interp")
 
