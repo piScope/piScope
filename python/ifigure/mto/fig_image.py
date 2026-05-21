@@ -634,8 +634,12 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
     def interp_image(self, x, y, z):
         # image interpolation for non triangulation mode
 
-        if x.size*y.size == z.size:
-            # if the data is on a uniform grid. we use imshow.
+        if (x.size*y.size == z.size and
+            self.get_xaxisparam().scale == 'linear' and
+            self.get_yaxisparam().scale == 'linear'):
+            
+            # if the data is on a uniform grid and both x and y axes are
+            # linear
             dx = np.diff(x)
             dy = np.diff(y)
             if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
