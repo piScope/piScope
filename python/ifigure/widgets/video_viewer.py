@@ -281,7 +281,7 @@ class FigImageVideo(FigImage):
         x, y, z = self.getp(("x", "y", "z"))
         xp, yp, zp = self.interp_image(x, y, z)
         a = self._artists[0]
-        a.set_array(zp)
+        a.set_data(xp, yp, zp)
         setattr(a.get_array(), '_xyp', (xp, yp))
         self.set_bmp_update(False)
 
