@@ -32,7 +32,7 @@ from ifigure.utils.cbook import ProcessKeywords
 from ifigure.utils.triangulation_wrapper import tri_args
 from matplotlib.cm import ScalarMappable
 from matplotlib.patches import Rectangle
-from matplotlib.transforms import Bbox
+from matplotlib.transforms import Bbox, TransformedBbox
 from matplotlib.image import NonUniformImage
 from ifigure.utils.args_parser import ArgsParser
 from matplotlib.colors import Colormap
@@ -681,9 +681,17 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             kwargs.pop("origin")
             if kwargs["interpolation"] not in ("nearest", "bilinear"):
                 kwargs["interpolation"] = "bilinear"
+
+            # Create NonuniformImage and set data and clipbox.
+            data_bbox = Bbox([[np.min(x), np.min(y)], [np.max(x), np.max(y)]])
+            clip_box = TransformedBbox(data_bbox, container.transData)
+
             a = MyNonUniformImage(container, **kwargs)
             a.set_data(x, y, z)
+            a.set_clip_box(clip_box)
+
             container.add_image(a)
+
         self.set_artist(a)
         return a
 
@@ -694,9 +702,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
                     abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
                 self._grid_uniform = True
-                print("grid uniform")
             else:
-                print("grid notuniform")
                 self._grid_uniform = False
 
         return self._grid_uniform
