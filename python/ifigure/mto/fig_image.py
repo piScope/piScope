@@ -51,18 +51,34 @@ default_kargs = {'use_tri': False,
                  'alpha':  None}
 #                 'cmap'   :  'jet'}
 
+
 class MyNonUniformImage(NonUniformImage):
     def set_norm(self, norm):
-        AA = self._A 
+        AA = self._A
         self._A = None
         NonUniformImage.set_norm(self, norm)
         self._A = AA
-    
+
     def set_cmap(self, cmap):
-        AA = self._A 
+        AA = self._A
         self._A = None
         NonUniformImage.set_cmap(self, cmap)
         self._A = AA
+
+    def make_image(self, renderer, magnification=1.0, unsampled=False):
+        # overwrite this to change alpha interactively.
+        im, l, b, trans = NonUniformImage.make_image(
+            self, renderer, magnification=1.0, unsampled=False)
+
+        alpha = self.get_alpha()
+        if alpha is None:
+            alpha = 255
+        else:
+            alpha = int(alpha*255)
+        im[:, :, 3] = alpha
+
+        return im, l, b, trans
+
 
 class FigImage(FigObj, XUser, YUser, ZUser, CUser):
     """
@@ -117,7 +133,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             kywds['cmap'] = v['cmap']
             del v['cmap']
         obj.setvar("kywds", kywds)
-        
+
         return obj
 
     def __init__(self, *args, **kywds):
@@ -290,7 +306,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     kywds["interpolation"] = self.getp("interp")
 
                 self.call_imshow(container, xp, yp, zp, extent=extent, **kywds)
-                #self.set_artist(container.imshow(*args,
+                # self.set_artist(container.imshow(*args,
                 #                                 # picker=cpicker.Picker,
                 #                                 extent=extent,  **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
@@ -377,11 +393,11 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 for k in keys:
                     if k in lp[0]:
                         kywds[k] = lp[0][k]
-                        
+
                 self.call_imshow(container, xp, yp, zp,
-                                          extent=lp[0]["extent"], aspect=aspect,
-                                          origin='lower', **kywds)
-                #self.set_artist(container.imshow(*args,
+                                 extent=lp[0]["extent"], aspect=aspect,
+                                 origin='lower', **kywds)
+                # self.set_artist(container.imshow(*args,
                 #                                 extent=lp[0]["extent"], aspect=aspect,
                 #                                 origin='lower', **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
@@ -518,11 +534,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         # (an old routine when somehow the above did not work)
         # for mpl1.5, normal image plot needs to do this.
         ax = self.get_figaxes()
+
         hit, extra = ax._artists[0].contains(evt)
         if not hit:
             return False, {}
 
         de = self.get_data_extent()
+
         if (evt.xdata > de[0] and
             evt.xdata < de[1] and
             evt.ydata > de[2] and
@@ -666,7 +684,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             a = MyNonUniformImage(container, **kwargs)
             a.set_data(x, y, z)
             container.add_image(a)
-        self.set_artist(a)            
+        self.set_artist(a)
         return a
 
     def check_uniform_grid(self, x, y, z):
@@ -674,18 +692,18 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             dx = np.diff(x)
             dy = np.diff(y)
             if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
-                abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
+                    abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
                 self._grid_uniform = True
-                print("grid uniform")                
+                print("grid uniform")
             else:
-                print("grid notuniform")                                
+                print("grid notuniform")
                 self._grid_uniform = False
-                
+
         return self._grid_uniform
 
     def interp_image(self, x, y, z):
         # image interpolation for non triangulation mode
-        return x, y, z                    
+        return x, y, z
 
         '''
         if (x.size*y.size == z.size and
@@ -757,6 +775,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
         return xp, yp, zp
     '''
+
     def get_data_extent(self):
         if self._data_extent is not None:
             return self._data_extent
@@ -911,7 +930,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
     def set_alpha(self, value, a):
         a.set_alpha(value)
-        #a.set_array(a.get_array())
         self.setp('alpha', value)
 
     def get_alpha(self, a):
@@ -937,7 +955,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             a.set_gl_interp(value)
         else:
             xp, yp, zp = self.interp_image(x, y, z)
-            a.set_data(xp, yp, zp)
+            if self._grid_uniform:
+                a.set_array(zp)
+            else:
+                a.set_data(xp, yp, zp)
             setattr(a.get_array(), '_xyp', (xp, yp))
         a.set_interpolation(avalue)
 
@@ -1045,5 +1066,3 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         if args[0] in ("x", "y", "z"):
             self._new_data = True
         return super(FigImage, self).setp(*args)
-
-            
