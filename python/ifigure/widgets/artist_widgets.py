@@ -54,7 +54,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('ArtistWidgets')
 #           13: the same as 3, but bypass history
 # listparam[6] = menu_name
 listparam = {}
-#s = {"minV": 0.,"maxV": 359., "val" : 90, "res" : 1, "text_box" : False}
+# s = {"minV": 0.,"maxV": 359., "val" : 90, "res" : 1, "text_box" : False}
 s_fontsize = {"style": wx.CB_DROPDOWN | wx.TE_PROCESS_ENTER,
               "choices": ["7", "8", "9", "10", "11", "12", "14",
                           "16", "18", "20", "22", "24", "26", "28",
@@ -79,14 +79,14 @@ s_splineinterp = {"style": wx.CB_DROPDOWN,
 s_multialignment = {"style": wx.CB_DROPDOWN,
                     "choices": ["left", "center", "right"]}
 s_va = {"style": wx.CB_DROPDOWN,
-                   "choices": ['baseline', 'bottom', 'center', 'center_baseline', 'top']}
+        "choices": ['baseline', 'bottom', 'center', 'center_baseline', 'top']}
 
 
 ###
 listparam["multialignment"] = ["h. align.", "left",
                                4,  s_multialignment, 'multialignment', 2]
 listparam["va"] = ["v. align.", "bottom",
-                               4,  s_va, 'va', 2]
+                   4,  s_va, 'va', 2]
 listparam["spinterp"] = ["interpolation", "spline",
                          4, s_splineinterp, 'sp_interp', 2]
 listparam["axxpos"] = ["position", ("bottom", True, True, None),
@@ -101,7 +101,7 @@ s = {"text": 'shadow'}
 listparam["legendshadow"] = [None,   False,  3, s, 'shadow', 2]
 
 listparam["color"] = ["color",      'red',  6, {}, 'color', 0]
-#listparam["linecolor"] = ["color",  'red', 406, {}, 'color', 0]
+# listparam["linecolor"] = ["color",  'red', 406, {}, 'color', 0]
 listparam["ecolor"] = ["color",      'red',  6, {}, 'ecolor', 2]
 listparam["alpha"] = ["alpha",       1.0, 105, {}, 'alpha', 0]
 
@@ -151,7 +151,7 @@ mm2 = [['size', '10',  104,  s_fontsize],
        ['format', '%1.3f',   0, {}],
        ['skip', '0', 24,
         {"minV": 0., "maxV": 5., "val": 0, "res": 1, "text_box": True}],
-       ["alpha",  1.0 , 105, {}, ],
+       ["alpha",  1.0, 105, {}, ],
        ]
 init_v = [8.0, (False, [(0.0, 0.0, 0.0, 1.0)]), True, 5.0, u'%1.3f', '0',  1.0]
 s_decimate = {"text": 'on'}
@@ -160,7 +160,7 @@ listparam['decimate'] = ["decimate", True,  3, s_decimate, 'decimate', 2]
 listparam['clabel_param'] = [None,  (False, init_v), 27,
                              ({"text": 'use labels'}, {"elp": mm2}),
                              "clabel_param", 2]
-#listparam["contour_alpha"] =["alpha",  1.0 , 105, {}, 'alpha', 1]
+# listparam["contour_alpha"] =["alpha",  1.0 , 105, {}, 'alpha', 1]
 s = {"text": 'fill'}
 listparam["contour_fill"] = ["fill area", True,  3, s, 'contour_fillmode', 2]
 s = {"text": 'shade'}
@@ -223,7 +223,7 @@ listparam["mdsfiguretype"] = [None,  'plot',  31, s, 'mdsfiguretype', 12]
 listparam["mdsrange"] = [None,  ((False, (-1, 1)),
                                  (False, (-1, 1))),
                          32, None, 'mdsrange', 2]
-#listparam["mdstxt"]   = [None,   'This is a MDSplus data object',  2,   {}, None, -1]
+# listparam["mdstxt"]   = [None,   'This is a MDSplus data object',  2,   {}, None, -1]
 listparam["mdsevent"] = ["update",   '',  0,   {}, 'mdsevent',  2]
 s = {"style": wx.CB_READONLY,
      "choices": ["circle", "ellipse"]}
@@ -236,8 +236,8 @@ s = {"style": wx.CB_READONLY,
      "choices": ["square", "rectangle"]}
 listparam["box_type"] = ["type", 'square',  4, s, 'boxtype', 2]
 
-#listparam["legendlabelcolor"] = ["color",  'red',  6, {}, 'legendlabelcolor', 3]
-#listparam["legendlabel"]  = ["text",         '',   0, {}, 'legendlabel', 3]
+# listparam["legendlabelcolor"] = ["color",  'red',  6, {}, 'legendlabelcolor', 3]
+# listparam["legendlabel"]  = ["text",         '',   0, {}, 'legendlabel', 3]
 s1 = {"style": wx.CB_READONLY,
       "choices": ["serif", "sans-serif",
                   "cursive", "fantasy", "monospace", "default"]}
@@ -409,6 +409,12 @@ listparam["page_axesbox_width"] = [
     "axesbox_width", 1, 104, {}, 'axesbox_width', 8]
 listparam["page_axestick_width"] = [
     "axestick_width", 1, 104, {}, 'axestick_width', 8]
+listparam["page_axesmtick_width"] = [
+    "axesmtick_width", 1, 104, {}, 'axesmtick_width', 8]
+listparam["page_axestick_len"] = [
+    "axesmtick_len", 1, 104, {}, 'axestick_len', 8]
+listparam["page_axesmtick_len"] = [
+    "axesmtick_len", 1, 104, {}, 'axesmtick_len', 8]
 
 listparam["gl_lighting"] = [None,   None, 40,  None, 'gl_lighting',  2]
 listparam["gl_view"] = [None,   None, 44,  None, 'axes3d_viewparam',  2]
@@ -457,6 +463,9 @@ def call_getter(artist, ll, tab=''):
     elif sw == 3:
         m = getattr(artist.figobj, 'get_'+ll[4])
         return m(artist, tab)
+    elif sw == 8:
+        return artist.figobj.getp(ll[4])
+
 ######
 
 
@@ -1193,7 +1202,7 @@ class artist_widgets(wx.Panel):
         super(artist_widgets, self).__init__(parent, *args)
 
         vbox = wx.BoxSizer(wx.HORIZONTAL)
-        #vbox = wx.BoxSizer(wx.VERTICAL)
+        # vbox = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(vbox)
         self.panels = {}
         for key in self.panels:

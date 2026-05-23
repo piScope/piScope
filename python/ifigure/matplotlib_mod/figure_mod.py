@@ -22,7 +22,7 @@ class FigureMod(Figure):
 
     def draw_others(self, renderer, dsu=None):
 
-        #if self.frameon: self.patch.draw(renderer)
+        # if self.frameon: self.patch.draw(renderer)
         # a list of (zorder, func_to_call, list_of_args)
         if dsu is None:
             dsu = []
@@ -115,6 +115,9 @@ class FigureMod(Figure):
 
         if self.frameon and not noframe:
             self._call_draw(self.patch, self.patch.draw, renderer)
+
+        # Reset tick
+        axes.tick_params(axis="both", which="both", reset=True)
 
         #
         #  this is show axis box front ....
@@ -211,6 +214,15 @@ class FigureMod(Figure):
             axes.spines[s].set_linewidth(w)
         w = self.figobj.getp('axestick_width')
         axes.tick_params(axis='both', width=float(w))
+        w = self.figobj.getp('axestick_len')
+        if w != "auto":
+            axes.tick_params(axis='both', length=float(w))
+
+        w = self.figobj.getp('axesmtick_width')
+        axes.tick_params(axis='both', which="minor", width=float(w))
+        w = self.figobj.getp('axesmtick_len')
+        if w != "auto":
+            axes.tick_params(axis='both', which="minor", length=float(w))
 
         self._call_draw(axes, axes.draw, renderer)
 
@@ -221,9 +233,9 @@ class FigureMod(Figure):
         renderer.open_group('figure')
         # do nothing
         renderer.close_group('figure')
-        #self._cachedRenderer = renderer
+        # self._cachedRenderer = renderer
         renderer = self.canvas.get_renderer()
-        #self.canvas.draw_event(renderer)
+        # self.canvas.draw_event(renderer)
 
         from matplotlib.backend_bases import DrawEvent
         self.canvas.callbacks.process("draw_event",
