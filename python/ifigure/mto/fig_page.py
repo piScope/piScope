@@ -36,7 +36,7 @@ class FigPage(FigObj):
                  *args, **kywds):
         # list of page obj
         # this is for text, suptitle, and legend
-        ###  placed in figure
+        # placed in figure
         self.figobj = []
         super(FigPage, self).__init__()
 
@@ -45,10 +45,10 @@ class FigPage(FigObj):
             warnings.warn(
                 "Screen DPI is set from system"
                 "manually setting DPI is not supported in FigPage",
-            UserWarning,
-            stacklevel=2)
+                UserWarning,
+                stacklevel=2)
 
-        #self.setp("dpi", dpi)
+        # self.setp("dpi", dpi)
 
         # left, righ, top, bottom (fraction of rect)
         self.setp("def_margin", [0.15, 0.1, 0.15, 0.15])
@@ -64,8 +64,11 @@ class FigPage(FigObj):
         self.setp("title_size", 12)
         self.setp("ticklabel_size", 12)
         self.setp("axeslabel_size", 12)
-        self.setp("axesbox_width",  1.0)
-        self.setp("axestick_width",  1.0)
+        self.setp("axesbox_width", 1.0)
+        self.setp("axestick_width", 1.0)   # major tick width
+        self.setp("axestick_len", "auto")  # major tick length
+        self.setp("axesmtick_width", 1.0)  # minor tick width
+        self.setp("axesmtick_len", "auto")  # minor tick width
         self.setp("tick_font", 'sans-serif')
         self.setp("tick_weight", 'roman')
         self.setp("tick_style", 'normal')
@@ -92,8 +95,13 @@ class FigPage(FigObj):
 
     @classmethod
     def property_for_shell(self):
-        return ["bgcolor", "page_title_size", "page_ticklabel_size", "page_axeslabel_size",
-                "page_axesbox_width", "page_axestick_width", ]
+        return ["bgcolor", "page_title_size", "page_ticklabel_size",
+                "page_axeslabel_size",
+                "page_axesbox_width",
+                "page_axestick_width",
+                "page_axestick_len",
+                "page_axesmtick_width",
+                "page_axesmtick_len",]
 
     def can_have_child(self, child=None):
         from ifigure.mto.fig_book import FigBook
@@ -115,7 +123,10 @@ class FigPage(FigObj):
         return ["tick_font", "tick_weight", "tick_style", "nticks",
                 "title_font", "title_weight", "title_style",
                 "ticklabel_size", "axeslabel_size",
-                "def_margin", "axestick_width", "axesbox_width",
+                "def_margin",
+                "axestick_width", "axestick_len",
+                "axesmtick_width", "axesmtick_len",
+                "axesbox_width",
                 "axestick_width", "suptitle_labelinfo", "figsize"]
 
     @classmethod
@@ -159,7 +170,7 @@ class FigPage(FigObj):
         for objname, figobj in self.get_children():
             figobj.realize(realize_gpholder='gp')
 
-        #from ifigure.mto.figobj_gpholder import FigObjGPHolder
+        # from ifigure.mto.figobj_gpholder import FigObjGPHolder
 
         # not_gp_holder = [figobj for objname, figobj in self.get_children()
         #                 if not isinstance(figobj, FigObjGPHolder)]
@@ -211,7 +222,7 @@ class FigPage(FigObj):
             alist = artist
 
         if self._title_artist is not None:
-            #self._artists[0].texts.remove(self._title_artist)
+            # self._artists[0].texts.remove(self._title_artist)
             self._title_artist.remove()
             self._title_artist = None
 
@@ -698,7 +709,6 @@ class FigPage(FigObj):
 # save/load
 #    def _do_save_data(self, fid=None):
 #        print "saving fig_page data"
-
 
     def save_data2(self, data):
         # the first element is version code

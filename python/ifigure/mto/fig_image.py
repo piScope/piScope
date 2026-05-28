@@ -32,7 +32,8 @@ from ifigure.utils.cbook import ProcessKeywords
 from ifigure.utils.triangulation_wrapper import tri_args
 from matplotlib.cm import ScalarMappable
 from matplotlib.patches import Rectangle
-from matplotlib.transforms import Bbox
+from matplotlib.transforms import Bbox, TransformedBbox
+from matplotlib.image import NonUniformImage
 from ifigure.utils.args_parser import ArgsParser
 from matplotlib.colors import Colormap
 
@@ -49,6 +50,34 @@ default_kargs = {'use_tri': False,
                  'shading': 'flat',
                  'alpha':  None}
 #                 'cmap'   :  'jet'}
+
+
+class MyNonUniformImage(NonUniformImage):
+    def set_norm(self, norm):
+        AA = self._A
+        self._A = None
+        NonUniformImage.set_norm(self, norm)
+        self._A = AA
+
+    def set_cmap(self, cmap):
+        AA = self._A
+        self._A = None
+        NonUniformImage.set_cmap(self, cmap)
+        self._A = AA
+
+    def make_image(self, renderer, magnification=1.0, unsampled=False):
+        # overwrite this to change alpha interactively.
+        im, l, b, trans = NonUniformImage.make_image(
+            self, renderer, magnification=1.0, unsampled=False)
+
+        alpha = self.get_alpha()
+        if alpha is None:
+            alpha = 255
+        else:
+            alpha = int(alpha*255)
+        im[:, :, 3] = alpha
+
+        return im, l, b, trans
 
 
 class FigImage(FigObj, XUser, YUser, ZUser, CUser):
@@ -116,6 +145,9 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
         self._pick_pos = None
         self._cb_added = False
+        self._new_data = False
+        self._grid_uniform = False
+
         args = []
         if 'src' not in kywds:
             kywds = self.getvar("kywds")
@@ -273,9 +305,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 else:
                     kywds["interpolation"] = self.getp("interp")
 
-                self.set_artist(container.imshow(*args,
-                                                 # picker=cpicker.Picker,
-                                                 extent=extent,  **kywds))
+                self.call_imshow(container, xp, yp, zp, extent=extent, **kywds)
+                # self.set_artist(container.imshow(*args,
+                #                                 # picker=cpicker.Picker,
+                #                                 extent=extent,  **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
 
                 setattr(self._artists[0].get_array(), '_xyp', (xp, yp))
@@ -360,9 +393,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 for k in keys:
                     if k in lp[0]:
                         kywds[k] = lp[0][k]
-                self.set_artist(container.imshow(*args,
-                                                 extent=lp[0]["extent"], aspect=aspect,
-                                                 origin='lower', **kywds))
+
+                self.call_imshow(container, xp, yp, zp,
+                                 extent=lp[0]["extent"], aspect=aspect,
+                                 origin='lower', **kywds)
+                # self.set_artist(container.imshow(*args,
+                #                                 extent=lp[0]["extent"], aspect=aspect,
+                #                                 origin='lower', **kywds))
                 cax.set_crangeparam_to_artist(self._artists[0])
                 setattr(self._artists[0].get_array(), '_xyp', (xp, yp))
         self.delp("loaded_property")
@@ -497,11 +534,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         # (an old routine when somehow the above did not work)
         # for mpl1.5, normal image plot needs to do this.
         ax = self.get_figaxes()
+
         hit, extra = ax._artists[0].contains(evt)
         if not hit:
             return False, {}
 
         de = self.get_data_extent()
+
         if (evt.xdata > de[0] and
             evt.xdata < de[1] and
             evt.ydata > de[2] and
@@ -631,9 +670,48 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 "xdata": x,
                 "ydata": y}
 
+    def call_imshow(self, container, x, y, z, **kwargs):
+        if self.check_uniform_grid(x, y, z):
+            a = container.imshow(z, **kwargs)
+        else:
+            c0 = kwargs.pop("vmin")
+            c1 = kwargs.pop("vmax")
+            kwargs["clim"] = (c0, c1)
+            kwargs.pop("aspect")
+            kwargs.pop("origin")
+            if kwargs["interpolation"] not in ("nearest", "bilinear"):
+                kwargs["interpolation"] = "bilinear"
+
+            # Create NonuniformImage and set data and clipbox.
+            data_bbox = Bbox([[np.min(x), np.min(y)], [np.max(x), np.max(y)]])
+            clip_box = TransformedBbox(data_bbox, container.transData)
+
+            a = MyNonUniformImage(container, **kwargs)
+            a.set_data(x, y, z)
+            a.set_clip_box(clip_box)
+
+            container.add_image(a)
+
+        self.set_artist(a)
+        return a
+
+    def check_uniform_grid(self, x, y, z):
+        if self._new_data:
+            dx = np.diff(x)
+            dy = np.diff(y)
+            if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
+                    abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
+                self._grid_uniform = True
+            else:
+                self._grid_uniform = False
+
+        return self._grid_uniform
+
     def interp_image(self, x, y, z):
         # image interpolation for non triangulation mode
+        return x, y, z
 
+        '''
         if (x.size*y.size == z.size and
             self.get_xaxisparam().scale == 'linear' and
             self.get_yaxisparam().scale == 'linear'):
@@ -702,6 +780,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
         zp[yp > np.max(y), :] = np.nan
 
         return xp, yp, zp
+    '''
 
     def get_data_extent(self):
         if self._data_extent is not None:
@@ -857,7 +936,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
     def set_alpha(self, value, a):
         a.set_alpha(value)
-        a.set_array(a.get_array())
         self.setp('alpha', value)
 
     def get_alpha(self, a):
@@ -883,7 +961,10 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             a.set_gl_interp(value)
         else:
             xp, yp, zp = self.interp_image(x, y, z)
-            a.set_array(zp)
+            if self._grid_uniform:
+                a.set_array(zp)
+            else:
+                a.set_data(xp, yp, zp)
             setattr(a.get_array(), '_xyp', (xp, yp))
         a.set_interpolation(avalue)
 
@@ -986,3 +1067,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             if not success:
                 return None, None, None
         return self.getp(("x", "y", "z"))
+
+    def setp(self, *args):
+        if args[0] in ("x", "y", "z"):
+            self._new_data = True
+        return super(FigImage, self).setp(*args)

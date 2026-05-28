@@ -9,6 +9,7 @@ from ifigure.ifigure_config import isMPL33
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('AxisParam')
 
+
 def _to_float(value):
     if hasattr(value, 'real'):
         return value.real
@@ -18,6 +19,7 @@ def _to_float(value):
 def get_cmap(name, param=256):
     from matplotlib import colormaps
     return colormaps[name].resampled(param)
+
 
 class Memberholder(object):
     def __init__(self):
@@ -37,7 +39,7 @@ class Memberholder(object):
     def walk_member(self):
         for m in self._member:
             if m() is not None:
-                yield(m())
+                yield (m())
 
     def add_member(self, obj):
         for r in self._member:
@@ -273,11 +275,11 @@ class AxisVisualParam(object):
 
                 else:
                     a.set_major_locator(mticker.AutoLocator())
-                #a.get_axes().locator_params(self.name[0], nbins = 10)
+                # a.get_axes().locator_params(self.name[0], nbins = 10)
                 if self.ticks is not None:
                     value = self.ticks
                 else:
-                    #figpage = a.get_axes().figobj.get_figpage()
+                    # figpage = a.get_axes().figobj.get_figpage()
                     figpage = a.axes.figobj.get_figpage()
                     if self.name[0] == 'x':
                         value = figpage.getp('nticks')[0]
@@ -289,7 +291,7 @@ class AxisVisualParam(object):
                         pass
                 try:
                     # this works onlyfor MaxNLocator
-                    #a.get_axes().locator_params(self.name[0], nbins = value)
+                    # a.get_axes().locator_params(self.name[0], nbins = value)
                     a.axes.locator_params(self.name[0], nbins=value)
                 except BaseException:
                     # for Symlog and LogLocator
