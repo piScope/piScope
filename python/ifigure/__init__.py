@@ -1,5 +1,5 @@
 
-__version__ = '26.5.21'
+__version__ = '26.5.24'
 
 
 from .piscope import piscope
