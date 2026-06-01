@@ -184,7 +184,8 @@ class FigPlot(FigObj, XUser, YUser, ZUser, CUser):
                 x.size != y.size):
             self.setp("x", None)
             self.setp("y", None)
-            return False
+            assert False, "size(x) != size(y)"
+            #return False
         if self._mpl_cmd != 'plot':
             xerr, yerr = self.getp(('xerr', 'yerr'))
             if xerr is not None and xerr.size == 1:
