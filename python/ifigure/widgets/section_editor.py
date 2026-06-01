@@ -30,7 +30,7 @@ import numpy as np
 from matplotlib.lines import Line2D
 
 from ifigure.mto.fig_axes import FigAxes
-#from ifigure.widgets.primitive_widgets import margin_widget, marginp_widget
+# from ifigure.widgets.primitive_widgets import margin_widget, marginp_widget
 from ifigure.widgets.margin_widget import MarginWidget, MarginpWidget
 from ifigure.utils import geom as geom_util
 import ifigure.events
@@ -95,15 +95,24 @@ class section_editor(wx.Panel):
                                   "36", "48", "72"]}
         s_boxwidth = {"style": wx.TE_PROCESS_ENTER,
                       "choices": ["0.5", "1.0", "1.5", "2.0", "2.5"]}
+        sa_boxwidth = {"style": wx.TE_PROCESS_ENTER,
+                       "choices": ["auto", "3", "4", "5", "7", "10", "12", "15"]}
+
         list = [("title",  '',  115, {}),
                 #                ("size", "14", 104, s_fontsize),
                 ("bg color",      'red',  6, {}),
-                (None, "default size", 102, {}),
+                (None, "default sizes:", 102, {}),
                 ("title", "14", 104, s_fontsize),
                 ("tick label",  "12",  104,  s_fontsize),
                 ("axis title",  "12",  104,  s_fontsize),
                 ("axis width", "1.0",  104,  s_boxwidth),
-                ("tick width", "1.0",  104,  s_boxwidth)]
+                (None, "major ticks:", 102, {}),
+                ("tick width", "1.0",  104,  s_boxwidth),
+                ("tick len", "auto",  104,  sa_boxwidth),
+                (None, "mainor ticks:", 102, {}),
+                ("tick width", "1.0",  104,  s_boxwidth),
+                ("tick len", "auto",  104,  sa_boxwidth)]
+
         self.elp = ScrolledEditListPanel(notebook, list)
         notebook.AddPage(self.elp, "title/size")
 
@@ -248,7 +257,10 @@ class section_editor(wx.Panel):
         value[4] = fig.figobj.getp("ticklabel_size")
         value[5] = fig.figobj.getp("axeslabel_size")
         value[6] = fig.figobj.getp("axesbox_width")
-        value[7] = fig.figobj.getp("axestick_width")
+        value[8] = fig.figobj.getp("axestick_width")
+        value[9] = fig.figobj.getp("axestick_len")
+        value[11] = fig.figobj.getp("axesmtick_width")
+        value[12] = fig.figobj.getp("axesmtick_len")
         self.elp.SetValue(value)
         value = self.elp2.GetValue()
         value[1] = fig.figobj.getp("tick_font")
@@ -340,11 +352,26 @@ class section_editor(wx.Panel):
                                                 "axesbox_width",
                                                 float(v), nodelete=True)
                 menu_name = 'axes box width'
-            elif evt.widget_idx == 7:
+            elif evt.widget_idx == 8:
                 action = UndoRedoFigobjProperty(fig,
                                                 "axestick_width",
                                                 float(v), nodelete=True)
                 menu_name = 'axes tick width'
+            elif evt.widget_idx == 9:
+                action = UndoRedoFigobjProperty(fig,
+                                                "axestick_len",
+                                                v, nodelete=True)
+                menu_name = 'axes tick length'
+            elif evt.widget_idx == 11:
+                action = UndoRedoFigobjProperty(fig,
+                                                "axesmtick_width",
+                                                float(v), nodelete=True)
+                menu_name = 'axes tick(minor) width'
+            elif evt.widget_idx == 12:
+                action = UndoRedoFigobjProperty(fig,
+                                                "axesmtick_len",
+                                                v, nodelete=True)
+                menu_name = 'axes tick(minro) length'
 
 #               fig.figobj.setp("axestick_width", float(v))
         elif evt.elp == self.elp2:

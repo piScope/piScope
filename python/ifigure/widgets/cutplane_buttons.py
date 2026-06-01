@@ -15,15 +15,17 @@ from ifigure.utils.wx3to4 import wxCursorFromImage
 
 from ifigure.utils.wx3to4 import evt_GetPosition
 
-btasks0 = [('plus_theta', 'shift_theta.png', 0, '+ polar angle (shift-key: reserse direction)'),
-#           ('minus_theta',   'minus_theta.png', 0, '- polar angle'),
-           ('plus_phi',   'shift_phi.png', 0, '+ azimuthal angle (shift-key: reserse direction)'),
-#           ('minus_phi',  'minus_phi.png', 0, '- azimuthal angle'),
-           ('plus_offset',   'shift_cp.png', 0, '+/- offset (shift-key: reserse direction)'),
+btasks0 = [('plus_theta', 'shift_theta.png', 0, '+ polar angle (shift-key: reverse direction)'),
+           #           ('minus_theta',   'minus_theta.png', 0, '- polar angle'),
+           ('plus_phi',   'shift_phi.png', 0,
+            '+ azimuthal angle (shift-key: reverse direction)'),
+           #           ('minus_phi',  'minus_phi.png', 0, '- azimuthal angle'),
+           ('plus_offset',   'shift_cp.png', 0,
+            '+/- offset (shift-key: reverse direction)'),
            ('yz_plane',  'yz_plane.png', 0, 'YZ plane'),
-           ('xz_plane',  'xz_plane.png', 0, 'XZ plane'),           
-           ('xy_plane',  'xy_plane.png', 0, 'XY plane'),                      
-           ('flip_sign',    'flip_cp_side.png', 0, 'flip side'), 
+           ('xz_plane',  'xz_plane.png', 0, 'XZ plane'),
+           ('xy_plane',  'xy_plane.png', 0, 'XY plane'),
+           ('flip_sign',    'flip_cp_side.png', 0, 'flip the visible side'),
            ('reset_cp',    'reset.png', 0, 'reset cp setting'), ]
 
 # step size
@@ -31,6 +33,7 @@ delta_z = 0.02
 delta_a = 5.
 # interval(must be integer)
 dtime = 150
+
 
 class CutPlaneBar(bp.ButtonPanel):
     def __init__(self, parent, id=-1, text='', *args, **kargs):
@@ -50,9 +53,9 @@ class CutPlaneBar(bp.ButtonPanel):
         self.Bind(wx.EVT_KEY_DOWN, self._onKeyDown)
         self.Bind(wx.EVT_KEY_UP, self._onKeyUp)
         self.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeave)
-        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)        
+        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEnter)
         self.Bind(wx.EVT_SET_FOCUS, self._onFocus)
-        
+
         self.place_bottoms()
         self._mouse_inside = False
         self._shift_down = False
@@ -62,7 +65,7 @@ class CutPlaneBar(bp.ButtonPanel):
             self._shift_down = True
             if self._mouse_inside:
                 return
-            
+
         wx.PostEvent(self.GetParent(), evt)
 
     def _onKeyUp(self, evt):
@@ -70,11 +73,11 @@ class CutPlaneBar(bp.ButtonPanel):
             self._shift_down = False
             if self._mouse_inside:
                 return
-            
+
         wx.PostEvent(self.GetParent(), evt)
 
     def _onFocus(self, evt):
-        wx.PostEvent(self.GetParent(), evt)        
+        wx.PostEvent(self.GetParent(), evt)
 
     def make_button_group(self, parent, btasks):
 
@@ -107,14 +110,14 @@ class CutPlaneBar(bp.ButtonPanel):
             btnl.custom_cursor = crs
             btnl.btask = btask
             btnl.bitmap1 = image
-            #btnl.bitmap2 = make_bitmap_with_bluebox(image)
+            # btnl.bitmap2 = make_bitmap_with_bluebox(image)
             if hint != '':
                 btnl.SetShortHelp(hint)
-            #if tg == 1:
+            # if tg == 1:
             #    btnl.SetKind('toggle')
-            #if len(items) > 4:
+            # if len(items) > 4:
             #    btnl.use_in_2d_menu = items[4]
-            #if len(items) > 5:
+            # if len(items) > 5:
             #    btnl.use_in_3d_menu = items[5]
 
             bts.append(btnl)
@@ -130,15 +133,17 @@ class CutPlaneBar(bp.ButtonPanel):
         bp.ButtonPanel.OnLeftDown(self, evt)
         btask = self.allbinfo[ret[0]].btask
 
-        self._mouse_inside = True        
+        self._mouse_inside = True
         self.OnButtonDown(evt, btask)
 
         win = self.GetTopLevelParent()
         canvas = win.canvas
         ax = win.canvas.axes_selection()
-        if ax is None: return
+        if ax is None:
+            return
         figax = ax.figobj
-        if not figax.get_3d(): return
+        if not figax.get_3d():
+            return
 
         wx.CallLater(dtime, self.timed_event, btask, canvas, ax)
         evt.Skip()
@@ -154,15 +159,15 @@ class CutPlaneBar(bp.ButtonPanel):
         self._mouse_inside = False
         self.OnButtonUp(evt, btask)
         evt.Skip()
-        
+
     def OnLeave(self, evt):
         self._mouse_inside = False
         evt.Skip()
-        
+
     def OnEnter(self, evt):
         self._mouse_inside = True
         evt.Skip()
-        
+
     def timed_event(self, btask, canvas, ax):
 
         def get_angles(limit1):
@@ -172,7 +177,7 @@ class CutPlaneBar(bp.ButtonPanel):
                 theta = np.pi + theta
             phi = np.arctan2(limit1[1], limit1[0])
             return theta, phi
-        
+
         def get_norm(theta, phi):
             if theta > np.pi:
                 theta = theta - np.pi
@@ -191,7 +196,7 @@ class CutPlaneBar(bp.ButtonPanel):
             xmin, xmax = ax.get_xlim3d()
             ymin, ymax = ax.get_ylim3d()
             zmin, zmax = ax.get_zlim3d()
-            nn  = np.sum(limit1*np.array([xmax-xmin, ymax-ymin, zmax-zmin]))
+            nn = np.sum(limit1*np.array([xmax-xmin, ymax-ymin, zmax-zmin]))
 
             delta = nn*delta_z
 
@@ -204,37 +209,37 @@ class CutPlaneBar(bp.ButtonPanel):
         elif btask == 'plus_phi':
             th, ph = get_angles(ax._lighting['clip_limit1'])
             if self._shift_down:
-                ph = ph  - delta_a/180*np.pi
+                ph = ph - delta_a/180*np.pi
             else:
-                ph = ph  + delta_a/180*np.pi
+                ph = ph + delta_a/180*np.pi
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
 
         elif btask == 'plus_theta':
             th, ph = get_angles(ax._lighting['clip_limit1'])
-            limit2 = ax._lighting['clip_limit2']            
+            limit2 = ax._lighting['clip_limit2']
             if self._shift_down:
-                th = th  + delta_a/180*np.pi            
+                th = th + delta_a/180*np.pi
                 if th > np.pi:
                     limit2[1] = -limit2[1]
             else:
-                th = th  - delta_a/180*np.pi
+                th = th - delta_a/180*np.pi
                 if th < 0:
                     limit2[1] = -limit2[1]
-                
+
             ax._lighting['clip_limit2'] = limit2
             vec = get_norm(th, ph)
             ax._lighting['clip_limit1'] = vec
 
         else:
             pass
-        
+
         figax = ax.figobj
         figax.set_bmp_update(False)
         wx.CallAfter(canvas.draw)
-        if self._mouse_inside:            
+        if self._mouse_inside:
             wx.CallLater(dtime, self.timed_event, btask, canvas, ax)
-        
+
     def AddButtonOrS(self, b):
         if isinstance(b, bp.ButtonInfo):
             if not self.three_d_bar:
@@ -270,6 +275,7 @@ class CutPlaneBar(bp.ButtonPanel):
             else:
                 p.SetBitmap(p.bitmap1)
     '''
+
     def refresh_button(self):
 
         self.Clear()
@@ -288,11 +294,13 @@ class CutPlaneBar(bp.ButtonPanel):
         win = self.GetTopLevelParent()
         canvas = win.canvas
         ax = win.canvas.axes_selection()
-        if ax is None: return
+        if ax is None:
+            return
 
         figax = ax.figobj
-        if not figax.get_3d(): return
-        
+        if not figax.get_3d():
+            return
+
         v = self.container
         if btask == 'yz_plane':
             ax._lighting['clip_limit1'] = [1, 0, 0]
@@ -318,8 +326,8 @@ class CutPlaneBar(bp.ButtonPanel):
             figax.set_bmp_update(False)
             wx.CallAfter(canvas.draw)
         else:
-            
-            pass   
+
+            pass
 
     '''
     def reset_btn_toggle_bitmap(self):
@@ -334,6 +342,7 @@ class CutPlaneBar(bp.ButtonPanel):
         csize = self.GetParent().GetSize()
         self.SetPosition((csize[0]-psize[0]-4,
                           4))
+
 
 def add_cutplane_btns(parent):
     canvas = parent.canvas.canvas

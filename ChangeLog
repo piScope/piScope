@@ -1,16 +1,24 @@
+2026 5/20
+    	* fixed image plot when x and y grid spacing is not uniform.
+	** recovered custom interpolation routine, which create an interplated data with
+	** a size matched with screen resolution.
+
+
+<< very long interval of not recording the changes >>
+
 2018
 	* 1/30
 	** Running !-command in shell is changed to use threading, which
 	allows a long-running process while keeping GUI active.
 	** Maybe I should provide a interface to kill subprocesses lauched
 	by various ways from piScope?
-	
+
 	* 1/19
 	** OpenGL 3.2 based shaders are stable enough
 	** fixed a few wx4 migration issues
 	** turn on OpenGL by default. -g option is changed to SUPPRESS OpenGL
 	** Appearance panel is modified to choose OpenGL on/off, shader version.
-	
+
         * 1/10
         ** Migration to OpenGL 3.2 core is on-going
 	Most of the functionality seems working now.
@@ -19,32 +27,32 @@
 	A gometry shader to draw thick line is added.
 	Future developement will be done only on GL3.2
 
-2017	
+2017
 	* 11/27
         ** ifigure.utils.wx3to4 is added. This modules is used to absorb the API differences
 	between Classic and Phoenix. Note that it is not meant for general purpose module.
 	It covers only the APIs used in piScope.
 	** Various adjustment/fix are maded to use wx3to4 in many modules
 	** HGsupport::onHGreload is added to refresh hg folder using the repository data.
-	
+
 	* 11/07
 	** GLComponent::set_gl_hl_use_array_idx, GLComponent::get_gl_hl_use_array_idx
 	is modified to record the setting in setp. This allows to configure use_array_idx
 	before an artist is made
-	
+
 	* 11/05
 	** ArgGL::unselect_gl_artist is added to handle unselecting array_indexed
 	artist correctly.
-	
+
 	* 10/28
 	** Copy To Clipboard is added to CopySpecial menu
 	** following interactive commands calles threed('on') automatically
 	solid, revolve, surf, trisurf, surface. Note that plot command still
 	does not change axes to 3D mode automatically. A user must call
 	threed('on') if axes is in 2D mode.
-	** fig_revolve::get_export_val is added	
+	** fig_revolve::get_export_val is added
         ** resolution downscaling on GPU side is added
-	
+
 	* 10/27
 	** fixed an issue of 3d highlighting. refresh_hl was called
 	everytime during pan/zoom/rotation.
@@ -53,26 +61,26 @@
 	highlighting too. hl_color alpha is hard-coded to 0.65.
 	** fig_surface::get_export_val is added
 
-	
+
 	* 10/02
 	** 3D graphics in an inset axes is on
 	** background alpha of 3D axes is set to transparent by default
 	this is forced when calling set_3D(True), when swithching the
 	mode from 2D to 3D
 	** OpenGL mutlisampling
-	backend_wxagg_gl has multisample and multisample_init_done to 
+	backend_wxagg_gl has multisample and multisample_init_done to
 	control how the mutlisampling is done. A user can change setting
 	from Preference->Appearance tab. When mutltisampling is off,
 	it uses a texture size exactly the same as screen size. It
 	saves memory, but it uses hardware smoothing, which does not look
 	very good expecially when transparency is used.
-	
+
 
 	* 09/24
         ** navibar::ClickP1Button
 	ClickP1Button(self, name) allows to click navigation
 	bar button from program.
-	
+
 	* 09/22
 	** set_gl_hl_use_array_idx is added to gl_component
 
@@ -92,31 +100,31 @@
 
         >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset()
         >> figure();solid(v, idx),
-	
+
 	which is equivalent to
-	
+
 	>> s = proj.model1.mfem.mfembook.page1.axes1.face.shown_component
         >> v, idx, cdata = proj.model1.mfem.mfembook.page1.axes1.face.get_subset(s)
         >> figure();solid(v, idx)
 
-	
+
 
 	** inverse keyword to gl_component::hide_component
-	
+
 	gl_component::hide_component(idx, inverse=False): if inverse is True,
 	it hides everything except for the components list.
-	
-	
+
+
 	* 08/31-2017
 
 	** obj keyword is added to cls to delete plot selectively
-	
+
     	   >>> figure();
     	   >>> o1 = plot(np.arange(30))
            >>> o2 = oplot(np.arange(40))
            >>> cls(obj=obj)
 
-	
+
 	* 08/08-20 2017
 
 	** Solid/Revolve/Surface
@@ -149,15 +157,15 @@
 	GLCompound::isCompound
 	GLCompound::getSelectedIndex :: get which index is selected
 	GLCompound::setSelectedIndex :: set which index is selected
-	GLCompound::isSelected       :: called from canvas 
+	GLCompound::isSelected       :: called from canvas
         GLCompound::setSelectable    :: set if artist is pickable
 	GLCompound::hide_component   :: hide a part of 3D object using array_idx
-	
+
 	* 08/04-06/2017
 
 	Various improvement of OpenGL graphics, which are needed
 	for Petra-M
-	
+
 	** array_idx keywords to 3D solid and plot command
 
 	array_idx is a number assigned to markers in a plot mode
