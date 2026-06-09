@@ -672,7 +672,6 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                 "ydata": y}
 
     def call_imshow(self, container, x, y, z, **kwargs):
-        print('call_imshow')
         if self.check_uniform_grid(x, y, z):
             a = container.imshow(z, **kwargs)
         else:
