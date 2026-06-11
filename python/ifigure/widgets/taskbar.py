@@ -643,8 +643,11 @@ class TaskBarIcon(wxTaskBarIcon):
         #self.frame = frame
 
         # Set the image
-        icon = self.MakeIcon(app_logo.GetImage())
-        self.SetIcon(icon, "piScope")
+        if wx.adv.TaskBarIcon.IsAvailable():
+            # SetIcon if legacy system tray support is available
+            self._icon = self.MakeIcon(app_logo.GetImage())
+            self.SetIcon(self._icon, "piScope")
+
         self.imgidx = 1
 
         # bind some events

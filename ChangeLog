@@ -1,3 +1,7 @@
+2026 6/11
+        * added safeguard when "attach window" is chosen
+	* added a check to see if legacy tray is available (suppress GTK-CRITIAL on Linux)
+
 2026 5/20
     	* fixed image plot when x and y grid spacing is not uniform.
 	** recovered custom interpolation routine, which create an interplated data with

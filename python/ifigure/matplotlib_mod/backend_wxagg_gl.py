@@ -134,6 +134,12 @@ class FigureCanvasWxAggModGL(FigureCanvasWxAggMod):
             win.Layout()
             glcanvas.Refresh()
 
+    def _on_leave(self, evt):
+        # safe-guard. when "attache figure is used"
+        if self.figure is None:
+            return
+        FigureCanvasWxAggMod._on_leave(self, evt)
+
     def get_renderer(self, cleared=False):
         l, b, w, h = self.figure.bbox.bounds
         key = w, h, self.figure.dpi
