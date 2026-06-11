@@ -116,9 +116,6 @@ class FigureMod(Figure):
         if self.frameon and not noframe:
             self._call_draw(self.patch, self.patch.draw, renderer)
 
-        # Reset tick
-        axes.tick_params(axis="both", which="both", reset=True)
-
         #
         #  this is show axis box front ....
         #

@@ -1,6 +1,8 @@
 2026 6/11
         * added safeguard when "attach window" is chosen
 	* added a check to see if legacy tray is available (suppress GTK-CRITIAL on Linux)
+	* removed axes.tick_params(axis="both", which="both", reset=True), which was introduced
+	  recently
 
 2026 5/20
     	* fixed image plot when x and y grid spacing is not uniform.
