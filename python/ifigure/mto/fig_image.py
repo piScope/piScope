@@ -233,7 +233,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             self.setp("x", None)
             self.setp("y", None)
             self.setp("z", None)
-            return False
+            assert False, "x, y, z data size does not match"
+            #return False
         return True
 
     def generate_artist(self):
@@ -700,7 +701,8 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
             dx = np.diff(x)
             dy = np.diff(y)
             if (abs(np.max(dx)-np.min(dx))/abs(np.max(dx)+np.min(dx)) < 1e-7 and
-                    abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7):
+                abs(np.max(dy)-np.min(dy))/abs(np.max(dy)+np.min(dy)) < 1e-7 and
+                np.all(dx > 0) and np.all(dy > 0)):
                 self._grid_uniform = True
             else:
                 self._grid_uniform = False
