@@ -93,7 +93,7 @@ dprint1, dprint2, dprint3 = debug.init_dprints('iFigureApp')
 
 # from ifigure.mdsplus.mdsscope import MDSScope
 
-
+'''
 try:
     from wx import glcanvas
     haveGLCanvas = True
@@ -108,7 +108,7 @@ try:
     haveOpenGL = True
 except ImportError:
     haveOpenGL = False
-
+'''
 
 class WindowList(list):
     def get_list(self):

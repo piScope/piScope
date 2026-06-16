@@ -170,10 +170,12 @@ def piscope():
     appearanceconfig = AppearanceConfig()
 
     import ifigure.widgets.canvas.ifigure_canvas
-    import ifigure.matplotlib_mod.backend_wxagg_gl as wxagg_gl
+
     if use_gl:
         use_gl = appearanceconfig.setting['gl_use']
     if use_gl:
+        import ifigure.matplotlib_mod.backend_wxagg_gl as wxagg_gl
+
         ifigure.widgets.canvas.ifigure_canvas.turn_on_gl = use_gl
         wxagg_gl.use_gl_12 = appearanceconfig.setting['gl_use_12']
         wxagg_gl.load_glcanvas(debug=True)
