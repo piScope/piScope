@@ -1921,7 +1921,12 @@ class _textctrl_mixin():
         if self._use_escape:
             if isinstance(val, str):
                 val = val.encode()
-            return val.decode('unicode_escape')
+
+            try:
+                ret = val.decode('unicode_escape')
+            except UnicodeDecodeError:
+                ret = val
+            return ret
         else:
             return val
 
