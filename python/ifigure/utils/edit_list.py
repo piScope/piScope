@@ -24,6 +24,7 @@ import sys
 import six
 import os
 import ifigure
+import traceback
 import wx.stc as stc
 import numpy as np
 from ifigure.numerical_function import *
@@ -1852,8 +1853,17 @@ class _textctrl_mixin():
             self.set_value_error()
 
     def onEnter(self, evt):
-        self._value_at_getfocus = self.GetValue()
-        call_send_event(self, evt)
+        try:
+            self._value_at_getfocus = self.GetValue()
+            call_send_event(self, evt)
+        except ValueError:
+            import ifigure.widgets.dialog as dialog
+            import traceback
+            wx.CallAfter(dialog.showtraceback,
+                         parent=self,
+                         txt='ValueError occured',
+                         title='Error',
+                         traceback=traceback.format_exc(limit=-1))
 
     def onSetFocus(self, evt):
         self._value_at_getfocus = self.GetValue()
