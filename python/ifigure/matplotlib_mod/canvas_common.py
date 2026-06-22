@@ -12,25 +12,32 @@ dprint1, dprint2, dprint3 = debug.init_dprints('canvas_common')
 #  OpenGL extention
 #
 try:
-    from wx import glcanvas
+    from ifigure.widgets.canvas.ifigure_canvas import turn_on_gl
+    if turn_on_gl:
+        from wx import glcanvas
+
 except ImportError:
     pass
 try:
-    # The Python OpenGL package can be found at
-    # http://PyOpenGL.sourceforge.net/
-    from OpenGL.GL import *
-    #from OpenGL.GLUT import *
-    from OpenGL.GLU import *
-    from OpenGL.GL import shaders
-    from OpenGL.arrays import vbo
+    if turn_on_gl:
+        # The Python OpenGL package can be found at
+        # http://PyOpenGL.sourceforge.net/
+        from OpenGL.GL import *
+        #from OpenGL.GLUT import *
+        from OpenGL.GLU import *
+        from OpenGL.GL import shaders
+        from OpenGL.arrays import vbo
 
-    class myvbo(vbo.VBO):
-        pass
-    haveOpenGL = True
+        class myvbo(vbo.VBO):
+            pass
+        haveOpenGL = True
+    else:
+        haveOpenGL = False
+
 except ImportError:
     haveOpenGL = False
 
-    
+
 near_clipping = 45.    # must be float (default 8) = A
 camera_distance = 50.  # must be float (default 10) = B
 # I haven't check relations between these. Apparently, (B-A)/B = 1/10.?
@@ -71,25 +78,29 @@ def define_attrib(shader, name):
     shader.attrib_loc[name] = glGetAttribLocation(shader, name)
 
 
-def check_framebuffer(message, mode=GL_FRAMEBUFFER):
-    # list up possible errors
-    attrs = [GL_FRAMEBUFFER_COMPLETE, GL_FRAMEBUFFER_UNSUPPORTED, GL_INVALID_ENUM]
-    for x in dir(OpenGL.GL):
-        if x.startswith('GL_FRAMEBUFFER_INCOMPLETE'):
-            attrs.append(getattr(OpenGL.GL,x))
-    #for a in attrs:
-    #    print(a, int(a))
+if turn_on_gl:
+    def check_framebuffer(message, mode=GL_FRAMEBUFFER):
+        # list up possible errors
+        attrs = [GL_FRAMEBUFFER_COMPLETE, GL_FRAMEBUFFER_UNSUPPORTED, GL_INVALID_ENUM]
+        for x in dir(OpenGL.GL):
+            if x.startswith('GL_FRAMEBUFFER_INCOMPLETE'):
+                attrs.append(getattr(OpenGL.GL,x))
+        #for a in attrs:
+        #    print(a, int(a))
 
-    check = glCheckFramebufferStatus(mode)
-    if int(check) != int(attrs[0]):
-        print('Framebuffer imcomplete (' + message + ')')
-        for x in attrs:
-            if int(check) == int(x):
-                print(x)
+        check = glCheckFramebufferStatus(mode)
+        if int(check) != int(attrs[0]):
+            print('Framebuffer imcomplete (' + message + ')')
+            for x in attrs:
+                if int(check) == int(x):
+                    print(x)
+            return False
+
+        # print "test sample", glGetIntegerv(GL_SAMPLE_BUFFERS)
+        return True
+else:
+    def check_framebuffer(message, mode=None):
         return False
-
-    # print "test sample", glGetIntegerv(GL_SAMPLE_BUFFERS)
-    return True
 
 def frustum(left, right, bottom, top, zNear, zFar, view_scale=1):
     dx = right - left

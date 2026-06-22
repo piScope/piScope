@@ -4,9 +4,11 @@ from __future__ import print_function
 #
 import wx
 import weakref
+
 import numpy as np
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED, ScrolledEditListPanel
 from ifigure.utils.cbook import FindFrame
+import ifigure.widgets.dialog as dialog
 
 from ifigure.widgets.undo_redo_history import GlobalHistory
 from ifigure.widgets.undo_redo_history import UndoRedoArtistProperty
@@ -666,7 +668,19 @@ class artist_panel(wx.Panel):
                 break
             c = c+1
 
-        value = self.elp[k].GetValue()
+        try:
+            value = self.elp[k].GetValue()
+        except ValueError:
+            import traceback
+            wx.CallAfter(dialog.showtraceback,
+                         parent=self,
+                         txt='ValueError occured',
+                         title='Error',
+                         traceback=traceback.format_exc(limit=-1))
+            return None, None
+        except BaseException:
+            return None, None
+
         i = evt.widget_idx
 
         name = self.list[k][i][4]
