@@ -946,7 +946,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
     def set_interp(self, value, a):
         self.setp('interp', value)
         if value == 'cubic':
-            avalue = 'bicubic'
+            avalue = 'bicubic' if self._grid_uniform else 'bilinear'
         elif value == 'linear':
             avalue = 'bilinear'
         else:
