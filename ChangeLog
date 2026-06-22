@@ -1,3 +1,8 @@
+2026 6/22
+	* fixed -g option not to load OpenGL.
+	* improved behavior when the text entered to range fields are not interpretable
+	  as a numerical value.
+
 2026 6/11
         * added safeguard when "attach window" is chosen
 	* added a check to see if legacy tray is available (suppress GTK-CRITIAL on Linux)

@@ -86,29 +86,9 @@ ifigure._cursor_book = None  # specail book for slice cursor
 
 redirect_std = False
 use_console = False
-#
+
 #  debug setting
-#
 dprint1, dprint2, dprint3 = debug.init_dprints('iFigureApp')
-
-# from ifigure.mdsplus.mdsscope import MDSScope
-
-'''
-try:
-    from wx import glcanvas
-    haveGLCanvas = True
-except ImportError:
-    haveGLCanvas = False
-
-try:
-    # The Python OpenGL package can be found at
-    # http://PyOpenGL.sourceforge.net/
-    from OpenGL.GL import *
-    # from OpenGL.GLUT import *
-    haveOpenGL = True
-except ImportError:
-    haveOpenGL = False
-'''
 
 class WindowList(list):
     def get_list(self):
