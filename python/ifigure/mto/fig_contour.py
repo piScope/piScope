@@ -801,7 +801,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
         if (self.getvar('offset') is not None and
             (self.getvar('zdir') == 'x' or
              self.getvar('zdir') == 'y')):
-            crange = self._update_range(crange, (np.amin(z), np.amax(z)))
+            crange = self._update_range(crange, (np.nanmin(z), np.nanmax(z)))
         elif (xrange[0] is not None and
               xrange[1] is not None and
               yrange[0] is not None and
@@ -822,7 +822,7 @@ class FigContour(FigObj, XUser, YUser, CUser, ZUser):
 
             if scale == 'log':
                 zt[z <= 0] = np.ma.masked
-            crange = self._update_range(crange, (np.amin(zt), np.amax(zt)))
+            crange = self._update_range(crange, (np.nanmin(zt), np.nanmax(zt)))
 
         return crange
 

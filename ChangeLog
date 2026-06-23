@@ -1,3 +1,6 @@
+2026 6/23
+	* improved handling crange when data contains nan (for image and contour in 2D)
+
 2026 6/22
 	* fixed -g option not to load OpenGL.
 	* improved behavior when the text entered to range fields are not interpretable

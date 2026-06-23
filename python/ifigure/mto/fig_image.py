@@ -888,7 +888,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
 
         if self.get_figaxes().get_3d():
             crange = self._update_range(crange,
-                                        (np.amin(z), np.amax(z)))
+                                        (np.nanmin(z), np.nanmax(z)))
             return crange
 
         if (xrange[0] is not None and
@@ -905,7 +905,7 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                         if scale == 'log':
                             z = mask_negative(z)
                         crange = self._update_range(crange,
-                                                    (np.min(z), np.max(z)))
+                                                    (np.nanmin(z), np.nanmax(z)))
 
                 else:
                     zt = z[idx1, :]
@@ -922,13 +922,13 @@ class FigImage(FigObj, XUser, YUser, ZUser, CUser):
                     if scale == 'log':
                         zt = mask_negative(zt)
                     crange = self._update_range(crange,
-                                                (min(zt), max(zt)))
+                                                (np.nanmin(zt), np.nanmax(zt)))
                 else:
                     zt = z.flatten()[idx1]
                     if scale == 'log':
                         zt = mask_negative(zt)
                     crange = self._update_range(crange,
-                                                (np.amin(zt), np.amax(zt)))
+                                                (np.nanmin(zt), np.nanmax(zt)))
             else:
                 # if len(_tri) == len(z), it comes here
                 crange = self._update_range(crange,
