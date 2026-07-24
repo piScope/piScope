@@ -1,3 +1,6 @@
+2026 7/24
+	* axes3Dmod::view_init is simplified jus to call baseclass method (adjustment for MPL3.11)
+
 2026 6/23
 	* improved handling crange when data contains nan (for image and contour in 2D)
 
