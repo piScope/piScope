@@ -35,6 +35,8 @@ import ifigure.utils.pickle_wrapper as cPickle
 import binascii
 import threading
 import os
+import queue
+
 from six.moves import socketserver
 from ifigure.utils.cbook import pick_unused_port
 
@@ -47,21 +49,24 @@ class ReceiverReqHandler(socketserver.BaseRequestHandler):
         data = cPickle.loads(binascii.a2b_hex(response))
         if data['type'] == 'data':
             import __main__
-            text = '\n'
+            text = ''
             for key in data['data'][0]:
                 if key in dir(__main__):
-                    text = text + key + ' is updated\n'
+                    text = text + key + ' is updated. \n'
                 else:
-                    text = text + key + ' is created\n'
+                    text = text + key + ' is created. \n'
                 setattr(__main__, key, data['data'][0][key])
-            print(text)
+            self.server.msg_queue.put(text)
         elif data['type'] == 'msg':
-            print((data['data']))
-
+            self.server.msg_queue.put((data['data']))
+        else:
+            self.server.msg_queue.put("")
 
 class Receiver(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.msg_queue = queue.Queue()
 
 class Client(object):
     port = 0
@@ -142,6 +147,12 @@ class Client(object):
                 response = cPickle.loads(binascii.a2b_hex(response))
         finally:
             sock.close()
+
+        if not noresponse:
+           msg = Client.receiver.msg_queue.get()
+           print(msg)
+           Client.receiver.msg_queue.task_done()
+        
         return response
 
 

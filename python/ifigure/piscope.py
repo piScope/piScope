@@ -84,9 +84,9 @@ def piscope():
         eflag = False
         for p in sys.argv[1:]:
             if p == '-h':
-                print('[Usage: ifigure -s -r command -h file]')
-                print('ifigure          : start a new project')
-                print('ifigure <file>   : open an existing project')
+                print('[Usage: piscope -s -r command -h file]')
+                print('piscope          : start a new project')
+                print('piscope <file>   : open an existing project')
                 print('-s               : start server thread')
                 print('-d               : suppress console redirect')
                 print('-c               : completely suppress redirect')

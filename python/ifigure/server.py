@@ -198,7 +198,7 @@ class Server(object):
         sock.connect((self.rhost, self.rport))
         data = binascii.b2a_hex(pickle.dumps(
             {'type': data_type, 'data': data}))
-        sock.sendall(data+'\n')
+        sock.sendall(data+b'\n')
         sock.close()
 
     def export_message(self, data):
