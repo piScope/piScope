@@ -50,17 +50,33 @@ from ifigure.utils.cbook import pick_unused_port
 
 current_prompt = ">>> "
 
+
 class TrackingPrompt:
-    def __init__(self, text):
-        self.text = text
+    def __init__(self, text, primary=False):
+        self.text = str(text) if text is not None else '>>> '
+        #self.primary = primary
 
     def __str__(self):
         global current_prompt
-        current_prompt = self.text
+        #if self.primary:
+        #    current_prompt = self.text
         return self.text
 
-sys.ps1 = TrackingPrompt(sys.ps1)
-sys.ps2 = TrackingPrompt(sys.ps2)
+
+def install_prompt_tracking():
+    """Initialize prompt tracking only in real interactive sessions.
+
+    Scripts run with ``python script.py`` do not define ``sys.ps1`` and
+    ``sys.ps2``. We must not touch those attributes unconditionally because that
+    breaks imports and can misclassify script mode as interactive.
+    """
+    global current_prompt
+    existing_ps1 = getattr(sys, 'ps1', None)
+    existing_ps2 = getattr(sys, 'ps2', None)
+    sys.ps1 = TrackingPrompt(str(existing_ps1) if existing_ps1 is not None else '>>> ', primary=True)
+    sys.ps2 = TrackingPrompt(str(existing_ps2) if existing_ps2 is not None else '... ', primary=False)
+    current_prompt = '>>> '
+
 
 def async_print(*args, **kwargs):
     """
@@ -127,13 +143,37 @@ class Client(object):
             # command = command + ' -e '+ exe + ' &'
             # import piscope
             # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
-            command = 'piscope  -s -d'
-            # print(command)
+            # command = 'piscope  -s -d'
+            command = [sys.executable, '-m', 'ifigure', '-s', '-d']            
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
-            p = subprocess.Popen(shlex.split(command),  # shell = True,
+            p = subprocess.Popen(command, #shlex.split(command),  # shell = True,
                                  stdout=subprocess.PIPE,
                                  universal_newlines=True)
+
+            '''
+            command = [sys.executable, '-m', 'ifigure', '-s', '-d']
+
+            kwargs = {
+                'stdin': subprocess.DEVNULL,
+                'stdout': subprocess.PIPE,
+                'stderr': subprocess.STDOUT,
+                'universal_newlines': True,
+                'close_fds': True,
+            }
+            if not _is_interactive_session():
+                if os.name == 'nt':
+                    creationflags = 0
+                    if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP'):
+                        creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
+                    if hasattr(subprocess, 'DETACHED_PROCESS'):
+                        creationflags |= subprocess.DETACHED_PROCESS
+                    if creationflags:
+                        kwargs['creationflags'] = creationflags
+                else:
+                    kwargs['start_new_session'] = True
+            p = subprocess.Popen(command, **kwargs)
+            '''
             lhost = 'localhost'
         else:
             pass
@@ -175,11 +215,19 @@ class Client(object):
 
     def shutdown(self):
         if Client.process is not None:
-            Client.process.kill()
+            try:
+                Client.process.kill()
+            except Exception:
+                pass
             Client.process = None
             Client.host = 'localhost'
             Client.port = 0
-            Client.receiver.shutdown()
+
+        if Client.receiver is not None:
+            try:
+                Client.receiver.shutdown()
+            except Exception:
+                pass
             Client.receiver = None
 
     def set_connection(self, host, port):
@@ -215,7 +263,35 @@ def shutdown():
     server('shutdown')
 
 import atexit
-atexit.register(shutdown)
+
+
+def _is_interactive_session():
+    """Return True only for actual interactive Python sessions.
+
+    A plain script run from a terminal still has a TTY, but it does not have
+    REPL prompt attributes like ``sys.ps1`` / ``sys.ps2`` and is not launched
+    with ``python -i``. Treating any TTY as interactive causes script mode to
+    register ``atexit`` cleanup and immediately kill the piScope process.
+    """
+    if hasattr(sys, 'ps1') or hasattr(sys, 'ps2'):
+        return True
+
+    flags = getattr(sys, 'flags', None)
+    if flags is not None:
+        try:
+            return bool(flags.interactive)
+        except Exception:
+            pass
+
+    return False
+
+
+if _is_interactive_session():
+    install_prompt_tracking()
+    atexit.register(shutdown)
+else:
+    current_prompt = '>>> '
+
 
 def server(param, host='localhost', port=None, exe=None):
     '''
@@ -299,6 +375,14 @@ def _send_message_g(command, *args, **kargs):
     c = Client()
     return c.send(message)
 
+def _send_message_d():
+    try:
+        message = cPickle.dumps(('d', ))
+    except error:
+        print('failed to save parameter file')
+        return
+    c = Client()
+    return c.send(message)
 
 names = ['figure',
          'showpage', 'cla', 'cls', 'clf', 'nsec', 'nsection',
@@ -340,8 +424,8 @@ def get(*args, **kargs):
 def put(*args, **kargs):
     return _send_message_g('pet_shellvar', *args, **kargs)
 
-def plot(*args, **kargs):
-    _send_message('plot', *args, **kargs)
+def detach():
+    return _send_message_d()
 
 # launch piScope whne from ifigure.client import * is called.
 launch()

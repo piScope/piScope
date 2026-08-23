@@ -83,6 +83,8 @@ class Server(object):
     rport = 0
     rhost = ''
 
+    records = []
+    
     def start(self, host=None):
         on, server, HOST, PORT = self.info()
         if server is not None:
@@ -131,14 +133,19 @@ class Server(object):
         return server is not None, server, HOST, PORT
 
     def process(self, command):
+        Server.records.append(command)
+        
         logging.basicConfig(level=logging.DEBUG)
         ctype = command[0]
         shell = wx.GetApp().TopWindow.shell
+
         if ctype == 'c':   # check connection
             ret = 'ok'
+
         elif ctype == 't':  # execute text
             shell.execute_text(data)
             ret = 'ok'
+
         elif ctype == 'f':  # execute command
             c = command[1]
             args = command[2]
@@ -155,6 +162,7 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
         elif ctype == 'g':  # execute command and return value
             c = command[1]
             args = command[2]
@@ -170,6 +178,7 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
         elif ctype == 'h':  # execute text command and return value
             c = command[1]
             try:
@@ -181,6 +190,12 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
+        elif ctype == 'd':  # detach stdin/stdout/stderr
+            Server.records.append('d is here')
+            self.detach_streams()
+            ret = 'ok'+str(sys.stderr)
+
         elif ctype == 'r':  # set receiver port address
             Server.rhost = command[1]
             Server.rport = command[2]
@@ -203,3 +218,34 @@ class Server(object):
 
     def export_message(self, data):
         self.export_data(data, data_type='msg')
+
+    def detach_streams(self):
+        Server.records.append("detatching !!!!!!!!!!!")
+        # Open the null device
+        devnull = os.open(os.devnull, os.O_RDWR)
+        Server.records.append("detatching !!!!!!!!!!!")        
+
+        # Duplicate devnull file descriptor onto 0 (stdin), 1 (stdout), 2 (stderr)
+        os.dup2(devnull, 0)
+        os.dup2(devnull, 1)
+        os.dup2(devnull, 2)
+        Server.records.append("detatching !!!!!!!!!!!")                
+
+        # Close the original descriptor copy
+        if devnull > 2:
+            os.close(devnull)
+        Server.records.append("detatching !!!!!!!!!!!")                            
+
+
+        # Update sys objects to match the new file descriptors\
+        import sys
+        sys.stdin = open(os.devnull, 'r')
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+        Server.records.append("detatching !!!!!!!!!!! done")                                    
+        return        
+        print(sys.stdion)
+
+
+
+        
