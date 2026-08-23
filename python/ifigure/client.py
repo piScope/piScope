@@ -262,37 +262,6 @@ def launch(exe=None):
 def shutdown():
     server('shutdown')
 
-import atexit
-
-
-def _is_interactive_session():
-    """Return True only for actual interactive Python sessions.
-
-    A plain script run from a terminal still has a TTY, but it does not have
-    REPL prompt attributes like ``sys.ps1`` / ``sys.ps2`` and is not launched
-    with ``python -i``. Treating any TTY as interactive causes script mode to
-    register ``atexit`` cleanup and immediately kill the piScope process.
-    """
-    if hasattr(sys, 'ps1') or hasattr(sys, 'ps2'):
-        return True
-
-    flags = getattr(sys, 'flags', None)
-    if flags is not None:
-        try:
-            return bool(flags.interactive)
-        except Exception:
-            pass
-
-    return False
-
-
-if _is_interactive_session():
-    install_prompt_tracking()
-    atexit.register(shutdown)
-else:
-    current_prompt = '>>> '
-
-
 def server(param, host='localhost', port=None, exe=None):
     '''
     launch/connect piscope
@@ -413,7 +382,6 @@ names = ['figure',
 
 for name in names:
     def f(*args, _name=name,  **kargs):
-        print("_sending messsage", _name)
         _send_message(_name, *args, **kargs)
     globals()[name] = f
 
@@ -427,220 +395,39 @@ def put(*args, **kargs):
 def detach():
     return _send_message_d()
 
+#
+#  handle process exiting
+#
+import atexit
+def _is_interactive_session():
+    """Return True only for actual interactive Python sessions.
+
+    A plain script run from a terminal still has a TTY, but it does not have
+    REPL prompt attributes like ``sys.ps1`` / ``sys.ps2`` and is not launched
+    with ``python -i``. Treating any TTY as interactive causes script mode to
+    register ``atexit`` cleanup and immediately kill the piScope process.
+    """
+    if hasattr(sys, 'ps1') or hasattr(sys, 'ps2'):
+        return True
+
+    flags = getattr(sys, 'flags', None)
+    if flags is not None:
+        try:
+            return bool(flags.interactive)
+        except Exception:
+            pass
+
+    return False
+
+
+if _is_interactive_session():
+    install_prompt_tracking()
+    atexit.register(shutdown)
+else:
+    current_prompt = '>>> '
+    atexit.register(detach)
+
 # launch piScope whne from ifigure.client import * is called.
 launch()
 
-'''
-def cla(*args, **kargs):
-    _send_message('cla', *args, **kargs)
 
-
-def cls(*args, **kargs):
-    _send_message('cls', *args, **kargs)
-
-
-def clf(*args, **kargs):
-    _send_message('clf', *args, **kargs)
-
-
-def nsec(*args, **kargs):
-    _send_message('nsec', *args, **kargs)
-
-
-def nsection(*args, **kargs):
-    _send_message('nsection', *args, **kargs)
-
-
-def isec(*args, **kargs):
-    _send_message('isec', *args, **kargs)
-
-
-def isection(*args, **kargs):
-    _send_message('isection', *args, **kargs)
-
-
-def scope(*args, **kargs):
-    _send_message('scope', *args, **kargs)
-
-
-def figure(*args, **kargs):
-    _send_message('figure', *args, **kargs)
-
-
-def addpage(*args, **kargs):
-    _send_message('addpage', *args, **kargs)
-
-
-def delpage(*args, **kargs):
-    _send_message('delpage', *args, **kargs)
-
-
-def hold(*args, **kargs):
-    _send_message('hold', *args, **kargs)
-
-
-def update(*args, **kargs):
-    _send_message('update', *args, **kargs)
-
-
-def title(*args, **kargs):
-    _send_message('title', *args, **kargs)
-
-
-def xlabel(*args, **kargs):
-    _send_message('xlabel', *args, **kargs)
-
-
-def ylabel(*args, **kargs):
-    _send_message('ylabel', *args, **kargs)
-
-def zlabel(*args, **kargs):
-    _send_message('zlabel', *args, **kargs)
-
-def clabel(*args, **kargs):
-    _send_message('clabel', *args, **kargs)
-
-xtitle = xlabel
-ytitle = ylabel
-ztitle = zlabel
-ctitle = clabel
-
-def xlog(*args, **kargs):
-    _send_message('xlog', *args, **kargs)
-
-def ylog(*args, **kargs):
-    _send_message('ylog', *args, **kargs)
-
-def zlog(*args, **kargs):
-    _send_message('zlog', *args, **kargs)
-
-def xsymlog(*args, **kargs):
-    _send_message('xsymlog', *args, **kargs)
-
-def ysymlog(*args, **kargs):
-    _send_message('ysymlog', *args, **kargs)
-
-def zsymlog(*args, **kargs):
-    _send_message('zsymlog', *args, **kargs)
-
-def csymlog(*args, **kargs):
-    _send_message('csymlog', *args, **kargs)
-
-def xlinear(*args, **kargs):
-    _send_message('xlinear', *args, **kargs)
-
-def ylinear(*args, **kargs):
-    _send_message('ylinear', *args, **kargs)
-
-def zlinear(*args, **kargs):
-    _send_message('zlinear', *args, **kargs)
-
-def clinear(*args, **kargs):
-    _send_message('clinear', *args, **kargs)
-
-def xatuo(*args, **kargs):
-    _send_message('xauto', *args, **kargs)
-
-def yauto(*args, **kargs):
-    _send_message('yauto', *args, **kargs)
-
-def zauto(*args, **kargs):
-    _send_message('zauto', *args, **kargs)
-
-def cauto(*args, **kargs):
-    _send_message('cauto', *args, **kargs)
-
-def xlim(*args, **kargs):
-    _send_message('xlim', *args, **kargs)
-
-def ylim(*args, **kargs):
-    _send_message('ylim', *args, **kargs)
-
-def zlim(*args, **kargs):
-    _send_message('zlim', *args, **kargs)
-
-def clim(*args, **kargs):
-    _send_message('clim', *args, **kargs)
-
-def subplot(*args, **kargs):
-    _send_message('subplot', *args, **kargs)
-
-
-def plot(*args, **kargs):
-    _send_message('plot', *args, **kargs)
-
-
-def scatter(*args, **kargs):
-    _send_message('scatter', *args, **kargs)
-
-def triplot(*args, **kargs):
-    _send_message('triplot', *args, **kargs)
-
-def errorbar(*args, **kargs):
-    _send_message('errorbar', *args, **kargs)
-
-
-def contour(*args, **kargs):
-    _send_message('contour', *args, **kargs)
-
-def contourf(*args, **kargs):
-    _send_message('contourf', *args, **kargs)
-
-def quiver(*args, **kargs):
-    _send_message('quiver', *args, **kargs)
-
-def quiver3d(*args, **kargs):
-    _send_message('quiver3d', *args, **kargs)
-
-
-def image(*args, **kargs):
-    _send_message('image', *args, **kargs)
-
-def tripcolor(*args, **kargs):
-    _send_message('tripcolor', *args, **kargs)
-
-def tripcontour(*args, **kargs):
-    _send_message('tricontour', *args, **kargs)
-
-def tripcontourf(*args, **kargs):
-    _send_message('tricontourf', *args, **kargs)
-
-
-def ispline(*args, **kargs):
-    _send_message('ispline', *args, **kargs)
-
-
-def axline(*args, **kargs):
-    _send_message('axline', *args, **kargs)
-
-
-def axspan(*args, **kargs):
-    _send_message('axspan', *args, **kargs)
-
-
-def text(*args, **kargs):
-    _send_message('text', *args, **kargs)
-
-def figtext(*args, **kargs):
-    _send_message('figtext', *args, **kargs)
-
-def surf(*args, **kargs):
-    _send_message('surf', *args, **kargs)
-
-def surface(*args, **kargs):
-    _send_message('surface', *args, **kargs)
-
-def resolve(*args, **kargs):
-    _send_message('resolve', *args, **kargs)
-
-def solid(*args, **kargs):
-    _send_message('solid', *args, **kargs)
-
-def trisurf(*args, **kargs):
-    _send_message('trisurf', *args, **kargs)
-
-
-def legend(*args, **kargs):
-    _send_message('legend', *args, **kargs)
-
-'''

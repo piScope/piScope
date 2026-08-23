@@ -194,7 +194,7 @@ class Server(object):
         elif ctype == 'd':  # detach stdin/stdout/stderr
             Server.records.append('d is here')
             self.detach_streams()
-            ret = 'ok'+str(sys.stderr)
+            ret = 'ok'
 
         elif ctype == 'r':  # set receiver port address
             Server.rhost = command[1]
