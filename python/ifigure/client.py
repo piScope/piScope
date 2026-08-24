@@ -270,6 +270,13 @@ def server(param, host='localhost', port=None, exe=None):
     server('shutdown')
     '''
     c = Client()
+    
+    if c.process is not None:
+        status = c.process.poll()
+        if status is not None:
+            print(f"piScope process has already exited with exit code: {status}")
+            return
+    
     if param == 'launch':
         c.launch(exe=exe)
     if param == 'connect':
@@ -281,7 +288,6 @@ def server(param, host='localhost', port=None, exe=None):
             return
 
         message = cPickle.dumps(('f', 'quit', tuple(), dict()))
-        c = Client()
         c.send(message, noresponse=True)
         c.shutdown()
     print(('host: ', c.host, ', port: ', c.port))

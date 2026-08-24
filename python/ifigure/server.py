@@ -97,12 +97,13 @@ class Server(object):
             HOST = host
         PORT = pick_unused_port()
 
-        print(''.join(('starting server:', HOST, ':', str(PORT))))
-        sys.stdout.flush()
         server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
         server.request_queue_size = 1
         ip, port = server.server_address
 
+        print(''.join(('starting server:', HOST, ':', str(PORT))))
+        sys.stdout.flush()
+        
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         server_thread = threading.Thread(target=server.serve_forever)
