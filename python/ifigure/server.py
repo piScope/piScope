@@ -144,7 +144,7 @@ class Server(object):
             ret = 'ok'
 
         elif ctype == 't':  # execute text
-            shell.execute_text(data)
+            shell.execute_text(command[1])
             ret = 'ok'
 
         elif ctype == 'f':  # execute command

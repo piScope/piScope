@@ -38,6 +38,7 @@ import os
 import queue
 import signal
 import readline
+import warnings
 
 from six.moves import socketserver
 from ifigure.utils.cbook import pick_unused_port
@@ -49,6 +50,22 @@ from ifigure.utils.cbook import pick_unused_port
 #  currnet_prompt stores the last prompt used by Interpreter
 
 current_prompt = ">>> "
+_pyrepl_readline = None
+
+if sys.version_info >= (3, 13) and not os.environ.get("PYTHON_BASIC_REPL"):
+    try:
+        from _pyrepl import readline as pyrepl_readline
+    except ImportError:
+        pass
+    else:
+        _pyrepl_readline = pyrepl_readline
+        warnings.warn(
+            "For Python 3.13 and later, CPython's private _pyrepl API is used to "
+            "preserve input during asynchronous piScope output; this may "
+            "change in a future Python release.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
 
 class TrackingPrompt:
@@ -84,7 +101,10 @@ def async_print(*args, **kwargs):
     at the interactive prompt.
     """
     # Save current typed text.
-    buf = readline.get_line_buffer()
+    if _pyrepl_readline is not None:
+        buf = _pyrepl_readline.get_line_buffer()
+    else:
+        buf = readline.get_line_buffer()
 
     # Move to beginning of line and clear it.
     sys.stdout.write("\r\033[2K")
@@ -151,29 +171,6 @@ class Client(object):
                                  stdout=subprocess.PIPE,
                                  universal_newlines=True)
 
-            '''
-            command = [sys.executable, '-m', 'ifigure', '-s', '-d']
-
-            kwargs = {
-                'stdin': subprocess.DEVNULL,
-                'stdout': subprocess.PIPE,
-                'stderr': subprocess.STDOUT,
-                'universal_newlines': True,
-                'close_fds': True,
-            }
-            if not _is_interactive_session():
-                if os.name == 'nt':
-                    creationflags = 0
-                    if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP'):
-                        creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
-                    if hasattr(subprocess, 'DETACHED_PROCESS'):
-                        creationflags |= subprocess.DETACHED_PROCESS
-                    if creationflags:
-                        kwargs['creationflags'] = creationflags
-                else:
-                    kwargs['start_new_session'] = True
-            p = subprocess.Popen(command, **kwargs)
-            '''
             lhost = 'localhost'
         else:
             pass
@@ -300,9 +297,16 @@ def check_connection():
 
 
 def make_testplot():
-    message = cPickle.dumps(('t', 'plot(range(10))'))
+    execute('plot(range(10))')
+
+
+def execute(source):
+    """Execute Python source in piScope's shell namespace."""
+    if not isinstance(source, str):
+        raise TypeError("source must be a string")
+    message = cPickle.dumps(('t', source))
     c = Client()
-    c.send(message)
+    return c.send(message)
 
 
 def _get_random_name():
@@ -435,5 +439,3 @@ else:
 
 # launch piScope whne from ifigure.client import * is called.
 launch()
-
-
