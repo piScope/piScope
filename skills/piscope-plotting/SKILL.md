@@ -44,28 +44,34 @@ legacy readline REPL instead.
 
 ### Persistent session
 
-To send multiple commands to the same piScope window, start the supplied
-command server as a detached background process:
+To send multiple commands to the same piScope window, launch piScope once and
+retain the reported server port and process ID. Run the following commands from
+this skill's directory:
 
 ```bash
-python -m ifigure.llm.session --id demo
+read PORT PID < <(python scripts/launch.py)
 ```
 
-Starting a session ID that is already active fails. Send each piScope expression
-through its companion CLI using the same ID. IDs contain 1-64 letters, digits,
-underscores, or hyphens:
+The launcher prints the port and piScope process ID, separated by a space.
+Retain both values for the duration of the task: use `PORT` to send commands,
+and use `PID` to stop the piScope process only when the task is complete:
 
 ```bash
-python -m ifigure.llm.send --id demo "plot([1, 2, 3, 2, 1.0])"
+kill "$PID"
 ```
 
-The server keeps the window and piScope shell namespace alive.
-`ifigure.llm.send` executes its command argument in that shell, so variables
-persist between commands:
+Send each expression through the port:
 
 ```bash
-python -m ifigure.llm.send --id demo "import numpy as np; data = np.arange(30)"
-python -m ifigure.llm.send --id demo "plot(data)"
+python scripts/send.py --port "$PORT" "plot([1, 2, 3, 2, 1.0])"
+```
+
+The piScope server keeps its window and shell namespace alive, so variables
+persist between separately invoked commands:
+
+```bash
+python scripts/send.py --port "$PORT" "import numpy as np; data = np.arange(30)"
+python scripts/send.py --port "$PORT" "plot(data)"
 ```
 
 The client exposes the piScope plotting surface as a flat command list. Use the

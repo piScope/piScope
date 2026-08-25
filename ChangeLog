@@ -1,6 +1,5 @@
 2026 8/24
-	* added ifigure.llm utilities for persistent LLM-driven piScope sessions
-	  using named private Unix-domain sockets.
+	* added piScope plotting skill scripts for persistent LLM-driven sessions.
 
 2026 6/23
 	* improved handling crange when data contains nan (for image and contour in 2D)

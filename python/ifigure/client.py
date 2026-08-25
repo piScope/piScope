@@ -165,7 +165,7 @@ class Client(object):
             # import piscope
             # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
             # command = 'piscope  -s -d'
-            command = [sys.executable, '-m', 'ifigure', '-s', '-d']
+            command = [exe, '-m', 'ifigure', '-s', '-d']
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
             p = subprocess.Popen(command, #shlex.split(command),  # shell = True,
@@ -175,14 +175,16 @@ class Client(object):
         else:
             pass
             ## To Do launch piScope on remote session (perhaps not necessary)
-
-
-
-
         line = ''
         while line[0:5] != 'start':
             line = p.stdout.readline()
-            print(line)
+            if not line:
+                status = p.poll()
+                if status is not None:
+                    raise RuntimeError(
+                        f"piScope process exited before starting its server "
+                        f"(exit code {status})"
+                    )
         arr = line.split(':')
         Client.host = arr[1].rstrip("\r\n").strip()
         Client.port = int(arr[2].rstrip("\r\n").strip())
@@ -202,9 +204,9 @@ class Client(object):
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
         ip, port = Client.receiver.server_address
-        print(('receiver :', ip, ':', port))
         message = cPickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
+        return Client.port, p.pid
 
     def signal_handler(self, signum, frame):
         # This handler executes in Python's main thread.
@@ -243,7 +245,6 @@ class Client(object):
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
         ip, port = Client.receiver.server_address
-        print(('receiver :', ip, ':', port))
         message = cPickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
 
@@ -280,14 +281,15 @@ class Client(object):
 
 
 def launch(exe=None):
-    server('launch', exe=exe)
+    """Launch piScope and return its server port and process ID."""
+    return server('launch', exe=exe)
 
 
 def shutdown():
     server('shutdown')
 
 def connect(port, host='localhost'):
-    server('connect', 'localhost', port)
+    server('connect', host, port)
 
 def server(param, host='localhost', port=None, exe=None):
     '''
@@ -300,9 +302,10 @@ def server(param, host='localhost', port=None, exe=None):
 
 
     if param == 'launch':
-        c.launch(exe=exe)
+        return c.launch(exe=exe)
     if param == 'connect':
         c.set_connection(host, port)
+        return
     if param == 'shutdown':
         if c.host is None:
             return
@@ -315,9 +318,7 @@ def server(param, host='localhost', port=None, exe=None):
             c.send(message, noresponse=True)
         else:
             print("piScope process has already exited")
-
         c.shutdown()
-    print(('host: ', c.host, ', port: ', c.port))
 
 
 def check_connection():
