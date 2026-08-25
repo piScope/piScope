@@ -42,6 +42,7 @@ import warnings
 
 from six.moves import socketserver
 from ifigure.utils.cbook import pick_unused_port
+import ifigure.utils.pid_exists
 
 
 # async_print
@@ -164,16 +165,20 @@ class Client(object):
             # import piscope
             # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
             # command = 'piscope  -s -d'
-            command = [sys.executable, '-m', 'ifigure', '-s', '-d']            
+            command = [sys.executable, '-m', 'ifigure', '-s', '-d']
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
             p = subprocess.Popen(command, #shlex.split(command),  # shell = True,
                                  stdout=subprocess.PIPE,
                                  universal_newlines=True)
-
-            lhost = 'localhost'
+            Client.process = p
         else:
             pass
+            ## To Do launch piScope on remote session (perhaps not necessary)
+
+
+
+
         line = ''
         while line[0:5] != 'start':
             line = p.stdout.readline()
@@ -181,17 +186,18 @@ class Client(object):
         arr = line.split(':')
         Client.host = arr[1].rstrip("\r\n").strip()
         Client.port = int(arr[2].rstrip("\r\n").strip())
-        Client.process = p
+
         if Client.receiver is None:
-            port = pick_unused_port()
+            self._start_receiver('localhost')
 
-            sys.stdout.flush()
-            Client.receiver = Receiver((lhost, port), ReceiverReqHandler)
 
-            server_thread = threading.Thread(
-                target=Client.receiver.serve_forever)
-            server_thread.daemon = True
-            server_thread.start()
+            # sys.stdout.flush()
+            # Client.receiver = Receiver((lhost, port), ReceiverReqHandler)
+
+            #server_thread = threading.Thread(
+            #    target=Client.receiver.serve_forever)
+            #server_thread.daemon = True
+            #server_thread.start()
 
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
@@ -231,6 +237,16 @@ class Client(object):
         Client.port = port
         Client.host = host
 
+        if Client.receiver is None:
+            self._start_receiver('localhost')
+
+        signal.signal(signal.SIGUSR1, self.signal_handler)
+
+        ip, port = Client.receiver.server_address
+        print(('receiver :', ip, ':', port))
+        message = cPickle.dumps(('r', ip, port))
+        self.send(message, noresponse=True)
+
     def send(self, message, noresponse=False):
         host = Client.host
         port = Client.port
@@ -252,12 +268,26 @@ class Client(object):
 
         return response
 
+    def _start_receiver(self, lhost):
+        port = pick_unused_port()
+
+        sys.stdout.flush()
+        Client.receiver = Receiver((lhost, port), ReceiverReqHandler)
+
+        server_thread = threading.Thread(target=Client.receiver.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+
+
 def launch(exe=None):
     server('launch', exe=exe)
 
 
 def shutdown():
     server('shutdown')
+
+def connect(port, host='localhost'):
+    server('connect', 'localhost', port)
 
 def server(param, host='localhost', port=None, exe=None):
     '''
@@ -267,13 +297,8 @@ def server(param, host='localhost', port=None, exe=None):
     server('shutdown')
     '''
     c = Client()
-    
-    if c.process is not None:
-        status = c.process.poll()
-        if status is not None:
-            print(f"piScope process has already exited with exit code: {status}")
-            return
-    
+
+
     if param == 'launch':
         c.launch(exe=exe)
     if param == 'connect':
@@ -285,7 +310,12 @@ def server(param, host='localhost', port=None, exe=None):
             return
 
         message = cPickle.dumps(('f', 'quit', tuple(), dict()))
-        c.send(message, noresponse=True)
+
+        if c.process is not None and ifigure.utils.pid_exists.pid_exists(c.process.pid):
+            c.send(message, noresponse=True)
+        else:
+            print("piScope process has already exited")
+
         c.shutdown()
     print(('host: ', c.host, ', port: ', c.port))
 
@@ -431,6 +461,7 @@ def _is_interactive_session():
 
 
 if _is_interactive_session():
+    #launch()
     install_prompt_tracking()
     atexit.register(shutdown)
 else:
@@ -438,4 +469,3 @@ else:
     atexit.register(detach)
 
 # launch piScope whne from ifigure.client import * is called.
-launch()

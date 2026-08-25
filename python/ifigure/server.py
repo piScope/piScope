@@ -101,7 +101,7 @@ class Server(object):
         server.request_queue_size = 1
         ip, port = server.server_address
 
-        print(''.join(('starting server:', HOST, ':', str(PORT))))
+        print(''.join(('starting server:', HOST, ':', str(PORT), ':', str(os.getpid()))))
         sys.stdout.flush()
         
         # Start a thread with the server -- that thread will then start one
