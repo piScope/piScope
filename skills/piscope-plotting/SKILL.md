@@ -45,16 +45,17 @@ legacy readline REPL instead.
 ### Persistent session
 
 To send multiple commands to the same piScope window, launch piScope once and
-retain the reported server port and process ID. Run the following commands from
-this skill's directory:
+retain the reported server port and process ID. Run scripts/launch.py in this
+skill directory from the current directory. 
 
 ```bash
-read PORT PID < <(python scripts/launch.py)
+python -u <<full path to scripts/launch.py>> 
 ```
 
-The launcher prints the port and piScope process ID, separated by a space.
-Retain both values for the duration of the task: use `PORT` to send commands,
-and use `PID` to stop the piScope process only when the task is complete:
+The launcher prints the port (PORT) and piScope process ID, separated by a space
+in this order. Retain both values for the duration of the task. Use the first
+number (`PORT`) to send commands, and use `PID` to stop the piScope process only
+when the task is complete:
 
 ```bash
 kill "$PID"
@@ -63,7 +64,7 @@ kill "$PID"
 Send each expression through the port:
 
 ```bash
-python scripts/send.py --port "$PORT" "plot([1, 2, 3, 2, 1.0])"
+python -u scripts/send.py --port "$PORT" "plot([1, 2, 3, 2, 1.0])"
 ```
 
 The piScope server keeps its window and shell namespace alive, so variables

@@ -29,6 +29,11 @@ import ifigure.utils.debug as debug
 
 dprint1, dprint2, dprint3 = debug.init_dprints('ifiure_config')
 
+def print_qt(*args, **kwargs):
+    if debug.quite_mode:
+        return
+    print(*args, **kwargs)
+
 from packaging import version
 isMPL2 = version.parse(matplotlib.__version__) >= version.parse("2.0")
 isMPL33 = version.parse(matplotlib.__version__) >= version.parse("3.3")
@@ -155,10 +160,12 @@ for item0 in os.listdir(tempdir_base):
                         shutil.rmtree(f)
                 if len(os.listdir(dname)) == 0:
                     try:
-                        print(('removing past crush dir', dname))
+                        if not debug.quite_mode:
+                            print_qt('removing past crush dir', dname)
                         shutil.rmtree(dname)
                     except:
-                        print('Failed to remove crush dir')
+                        if not debug.quite_mode:
+                            print_qt('Failed to remove crush dir')
             except:
                 pass
 
@@ -175,7 +182,7 @@ if os.path.exists(tempdir) == False:
 
 def tempdir_clean(obj):
     if os.path.exists(tempdir):
-        print(('removing tempdir ', tempdir))
+        print_qt(('removing tempdir ', tempdir))
         shutil.rmtree(tempdir)
 
 
@@ -193,7 +200,7 @@ vv_scratch = os.path.join(rcdir, 'vv_scratch')
 st_scratch = os.path.join(rcdir, 'ifigure_subtree')
 pick_r = 10
 
-print('reading extra color maps')
+#print('reading extra color maps')
 register_idl_colormaps()
 
 #

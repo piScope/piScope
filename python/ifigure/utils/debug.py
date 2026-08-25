@@ -27,6 +27,8 @@ import sys
 import traceback
 from ifigure.widgets.redirect_output import RedirectOutput
 
+quiet_mode = False
+
 debug_mode = 1
 debug_modes = {}
 debug_default_level = 1

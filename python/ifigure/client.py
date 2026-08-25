@@ -165,7 +165,7 @@ class Client(object):
             # import piscope
             # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
             # command = 'piscope  -s -d'
-            command = [exe, '-m', 'ifigure', '-s', '-d']
+            command = [exe, '-m', 'ifigure', '-s', '-q', '-d']
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
             p = subprocess.Popen(command, #shlex.split(command),  # shell = True,

@@ -14,8 +14,10 @@ def main() -> None:
     from ifigure.client import launch
 
     port, process_id = launch(exe=args.exe)
-    print(port, process_id)
+    print(port, process_id, flush=True)
 
+    import sys
+    sys.stdout.flush()
 
 if __name__ == "__main__":
     main()
