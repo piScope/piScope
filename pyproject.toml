@@ -27,6 +27,7 @@ dependencies = [
     "wxPython",
     "future",
     "autopep8",
+    "ruff",
     "scipy "
 ]
 

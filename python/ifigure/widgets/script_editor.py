@@ -15,6 +15,13 @@ from __future__ import print_function
 import time
 import logging
 import os
+import ast
+import re
+import inspect
+import importlib
+import shutil
+import subprocess
+import json
 from ifigure.widgets.statusbar import StatusBarSimple
 import sys
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
@@ -29,6 +36,7 @@ import ifigure.utils
 import ifigure.widgets.images as images
 import wx.stc as stc
 import keyword
+import builtins as py_builtins
 
 import wx
 
@@ -76,6 +84,8 @@ else:
 # ----------------------------------------------------------------------
 DebugCurrentLine = 20
 DebugBreakPoint = 21
+SyntaxErrorMarker = 22
+RuffErrorMarker = 23
 
 
 def check_font_width():
@@ -150,6 +160,17 @@ class PythonSTCPopUp(wx.Menu):
         menus.append((make_label('Fortran'), self.onSetFortranSyntax, None))
         menus.append((make_label('F77'), self.onSetF77Syntax, None))
         menus.append((make_label('None'), self.onSetNoneSyntax, None))
+        menus.append(('+Checking', None, None))
+        mode = self.parent.get_checking_mode()
+        menus.append((("^" if mode == 'completion_only' else "*") +
+                      'Completion only', self.onSetCheckingCompletionOnly, None))
+        menus.append((("^" if mode == 'syntax_minimum' else "*") +
+                      'Syntax (minimum)', self.onSetCheckingSyntaxMinimum, None))
+        menus.append((("^" if mode == 'syntax_modest' else "*") +
+                      'Syntax (modest)', self.onSetCheckingSyntaxModest, None))
+        menus.append((("^" if mode == 'syntax_noisy' else "*") +
+                      'Syntax (noisy)', self.onSetCheckingSyntaxNoisy, None))
+        menus.append(('!', None, None))
         menus.append(('!', None, None))
         menus.append(('Toggle insert/overwrite', self.toggle_overtype, None))
 
@@ -181,6 +202,18 @@ class PythonSTCPopUp(wx.Menu):
         value = not self.parent.GetOvertype()
         self.parent.SetOvertype(value)
 
+    def onSetCheckingCompletionOnly(self, evt):
+        self.parent.set_checking_mode('completion_only')
+
+    def onSetCheckingSyntaxMinimum(self, evt):
+        self.parent.set_checking_mode('syntax_minimum')
+
+    def onSetCheckingSyntaxModest(self, evt):
+        self.parent.set_checking_mode('syntax_modest')
+
+    def onSetCheckingSyntaxNoisy(self, evt):
+        self.parent.set_checking_mode('syntax_noisy')
+
 
 class PythonSTC(stc.StyledTextCtrl):
 
@@ -194,6 +227,16 @@ class PythonSTC(stc.StyledTextCtrl):
         self.doc_name = ''
         self.is_debug_mode = False
         self.file_mtime = 0
+        self._checking_mode = 'syntax_minimum'
+
+        self._ac_min_prefix = 2
+        self._syntax_check_delay_ms = 400
+        self._syntax_check_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.OnSyntaxCheckTimer, self._syntax_check_timer)
+        self._import_alias_cache_key = None
+        self._import_alias_cache = {}
+        self._ruff_checked = False
+        self._ruff_available = False
 
         self.CmdKeyAssign(ord('['), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
         self.CmdKeyAssign(ord(']'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
@@ -237,7 +280,9 @@ class PythonSTC(stc.StyledTextCtrl):
         self.SetMarginMask(1, 1 << DebugCurrentLine)
         self.SetMarginType(0, stc.STC_MARGIN_SYMBOL)
         self.SetMarginWidth(0, 10)
-        self.SetMarginMask(0, 1 << DebugBreakPoint)
+        self.SetMarginMask(0, (1 << DebugBreakPoint) |
+                   (1 << SyntaxErrorMarker) |
+                   (1 << RuffErrorMarker))
 
         if self.fold_symbols == 0:
             # Arrow pointing right for contracted folders, arrow pointing down for expanded
@@ -310,9 +355,15 @@ class PythonSTC(stc.StyledTextCtrl):
         self.MarkerDefine(DebugCurrentLine, stc.STC_MARK_ARROW,  "red", "red")
         self.MarkerDefine(
             DebugBreakPoint,  stc.STC_MARK_CIRCLEMINUS, "red", "white")
+        self.MarkerDefine(
+            SyntaxErrorMarker, stc.STC_MARK_SHORTARROW, "white", "#CC0000")
+        self.MarkerDefine(
+            RuffErrorMarker, stc.STC_MARK_DOTDOTDOT, "white", "#B85C00")
 
         self.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        self.Bind(stc.EVT_STC_CHARADDED, self.OnCharAdded)
+        self.Bind(stc.EVT_STC_MODIFIED, self.OnBufferModified)
 
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
         self.Bind(wx.EVT_CHAR, self.onSearch)
@@ -348,6 +399,452 @@ class PythonSTC(stc.StyledTextCtrl):
         self.ctrl_X = False
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+        self.AnnotationSetVisible(stc.STC_ANNOTATION_BOXED)
+        self._schedule_syntax_check(delay=0)
+
+    def get_checking_mode(self):
+        return self._checking_mode
+
+    def _is_completion_enabled(self):
+        return True
+
+    def _is_syntax_check_enabled(self):
+        return self._checking_mode != 'completion_only'
+
+    def set_checking_mode(self, mode):
+        valid_modes = ('completion_only', 'syntax_minimum',
+                       'syntax_modest', 'syntax_noisy')
+        if mode not in valid_modes:
+            mode = 'syntax_minimum'
+        self._checking_mode = mode
+
+        if not self._is_syntax_check_enabled():
+            if hasattr(self, '_syntax_check_timer'):
+                self._syntax_check_timer.Stop()
+            self._clear_syntax_diagnostics()
+            return
+
+        if self._syntax == 'python':
+            self._schedule_syntax_check(delay=0)
+
+    def get_completion_syntax_check_enabled(self):
+        return self._is_syntax_check_enabled()
+
+    def set_completion_syntax_check_enabled(self, value):
+        if value:
+            self.set_checking_mode('syntax_minimum')
+        else:
+            self.set_checking_mode('completion_only')
+
+    def _schedule_syntax_check(self, delay=None):
+        if not self._is_syntax_check_enabled():
+            return
+        if not hasattr(self, '_syntax_check_timer'):
+            return
+        if delay is None:
+            delay = self._syntax_check_delay_ms
+        try:
+            self._syntax_check_timer.StartOnce(delay)
+        except AttributeError:
+            self._syntax_check_timer.Start(delay, True)
+
+    def _clear_syntax_diagnostics(self):
+        self.MarkerDeleteAll(SyntaxErrorMarker)
+        self.MarkerDeleteAll(RuffErrorMarker)
+        self.AnnotationClearAll()
+
+    def _check_ruff_available(self):
+        if self._ruff_checked:
+            return self._ruff_available
+        self._ruff_checked = True
+        self._ruff_available = shutil.which('ruff') is not None
+        return self._ruff_available
+
+    def _ruff_select_codes_for_mode(self):
+        if self._checking_mode == 'syntax_minimum':
+            return 'F821,F823,F822'
+        if self._checking_mode == 'syntax_modest':
+            return 'F821,F823,F822,F811,E722'
+        if self._checking_mode == 'syntax_noisy':
+            return 'F821,F823,F822,F811,E722,F401,F841,B006,B008'
+        return ''
+
+    def _run_ruff_check(self):
+        if not self._check_ruff_available():
+            return []
+
+        select_codes = self._ruff_select_codes_for_mode()
+        if not select_codes:
+            return []
+
+        filename = self.doc_name if self.doc_name else 'untitled.py'
+        if not filename.endswith('.py'):
+            filename = filename + '.py'
+        cmd = ['ruff', 'check', '--select', select_codes, '--output-format', 'json',
+               '--stdin-filename', filename, '-']
+
+        try:
+            proc = subprocess.run(cmd,
+                                  input=self.GetText(),
+                                  capture_output=True,
+                                  text=True,
+                                  check=False)
+        except Exception:
+            return []
+
+        if proc.returncode not in (0, 1):
+            return []
+
+        txt = proc.stdout.strip()
+        if not txt:
+            return []
+
+        try:
+            data = json.loads(txt)
+        except Exception:
+            return []
+
+        out = []
+        for item in data:
+            loc = item.get('location', {})
+            row = loc.get('row', 1)
+            msg = item.get('message', 'Undefined name')
+            code = item.get('code', 'F821')
+            out.append((max(row - 1, 0), code + ': ' + msg))
+        return out
+
+    def _collect_completion_candidates(self):
+        candidates = set(keyword.kwlist)
+        candidates.update(dir(py_builtins))
+        candidates.update(self._get_runtime_namespace().keys())
+        candidates.update(self._get_import_alias_map().keys())
+        candidates.update(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", self.GetText()))
+        return candidates
+
+    def _get_import_alias_map(self):
+        txt = self.GetText()
+        key = (len(txt), hash(txt))
+        if key == self._import_alias_cache_key:
+            return self._import_alias_cache
+
+        alias_map = {}
+        try:
+            tree = ast.parse(txt)
+        except SyntaxError:
+            alias_map = self._parse_import_aliases_regex(txt)
+            self._import_alias_cache_key = key
+            self._import_alias_cache = alias_map
+            return alias_map
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.asname:
+                        alias_map[alias.asname] = alias.name
+                    else:
+                        alias_map[alias.name.split('.')[0]] = alias.name.split('.')[0]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level != 0 or node.module is None:
+                    continue
+                for alias in node.names:
+                    if alias.name == '*':
+                        continue
+                    bind_name = alias.asname or alias.name
+                    alias_map[bind_name] = node.module + '.' + alias.name
+
+        self._import_alias_cache_key = key
+        self._import_alias_cache = alias_map
+        return alias_map
+
+    def _parse_import_aliases_regex(self, txt):
+        alias_map = {}
+        for raw in txt.splitlines():
+            line = raw.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            # import a, b as c
+            m = re.match(r'^import\s+(.+)$', line)
+            if m:
+                chunks = [x.strip() for x in m.group(1).split(',')]
+                for chunk in chunks:
+                    if not chunk:
+                        continue
+                    parts = [x.strip() for x in chunk.split(' as ', 1)]
+                    if len(parts) == 2:
+                        full_name, as_name = parts
+                        if as_name:
+                            alias_map[as_name] = full_name
+                    else:
+                        root = parts[0].split('.')[0]
+                        if root:
+                            alias_map[root] = root
+                continue
+
+            # from pkg.mod import a, b as c
+            m = re.match(r'^from\s+([A-Za-z_][A-Za-z0-9_\.]*)\s+import\s+(.+)$', line)
+            if m:
+                mod = m.group(1)
+                names = [x.strip() for x in m.group(2).split(',')]
+                for chunk in names:
+                    if not chunk or chunk == '*':
+                        continue
+                    parts = [x.strip() for x in chunk.split(' as ', 1)]
+                    src_name = parts[0]
+                    bind_name = parts[1] if len(parts) == 2 and parts[1] else src_name
+                    if bind_name and src_name:
+                        alias_map[bind_name] = mod + '.' + src_name
+
+        return alias_map
+
+    def _import_object_from_path(self, path):
+        if not path:
+            return None
+
+        try:
+            return importlib.import_module(path)
+        except Exception:
+            pass
+
+        parts = path.split('.')
+        for i in range(len(parts)-1, 0, -1):
+            mod_name = '.'.join(parts[:i])
+            attrs = parts[i:]
+            try:
+                obj = importlib.import_module(mod_name)
+            except Exception:
+                continue
+
+            ok = True
+            for attr in attrs:
+                try:
+                    obj = getattr(obj, attr)
+                except Exception:
+                    ok = False
+                    break
+            if ok:
+                return obj
+        return None
+
+    def _get_runtime_namespace(self):
+        ns = {}
+        app = wx.GetApp()
+        if app is None or not hasattr(app, 'TopWindow'):
+            return ns
+        top = app.TopWindow
+        try:
+            interp = top.shell.interp
+            if hasattr(interp, 'locals') and isinstance(interp.locals, dict):
+                ns.update(interp.locals)
+            if hasattr(interp, 'globals') and isinstance(interp.globals, dict):
+                ns.update(interp.globals)
+        except Exception:
+            pass
+        return ns
+
+    def _resolve_dotted_name(self, dotted):
+        if not dotted:
+            return None
+        ns = self._get_runtime_namespace()
+        if dotted in ns:
+            return ns[dotted]
+        if dotted in sys.modules:
+            return sys.modules[dotted]
+
+        parts = dotted.split('.')
+        if not parts:
+            return None
+
+        obj = ns.get(parts[0], None)
+        if obj is None:
+            obj = sys.modules.get(parts[0], None)
+        if obj is None:
+            alias_map = self._get_import_alias_map()
+            root = alias_map.get(parts[0], '')
+            if root:
+                obj = self._import_object_from_path(root)
+        if obj is None:
+            return None
+
+        for attr in parts[1:]:
+            try:
+                obj = getattr(obj, attr)
+            except Exception:
+                return None
+        return obj
+
+    def _collect_member_candidates(self, obj, prefix):
+        if obj is None:
+            return []
+        prefix_l = prefix.lower()
+        out = []
+        try:
+            for name in dir(obj):
+                if name.lower().startswith(prefix_l):
+                    out.append(name)
+        except Exception:
+            return []
+        return sorted(set(out))
+
+    def _show_member_autocomplete(self):
+        if not self._is_completion_enabled():
+            return
+        if self._syntax != 'python':
+            return
+        pos = self.GetCurrentPos()
+        line = self.GetCurLine()[0][:self.GetColumn(pos)]
+        m = re.search(r"([A-Za-z_][A-Za-z0-9_\.]*)\.([A-Za-z0-9_]*)$", line)
+        if m is None:
+            return
+        target = m.group(1)
+        prefix = m.group(2)
+        obj = self._resolve_dotted_name(target)
+        names = self._collect_member_candidates(obj, prefix)
+        if not names:
+            return
+        if len(names) > 200:
+            names = names[:200]
+        self.AutoCompSetIgnoreCase(True)
+        self.AutoCompSetAutoHide(True)
+        self.AutoCompSetDropRestOfWord(False)
+        self.AutoCompShow(len(prefix), " ".join(names))
+
+    def _extract_callable_token(self, txt):
+        txt = txt.rstrip()
+        m = re.search(r"([A-Za-z_][A-Za-z0-9_\.]*)$", txt)
+        if m is None:
+            return ''
+        return m.group(1)
+
+    def _format_calltip(self, token, obj):
+        sig_txt = '(...)'
+        try:
+            sig_txt = str(inspect.signature(obj))
+        except Exception:
+            try:
+                argspec = inspect.getfullargspec(obj)
+                sig_txt = inspect.formatargspec(*argspec)
+            except Exception:
+                pass
+        doc = inspect.getdoc(obj) or ''
+        if doc:
+            doc = doc.splitlines()[0]
+            if len(doc) > 96:
+                doc = doc[:93] + '...'
+            return token + sig_txt + "\n" + doc
+        return token + sig_txt
+
+    def _show_calltip(self):
+        if not self._is_completion_enabled():
+            return
+        if self._syntax != 'python':
+            return
+        pos = self.GetCurrentPos()
+        if pos <= 0:
+            return
+        line = self.GetCurLine()[0][:self.GetColumn(pos)]
+        token = self._extract_callable_token(line)
+        if not token:
+            return
+        obj = self._resolve_dotted_name(token)
+        if obj is None:
+            return
+        if not callable(obj):
+            return
+        self.CallTipShow(pos, self._format_calltip(token, obj))
+
+    def _show_autocomplete(self, force=False):
+        if not self._is_completion_enabled():
+            return
+        if self._syntax != 'python':
+            return
+        pos = self.GetCurrentPos()
+        start = self.WordStartPosition(pos, True)
+        prefix = self.GetTextRange(start, pos)
+        if not force and len(prefix) < self._ac_min_prefix:
+            return
+
+        prefix_l = prefix.lower()
+        names = self._collect_completion_candidates()
+        matches = [x for x in names if x.lower().startswith(prefix_l)]
+        if not matches:
+            return
+
+        matches = sorted(matches)
+        if len(matches) > 200:
+            matches = matches[:200]
+
+        self.AutoCompSetIgnoreCase(True)
+        self.AutoCompSetAutoHide(True)
+        self.AutoCompSetDropRestOfWord(False)
+        self.AutoCompShow(len(prefix), " ".join(matches))
+
+    def _run_python_syntax_check(self):
+        self._clear_syntax_diagnostics()
+        if not self._is_syntax_check_enabled():
+            return
+        if self._syntax != 'python':
+            return
+
+        try:
+            ast.parse(self.GetText())
+        except SyntaxError as err:
+            line = max((err.lineno or 1) - 1, 0)
+            msg = err.msg or 'Syntax error'
+            self.MarkerAdd(line, SyntaxErrorMarker)
+            self.AnnotationSetText(line, msg)
+            return
+
+        ruff_errors = self._run_ruff_check()
+        if not ruff_errors:
+            return
+
+        line_to_msgs = {}
+        for line, msg in ruff_errors:
+            self.MarkerAdd(line, RuffErrorMarker)
+            if line not in line_to_msgs:
+                line_to_msgs[line] = []
+            line_to_msgs[line].append(msg)
+
+        for line in line_to_msgs:
+            self.AnnotationSetText(line, '\n'.join(line_to_msgs[line]))
+
+    def OnSyntaxCheckTimer(self, evt):
+        self._run_python_syntax_check()
+        evt.Skip()
+
+    def OnBufferModified(self, evt):
+        if not self._is_syntax_check_enabled():
+            evt.Skip()
+            return
+        mtype = evt.GetModificationType()
+        if mtype & (stc.STC_MOD_INSERTTEXT | stc.STC_MOD_DELETETEXT):
+            self._schedule_syntax_check()
+        evt.Skip()
+
+    def OnCharAdded(self, evt):
+        if not self._is_completion_enabled():
+            evt.Skip()
+            return
+        if self._syntax != 'python':
+            evt.Skip()
+            return
+
+        key = evt.GetKey()
+        if key > 0:
+            try:
+                ch = chr(key)
+            except ValueError:
+                ch = ''
+            if ch == '.':
+                self._show_member_autocomplete()
+            elif ch == '(':
+                self._show_calltip()
+            elif ch == '_' or ch.isalnum():
+                self._show_autocomplete()
+        self._schedule_syntax_check()
+        evt.Skip()
 
     def _exit_search_mode(self):
         self._mark = -1
@@ -403,6 +900,11 @@ class PythonSTC(stc.StyledTextCtrl):
                 self.SetLexer(getattr(wx.stc, 'STC_LEX_' + syntax.upper()))
             else:
                 self.SetLexer(stc.STC_LEX_NULL)
+
+        if self._syntax == 'python':
+            self._schedule_syntax_check(delay=0)
+        else:
+            self._clear_syntax_diagnostics()
 
     def reset_style(self):
         # Make some styles,  The lexer defines what each style is used for, we
@@ -670,6 +1172,12 @@ class PythonSTC(stc.StyledTextCtrl):
             self.onRunAllText(event)
             return
             # return
+        elif key == 74 and controlDown:  # ctrl + J (autocomplete)
+            self._show_autocomplete(force=True)
+            return
+        elif key == wx.WXK_SPACE and controlDown and event.ShiftDown():
+            self._show_calltip()
+            return
         elif key == wx.WXK_SPACE and controlDown:
             self._mark = self.GetCurrentPos()
             self.GetTopLevelParent().SetStatusText('mark set')
