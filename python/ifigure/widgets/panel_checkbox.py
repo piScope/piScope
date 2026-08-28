@@ -90,7 +90,10 @@ class PanelCheckbox(object):
                 if pinfo["toggle_menu"]:
                     pinfo["menu_root"].Check(pinfo["menu"].GetId(), value)
                 pinfo["panel"].Show(value)
-                pinfo['h'](None)
+                self.update_check()
+                self.root_parent().set_splitters()
+                if not value:
+                    pinfo['h'](None)
                 return
 
     def get_toggle(self, panel):

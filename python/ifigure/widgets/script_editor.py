@@ -2349,6 +2349,8 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.sb = StatusBarSimple(self)
         self.SetStatusBar(self.sb)
 
+        self.SetMenuBar(self.menuBar)
+
         self.SetSize((400, 300))
         self.SetTitle('Editor')
         self.Layout()
@@ -2417,6 +2419,7 @@ class ScriptEditorFrame(FrameWithWindowList):
             return
         self.GetSizer().Detach(self._se)
         self._se = None
+
         app = wx.GetApp().TopWindow
         app.attach_editor(open_editor)
 
@@ -2463,7 +2466,6 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.Close()
 
     def onWindowClose(self, e):
-        print('script editor closing')
         self.attach_editor_to_main(open_editor=False)
         e.Skip()
 

@@ -1642,9 +1642,11 @@ class ifigure_app(BookViewerFrame):
         self.gui_tree.show_toggle_menu(self.panel2)
         self.gui_tree.rebuild_menu()
         self.gui_tree.toggle_panel(self.panel2, open_editor)
+
         sizer = self.panel2.GetSizer()
         sizer.Add(self.script_editor, 1, wx.EXPAND | wx.ALL)
         sizer.Layout()
+        self.Layout()
 
     def onDetachEditor(self, evt):
         # evt can be None
