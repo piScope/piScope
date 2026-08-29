@@ -225,6 +225,31 @@ class PyCode(TreeDict):
         idx1 = cbook.LoadImageFile(path, 'script.png')
         return [idx1]
 
+    def provide_ns_for_editor(self, editor=None):
+        ns = {}
+
+        app = wx.GetApp()
+        top = getattr(app, 'TopWindow', None) if app is not None else None
+        if top is not None:
+            try:
+                shell = getattr(top, 'shell', None)
+                if shell is not None and isinstance(getattr(shell, 'lvar', None), dict):
+                    ns.update(shell.lvar)
+            except Exception:
+                pass
+
+            ns['app'] = top
+            proj = getattr(top, 'proj', None)
+            if proj is not None:
+                ns['proj'] = proj
+                ns['top'] = proj
+                try:
+                    ns['wdir'] = proj.getvar('wdir')
+                except Exception:
+                    pass
+
+        return ns
+
     def is_manualonly(self):
         return self._manual_only
 

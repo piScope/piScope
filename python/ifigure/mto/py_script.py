@@ -377,6 +377,35 @@ class PyScript(PyCode, FileHolder, AnsHolder):
     def get_namebase(self):
         return 'script'
 
+    def provide_ns_for_editor(self, editor=None):
+        ns = super(PyScript, self).provide_ns_for_editor(editor=editor)
+
+        ns['obj'] = self
+        try:
+            tns = self.get_namespace()
+            if isinstance(tns, dict):
+                ns.update(tns)
+        except Exception:
+            pass
+
+        try:
+            model = self.get_pymodel()
+            if model is not None:
+                ns['model'] = model
+                p = model
+                param = None
+                while p is not None:
+                    if p.has_child('param'):
+                        param = p.param
+                        break
+                    p = p.get_parent()
+                if param is not None:
+                    ns['param'] = param
+        except Exception:
+            pass
+
+        return ns
+
     def classimage(self):
         if PyScript._image_load_done is False:
             PyScript._image_id = self.load_classimage()

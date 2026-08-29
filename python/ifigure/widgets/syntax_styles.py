@@ -46,7 +46,7 @@ def set_python_style(obj):
 
 
 def set_cpp_style(obj):
-    from script_editor import faces
+    from ifigure.widgets.script_editor import faces
     # my own style....
     # Global default styles for all languages
     # self.StyleSetSpec(stc.STC_STYLE_DEFAULT,     "fore:#440000,face:%(mono)s,size:%(size)d" % faces)
