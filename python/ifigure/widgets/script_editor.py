@@ -99,9 +99,9 @@ def check_font_width():
     return w, h
 
 
-class PythonSTCPopUp(wx.Menu):
+class piScopeSTCPopUp(wx.Menu):
     def __init__(self, parent, reload=False):
-        super(PythonSTCPopUp, self).__init__()
+        super(piScopeSTCPopUp, self).__init__()
         self.parent = parent
         menus = [('Cut',  parent.onCut, None),
                  ('Copy', parent.onCopy, None),
@@ -220,7 +220,7 @@ class PythonSTCPopUp(wx.Menu):
         self.parent.set_checking_mode('syntax_noisy')
 
 
-class PythonSTC(stc.StyledTextCtrl):
+class piScopeSTC(stc.StyledTextCtrl):
 
     fold_symbols = 2
 
@@ -952,12 +952,12 @@ class PythonSTC(stc.StyledTextCtrl):
                         logging.exception("File Open Error"+file)
                         return
                 return
-        super(PythonSTC, self).SaveFile(file)
+        super(piScopeSTC, self).SaveFile(file)
         self.file_mtime = os.path.getmtime(file)
 
     def SetText(self, *args, **kargs):
         # print 'Adjusting margin'
-        super(PythonSTC, self).SetText(*args, **kargs)
+        super(piScopeSTC, self).SetText(*args, **kargs)
         self.set_margin_width1()
 
     def onSearch(self, event):
@@ -1583,7 +1583,7 @@ class PythonSTC(stc.StyledTextCtrl):
             if ipage != -1:
                 file = sc.file_list[ipage]
                 reload = self.check_fileisnewer(file)
-        m = PythonSTCPopUp(self, reload=reload)
+        m = piScopeSTCPopUp(self, reload=reload)
         self.PopupMenu(m,
                        (evt.GetX(), evt.GetY()))
         m.Destroy()
@@ -1827,7 +1827,7 @@ class ScriptEditor(wx.Panel):
         return -1
 
     def NewFile(self):
-        p = PythonSTC(self.nb, -1)
+        p = piScopeSTC(self.nb, -1)
         p.SetDropTarget(TextDropTarget(p))
         self.Bind(wx.stc.EVT_STC_MODIFIED, self.onModified, p)
         if self.ic == 0:
@@ -1882,7 +1882,7 @@ class ScriptEditor(wx.Panel):
         except Exception:
             logging.exception("File Open Error"+file)
             return
-        p = PythonSTC(self.nb, -1)
+        p = piScopeSTC(self.nb, -1)
         p.SetDropTarget(TextDropTarget(p))
         try:
             p.SetText(txt)

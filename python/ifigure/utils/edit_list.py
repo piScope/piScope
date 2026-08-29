@@ -4043,8 +4043,8 @@ class MDSSource0(wx.Panel):
         self.GetParent().send_event(self, evt)
 
     def _new_stc(self, parent, txt):
-        from ifigure.widgets.script_editor import PythonSTC
-        p = PythonSTC(parent, -1)
+        from ifigure.widgets.script_editor import piScopeSTC
+        p = piScopeSTC(parent, -1)
         self._set_stc_txt(p, txt)
         p.EmptyUndoBuffer()
         p.Colourise(0, -1)

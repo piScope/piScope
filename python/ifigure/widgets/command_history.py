@@ -2,7 +2,7 @@ import wx
 import wx.stc as stc
 import keyword
 #import  ifigure.icon.images as images
-from ifigure.widgets.script_editor import faces, PythonSTC
+from ifigure.widgets.script_editor import faces, piScopeSTC
 import ifigure
 
 
@@ -23,9 +23,9 @@ class HistoryPopUp(wx.Menu):
         ifigure.utils.cbook.BuildPopUpMenu(self, menus, eventobj=parent)
 
 
-class LinePythonSTC(PythonSTC):
+class LinepiScopeSTC(piScopeSTC):
     def __init__(self, *args, **kargs):
-        PythonSTC.__init__(self, *args, **kargs)
+        piScopeSTC.__init__(self, *args, **kargs)
         self.MarkerSetForeground(1, 'GOLD')
         self.MarkerSetBackground(1, 'GOLD')
         self._marker1s = []
@@ -325,7 +325,7 @@ class LinePythonSTC(PythonSTC):
 class CommandHistory(wx.Panel):
     def __init__(self, parent, *args, **kargs):
         super(CommandHistory, self).__init__(parent, *args, **kargs)
-        self.log = LinePythonSTC(
+        self.log = LinepiScopeSTC(
             self, -1, style=wx.TE_MULTILINE | wx.TE_READONLY)
 
         self.log.SetSelectionMode(wx.stc.STC_SEL_LINES)
