@@ -20,5 +20,6 @@ mac/applet
 mac/applet
 mac/dist
 mac/build
-!/build/*.o
-!/build/*.o
+build
+dist
+*.egg-info
