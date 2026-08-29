@@ -163,6 +163,8 @@ class PythonSTCPopUp(wx.Menu):
         menus.append(('+Checking', None, None))
         mode = self.parent.get_checking_mode()
         menus.append((("^" if mode == 'completion_only' else "*") +
+                  'Off', self.onSetCheckingOff, None))
+        menus.append((("^" if mode == 'completion_only' else "*") +
                       'Completion only', self.onSetCheckingCompletionOnly, None))
         menus.append((("^" if mode == 'syntax_minimum' else "*") +
                       'Syntax (minimum)', self.onSetCheckingSyntaxMinimum, None))
@@ -201,6 +203,9 @@ class PythonSTCPopUp(wx.Menu):
     def toggle_overtype(self, evt):
         value = not self.parent.GetOvertype()
         self.parent.SetOvertype(value)
+
+    def onSetCheckingOff(self, evt):
+        self.parent.set_checking_mode('off')
 
     def onSetCheckingCompletionOnly(self, evt):
         self.parent.set_checking_mode('completion_only')
@@ -407,13 +412,13 @@ class PythonSTC(stc.StyledTextCtrl):
         return self._checking_mode
 
     def _is_completion_enabled(self):
-        return True
+        return self._checking_mode != 'off'
 
     def _is_syntax_check_enabled(self):
-        return self._checking_mode != 'completion_only'
+        return self._checking_mode in ('syntax_minimum', 'syntax_modest', 'syntax_noisy')
 
     def set_checking_mode(self, mode):
-        valid_modes = ('completion_only', 'syntax_minimum',
+        valid_modes = ('off', 'completion_only', 'syntax_minimum',
                        'syntax_modest', 'syntax_noisy')
         if mode not in valid_modes:
             mode = 'syntax_minimum'
@@ -423,9 +428,7 @@ class PythonSTC(stc.StyledTextCtrl):
             if hasattr(self, '_syntax_check_timer'):
                 self._syntax_check_timer.Stop()
             self._clear_syntax_diagnostics()
-            return
-
-        if self._syntax == 'python':
+        if self._syntax == 'python' and self._is_syntax_check_enabled():
             self._schedule_syntax_check(delay=0)
 
     def get_completion_syntax_check_enabled(self):
@@ -435,7 +438,7 @@ class PythonSTC(stc.StyledTextCtrl):
         if value:
             self.set_checking_mode('syntax_minimum')
         else:
-            self.set_checking_mode('completion_only')
+            self.set_checking_mode('off')
 
     def _schedule_syntax_check(self, delay=None):
         if not self._is_syntax_check_enabled():
@@ -900,6 +903,7 @@ class PythonSTC(stc.StyledTextCtrl):
                 self.SetLexer(getattr(wx.stc, 'STC_LEX_' + syntax.upper()))
             else:
                 self.SetLexer(stc.STC_LEX_NULL)
+            self.set_checking_mode('off')
 
         if self._syntax == 'python':
             self._schedule_syntax_check(delay=0)
