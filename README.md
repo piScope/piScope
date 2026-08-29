@@ -1,6 +1,5 @@
 ## &pi;Scope
 &pi;Scope is a python based workbench for data analysis and modeling.
-(S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
 
 Goal of piScope includes
 * Data browsing (scope) application for MDSplus data system (www.mdsplus.org)
@@ -31,10 +30,27 @@ and for the above purposes, &pi;Scope is equipped with
  pip install .
 ```
 
-Directories:
+### LLM sessions (experimental)
+
+To enable an LLM agent to control a persistent piScope session, copy the
+entire plotting skill into that agent's user skill directory:
+
+```
+cp -a skills/piscope-plotting <LLM_SKILLS_DIR>/
+```
+
+The skill includes its instructions and scripts for launching piScope and
+sending commands to its server.
+
+
+### Directories
+
 * ../python/ifigure             core program
 * ../python/ifigure/example              examples
 * ../bin/                        scripts to run &pi;Scope
 * ../example/                   example data to look in &pi;Scope
 
+### Reference
+
+(S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
 

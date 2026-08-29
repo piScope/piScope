@@ -6,6 +6,11 @@
 	* ScriptEditor now normalizes opened file entries by scanning project TreeDict
 	  objects (via path2fullpath), and links matched files with td metadata.
 
+2026 8/24
+	* experimental LLM skill to control piScope from agent is added
+	** added piScope plotting skill scripts for persistent LLM-driven sessions.
+	** this feature is likely to change in future.
+
 2026 6/23
 	* improved handling crange when data contains nan (for image and contour in 2D)
 

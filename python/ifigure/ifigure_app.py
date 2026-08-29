@@ -2097,7 +2097,7 @@ class ifigure_app(BookViewerFrame):
     def onRemoteCommand(self, evt):
         server = ifigure.server.Server()
         try:
-            response = server.process(evt.command)
+           response = server.process(evt.command)
         except BaseException:
             import traceback
             traceback.print_exc()
