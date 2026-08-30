@@ -381,12 +381,44 @@ class PyScript(PyCode, FileHolder, AnsHolder):
         ns = super(PyScript, self).provide_ns_for_editor(editor=editor)
 
         ns['obj'] = self
+        ns['args'] = ()
+        ns['kwargs'] = {}
         try:
             tns = self.get_namespace()
             if isinstance(tns, dict):
                 ns.update(tns)
         except Exception:
             pass
+
+        top = None
+        try:
+            top = self.get_root_parent()
+        except Exception:
+            top = None
+
+        if top is not None:
+            ns['top'] = top
+            ns['proj'] = top
+            try:
+                ns['app'] = top.app
+            except Exception:
+                pass
+            try:
+                ns['wdir'] = top.getvar("wdir")
+            except Exception:
+                pass
+
+        # Runtime always injects control helpers and result callback symbols.
+        ns['stop'] = stop
+        ns['exit'] = exit
+
+        if 'ans' not in ns:
+            ns['ans'] = self.get_ansfunc()
+
+        if 'write_log' not in ns:
+            def _write_log(*args, **kwargs):
+                return None
+            ns['write_log'] = _write_log
 
         try:
             model = self.get_pymodel()
