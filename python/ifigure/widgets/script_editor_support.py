@@ -129,17 +129,15 @@ class PythonCompletionSyntaxMixin(object):
         else:
             self.set_checking_mode('off')
 
-    def _schedule_syntax_check(self, delay=None):
+    def _schedule_syntax_check(self):
         if not self._is_syntax_check_enabled():
             return
         if not hasattr(self, '_syntax_check_timer'):
             return
-        if delay is None:
-            delay = self._syntax_check_delay_ms
         try:
-            self._syntax_check_timer.StartOnce(delay)
+            self._syntax_check_timer.StartOnce(self._syntax_check_delay_ms)
         except AttributeError:
-            self._syntax_check_timer.Start(delay, True)
+            self._syntax_check_timer.Start(self._syntax_check_delay_ms, True)
 
     def _clear_syntax_diagnostics(self):
         self.MarkerDeleteAll(SyntaxErrorMarker)
