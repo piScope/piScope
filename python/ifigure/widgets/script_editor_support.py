@@ -118,7 +118,7 @@ class PythonCompletionSyntaxMixin(object):
                 self._syntax_check_timer.Stop()
             self._clear_syntax_diagnostics()
         if self._syntax == 'python' and self._is_syntax_check_enabled():
-            self._schedule_syntax_check(delay=0)
+            self._schedule_syntax_check()
 
     def get_completion_syntax_check_enabled(self):
         return self._is_syntax_check_enabled()

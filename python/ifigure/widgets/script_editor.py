@@ -392,7 +392,7 @@ class piScopeSTC(PythonCompletionSyntaxMixin, stc.StyledTextCtrl):
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
 
         self.AnnotationSetVisible(stc.STC_ANNOTATION_BOXED)
-        self._schedule_syntax_check(delay=0)
+        self._schedule_syntax_check()
 
     def get_checking_mode(self):
         return self._checking_mode
@@ -454,7 +454,7 @@ class piScopeSTC(PythonCompletionSyntaxMixin, stc.StyledTextCtrl):
             self.set_checking_mode('off')
 
         if self._syntax == 'python':
-            self._schedule_syntax_check(delay=0)
+            self._schedule_syntax_check()
         else:
             self._clear_syntax_diagnostics()
 
@@ -1383,7 +1383,7 @@ class ScriptEditor(wx.Panel):
         for p in self.page_list:
             if hasattr(p, '_schedule_syntax_check'):
                 try:
-                    p._schedule_syntax_check(delay=0)
+                    p._schedule_syntax_check()
                 except Exception:
                     pass
 
