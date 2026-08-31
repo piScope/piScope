@@ -356,7 +356,7 @@ class FigureImageV(FigureImage):
 
             def ps_write(txt):
                 if unicode_file:
-                    ps_write0(unicode(txt))
+                    ps_write0(str(txt))
                 else:
                     ps_write0(txt)
 
