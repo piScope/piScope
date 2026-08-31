@@ -2117,12 +2117,7 @@ class ifigure_app(BookViewerFrame):
         return None
 
     def goto_no_mainwindow(self):
-        if len(self.viewers) == 0:
-            return
-        if (len(self.viewers) == 1 and
-                self.viewers[0] is self):
-            return
-        self.Hide()
+        self.Iconize()
 
     def set_launcher_file(self, file):
         self._launcher_file = file
