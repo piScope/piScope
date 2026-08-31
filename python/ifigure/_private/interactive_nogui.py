@@ -30,6 +30,7 @@ from __future__ import print_function
 import socket
 import subprocess
 import sys
+import time
 import shlex
 from ifigure._private.interactive_common import COMMON_API
 import ifigure.utils.pickle_wrapper as cPickle
@@ -204,6 +205,23 @@ class Client(object):
 
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
+        deadline = time.monotonic() + 10.0
+        while time.monotonic() < deadline:
+            try:
+                # Use a valid protocol request so server-side handlers do not
+                # see an empty payload while we probe readiness.
+                self.send(cPickle.dumps(('c',)))
+                break
+            except OSError:
+                time.sleep(0.1)
+            except Exception:
+                time.sleep(0.1)
+        else:
+            raise RuntimeError(
+                f"piScope server did not become ready on {Client.host}:{Client.port} "
+                f"within 10 seconds"
+            )
+
         ip, port = Client.receiver.server_address
         message = cPickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
@@ -283,16 +301,16 @@ class Client(object):
 
 def launch(exe=None):
     """Launch piScope and return its server port and process ID."""
-    return server('launch', exe=exe)
+    return _server_control('launch', exe=exe)
 
 
 def shutdown():
-    server('shutdown')
+    _server_control('shutdown')
 
 def connect(port, host='localhost'):
-    server('connect', host, port)
+    _server_control('connect', host, port)
 
-def server(param, host='localhost', port=None, exe=None):
+def _server_control(param, host='localhost', port=None, exe=None):
     '''
     launch/connect piscope
     server('coonect', host, port)
@@ -395,12 +413,14 @@ def _send_message_d():
     c = Client()
     return c.send(message)
 
-names = COMMON_API
-
-for name in names:
+for name in COMMON_API:
     def f(*args, _name=name, **kargs):
         _send_message(_name, *args, **kargs)
     globals()[name] = f
+
+
+def server(*args, **kargs):
+    return _send_message('server', *args, **kargs)
 
 def get(*args, **kargs):
     return _send_message_g('get_shellvar', *args, **kargs)

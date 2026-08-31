@@ -17,17 +17,17 @@ _RAW_DOCS = {
     ''',
     'arrow': '''
         arrow : add arrow to current axes
-        
+
         arrow(x1, y1, x2, y2)
     ''',
     'axline': '''
         axline : axhline or axvline
-        
-        
+
+
         axline(x) or axline([x1,x2,x3...])  : vline
         axline([], y) or axline([], [y1,y2,y3...]) : hline
         axline([x1, x2...],[y1, y2...]) : mixed vline and hline
-        
+
         (note) lines created by one axline commads shares
                color, marker, alpha, and other attirbute.
     ''',
@@ -36,14 +36,14 @@ _RAW_DOCS = {
     ''',
     'axspan': '''
         axspan : axhspan or axvspan
-        
+
         axspan([x1,x2])     : v-span
         axspan([], [y1,y2]) : h-span
         axspan([x1, x2], [y1,y2]) : mixed v-span h-span
-        
+
         multiple v-span and h-span can be created at once
         axspan([[x1, x2], [x3, x4]...], [[y1,y2], [y3, y4]...])
-        
+
         (note) artists created by one axspan commands
               shares color, marker, alpha, and other attirbute.
               drag is also applied to all artists.
@@ -51,7 +51,7 @@ _RAW_DOCS = {
     'axspanc': '''
         axspanc: a user control version of axspan
                  see help(axspan) for the details of argments
-        
+
                  a user can add/drag/remove the patch object and edit
                  values from GUI
     ''',
@@ -62,7 +62,7 @@ _RAW_DOCS = {
         toggle cbar of current plot
             cbar()
             cbar('c2')  # to specify caxis name
-        
+
         keywords:
             position : position of color bar (normalized to axis)
             size : size of color bar (normalized to axis)
@@ -71,10 +71,10 @@ _RAW_DOCS = {
             lsize : text size
             olcolor : offset text color
             olsize : offset text size
-        
+
         example:
-            cbar(position=(0.1, 0.1), size=(0.7, 0.05), lsize=16, 
-                 lcolor='red', olsize=19, olcolor='b',direction='h') 
+            cbar(position=(0.1, 0.1), size=(0.7, 0.05), lsize=16,
+                 lcolor='red', olsize=19, olcolor='b',direction='h')
     ''',
     'cla': '''
         clear current axis
@@ -121,7 +121,7 @@ _RAW_DOCS = {
         contour(x, y, z, n)
         contour(z, v)
         contour(x, y, z, v)
-        
+
         n: number of levels
         v: a list of contour levels
     ''',
@@ -131,7 +131,7 @@ _RAW_DOCS = {
         contourf(x, y, z, n)
         contourf(z, v)
         contourf(x, y, z, v)
-        
+
         n: number of levels
         v: a list of contour levels
     ''',
@@ -149,9 +149,9 @@ _RAW_DOCS = {
     ''',
     'errorbar': '''
         errorbar : xy plot with errorbar
-        
+
         errorbar(x, y, xerr=xerr, yerr=yerr)
-        
+
         options for xerr and yerr
             ### assign 0.1 for all points)
             xerr = 0.1
@@ -159,7 +159,7 @@ _RAW_DOCS = {
             xerr = [0.1, 0.2, ....]
             ### assign upper and lower error separately
             xerr = [[0.1, 0.2, ...],[0.4, 0.7...]]
-        
+
         identical to calling plot with mpl_command = 'errorbar'
     ''',
     'errorbarc': '''
@@ -168,12 +168,12 @@ _RAW_DOCS = {
     ''',
     'figarrow': '''
         figarrow : add arrow to current page
-        
+
         figarrow(x1, y1, x2, y2)
     ''',
     'figtext': '''
         figtext : add text to current figure
-        
+
         figtext(x, y, s) : type string s to (x, y)
     ''',
     'figure': '''
@@ -208,7 +208,7 @@ _RAW_DOCS = {
     ''',
     'image': '''
         image : show image
-        
+
         image(z)
         image(x, y, z)
     ''',
@@ -228,7 +228,7 @@ _RAW_DOCS = {
     ''',
     'legend': '''
         legend: add legend box to current figure
-        
+
         legend('label1') : legend for a single artist
         legend(['label1', 'label2']) for multiple aritsts
         legend(['label1', 'label2'], axes2 = True) for multiple aritsts
@@ -268,21 +268,21 @@ _RAW_DOCS = {
     ''',
     'plot': '''
             plot : xy plot
-        
+
             plot(y)
             plot(x, y)
             plot(y, s)
         `   plot(x, y, s)
             plot(x, y, z)
             plot(x, y, z, cz=True)
-        
+
             s is a format string. For example 'bo-' means to use blue solid line with
             circle marker. The format string is directly passed to matplotlib.
             See http://piscope.psfc.mit.edu/index.php/Interactive_commands#plot for
             detail
-        
+
             cz is option to change the color along a line using z.
-        
+
             When x and y are expression, it evaulate x and y and the answer
             should be 1D data.
             If x and y are given as numbers, following handling
@@ -296,7 +296,7 @@ _RAW_DOCS = {
                   x.ndim == 2 and y.ndmi ==2
                     both x and y are sliced using the first row and multiple lines
                     are generated
-        
+
             see also: errorbar
     ''',
     'plotc': '''
@@ -305,7 +305,7 @@ _RAW_DOCS = {
     ''',
     'property': '''
         property set or get property of target object
-        
+
           property(obj) : return a list of editable property
           property(obj, name) : get an object property
           property(obj, name, value : set an object property
@@ -317,10 +317,10 @@ _RAW_DOCS = {
            quiver(u, v, c)
            quiver(x, y, u, v)
            quiver(x, y, u, v, c)
-        
+
         for 3D:
            quiver(X, Y, Z, U, V, W, **kwargs)
-        
+
            X, Y, Z:
                The x, y and z coordinates of the arrow locations (default is
                tip of arrow; see *pivot* kwarg)
@@ -330,12 +330,12 @@ _RAW_DOCS = {
     'quiver3d': '''
         quiver3D is threed('on') + quiver
         quiver3D(x, y, z, u, v, w,  cz = False, cdata = None)
-        
+
         if cz is True and cdata is None, z is used for color
     ''',
     'revolve': '''
         revolve r, z : revolve (r, z) data
-        
+
           keywords to define revolve
              rcenter: [0,0]
              rtheta:  [0, 2*pi]
@@ -344,14 +344,14 @@ _RAW_DOCS = {
     ''',
     'savedata': '''
         save dataset as hdf file
-        
+
           savedate(filename) # filename must be *.hdf
     ''',
     'savefig': '''
         save figure as image
-        
+
            savefig(filename)
-        
+
            filename must be one of following
               .eps
               .pdf  (support multipage pdf)
@@ -362,9 +362,9 @@ _RAW_DOCS = {
     ''',
     'scatter': '''
         scatter plot
-        
+
         scatter(x, y, s = 20, c = 'b')
-        
+
         s : scalar or array_like (same length as x, y)
             size in points^2.
         c : color or sequence of color
@@ -394,35 +394,35 @@ _RAW_DOCS = {
     ''',
     'solid': '''
         solid: plot soild volume complsed by triangle/quad
-        
+
         solid(v, cz=False, cdata=None, **kargs):
         solid(v, idxset, cz=False, cdata=None, **kargs):
-        
+
         v : 3D array of verteics
             v[ielement, ivertex,  xyz]
         cz : define color data separately
             when cz =true, 3rd dim of v should be four
             v[ielement, ivertex,  xyzc]
-        
+
         Using idxset, vertices and index set to define the element shape
         is given separately. v[:, xyz] and idxset[ielement, ivertex]
         will be expanded as if v is v[idexset,...]. This allows to reduce
         the number of vertices passed to GPU
-        
+
         if third dim is 2:
             v[ielement, ivertex,  xy]
             and
             z needs to be given as zvalue keyword argument
-        
+
         cdata: used with cz  cdata[ielement, ivertex]
-        
+
         draw_last : draw this artists last on GL canvas, useful for getting
                     cleanin line smoothing
         facecolor: use solid facecolor
         edgecolor: use solid edgecolor
-        
+
         example:
-        
+
            (indexed array)
            ptx = np.array([[0, 0], [0,1], [1,1], [1,0]])
            box = np.array([[0,1,2,3]])
@@ -445,15 +445,15 @@ _RAW_DOCS = {
            subplot(2, 3)  2x3
            subplot(2, 3, (0,1)) 2x3 and (0,1) merged
            subplot(2, 3, (0,1), (2, 3)) 2x3 and (0,1), (2, 3) merged
-        
+
            'sort' = 'col' or 'column' or 'c' : sort result in column
            'sort' = 'row' or 'r' :             sort result in row
-        
+
            dx and dy are optional arguments to determine the
            width and height of each column and row
            if these are used, the number of dx and dy should be
            ncol-1, nrow-1, respectively
-        
+
            example: subplot(2,2, (0,1), dx=0.4)
     ''',
     'suptitle': '''
@@ -471,7 +471,7 @@ _RAW_DOCS = {
     ''',
     'text': '''
         text : add text to current axes
-        
+
         text(x, y, s) : type string s to (x, y)
     ''',
     'threed': '''
@@ -488,7 +488,7 @@ _RAW_DOCS = {
     ''',
     'tricontour': '''
         tri-contour plot
-        
+
         tricontour(x, y, z, n)
         tricontour(x, y, z, v)
         tricontour(tri, x, y, z, n)
@@ -497,7 +497,7 @@ _RAW_DOCS = {
     ''',
     'tricontourf': '''
         tri-contour plot with fill mode
-        
+
         tricontourf(x, y, z, n)
         tricontourf(x, y, z, v)
         tricontourf(tri, x, y, z, n)
@@ -506,17 +506,17 @@ _RAW_DOCS = {
     ''',
     'tripcolor': '''
         tricolor : show image using triangulation
-        
+
         tripcolor(z)
         tripcolor(x, y, z)
         tripcolor(tri, z)
         tripcolor(tri, x, y, z)
-        
+
         tri can be evaluated by tri = delaunay(x, y) beforehand
     ''',
     'triplot': '''
         triplot : plot triangles
-        
+
         triplot(x, y)
         triplot(x, y, mask = mask, ...)
         triplot(tri, x, y)
@@ -580,7 +580,7 @@ _RAW_DOCS = {
     ''',
     'xlim': '''
         xlim change range of xaxis
-        
+
         kargs:
             tposition : tick position ('top', 'bottom')
             ticks : tick values
@@ -589,8 +589,8 @@ _RAW_DOCS = {
             size : text size
             ocolor : offset text color
             osize : offset text size
-        
-        example) 
+
+        example)
             xlim(min, max) , xlim((min, max)), or xlim([min, max])
             xlim([0, 3], size=25, color='red', tcolor='red', ticks=[0,1, 3], tposition='top')
     ''',
@@ -609,7 +609,7 @@ _RAW_DOCS = {
     ''',
     'xsymlog': '''
         set symlog in x
-        
+
         [x,y, z, c]symlog(base = None, linthresh = None, linscale = None, name  = 'x')
     ''',
     'xtitle': '''
@@ -637,8 +637,8 @@ _RAW_DOCS = {
             size : text size
             ocolor : offset text color
             osize : offset text size
-        
-        example) 
+
+        example)
             ylim(min, max) , ylim((min, max)), or ylim([min, max])
             ylim([0, 3], size=25, color='red', tcolor='red', ticks=[0,1, 3], tposition='left')
     ''',
@@ -675,7 +675,7 @@ _RAW_DOCS = {
     ''',
     'zlim': '''
         zlim change range of zaxis
-        
+
         kargs:
             tposition : tick position ('top', 'bottom')
             ticks : tick values
@@ -684,7 +684,7 @@ _RAW_DOCS = {
             size : text size
             ocolor : offset text color
             osize : offset text size
-        
+
         example) zlim(min, max) , zlim((min, max)), or zlim([min, max])
     ''',
     'zlinear': '''
@@ -716,21 +716,13 @@ GUI_API = [
     'autoplay', 'aviewer', 'check_aviewer', 'clear', 'debug', 'delaunay',
     'draw', 'edit', 'exportv', 'futurize', 'get_axes', 'get_page',
     'get_shellvar', 'get_topwindow', 'glinfo', 'has_petra', 'importv',
-    'ipage', 'logging', 'mlab', 'newbook', 'np', 'petram', 'profile',
+    'ipage', 'newbook', 'petram', 'profile', 'server',
     'profile_start', 'profile_stop', 'put_shellvar', 'quit',
-    'redirect_to_aviewer', 'redirect_to_aviewer_3D',
-    'redirect_to_aviewer_hold', 'scope', 'scopenw', 'set_aviewer',
-    'setupmodel', 'tscope', 'twinc', 'weakref', 'wraps', 'wx',
+    'scope', 'scopenw', 'set_aviewer','setupmodel', 'tscope', 'twinc',
 ]
 
 NOGUI_API = [
-    'Client', 'Receiver', 'ReceiverReqHandler', 'TrackingPrompt',
-    'async_print', 'atexit', 'binascii', 'cPickle', 'check_connection',
-    'connect', 'current_prompt', 'detach', 'execute', 'f', 'get',
-    'install_prompt_tracking', 'launch', 'make_testplot', 'name', 'names',
-    'pick_unused_port', 'put', 'queue', 'readline', 'shlex', 'shutdown',
-    'signal', 'socket', 'socketserver', 'subprocess', 'sys', 'threading',
-    'warnings',
+    'check_connection', 'connect', 'detach', 'execute',  'launch', 'shutdown'
 ]
 
 COMMON_API = [
@@ -739,11 +731,11 @@ COMMON_API = [
     'close', 'cls', 'cnames', 'contour', 'contourf', 'csymlog', 'ctitle',
     'delpage', 'errorbar', 'errorbarc', 'figarrow', 'figtext', 'figure',
     'fill', 'fill_between', 'fill_between_3d', 'fill_betweenx', 'hist',
-    'hold', 'ifigure', 'image', 'isec', 'isection', 'ispline', 'legend',
-    'lighting', 'loglog', 'nsec', 'nsection', 'oerrorbar', 'oplot', 'os',
+    'hold', 'image', 'isec', 'isection', 'ispline', 'legend',
+    'lighting', 'loglog', 'nsec', 'nsection', 'oerrorbar', 'oplot',
     'plot', 'plotc', 'print_function', 'property', 'quiver', 'quiver3d',
     'revolve', 'savedata', 'savefig', 'scatter', 'semilogx', 'semilogy',
-    'server', 'showpage', 'solid', 'spec', 'specgram', 'subplot', 'suptitle',
+    'showpage', 'solid', 'spec', 'specgram', 'subplot', 'suptitle',
     'surf', 'surface', 'text', 'threed', 'timetrace', 'title',
     'tricontour', 'tricontourf', 'tripcolor', 'triplot', 'trisurf', 'twinx',
     'twiny', 'update', 'video', 'videoviewer', 'view', 'waveviewer',
