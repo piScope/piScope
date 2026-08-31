@@ -18,7 +18,7 @@ from __future__ import print_function
 
     history
        2012.12.01  v 0.1
-      
+
 '''
 
 
@@ -33,7 +33,6 @@ import threading
 from six.moves import socketserver
 import wx
 import ifigure.events
-import ifigure.interactive
 import binascii
 import logging
 import time
@@ -84,7 +83,7 @@ class Server(object):
     rhost = ''
 
     records = []
-    
+
     def start(self, host=None):
         on, server, HOST, PORT = self.info()
         if server is not None:
@@ -103,7 +102,7 @@ class Server(object):
 
         print(''.join(('starting server:', HOST, ':', str(PORT), ':', str(os.getpid()))))
         sys.stdout.flush()
-        
+
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         server_thread = threading.Thread(target=server.serve_forever)
@@ -134,8 +133,10 @@ class Server(object):
         return server is not None, server, HOST, PORT
 
     def process(self, command):
+        import ifigure.interactive
+
         Server.records.append(command)
-        
+
         logging.basicConfig(level=logging.DEBUG)
         ctype = command[0]
         shell = wx.GetApp().TopWindow.shell
@@ -224,18 +225,18 @@ class Server(object):
         Server.records.append("detatching !!!!!!!!!!!")
         # Open the null device
         devnull = os.open(os.devnull, os.O_RDWR)
-        Server.records.append("detatching !!!!!!!!!!!")        
+        Server.records.append("detatching !!!!!!!!!!!")
 
         # Duplicate devnull file descriptor onto 0 (stdin), 1 (stdout), 2 (stderr)
         os.dup2(devnull, 0)
         os.dup2(devnull, 1)
         os.dup2(devnull, 2)
-        Server.records.append("detatching !!!!!!!!!!!")                
+        Server.records.append("detatching !!!!!!!!!!!")
 
         # Close the original descriptor copy
         if devnull > 2:
             os.close(devnull)
-        Server.records.append("detatching !!!!!!!!!!!")                            
+        Server.records.append("detatching !!!!!!!!!!!")
 
 
         # Update sys objects to match the new file descriptors\
@@ -243,10 +244,6 @@ class Server(object):
         sys.stdin = open(os.devnull, 'r')
         sys.stdout = open(os.devnull, 'w')
         sys.stderr = open(os.devnull, 'w')
-        Server.records.append("detatching !!!!!!!!!!! done")                                    
-        return        
+        Server.records.append("detatching !!!!!!!!!!! done")
+        return
         print(sys.stdion)
-
-
-
-        

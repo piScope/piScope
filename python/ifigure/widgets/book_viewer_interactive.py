@@ -84,6 +84,10 @@ def has_plot(figaxes):
             return True
     return False
 
+def _update_docs(method, method2):
+    from ifigure._private.interactive_docs import DOCS
+    if method.__name__ in DOCS:
+        method2.__doc__ = DOCS[method.__name__]
 
 def pop_metadata(kargs):
     '''
@@ -178,10 +182,9 @@ def allow_interactive_call(method):
             ifigure.events.SendPVDrawRequest(
                 self.book, wait_idle=True, refresh_hl=False)
         return obj
-    import ifigure.interactive
-    if hasattr(ifigure.interactive, method.__name__):
-        f = getattr(ifigure.interactive, method.__name__)
-        method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
@@ -224,10 +227,9 @@ def allow_interactive_call_autonext_false(method):
             ifigure.events.SendPVDrawRequest(
                 self.book, wait_idle=True, refresh_hl=False)
         return obj
-    import ifigure.interactive
-    if hasattr(ifigure.interactive, method.__name__):
-        f = getattr(ifigure.interactive, method.__name__)
-        method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
@@ -260,10 +262,9 @@ def allow_interactive_call_page(method):
             ifigure.events.SendPVDrawRequest(
                 self.book, wait_idle=True, refresh_hl=False)
         return ret
-    import ifigure.interactive
-    if hasattr(ifigure.interactive, method.__name__):
-        f = getattr(ifigure.interactive, method.__name__)
-        method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
@@ -282,10 +283,9 @@ def allow_interactive_call2(method):
             ifigure.events.SendPVDrawRequest(
                 self.book, wait_idle=True, refresh_hl=False)
         return ret
-    import ifigure.interactive
-    if hasattr(ifigure.interactive, method.__name__):
-        f = getattr(ifigure.interactive, method.__name__)
-        method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
@@ -294,9 +294,9 @@ def share_doc_string_simple(method):
     def method2(self, *args, **kargs):
         ret = method(self, *args, **kargs)
         return ret
-    import ifigure.interactive
-    f = getattr(ifigure.interactive, method.__name__)
-    method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
@@ -308,9 +308,9 @@ def share_doc_string(method):
         hold, kargs = ProcessKeywords(kargs, 'hold', value=True)
         ret = method(self, *args, **kargs)
         return ret
-    import ifigure.interactive
-    f = getattr(ifigure.interactive, method.__name__)
-    method2.__doc__ = f.__doc__
+
+    _update_docs(method, method2)
+
     return method2
 
 
