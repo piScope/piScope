@@ -84,7 +84,7 @@ class PanelCheckbox(object):
             if pinfo["panel"] == panel:
                 pinfo["toggle_menu"] = True
 
-    def toggle_panel(self, panel, value):
+    def toggle_panel(self, panel, value, cond=True):
         for pinfo, c in self.walk_tree():
             if pinfo["panel"] == panel:
                 if pinfo["toggle_menu"]:
@@ -92,7 +92,7 @@ class PanelCheckbox(object):
                 pinfo["panel"].Show(value)
                 self.update_check()
                 self.root_parent().set_splitters()
-                if not value:
+                if cond or not value:
                     pinfo['h'](None)
                 return
 
