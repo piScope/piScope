@@ -105,8 +105,8 @@ _RAW_DOCS = {
     ''',
     'close':'''
         close()
-        clsee(1)   : close all figure window
-        clsee(all) : close all figure window
+        close(1)   : close all figure window
+        close(all) : close all figure window
     ''',
     'cls': '''
         cls() is the same as clf()
@@ -542,10 +542,10 @@ _RAW_DOCS = {
     ''',
     'video': '''
     video viewer is to look video image (3D array)
-        vidoe(x, y, z) or video(z)
+        video(x, y, z) or video(z)
     ''',
     'videoviewer': '''
-    open vedioviewer. if bookfile (*.bfz) is passed, it opens the bookfile
+    open videoviewer. if bookfile (*.bfz) is passed, it opens the bookfile
     in videoviewer
     ''',
     'view': '''
