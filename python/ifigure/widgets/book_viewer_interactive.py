@@ -1,6 +1,5 @@
 import warnings
 import matplotlib.colors as mcolors
-import six
 import logging
 import numpy as np
 import ifigure

@@ -1524,8 +1524,10 @@ class ScriptEditor(wx.Panel):
             p.SetReadOnly(readonly)
         except UnicodeDecodeError:
             logging.exception("Opening File Failed. Ignoring invalid bytes")
-            p.SetText(unicode(txt, errors='ignore'))
-            pass
+            if isinstance(txt, bytes):
+                p.SetText(txt.decode(errors='ignore'))
+            else:
+                p.SetText(str(txt))
         p.EmptyUndoBuffer()
         p.Colourise(0, -1)
 

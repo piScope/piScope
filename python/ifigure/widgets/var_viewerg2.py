@@ -829,7 +829,7 @@ class VarViewerG(wx.Panel):
         name = gt.get_row_name(row)
         val=obj.getvar(name)
         txt=str(val)
-        if ((isinstance(val, str) or isinstance(val, unicode)) and
+        if (isinstance(val, str) and
                not val.startswith('=')):
                txt='"'+txt+'"'
 

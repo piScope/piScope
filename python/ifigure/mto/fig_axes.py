@@ -21,7 +21,6 @@
 import os
 import matplotlib
 import weakref
-import six
 import wx
 import numpy as np
 from matplotlib.lines import Line2D

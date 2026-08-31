@@ -12,7 +12,7 @@
      't' : execute command in string
            ex.  'tplot(range(10))' : execute plot(range(10))
      'f' : execute command with args and kargs written in file
-           ex.  'fplot:xxxxxxxx'  : read (args, kargs) using cPickle
+           ex.  'fplot:xxxxxxxx'  : read (args, kargs) using pickle
                  from xxxxxxxx and execute plot(*args, **kargs)
 
     history
@@ -40,7 +40,7 @@ import subprocess
 import sys
 import shlex
 from ifigure.utils.cbook import pick_unused_port
-import ifigure.utils.pickle_wrapper as pickle
+import pickle
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -52,7 +52,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         rfile.close()
         data = pickle.loads(binascii.a2b_hex(response))
 #        data = self.request.recv(1024)
-#        data = cPickle.loads(binascii.a2b_hex(data))
+#        data = pickle.loads(binascii.a2b_hex(data))
         ifig_app = wx.GetApp().TopWindow
         ifig_app.remote_lock.acquire()
 

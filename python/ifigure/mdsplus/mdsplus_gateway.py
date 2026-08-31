@@ -12,7 +12,7 @@ import socketserver
 #import paramiko
 import binascii
 import pickle
-#import cPickle as pickle
+#import pickle
 from ifigure.utils.daemon import Daemon
 import MDSplus
 from MDSplus import Connection

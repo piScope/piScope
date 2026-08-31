@@ -2,8 +2,6 @@ from ifigure.utils.images2gif import writeGif
 #from PIL import Image
 import os
 from ifigure.utils.cbook import image_to_pil
-import six
-
 
 def save_animation(func, params, canvas, filename='animation.gif', duration=0.2):
     images = []

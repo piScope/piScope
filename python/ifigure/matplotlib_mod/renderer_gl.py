@@ -2,9 +2,6 @@
    RendererGL
 
 """
-                        unicode_literals)
-
-import six
 
 import threading
 import numpy as np

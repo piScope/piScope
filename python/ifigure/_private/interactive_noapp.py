@@ -32,7 +32,7 @@ import sys
 import time
 import shlex
 from ifigure._private.interactive_common import COMMON_API
-import ifigure.utils.pickle_wrapper as cPickle
+import pickle
 import binascii
 import threading
 import os
@@ -128,7 +128,7 @@ class ReceiverReqHandler(socketserver.BaseRequestHandler):
         rfile = self.request.makefile('r')
         response = rfile.readline().strip()
         rfile.close()
-        data = cPickle.loads(binascii.a2b_hex(response))
+        data = pickle.loads(binascii.a2b_hex(response))
         if data['type'] == 'data':
             import __main__
             text = '\n'
@@ -197,7 +197,7 @@ class Client(object):
             try:
                 # Use a valid protocol request so server-side handlers do not
                 # see an empty payload while we probe readiness.
-                self.send(cPickle.dumps(('c',)))
+                self.send(pickle.dumps(('c',)))
                 break
             except OSError:
                 time.sleep(0.1)
@@ -210,7 +210,7 @@ class Client(object):
             )
 
         ip, port = Client.receiver.server_address
-        message = cPickle.dumps(('r', ip, port))
+        message = pickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
         return Client.port, p.pid
 
@@ -251,7 +251,7 @@ class Client(object):
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
         ip, port = Client.receiver.server_address
-        message = cPickle.dumps(('r', ip, port))
+        message = pickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
 
     def send(self, message, noresponse=False):
@@ -269,7 +269,7 @@ class Client(object):
                 rfile.close()
 #             response = sock.recv(1024)
 #             print len(response)
-                response = cPickle.loads(binascii.a2b_hex(response))
+                response = pickle.loads(binascii.a2b_hex(response))
         finally:
             sock.close()
 
@@ -318,7 +318,7 @@ def _server_control(param, host='localhost', port=None, exe=None):
         if c.port == 0:
             return
 
-        message = cPickle.dumps(('f', 'quit', tuple(), dict()))
+        message = pickle.dumps(('f', 'quit', tuple(), dict()))
 
         if c.process is not None and ifigure.utils.pid_exists.pid_exists(c.process.pid):
             c.send(message, noresponse=True)
@@ -329,7 +329,7 @@ def _server_control(param, host='localhost', port=None, exe=None):
 
 def check_connection():
     c = Client()
-    message = cPickle.dumps(('c',))
+    message = pickle.dumps(('c',))
     print((c.send(message)))
 
 
@@ -341,7 +341,7 @@ def execute(source):
     """Execute Python source in piScope's shell namespace."""
     if not isinstance(source, str):
         raise TypeError("source must be a string")
-    message = cPickle.dumps(('t', source))
+    message = pickle.dumps(('t', source))
     c = Client()
     return c.send(message)
 
@@ -374,8 +374,8 @@ def _save_parameter_file(*args, **kargs):
 
 def _send_message(command, *args, **kargs):
     try:
-        message = cPickle.dumps(('f', command, args, kargs))
-    except error:
+        message = pickle.dumps(('f', command, args, kargs))
+    except BaseException:
         print('failed to save parameter file')
         return
     c = Client()
@@ -384,8 +384,8 @@ def _send_message(command, *args, **kargs):
 
 def _send_message_g(command, *args, **kargs):
     try:
-        message = cPickle.dumps(('g', command, args, kargs))
-    except error:
+        message = pickle.dumps(('g', command, args, kargs))
+    except BaseException:
         print('failed to save parameter file')
         return
     c = Client()
@@ -393,8 +393,8 @@ def _send_message_g(command, *args, **kargs):
 
 def _send_message_d():
     try:
-        message = cPickle.dumps(('d', ))
-    except error:
+        message = pickle.dumps(('d', ))
+    except BaseException:
         print('failed to save parameter file')
         return
     c = Client()

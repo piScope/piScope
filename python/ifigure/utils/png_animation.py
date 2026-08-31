@@ -1,7 +1,6 @@
 from ifigure.utils.images2gif import writeGif
 #from PIL import Image
 from ifigure.utils.cbook import image_to_pil
-import six
 dither = 1
 import tempfile
 import os

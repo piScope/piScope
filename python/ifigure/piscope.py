@@ -187,7 +187,6 @@ def piscope():
 
     ifigure.ifigure_app.redirect_std = redirect_std
     ifigure.ifigure_app.use_console = use_console
-#   from ifigure.utils.rollback_importer import RollbackImporter as RI
     from ifigure.mto.treedict import fill_td_name_space
 
     sc = os.path.join(os.path.dirname(ifigure.__file__),
