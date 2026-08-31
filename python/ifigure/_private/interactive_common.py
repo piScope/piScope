@@ -712,7 +712,7 @@ _RAW_DOCS = {
 }
 
 # Exact backend exports from each implementation.
-GUI_API = [
+WXAPP_API = [
     'autoplay', 'aviewer', 'check_aviewer', 'clear', 'debug', 'delaunay',
     'draw', 'edit', 'exportv', 'futurize', 'get_axes', 'get_page',
     'get_shellvar', 'get_topwindow', 'glinfo', 'has_petra', 'importv',
@@ -721,7 +721,7 @@ GUI_API = [
     'scope', 'scopenw', 'set_aviewer','setupmodel', 'tscope', 'twinc',
 ]
 
-NOGUI_API = [
+NOAPP_API = [
     'check_connection', 'connect', 'detach', 'execute',  'launch', 'shutdown'
 ]
 
@@ -744,7 +744,7 @@ COMMON_API = [
     'zauto', 'zlabel', 'zlim', 'zlinear', 'zlog', 'znames', 'zsymlog', 'ztitle',
 ]
 
-PUBLIC_API = list(dict.fromkeys(COMMON_API + GUI_API + NOGUI_API))
+PUBLIC_API = list(dict.fromkeys(COMMON_API + WXAPP_API + NOAPP_API))
 
 # Normalize all entries consistently in one place.
 DOCS = {k: dedent(v).strip("\n") for k, v in _RAW_DOCS.items()}

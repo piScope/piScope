@@ -4,17 +4,17 @@ from __future__ import print_function
 Public entry point to plotting routines.
 
 Runtime dispatch:
-- Inside a live piScope GUI process: route to ifigure._private.interactive_gui.
-- Outside piScope GUI: route to ifigure._private.interactive_nogui.
+- Inside a live piScope app process: route to ifigure._private.interactive_wxapp.
+- Outside piScope app process: route to ifigure._private.interactive_noapp.
 
 """
 
 import importlib
 from ifigure._private.interactive_common import (
+    WXAPP_API,
     COMMON_API,
     DOCS,
-    GUI_API,
-    NOGUI_API,
+    NOAPP_API,
     PUBLIC_API,
 )
 
@@ -40,33 +40,33 @@ def _in_piscope_gui_process():
     return app is not None
 
 
-def _get_nogui_backend():
-    return importlib.import_module('ifigure._private.interactive_nogui')
+def _get_noapp_backend():
+    return importlib.import_module('ifigure._private.interactive_noapp')
 
 
-def _get_gui_backend():
-    return importlib.import_module('ifigure._private.interactive_gui')
+def _get_app_backend():
+    return importlib.import_module('ifigure._private.interactive_wxapp')
 
 
 def _get_backend():
     if _in_piscope_gui_process():
-        return _get_gui_backend()
-    return _get_nogui_backend()
+        return _get_app_backend()
+    return _get_noapp_backend()
 
 
 _ACTIVE_BACKEND = _get_backend()
 
 
 def _bind_public_api():
-    is_gui_backend = _ACTIVE_BACKEND.__name__.endswith('interactive_gui')
-    is_nogui_backend = _ACTIVE_BACKEND.__name__.endswith('interactive_nogui')
+    is_app_backend = _ACTIVE_BACKEND.__name__.endswith('interactive_wxapp')
+    is_noapp_backend = _ACTIVE_BACKEND.__name__.endswith('interactive_noapp')
 
     for _name in PUBLIC_API:
         if _name in COMMON_API:
             target = getattr(_ACTIVE_BACKEND, _name)
-        elif is_gui_backend and _name in GUI_API:
+        elif is_app_backend and _name in WXAPP_API:
             target = getattr(_ACTIVE_BACKEND, _name)
-        elif is_nogui_backend and _name in NOGUI_API:
+        elif is_noapp_backend and _name in NOAPP_API:
             target = getattr(_ACTIVE_BACKEND, _name)
         else:
             continue
@@ -88,12 +88,12 @@ def __getattr__(name):
         raise AttributeError(name)
     if name in COMMON_API:
         return getattr(_ACTIVE_BACKEND, name)
-    if _ACTIVE_BACKEND.__name__.endswith('interactive_gui'):
-        if name in GUI_API:
+    if _ACTIVE_BACKEND.__name__.endswith('interactive_wxapp'):
+        if name in WXAPP_API:
             return getattr(_ACTIVE_BACKEND, name)
         raise AttributeError(name)
-    if _ACTIVE_BACKEND.__name__.endswith('interactive_nogui'):
-        if name in NOGUI_API:
+    if _ACTIVE_BACKEND.__name__.endswith('interactive_noapp'):
+        if name in NOAPP_API:
             return getattr(_ACTIVE_BACKEND, name)
         raise AttributeError(name)
     raise AttributeError(name)
