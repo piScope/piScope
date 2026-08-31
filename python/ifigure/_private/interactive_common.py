@@ -711,5 +711,48 @@ _RAW_DOCS = {
     ''',
 }
 
+# Exact backend exports from each implementation.
+GUI_API = [
+    'autoplay', 'aviewer', 'check_aviewer', 'clear', 'debug', 'delaunay',
+    'draw', 'edit', 'exportv', 'futurize', 'get_axes', 'get_page',
+    'get_shellvar', 'get_topwindow', 'glinfo', 'has_petra', 'importv',
+    'ipage', 'logging', 'mlab', 'newbook', 'np', 'petram', 'profile',
+    'profile_start', 'profile_stop', 'put_shellvar', 'quit',
+    'redirect_to_aviewer', 'redirect_to_aviewer_3D',
+    'redirect_to_aviewer_hold', 'scope', 'scopenw', 'set_aviewer',
+    'setupmodel', 'tscope', 'twinc', 'weakref', 'wraps', 'wx',
+]
+
+NOGUI_API = [
+    'Client', 'Receiver', 'ReceiverReqHandler', 'TrackingPrompt',
+    'async_print', 'atexit', 'binascii', 'cPickle', 'check_connection',
+    'connect', 'current_prompt', 'detach', 'execute', 'f', 'get',
+    'install_prompt_tracking', 'launch', 'make_testplot', 'name', 'names',
+    'pick_unused_port', 'put', 'queue', 'readline', 'shlex', 'shutdown',
+    'signal', 'socket', 'socketserver', 'subprocess', 'sys', 'threading',
+    'warnings',
+]
+
+COMMON_API = [
+    'addpage', 'annotate', 'arrow', 'axline', 'axlinec', 'axspan', 'axspanc',
+    'cauto', 'cbar', 'cla', 'clabel', 'clf', 'clim', 'clinear', 'clog',
+    'close', 'cls', 'cnames', 'contour', 'contourf', 'csymlog', 'ctitle',
+    'delpage', 'errorbar', 'errorbarc', 'figarrow', 'figtext', 'figure',
+    'fill', 'fill_between', 'fill_between_3d', 'fill_betweenx', 'hist',
+    'hold', 'ifigure', 'image', 'isec', 'isection', 'ispline', 'legend',
+    'lighting', 'loglog', 'nsec', 'nsection', 'oerrorbar', 'oplot', 'os',
+    'plot', 'plotc', 'print_function', 'property', 'quiver', 'quiver3d',
+    'revolve', 'savedata', 'savefig', 'scatter', 'semilogx', 'semilogy',
+    'server', 'showpage', 'solid', 'spec', 'specgram', 'subplot', 'suptitle',
+    'surf', 'surface', 'text', 'threed', 'timetrace', 'title',
+    'tricontour', 'tricontourf', 'tripcolor', 'triplot', 'trisurf', 'twinx',
+    'twiny', 'update', 'video', 'videoviewer', 'view', 'waveviewer',
+    'xauto', 'xlabel', 'xlim', 'xlinear', 'xlog', 'xnames', 'xsymlog', 'xtitle',
+    'yauto', 'ylabel', 'ylim', 'ylinear', 'ylog', 'ynames', 'ysymlog', 'ytitle',
+    'zauto', 'zlabel', 'zlim', 'zlinear', 'zlog', 'znames', 'zsymlog', 'ztitle',
+]
+
+PUBLIC_API = list(dict.fromkeys(COMMON_API + GUI_API + NOGUI_API))
+
 # Normalize all entries consistently in one place.
 DOCS = {k: dedent(v).strip("\n") for k, v in _RAW_DOCS.items()}

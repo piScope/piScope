@@ -15,7 +15,7 @@ def main() -> None:
     parser.add_argument("command", help="Python command to execute in piScope")
     args = parser.parse_args()
 
-    from ifigure.client import connect, execute
+    from ifigure.interactive import connect, execute
 
     connect(args.port, args.host)
     result = execute(args.command)

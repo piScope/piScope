@@ -31,6 +31,7 @@ import socket
 import subprocess
 import sys
 import shlex
+from ifigure._private.interactive_common import COMMON_API
 import ifigure.utils.pickle_wrapper as cPickle
 import binascii
 import threading
@@ -394,36 +395,10 @@ def _send_message_d():
     c = Client()
     return c.send(message)
 
-names = ['figure', 'hold', 'update', 'close', 
-         'showpage', 'cla', 'cls', 'clf', 'nsec', 'nsection',
-         'subplot', 'isec', 'isection', 'addpage', 'delpage',
-         'suptitle', 'title',
-         'xlabel', 'xtitle', 'ylabel', 'ytitle', 'zlabel', 'ztitle',
-         'clabel', 'ctitle',
-         'xlog', 'ylog', 'clog', 'zlog',
-         'xsymlog', 'ysymlog', 'zsymlog', 'csymlog',
-         'xlinear', 'ylinear', 'clinear', 'zlinear',
-         'xauto', 'yauto', 'zauto', 'cauto',
-         'xlim', 'ylim', 'zlim', 'clim',
-         'twinx', 'twiny',
-         'oplot', 'oerrorbar',
-         'loglog', 'semilogy', 'semilogx',
-         'timetrace', 'plotc', 'errorbarc',
-         'plot', 'scatter', 'hist', 'triplot', 'errorbar', 'annotate',
-         'ispline', 'contour', 'contourf', 'quiver', 'quiver3d',
-         'image', 'specgram', 'spec', 'tripcolor', 'tricontour',
-         'tricontourf', 'axline', 'axlinec', 'axspan', 'axspanc',
-         'text', 'figtext', 'arrow', 'figarrow', 'legend', 'fill',
-         'fill_between', 'fill_betweenx', 'fill_between_3d', 'surf',
-         'surface', 'revolve', 'solid', 'trisurf', 'property', 'threed',
-         'lighting','view',
-         'xnames', 'ynames', 'znames', 'cnames',
-         'cbar', 'savefig', 'savedata',
-         'video', 'videoviewer', 'waveviewer',
-         ]
+names = COMMON_API
 
 for name in names:
-    def f(*args, _name=name,  **kargs):
+    def f(*args, _name=name, **kargs):
         _send_message(_name, *args, **kargs)
     globals()[name] = f
 

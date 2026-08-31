@@ -85,7 +85,7 @@ def has_plot(figaxes):
     return False
 
 def _update_docs(method, method2):
-    from ifigure._private.interactive_docs import DOCS
+    from ifigure._private.interactive_common import DOCS
     if method.__name__ in DOCS:
         method2.__doc__ = DOCS[method.__name__]
 

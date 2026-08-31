@@ -11,7 +11,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    from ifigure.client import launch
+    from ifigure.interactive import launch
 
     port, process_id = launch(exe=args.exe)
     print(port, process_id, flush=True)
