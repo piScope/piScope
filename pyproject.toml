@@ -39,6 +39,7 @@ dynamic = ["version"]
 
 [project.scripts]
 piscope = "ifigure:piscope"
+llmrun = "ifigure:llmrun"
 
 [build-system]
 requires = [

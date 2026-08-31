@@ -1,24 +1,66 @@
 ## &pi;Scope
-&pi;Scope is a python based workbench for data analysis and modeling.
+&pi;Scope is a Python-based workbench for data analysis and modeling.
 
-Goal of piScope includes
+Goals of piScope include:
 * Data browsing (scope) application for MDSplus data system (www.mdsplus.org)
-* Lego blocks for gluing up large simulation codes using python
+* Lego blocks for gluing up large simulation codes using Python
 * User frontend platform for Petra-M (MFEM based finite element simulation).
 
-and for the above purposes, &pi;Scope is equipped with
-* a data analysis environment (= python shell, editor, data structure browser, and matplotlib figure)
-* various GUI componetns to work with matplotlib based figures which allows to 
+For the above purposes, &pi;Scope is equipped with:
+* a data analysis environment (= Python shell, editor, data structure browser, and Matplotlib figure)
+* various GUI components to work with matplotlib-based figures, which allow users to:
  * save/load a figure as a figure file.
  * edit artists using GUI palette for plot, contour, image, triplots and so on.
- * change panel layout via an interactive layout editor
+ * change panel layout via an interactive layout editor.
  * cut/paste of plot, axes, or an entire page.
- * export data from plot to python shell by one click
- * interactively annotate figure using text, arrow, lines,,,
- * draw 3D (OpenGL) in matplotlib canvas.
+ * export data from plot to Python shell with one click.
+ * interactively annotate figure using text, arrow, lines, etc.
+ * draw 3D (OpenGL) in a Matplotlib canvas.
 
-&pi;Scope is also used for Petra-M finiete element analysis platform built on MFEM.
-     
+&pi;Scope is also used for Petra-M finite element analysis platform built on MFEM.
+
+### Plotting commands
+
+The following plotting commands are available. These commands are preloaded in the Python shell
+inside piScope GUI. From a script, users need to load them:
+
+```python
+from ifigure.interactive import *
+```
+
+* Inside a live piScope GUI process, plotting calls use the GUI interactive backend.
+* Outside piScope GUI, plotting calls use the no-GUI client backend. The backend
+launches piScope automatically if it is in an interactive session. Otherwise, it needs
+to be launched by calling launch().
+
+#### Figure and axes management
+
+- `figure`, `showpage`, `cla`, `cls`, `clf`, `subplot`, `isec`, `isection`
+- `addpage`, `delpage`, `title`, `suptitle`, `xlabel`, `ylabel`, `zlabel`,
+  `clabel`
+- `xlog`, `ylog`, `zlog`, `clog`, `xlinear`, `ylinear`, `zlinear`, `clinear`
+- `xlim`, `ylim`, `zlim`, `clim`, `xauto`, `yauto`, `zauto`, `cauto`
+- `twinx`, `twiny`, `cbar`, `view`, `threed`, `lighting`
+
+#### 2D plotting
+
+- `plot`, `oplot`, `loglog`, `semilogx`, `semilogy`, `timetrace`, `plotc`
+- `scatter`, `hist`, `errorbar`, `oerrorbar`, `errorbarc`
+- `triplot`, `ispline`, `contour`, `contourf`, `quiver`, `quiver3d`
+- `image`, `specgram`, `spec`, `tripcolor`, `tricontour`, `tricontourf`
+- `axline`, `axlinec`, `axspan`, `axspanc`, `fill`, `fill_between`,
+  `fill_betweenx`
+- `text`, `figtext`, `arrow`, `figarrow`, `legend`
+
+#### 3D plotting
+
+- `surf`, `surface`, `revolve`, `solid`, `trisurf`
+
+#### Annotation and output
+
+- `property`, `savefig`, `savedata`
+
+
 ### Install
 
 ```
@@ -52,5 +94,5 @@ sending commands to its server.
 
 ### Reference
 
-(S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
+(S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python-based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
 
