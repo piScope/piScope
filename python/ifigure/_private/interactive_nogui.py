@@ -394,7 +394,7 @@ def _send_message_d():
     c = Client()
     return c.send(message)
 
-names = ['figure', 'hold', 'update',
+names = ['figure', 'hold', 'update', 'close', 
          'showpage', 'cla', 'cls', 'clf', 'nsec', 'nsection',
          'subplot', 'isec', 'isection', 'addpage', 'delpage',
          'suptitle', 'title',
@@ -419,6 +419,7 @@ names = ['figure', 'hold', 'update',
          'lighting','view',
          'xnames', 'ynames', 'znames', 'cnames',
          'cbar', 'savefig', 'savedata',
+         'video', 'videoviewer', 'waveviewer',
          ]
 
 for name in names:

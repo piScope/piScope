@@ -714,11 +714,6 @@ def ipage():
 
 @check_aviewer
 def close(*args):
-    '''
-    close()
-    clsee(1)   : close all figure window
-    clsee(all) : close all figure window
-    '''
     if len(args) == 0:
         m = getattr(aviewer, 'close')
         m()
@@ -807,7 +802,10 @@ def figure(file='', book=None, viewer=None, **kwargs):
         viewer = BookViewer
     _open_book(book, viewer, **kwargs)
     viewer = wx.GetApp().TopWindow.find_bookviewer(book)
-    if file == '':
+
+    ### if file is not path, return here
+    if (not isinstance(file, (str, bytes)) and
+        not hasattr(file, '__fspath__')):
         return viewer
 
     import os
@@ -864,14 +862,12 @@ def scope(file='',  book=None,  viewer=None, **kwargs):
 
 
 def videoviewer(file='', book=None):
-
     from ifigure.widgets.video_viewer import VideoViewer
     viewer = figure(file=file, book=book, viewer=VideoViewer)
     return viewer
 
 
 def waveviewer(file='', book=None, nframe=30, sign=-1):
-
     from ifigure.widgets.wave_viewer import WaveViewer
     viewer = figure(file=file, book=book, viewer=WaveViewer)
     viewer.sign = sign
@@ -880,10 +876,6 @@ def waveviewer(file='', book=None, nframe=30, sign=-1):
 
 
 def video(*args, **kargs):
-    '''
-    video viewer is to look video image (3D array)
-    vidoe(x, y, z) or video(z)
-    '''
     if len(args) == 1:
         z = args[0]
         x = np.arange(z.shape[-1])

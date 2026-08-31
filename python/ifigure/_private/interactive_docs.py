@@ -103,6 +103,11 @@ _RAW_DOCS = {
         clog()
         clog(False)
     ''',
+    'close':'''
+        close()
+        clsee(1)   : close all figure window
+        clsee(all) : close all figure window
+    ''',
     'cls': '''
         cls() is the same as clf()
         isec is moved to 0
@@ -535,6 +540,14 @@ _RAW_DOCS = {
           update('on'), update(1), update(True) : automatic update on
           update('off'), update(0), update(False) : automatic update off
     ''',
+    'video': '''
+    video viewer is to look video image (3D array)
+        vidoe(x, y, z) or video(z)
+    ''',
+    'videoviewer': '''
+    open vedioviewer. if bookfile (*.bfz) is passed, it opens the bookfile
+    in videoviewer
+    ''',
     'view': '''
         set 3D view
            view() : return current setting
@@ -551,6 +564,10 @@ _RAW_DOCS = {
            view('auto')    # auto aspect ratio
            view('clip')
            view('noclip')
+    ''',
+    'waveviewer':'''
+    open waveviewer. if bookfile (*.bfz) is passed, it opens the bookfile
+    in waveviewer
     ''',
     'xauto': '''
         auto scale x
