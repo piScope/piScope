@@ -192,6 +192,9 @@ class Client(object):
 
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
+        '''
+        # this is a safeguard to make sure that piScope is ready to
+        # communicate. it seems we don't need it.
         deadline = time.monotonic() + 10.0
         while time.monotonic() < deadline:
             try:
@@ -208,7 +211,7 @@ class Client(object):
                 f"piScope server did not become ready on {Client.host}:{Client.port} "
                 f"within 10 seconds"
             )
-
+        '''
         ip, port = Client.receiver.server_address
         message = pickle.dumps(('r', ip, port))
         self.send(message, noresponse=True)
