@@ -88,7 +88,7 @@ def _dispatch_name(name):
 
 
 _PLOT_API_NAMES = [
-    'figure',
+    'figure', 'hold', 'update',
     'showpage', 'cla', 'cls', 'clf', 'nsec', 'nsection',
     'subplot', 'isec', 'isection', 'addpage', 'delpage',
     'suptitle', 'title',

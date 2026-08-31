@@ -394,7 +394,7 @@ def _send_message_d():
     c = Client()
     return c.send(message)
 
-names = ['figure',
+names = ['figure', 'hold', 'update',
          'showpage', 'cla', 'cls', 'clf', 'nsec', 'nsection',
          'subplot', 'isec', 'isection', 'addpage', 'delpage',
          'suptitle', 'title',

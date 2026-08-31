@@ -664,13 +664,6 @@ def draw():
 
 @check_aviewer
 def hold(val=None):
-    '''
-    hold controls if existing plots are deleted bofore
-    adding a new one
-       hold("on"), hold(1), hold(True)  -> hold is on
-       hold("off"),hold(0), hold(False) -> hold is off
-
-    '''
     if val is None:
         return globals()["_hold"]
 
@@ -690,12 +683,6 @@ def hold(val=None):
 
 @check_aviewer
 def update(val=None):
-    '''
-    update controls if it draws screen after interactive
-    command.
-    update('on'), update(1), update(True) : automatic update on
-    update('off'), update(0), update(False) : automatic update off
-    '''
     if val is None:
         return globals()["_update"]
     if isinstance(val, bool):

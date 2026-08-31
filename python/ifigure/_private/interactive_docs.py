@@ -195,6 +195,12 @@ _RAW_DOCS = {
     'hist': '''
         histgram
     ''',
+    'hold': '''
+        hold controls if existing plots are deleted bofore
+        adding a new one
+            hold("on"), hold(1), hold(True)  -> hold is on
+            hold("off"),hold(0), hold(False) -> hold is off
+    ''',
     'image': '''
         image : show image
         
@@ -522,6 +528,12 @@ _RAW_DOCS = {
     ''',
     'twiny': '''
         twinx
+    ''',
+    'update': '''
+       update controls if it draws screen after interactive
+       command.
+          update('on'), update(1), update(True) : automatic update on
+          update('off'), update(0), update(False) : automatic update off
     ''',
     'view': '''
         set 3D view
