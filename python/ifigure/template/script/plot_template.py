@@ -19,6 +19,7 @@
 #    kwagrs : keyward arguments passed to Run method (default = {})
 
 import numpy as np
+# Unified entry point: routes to GUI backend in piScope, no-GUI backend outside.
 import ifigure.interactive as plt
 
 

@@ -1,3 +1,22 @@
+2026 8/30
+	* Unified plotting entry point: ifigure.interactive
+	** added internal backends: ifigure._interactive_gui and ifigure._interactive_nogui
+	** changed ifigure.client to a compatibility shim that re-exports no-GUI backend
+	** retained backward compatibility for existing user scripts
+
+2026 8/29
+	* ScriptEditor now infers syntax mode from file extension when opening files.
+	* Unknown or extension-less files now fall back to Syntax=None.
+	* ScriptEditor syntax checking now supports Ruff with three levels:
+	  Syntax (minimum), Syntax (modest), and Syntax (noisy).
+	* ScriptEditor now normalizes opened file entries by scanning project TreeDict
+	  objects (via path2fullpath), and links matched files with td metadata.
+
+2026 8/24
+	* experimental LLM skill to control piScope from agent is added
+	** added piScope plotting skill scripts for persistent LLM-driven sessions.
+	** this feature is likely to change in future.
+
 2026 6/23
 	* improved handling crange when data contains nan (for image and contour in 2D)
 

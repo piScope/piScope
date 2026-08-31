@@ -1642,9 +1642,11 @@ class ifigure_app(BookViewerFrame):
         self.gui_tree.show_toggle_menu(self.panel2)
         self.gui_tree.rebuild_menu()
         self.gui_tree.toggle_panel(self.panel2, open_editor)
+
         sizer = self.panel2.GetSizer()
         sizer.Add(self.script_editor, 1, wx.EXPAND | wx.ALL)
         sizer.Layout()
+        self.Layout()
 
     def onDetachEditor(self, evt):
         # evt can be None
@@ -2095,7 +2097,7 @@ class ifigure_app(BookViewerFrame):
     def onRemoteCommand(self, evt):
         server = ifigure.server.Server()
         try:
-            response = server.process(evt.command)
+           response = server.process(evt.command)
         except BaseException:
             import traceback
             traceback.print_exc()
@@ -2115,12 +2117,7 @@ class ifigure_app(BookViewerFrame):
         return None
 
     def goto_no_mainwindow(self):
-        if len(self.viewers) == 0:
-            return
-        if (len(self.viewers) == 1 and
-                self.viewers[0] is self):
-            return
-        self.Hide()
+        self.Iconize()
 
     def set_launcher_file(self, file):
         self._launcher_file = file

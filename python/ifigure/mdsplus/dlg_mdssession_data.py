@@ -23,7 +23,7 @@ from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.widgets.book_viewer import FrameWithWindowList
 
-from ifigure.widgets.script_editor import PythonSTC
+from ifigure.widgets.script_editor import piScopeSTC
 import ifigure.widgets.dialog as dialog
 
 bitmaps = None
@@ -69,7 +69,7 @@ class DlgMdsSessionData(DialogWithWindowList):
             panel1, wx.ID_ANY, bitmaps[1])  # 'Add Script...')
         self.cb_local = wx.StaticText(
             panel1, wx.ID_ANY, 'Note: Script runs in main thread')
-#        p = PythonSTC(self.nb, -1)
+#        p = piScopeSTC(self.nb, -1)
 #        self.nb.AddPage(p, 'Untitiled')
         sizer = wx.BoxSizer(wx.VERTICAL)
         bsizer2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -477,7 +477,7 @@ class DlgMdsSessionData(DialogWithWindowList):
             pass
 
     def _new_stc(self, parent, txt, syntax='none'):
-        p = PythonSTC(parent, -1, syntax=syntax)
+        p = piScopeSTC(parent, -1, syntax=syntax)
         self._set_stc_txt(p, txt)
         p.EmptyUndoBuffer()
         p.Colourise(0, -1)

@@ -10,7 +10,6 @@ def piscope():
     import warnings
 
     import platform
-
     if sys.platform == 'Darwin':
         mp.set_start_method('spawn')
     elif sys.platform in ("linux", "linux2"):
@@ -28,6 +27,7 @@ def piscope():
     import ifigure
     from ifigure.ifigure_app import ifigure_app, MyApp
     from ifigure.utils.mp_tarzip import MPTarzip
+    import ifigure.utils.debug
     from os.path import expanduser
 
     # if it does not have write permission to current directory
@@ -84,10 +84,11 @@ def piscope():
         eflag = False
         for p in sys.argv[1:]:
             if p == '-h':
-                print('[Usage: ifigure -s -r command -h file]')
-                print('ifigure          : start a new project')
-                print('ifigure <file>   : open an existing project')
+                print('[Usage: piscope -s -r command -h file]')
+                print('piscope          : start a new project')
+                print('piscope <file>   : open an existing project')
                 print('-s               : start server thread')
+                print('-q               : quiet mode')
                 print('-d               : suppress console redirect')
                 print('-c               : completely suppress redirect')
                 print('-n               : no main window')
@@ -133,6 +134,8 @@ def piscope():
                 lflag = True
             elif p == '-g':
                 use_gl = False
+            elif p == '-q':
+                ifigure.utils.debug.quite_mode = True
             elif p == '-w':
                 warnings.simplefilter('always')
                 print('debug mode (warning is on)')

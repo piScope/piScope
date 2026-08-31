@@ -19,6 +19,12 @@ from ifigure.widgets.statusbar import StatusBarSimple
 import sys
 from ifigure.widgets.book_viewer import FramePlus, FrameWithWindowList, ID_HIDEAPP
 from ifigure.widgets.syntax_styles import *
+from ifigure.widgets.script_editor_support import (
+    PythonCompletionSyntaxMixin,
+    RuffErrorMarker,
+    SyntaxErrorMarker,
+    infer_syntax_from_filename,
+)
 from ifigure.widgets.debugger import check_debugger_instance
 from ifigure.widgets.debugger_core import add_breakpoint, rm_breakpoint, has_breakpoint, get_breakpoint
 from ifigure.utils.wx3to4 import EVT_AUINOTEBOOK_TAB_RIGHT_UP, menu_Append, isWX3
@@ -89,9 +95,9 @@ def check_font_width():
     return w, h
 
 
-class PythonSTCPopUp(wx.Menu):
+class piScopeSTCPopUp(wx.Menu):
     def __init__(self, parent, reload=False):
-        super(PythonSTCPopUp, self).__init__()
+        super(piScopeSTCPopUp, self).__init__()
         self.parent = parent
         menus = [('Cut',  parent.onCut, None),
                  ('Copy', parent.onCopy, None),
@@ -150,6 +156,19 @@ class PythonSTCPopUp(wx.Menu):
         menus.append((make_label('Fortran'), self.onSetFortranSyntax, None))
         menus.append((make_label('F77'), self.onSetF77Syntax, None))
         menus.append((make_label('None'), self.onSetNoneSyntax, None))
+        menus.append(('+Checking', None, None))
+        mode = self.parent.get_checking_mode()
+        menus.append((("^" if mode == 'completion_only' else "*") +
+                  'Off', self.onSetCheckingOff, None))
+        menus.append((("^" if mode == 'completion_only' else "*") +
+                      'Completion only', self.onSetCheckingCompletionOnly, None))
+        menus.append((("^" if mode == 'syntax_minimum' else "*") +
+                      'Syntax (minimum)', self.onSetCheckingSyntaxMinimum, None))
+        menus.append((("^" if mode == 'syntax_modest' else "*") +
+                      'Syntax (modest)', self.onSetCheckingSyntaxModest, None))
+        menus.append((("^" if mode == 'syntax_noisy' else "*") +
+                      'Syntax (noisy)', self.onSetCheckingSyntaxNoisy, None))
+        menus.append(('!', None, None))
         menus.append(('!', None, None))
         menus.append(('Toggle insert/overwrite', self.toggle_overtype, None))
 
@@ -181,8 +200,23 @@ class PythonSTCPopUp(wx.Menu):
         value = not self.parent.GetOvertype()
         self.parent.SetOvertype(value)
 
+    def onSetCheckingOff(self, evt):
+        self.parent.set_checking_mode('off')
 
-class PythonSTC(stc.StyledTextCtrl):
+    def onSetCheckingCompletionOnly(self, evt):
+        self.parent.set_checking_mode('completion_only')
+
+    def onSetCheckingSyntaxMinimum(self, evt):
+        self.parent.set_checking_mode('syntax_minimum')
+
+    def onSetCheckingSyntaxModest(self, evt):
+        self.parent.set_checking_mode('syntax_modest')
+
+    def onSetCheckingSyntaxNoisy(self, evt):
+        self.parent.set_checking_mode('syntax_noisy')
+
+
+class piScopeSTC(PythonCompletionSyntaxMixin, stc.StyledTextCtrl):
 
     fold_symbols = 2
 
@@ -190,10 +224,10 @@ class PythonSTC(stc.StyledTextCtrl):
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=0, syntax='python'):
         stc.StyledTextCtrl.__init__(self, parent, ID, pos, size, style)
-        self._syntax = syntax
         self.doc_name = ''
         self.is_debug_mode = False
         self.file_mtime = 0
+        PythonCompletionSyntaxMixin.__init__(self, syntax=syntax)
 
         self.CmdKeyAssign(ord('['), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
         self.CmdKeyAssign(ord(']'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
@@ -237,7 +271,9 @@ class PythonSTC(stc.StyledTextCtrl):
         self.SetMarginMask(1, 1 << DebugCurrentLine)
         self.SetMarginType(0, stc.STC_MARGIN_SYMBOL)
         self.SetMarginWidth(0, 10)
-        self.SetMarginMask(0, 1 << DebugBreakPoint)
+        self.SetMarginMask(0, (1 << DebugBreakPoint) |
+                   (1 << SyntaxErrorMarker) |
+                   (1 << RuffErrorMarker))
 
         if self.fold_symbols == 0:
             # Arrow pointing right for contracted folders, arrow pointing down for expanded
@@ -310,9 +346,15 @@ class PythonSTC(stc.StyledTextCtrl):
         self.MarkerDefine(DebugCurrentLine, stc.STC_MARK_ARROW,  "red", "red")
         self.MarkerDefine(
             DebugBreakPoint,  stc.STC_MARK_CIRCLEMINUS, "red", "white")
+        self.MarkerDefine(
+            SyntaxErrorMarker, stc.STC_MARK_SHORTARROW, "white", "#CC0000")
+        self.MarkerDefine(
+            RuffErrorMarker, stc.STC_MARK_DOTDOTDOT, "white", "#B85C00")
 
         self.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.Bind(stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
+        self.Bind(stc.EVT_STC_CHARADDED, self.OnCharAdded)
+        self.Bind(stc.EVT_STC_MODIFIED, self.OnBufferModified)
 
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
         self.Bind(wx.EVT_CHAR, self.onSearch)
@@ -348,6 +390,12 @@ class PythonSTC(stc.StyledTextCtrl):
         self.ctrl_X = False
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
+
+        self.AnnotationSetVisible(stc.STC_ANNOTATION_BOXED)
+        self._schedule_syntax_check()
+
+    def get_checking_mode(self):
+        return self._checking_mode
 
     def _exit_search_mode(self):
         self._mark = -1
@@ -403,6 +451,12 @@ class PythonSTC(stc.StyledTextCtrl):
                 self.SetLexer(getattr(wx.stc, 'STC_LEX_' + syntax.upper()))
             else:
                 self.SetLexer(stc.STC_LEX_NULL)
+            self.set_checking_mode('off')
+
+        if self._syntax == 'python':
+            self._schedule_syntax_check()
+        else:
+            self._clear_syntax_diagnostics()
 
     def reset_style(self):
         # Make some styles,  The lexer defines what each style is used for, we
@@ -446,12 +500,12 @@ class PythonSTC(stc.StyledTextCtrl):
                         logging.exception("File Open Error"+file)
                         return
                 return
-        super(PythonSTC, self).SaveFile(file)
+        super(piScopeSTC, self).SaveFile(file)
         self.file_mtime = os.path.getmtime(file)
 
     def SetText(self, *args, **kargs):
         # print 'Adjusting margin'
-        super(PythonSTC, self).SetText(*args, **kargs)
+        super(piScopeSTC, self).SetText(*args, **kargs)
         self.set_margin_width1()
 
     def onSearch(self, event):
@@ -670,6 +724,12 @@ class PythonSTC(stc.StyledTextCtrl):
             self.onRunAllText(event)
             return
             # return
+        elif key == 74 and controlDown:  # ctrl + J (autocomplete)
+            self._show_autocomplete(force=True)
+            return
+        elif key == wx.WXK_SPACE and controlDown and event.ShiftDown():
+            self._show_calltip()
+            return
         elif key == wx.WXK_SPACE and controlDown:
             self._mark = self.GetCurrentPos()
             self.GetTopLevelParent().SetStatusText('mark set')
@@ -1071,7 +1131,7 @@ class PythonSTC(stc.StyledTextCtrl):
             if ipage != -1:
                 file = sc.file_list[ipage]
                 reload = self.check_fileisnewer(file)
-        m = PythonSTCPopUp(self, reload=reload)
+        m = piScopeSTCPopUp(self, reload=reload)
         self.PopupMenu(m,
                        (evt.GetX(), evt.GetY()))
         m.Destroy()
@@ -1268,9 +1328,13 @@ class Notebook(aui.AuiNotebook):
 
 
 class ScriptEditor(wx.Panel):
-    def __init__(self, parent):
+    def __init__(self, parent, namespace_provider=None):
         wx.Panel.__init__(self, parent, -1, style=wx.NO_BORDER)
         logging.basicConfig(level=logging.DEBUG)
+        if namespace_provider is None:
+            self._namespace_provider = self._page_namespace_provider
+        else:
+            self._namespace_provider = namespace_provider
 
         self.sp = wx.SplitterWindow(self, wx.ID_ANY,
                                     style=wx.SP_NOBORDER | wx.SP_LIVE_UPDATE | wx.SP_3DSASH)
@@ -1306,8 +1370,86 @@ class ScriptEditor(wx.Panel):
         self.Fit()
 #        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.onPageChanged)
 
+    def set_namespace_provider(self, provider):
+        if provider is None:
+            provider = self._page_namespace_provider
+        self._namespace_provider = provider
+        for p in self.page_list:
+            if hasattr(p, 'set_external_namespace_provider'):
+                p.set_external_namespace_provider(self._namespace_provider)
+
+    def refresh_namespace_provider(self):
+        self.set_namespace_provider(self._namespace_provider)
+        for p in self.page_list:
+            if hasattr(p, '_schedule_syntax_check'):
+                try:
+                    p._schedule_syntax_check()
+                except Exception:
+                    pass
+
+    def _page_namespace_provider(self, editor):
+        td = None
+        try:
+            td = editor.get_td()
+        except Exception:
+            td = None
+
+        if td is None:
+            return {}
+
+        provider = getattr(td, 'provide_ns_for_editor', None)
+        if not callable(provider):
+            return {}
+
+        try:
+            ns = provider(editor=editor)
+        except TypeError:
+            try:
+                ns = provider()
+            except Exception:
+                return {}
+        except Exception:
+            return {}
+
+        if isinstance(ns, dict):
+            return ns
+        return {}
+
     def get_filelist(self):
         return self.file_list
+
+    def _make_file_entry(self, file):
+        if hasattr(file, 'td'):
+            return file
+        if not isinstance(file, str):
+            return file
+
+        app = wx.GetApp().TopWindow
+        if not hasattr(app, 'proj') or app.proj is None:
+            return file
+
+        target = os.path.realpath(os.path.abspath(file))
+        for obj in app.proj.walk_tree(stop_at_ext=True):
+            path2fullpath = getattr(obj, 'path2fullpath', None)
+            if not callable(path2fullpath):
+                continue
+            try:
+                obj_file = path2fullpath()
+            except Exception:
+                continue
+            if not obj_file:
+                continue
+            try:
+                candidate = os.path.realpath(os.path.abspath(obj_file))
+            except Exception:
+                continue
+            if candidate == target:
+                from ifigure.mto.treedict import str_td
+                tagged = str_td(file)
+                tagged.td = obj.get_full_path()
+                return tagged
+
+        return file
 
     def get_ipage(self, p):
         if p in self.page_list:
@@ -1315,7 +1457,8 @@ class ScriptEditor(wx.Panel):
         return -1
 
     def NewFile(self):
-        p = PythonSTC(self.nb, -1)
+        p = piScopeSTC(self.nb, -1)
+        p.set_external_namespace_provider(self._namespace_provider)
         p.SetDropTarget(TextDropTarget(p))
         self.Bind(wx.stc.EVT_STC_MODIFIED, self.onModified, p)
         if self.ic == 0:
@@ -1350,6 +1493,8 @@ class ScriptEditor(wx.Panel):
             file = open_dlg.GetPath()
             open_dlg.Destroy()
 
+        file = self._make_file_entry(file)
+
         # first try to open file
         if self.file_list.count(file) != 0:
             # file is already open
@@ -1370,7 +1515,9 @@ class ScriptEditor(wx.Panel):
         except Exception:
             logging.exception("File Open Error"+file)
             return
-        p = PythonSTC(self.nb, -1)
+        syntax = infer_syntax_from_filename(file)
+        p = piScopeSTC(self.nb, -1, syntax=syntax)
+        p.set_external_namespace_provider(self._namespace_provider)
         p.SetDropTarget(TextDropTarget(p))
         try:
             p.SetText(txt)
@@ -1469,7 +1616,7 @@ class ScriptEditor(wx.Panel):
             self.nb.SetPageText(ipage, os.path.basename(file),
                                 doc_name=file)
             self.nb.SetPageToolTip(ipage, file)
-            self.file_list[idx] = file
+            self.file_list[idx] = self._make_file_entry(file)
             p.SetSavePoint()
         self.onModified(None)
 
@@ -1606,7 +1753,7 @@ class ScriptEditor(wx.Panel):
         # print self.file_list
         if param["oldname"] in self.file_list:
             idx = self.file_list.index(param["oldname"])
-            self.file_list[idx] = param["newname"]
+            self.file_list[idx] = self._make_file_entry(param["newname"])
             ipage = self.nb.GetPageIndex(self.page_list[idx])
             print(os.path.basename(param["newname"]))
             self.nb.SetPageText(ipage, os.path.basename(param["newname"]),
@@ -1841,6 +1988,8 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.sb = StatusBarSimple(self)
         self.SetStatusBar(self.sb)
 
+        self.SetMenuBar(self.menuBar)
+
         self.SetSize((400, 300))
         self.SetTitle('Editor')
         self.Layout()
@@ -1909,6 +2058,7 @@ class ScriptEditorFrame(FrameWithWindowList):
             return
         self.GetSizer().Detach(self._se)
         self._se = None
+
         app = wx.GetApp().TopWindow
         app.attach_editor(open_editor)
 
@@ -1955,7 +2105,6 @@ class ScriptEditorFrame(FrameWithWindowList):
         self.Close()
 
     def onWindowClose(self, e):
-        print('script editor closing')
         self.attach_editor_to_main(open_editor=False)
         e.Skip()
 

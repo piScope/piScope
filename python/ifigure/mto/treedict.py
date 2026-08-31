@@ -926,6 +926,9 @@ class TreeDict(object):
         else:
             return {}
 
+    def provide_ns_for_editor(self, editor=None):
+        return {}
+
     def get_extfolderpath(self):
         from ifigure.mto.py_code import AbsFileContainer
         p = self

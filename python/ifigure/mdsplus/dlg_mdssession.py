@@ -25,7 +25,7 @@ from ifigure.utils.wx3to4 import TextEntryDialog, GridSizer
 from ifigure.utils.edit_list import EditListPanel, EDITLIST_CHANGED
 from ifigure.widgets.miniframe_with_windowlist import DialogWithWindowList
 from ifigure.widgets.book_viewer import FrameWithWindowList
-from ifigure.widgets.script_editor import PythonSTC
+from ifigure.widgets.script_editor import piScopeSTC
 import ifigure.widgets.dialog as dialog
 
 bitmaps = None
@@ -75,7 +75,7 @@ class DlgMdsSession(DialogWithWindowList):
 
         self.elp = EditListPanel(panel1, elpl)
         self.nb = Notebook(panel1)
-#        p = PythonSTC(self.nb, -1)
+#        p = piScopeSTC(self.nb, -1)
 #        self.nb.AddPage(p, 'Untitiled')
         self.bt_var = wx.BitmapButton(
             panel1, wx.ID_ANY, bitmaps[0])  # 'Add Variable...')
@@ -640,7 +640,7 @@ class DlgMdsSession(DialogWithWindowList):
 #        self.nb.SetSelection(0)
 
     def _new_stc(self, parent, txt, syntax='none'):
-        p = PythonSTC(parent, -1, syntax=syntax)
+        p = piScopeSTC(parent, -1, syntax=syntax)
 
         #self._set_stc_txt(p, txt)
         p.EmptyUndoBuffer()

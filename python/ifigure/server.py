@@ -18,7 +18,7 @@ from __future__ import print_function
 
     history
        2012.12.01  v 0.1
-      
+
 '''
 
 
@@ -33,7 +33,6 @@ import threading
 from six.moves import socketserver
 import wx
 import ifigure.events
-import ifigure.interactive
 import binascii
 import logging
 import time
@@ -83,6 +82,8 @@ class Server(object):
     rport = 0
     rhost = ''
 
+    records = []
+
     def start(self, host=None):
         on, server, HOST, PORT = self.info()
         if server is not None:
@@ -95,11 +96,12 @@ class Server(object):
             HOST = host
         PORT = pick_unused_port()
 
-        print(''.join(('starting server:', HOST, ':', str(PORT))))
-        sys.stdout.flush()
         server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
         server.request_queue_size = 1
         ip, port = server.server_address
+
+        print(''.join(('starting server:', HOST, ':', str(PORT), ':', str(os.getpid()))))
+        sys.stdout.flush()
 
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
@@ -131,14 +133,21 @@ class Server(object):
         return server is not None, server, HOST, PORT
 
     def process(self, command):
+        import ifigure.interactive
+
+        Server.records.append(command)
+
         logging.basicConfig(level=logging.DEBUG)
         ctype = command[0]
         shell = wx.GetApp().TopWindow.shell
+
         if ctype == 'c':   # check connection
             ret = 'ok'
+
         elif ctype == 't':  # execute text
-            shell.execute_text(data)
+            shell.execute_text(command[1])
             ret = 'ok'
+
         elif ctype == 'f':  # execute command
             c = command[1]
             args = command[2]
@@ -155,6 +164,7 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
         elif ctype == 'g':  # execute command and return value
             c = command[1]
             args = command[2]
@@ -170,6 +180,7 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
         elif ctype == 'h':  # execute text command and return value
             c = command[1]
             try:
@@ -181,6 +192,12 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+
+        elif ctype == 'd':  # detach stdin/stdout/stderr
+            Server.records.append('d is here')
+            self.detach_streams()
+            ret = 'ok'
+
         elif ctype == 'r':  # set receiver port address
             Server.rhost = command[1]
             Server.rport = command[2]
@@ -198,8 +215,35 @@ class Server(object):
         sock.connect((self.rhost, self.rport))
         data = binascii.b2a_hex(pickle.dumps(
             {'type': data_type, 'data': data}))
-        sock.sendall(data+'\n')
+        sock.sendall(data+b'\n')
         sock.close()
 
     def export_message(self, data):
         self.export_data(data, data_type='msg')
+
+    def detach_streams(self):
+        Server.records.append("detatching !!!!!!!!!!!")
+        # Open the null device
+        devnull = os.open(os.devnull, os.O_RDWR)
+        Server.records.append("detatching !!!!!!!!!!!")
+
+        # Duplicate devnull file descriptor onto 0 (stdin), 1 (stdout), 2 (stderr)
+        os.dup2(devnull, 0)
+        os.dup2(devnull, 1)
+        os.dup2(devnull, 2)
+        Server.records.append("detatching !!!!!!!!!!!")
+
+        # Close the original descriptor copy
+        if devnull > 2:
+            os.close(devnull)
+        Server.records.append("detatching !!!!!!!!!!!")
+
+
+        # Update sys objects to match the new file descriptors\
+        import sys
+        sys.stdin = open(os.devnull, 'r')
+        sys.stdout = open(os.devnull, 'w')
+        sys.stderr = open(os.devnull, 'w')
+        Server.records.append("detatching !!!!!!!!!!! done")
+        return
+        print(sys.stdion)
