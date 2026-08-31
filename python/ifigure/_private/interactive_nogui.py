@@ -160,13 +160,10 @@ class Client(object):
     def launch(self, host='localhost', exe=None):
         if host == 'localhost':
             from ifigure.utils.get_ifigure_dir import bin_dir
-            # command = os.path.join(bin_dir(), 'piscope.sh') + ' -s'
+
             if exe is None:
                 exe = sys.executable
-            # command = command + ' -e '+ exe + ' &'
-            # import piscope
-            # command = sys.executable + ' ' + piscope.__file__ + ' -s -d'
-            # command = 'piscope  -s -d'
+
             command = [exe, '-m', 'ifigure', '-s', '-q', '-d']
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
@@ -193,15 +190,6 @@ class Client(object):
 
         if Client.receiver is None:
             self._start_receiver('localhost')
-
-
-            # sys.stdout.flush()
-            # Client.receiver = Receiver((lhost, port), ReceiverReqHandler)
-
-            #server_thread = threading.Thread(
-            #    target=Client.receiver.serve_forever)
-            #server_thread.daemon = True
-            #server_thread.start()
 
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
