@@ -1617,8 +1617,8 @@ class ifigure_app(BookViewerFrame):
         BookViewerFrame.show_page(self, ipage)
         [x.Enable(True) for x in self._figure_mnis]
         [v.adjust_attach_menu() for v in self.viewers]
-        if self.aviewer is None:
-            self.aviewer = v
+        if self.aviewer is None and len(self.viewers) > 0:
+            self.aviewer = self.viewers[0]
 
         self.deffered_force_layout()
         self.draw_all()
@@ -2105,9 +2105,9 @@ class ifigure_app(BookViewerFrame):
         self.server_response_queue.put(response)
 
     def use_server(self):
-        from six.moves import queue as Queue
+        import queue
 
-        self.server_response_queue = Queue.Queue()
+        self.server_response_queue = queue.Queue()
         return self.server_response_queue
 
     def find_bookviewer(self, book):
