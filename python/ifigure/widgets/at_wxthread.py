@@ -4,7 +4,7 @@
 '''
 from functools import wraps
 import wx
-from six.moves import queue as Queue
+import queue as Queue
 import threading
 
 

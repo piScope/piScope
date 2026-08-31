@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ifigure.utils.images2gif import writeGif
 #from PIL import Image
 import os

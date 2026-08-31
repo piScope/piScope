@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #
 #  this is a start-up script loaded in

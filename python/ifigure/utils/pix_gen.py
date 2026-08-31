@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  a script to produce icon images
 #

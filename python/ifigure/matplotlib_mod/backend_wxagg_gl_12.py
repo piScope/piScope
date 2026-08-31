@@ -1,4 +1,3 @@
-from __future__ import print_function
 # uncomment the following to use wx rather than wxagg
 from matplotlib.backends.backend_agg import RendererAgg
 import os

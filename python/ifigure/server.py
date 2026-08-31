@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
     server thread for ifigure.
@@ -30,7 +29,7 @@ import sys
 import threading
 import socket
 import threading
-from six.moves import socketserver
+import socketserver
 import wx
 import ifigure.events
 import binascii

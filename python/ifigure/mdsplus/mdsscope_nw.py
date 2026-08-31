@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   MDSScope no-window
 #
@@ -32,7 +31,7 @@ import time
 import weakref
 import logging
 import threading
-from six.moves import queue as Queue
+import queue as Queue
 import os
 import shutil
 import numpy

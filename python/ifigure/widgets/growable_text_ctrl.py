@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ifigure.utils.edit_list import TextCtrlCopyPaste
 import wx
 import numpy as np

@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   collection of widgets for artists
 #

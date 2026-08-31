@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :fig_obj
 #
 #          base class for fig_obj

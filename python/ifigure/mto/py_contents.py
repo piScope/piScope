@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :py_content
 #
 #      base class for contents, in which
@@ -28,7 +27,7 @@ import collections
 import weakref
 import sys
 import time
-from six.moves import queue as Queue
+import queue as Queue
 import ifigure.events
 from ifigure.widgets.var_viewerg2 import VarViewerGValue
 from ifigure.utils.cbook import SetText2Clipboard

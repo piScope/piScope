@@ -28,7 +28,7 @@ def get_color_cycle_list(axes):
         return [x['color'] for x in mpl.rcParams['axes.prop_cycle']]
     else:
         import six
-        color = [six.next(get_color_cycle(axes))
+        color = [next(get_color_cycle(axes))
                  for i in range(nx)]
 
 

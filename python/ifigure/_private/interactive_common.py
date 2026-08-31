@@ -733,7 +733,7 @@ COMMON_API = [
     'fill', 'fill_between', 'fill_between_3d', 'fill_betweenx', 'hist',
     'hold', 'image', 'isec', 'isection', 'ispline', 'legend',
     'lighting', 'loglog', 'nsec', 'nsection', 'oerrorbar', 'oplot',
-    'plot', 'plotc', 'print_function', 'property', 'quiver', 'quiver3d',
+    'plot', 'plotc', 'property', 'quiver', 'quiver3d',
     'revolve', 'savedata', 'savefig', 'scatter', 'semilogx', 'semilogy',
     'showpage', 'solid', 'spec', 'specgram', 'subplot', 'suptitle',
     'surf', 'surface', 'text', 'threed', 'timetrace', 'title',

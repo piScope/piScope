@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 __author__ = "Syun'ichi Shiraiwa"
 __copyright__ = "Copyright, S. Shiraiwa, PiScope Project"

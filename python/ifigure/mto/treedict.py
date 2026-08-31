@@ -1,9 +1,7 @@
-from __future__ import print_function
 #  Name   :treedict
 #
 #          base class for all model_tree_object
 #
-from __future__ import print_function
 #
 #
 #  Author :
@@ -352,9 +350,8 @@ class TreeDict(object):
         # easy to read string representation of data
         # print "generating string"
         rl = []
-        
-        from six import iteritems        
-        for k, v in iteritems(self._getLeaves()):
+
+        for k, v in self._getLeaves().items():
             rl.append("%s = %s" % (k, v.__repr__()))
    #        return "\n".join(rl)
         return rl

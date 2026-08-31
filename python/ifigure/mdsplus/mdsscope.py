@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #         dwscope implementation on piscope
 #
@@ -53,7 +52,7 @@ import time
 import weakref
 import logging
 import threading
-from six.moves import queue as Queue
+import queue as Queue
 import os
 import shutil
 import numpy

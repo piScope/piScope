@@ -1,4 +1,3 @@
-from __future__ import print_function
 from scipy.integrate import simpson
 from scipy.interpolate import CubicSpline
 from scipy.optimize import curve_fit

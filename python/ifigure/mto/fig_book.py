@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :fig_book
 #
 #          this class to manage bundle of fig_pages

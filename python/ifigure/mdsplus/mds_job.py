@@ -1,4 +1,3 @@
-from __future__ import print_function
 class MDSjob(object):
     def __init__(self, command, *args):
         self.command = command

@@ -1,4 +1,3 @@
-from __future__ import print_function
 '''
    a routin to expand goemetry array
 

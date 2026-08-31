@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from .gl_compound import GLCompound
 from matplotlib.collections import LineCollection

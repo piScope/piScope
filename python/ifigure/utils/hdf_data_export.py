@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
 
@@ -8,7 +7,6 @@ from __future__ import print_function
 
 '''
 import traceback
-import six
 from collections import OrderedDict
 
 from ifigure.widgets.artist_widgets import listparam, call_getter
@@ -48,7 +46,7 @@ def select_unique_properties(parent, dataset, flags):
         if len(objs) == 1:
             labels = (names[0], 'property')
             flags[labels] = False
-            for key in six.iterkeys(dataset[names[0]]['property']):
+            for key in dataset[names[0]]['property'].keys():
                 labels = (names[0], 'property', key)
                 flags[labels] = False
         props = [dataset[name]['property'] for name in names]
@@ -70,7 +68,7 @@ def select_unique_properties_all(page, dataset, flags):
     for obj in page.walk_tree():
         if obj.num_child() > 0:
             select_unique_properties(obj, dataset, flags)
-    for key in six.iterkeys(flags):
+    for key in flags.keys():
         if (key[0] == page.name and len(key) >= 2 and
                 key[1] == 'property'):
             flags[key] = False
@@ -213,11 +211,11 @@ def hdf_data_export(page=None,
     meta = metadata[list(metadata)[0]]
     meta['description'] = "Figure data exported from piScope"
     meta['date'] = time.ctime(time.time())
-    for key in six.iterkeys(meta):
+    for key in meta.keys():
         rootgrp.attrs[key] = str(meta[key])
     metadata[list(metadata)[0]] = {}
 
-    for key in six.iterkeys(data):
+    for key in data.keys():
         labels = (key, )
         if (labels in export_flag and
                 not export_flag[labels]):
@@ -231,7 +229,7 @@ def hdf_data_export(page=None,
             else:
                 data_grp = key_grp
             ddd = data[key][k]
-            for key2 in six.iterkeys(ddd):
+            for key2 in ddd.keys():
                 labels = (key, k, key2)
                 # print 'checking ', labels, ddd.keys()
                 if (labels in export_flag and
@@ -251,7 +249,7 @@ def hdf_data_export(page=None,
                         'Real', data=ddd[key2].real)
                     dataset2 = cdata_grp.create_dataset(
                         'Imag', data=ddd[key2].imag)
-                    for key3 in six.iterkeys(meta):
+                    for key3 in meta.keys():
                         cdata_grp.attrs[key3] = str(meta[key3])
                     dataset1.attrs['comment'] = 'real part'
                     dataset2.attrs['comment'] = 'imaginary part'
@@ -259,19 +257,19 @@ def hdf_data_export(page=None,
                     dataset2.attrs['shape'] = str(ddd[key2].imag.shape)
                 else:
                     dataset = data_grp.create_dataset(key2, data=ddd[key2])
-                    for key3 in six.iterkeys(meta):
+                    for key3 in meta.keys():
                         dataset.attrs[key3] = str(meta[key3])
                     dataset.attrs['shape'] = str(ddd[key2].shape)
         try:
             meta = metadata[key]
         except:
             meta = {}
-        for key3 in six.iterkeys(meta):
+        for key3 in meta.keys():
             if not isinstance(meta[key3], dict):
                 key_grp.attrs[key3] = str(meta[key3])
 
         props = data[key]['property']
-        for key2 in six.iterkeys(props):
+        for key2 in props.keys():
             labels = (key, 'property', key2)
             if (labels in export_flag and
                     not export_flag[labels]):

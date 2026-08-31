@@ -1,11 +1,9 @@
-from __future__ import print_function
 import os
 import traceback
 from collections import OrderedDict
 import wx
 import wx.dataview as dv
 import wx.propgrid as pg
-import six
 import numpy as np
 import time
 import weakref
@@ -61,7 +59,7 @@ class HDFDataModel(dv.PyDataViewModel):
             print('GetChildren')
         if not parent:
             num = 0
-            for name in six.iterkeys(self.dataset):
+            for name in self.dataset.keys():
                 labels = (name,)
                 obj, exist = self.getobj(labels)
                 # if not exist:
@@ -168,7 +166,7 @@ class HDFDataModel(dv.PyDataViewModel):
             while labels[p] in d:
                 d = d[labels[p]]
                 dd = OrderedDict()
-                for key in six.iterkeys(d):
+                for key in d.keys():
                     if not isinstance(d[key], dict):
                         dd[key] = d[key]
                 ret = str(dd)
@@ -405,7 +403,7 @@ class HdfExportWindow(wx.Frame):
         while labels[p] in d:
             d = d[labels[p]]
             dd = OrderedDict()
-            for key in six.iterkeys(d):
+            for key in d.keys():
                 if not isinstance(d[key], dict):
                     dd[key] = d[key]
             ret = dd, d
@@ -417,7 +415,7 @@ class HdfExportWindow(wx.Frame):
         if self.model.IsContainer(item) and len(labels) != 1:
             ret = None
         self.grid.Clear()
-        for key in six.iterkeys(dd):
+        for key in dd.keys():
             prop = pg.StringProperty(str(key), value=str(dd[key]))
             self.grid.Append(prop)
         self.grid_target = d

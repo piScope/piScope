@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from ifigure.utils.cbook import Write2Main
 from ifigure.mto.py_code import PyData

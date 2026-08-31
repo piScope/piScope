@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 from ifigure.mto.py_contents import Namelist, TSCInputFile
 from collections import OrderedDict

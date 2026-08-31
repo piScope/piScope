@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   Threaded worker
 #      A utility class to support thread-based parallelism
@@ -8,7 +7,7 @@ from __future__ import print_function
 import time
 import ifigure
 import wx
-from six.moves import queue as Queue
+import queue as Queue
 import threading
 from ifigure.utils.event_driven_thread2 import get_thread, send_event
 

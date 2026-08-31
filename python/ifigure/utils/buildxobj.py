@@ -31,7 +31,6 @@ Reference for content:   Adobe PDF reference, sixth edition, version 1.7
 from pdfrw.objects import PdfDict, PdfArray, PdfName
 from pdfrw.pdfreader import PdfReader
 from pdfrw.errors import log
-from six import iteritems
 
 class ViewInfo(object):
     ''' Instantiate ViewInfo with a uri, and it will parse out
@@ -64,7 +63,7 @@ class ViewInfo(object):
                 setattr(self, key, [float(x) for x in value])
             else:
                 log.error('Unknown option: %s', key)
-        for key, value in iteritems(kw):
+        for key, value in kw.items():
             assert hasattr(self, key), key
             setattr(self, key, value)
 

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import ifigure.utils.debug as debug
 from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists, GlobalHistory
 import ifigure.widgets.canvas.custom_picker as cpicke

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import __builtin__
 openfiles = set()
 oldfile = __builtin__.file

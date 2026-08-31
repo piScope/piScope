@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
     client.py
@@ -42,7 +41,7 @@ import signal
 import readline
 import warnings
 
-from six.moves import socketserver
+import socketserver
 from ifigure.utils.cbook import pick_unused_port
 import ifigure.utils.pid_exists
 

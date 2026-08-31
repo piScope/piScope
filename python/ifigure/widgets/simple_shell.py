@@ -1,5 +1,4 @@
-from __future__ import print_function
-from six.moves.queue import Queue, Empty
+from queue import Queue, Empty
 import wx.py.shell  # (wx4 removed this) wx.lib.shell
 from threading import Timer, Thread
 import time
@@ -366,7 +365,7 @@ class SimpleShell(ShellBase):
         '''
         this overwrite the origial setBuiltinKeywords
         '''
-        from six.moves import builtins
+        import builtins
         builtins.exit = builtins.quit = \
             self.quit
         builtins.forceexit = builtins.forcequit = \

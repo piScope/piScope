@@ -1,4 +1,3 @@
-from __future__ import print_function
 import wx
 from ifigure.utils.cbook import parseStr
 from ifigure.mto.py_code import PyData

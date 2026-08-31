@@ -1,4 +1,3 @@
-from __future__ import print_function
 # module to run script with __main__ condition
 
 import numpy as np

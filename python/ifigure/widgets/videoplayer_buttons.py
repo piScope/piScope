@@ -1,4 +1,3 @@
-from __future__ import print_function
 from .miniframe_with_windowlist import MiniFrameWithWindowList
 import os
 import wx
