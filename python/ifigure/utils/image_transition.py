@@ -2,14 +2,10 @@ from ifigure.utils.images2gif import writeGif
 
 import os
 from ifigure.utils.cbook import image_to_pil
-import six
 import numpy as np
 
 dither = 1
 
-if six.PY2:
-    assert False, "This module does not work with Py2"
-    
 from PIL import Image
 
 def save_transition(im1, im2, filename='animation.gif',

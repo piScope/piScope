@@ -20,9 +20,9 @@ import ifigure.utils.debug as debug
 import wx
 from wx.richtext import RichTextCtrl, RE_MULTILINE
 import sys
-import six
 import os
 import ifigure
+import ifigure.widgets.dialog as dialog
 import traceback
 import wx.stc as stc
 import numpy as np
@@ -885,8 +885,6 @@ class Color(BitmapButtons):
             val = [0, 0, 0, 0]
         elif isinstance(val, str):
             val = CC().to_rgba(val)
-        elif six.PY2 and isinstance(val, unicode):
-            val = CC().to_rgba(val)
         else:
             if not isinstance(val, str) and len(val) == 3:
                 val = [val[0], val[1], val[2], 1.0]
@@ -1024,8 +1022,6 @@ class ColorSelector(wx.BitmapButton):
             bitmap = wx.Bitmap(self.imageFiles['none'])
         else:
             if isinstance(value, str):
-                bitmap = colorbutton_bitmap(CC().to_rgba(value))
-            elif six.PY2 and isinstance(value, unicode):
                 bitmap = colorbutton_bitmap(CC().to_rgba(value))
             else:
                 bitmap = colorbutton_bitmap(value)
@@ -1856,8 +1852,6 @@ class _textctrl_mixin():
             self._value_at_getfocus = self.GetValue()
             call_send_event(self, evt)
         except ValueError:
-            import ifigure.widgets.dialog as dialog
-            import traceback
             wx.CallAfter(dialog.showtraceback,
                          parent=self,
                          txt='ValueError occured',
@@ -1901,16 +1895,10 @@ class _textctrl_mixin():
         e.Skip()
 
     def GetValue(self):
-        if six.PY2:
-            punctuation = {
-                ord(u'\u2018'): unicode("'"),
-                ord(u'\u2019'): unicode("'"),
-            }
-        else:
-            punctuation = {
-                ord(u'\u2018'): "'",
-                ord(u'\u2019'): "'",
-            }
+        punctuation = {
+            ord(u'\u2018'): "'",
+            ord(u'\u2019'): "'",
+        }
 
         try:
             wxval = self._baseclass.GetValue(self)
@@ -4058,10 +4046,10 @@ class MDSSource0(wx.Panel):
             p.SetText(txt)
 #            if not mod: p.SetSavePoint()
         except UnicodeDecodeError:
-            if six.PY2:
-                p.SetText(unicode(txt, errors='ignore'))
+            if isinstance(txt, bytes):
+                p.SetText(txt.decode(errors='ignore'))
             else:
-                assert False, "_set_stc_txt got unicode error"
+                p.SetText(str(txt))
 #            if not mod: p.SetSavePoint()
 
     def onHitAlways(self, evt):

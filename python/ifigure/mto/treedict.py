@@ -29,7 +29,6 @@ import shutil
 import tarfile
 import time
 import wx
-import six
 import ifigure.utils.pickle_wrapper as pickle
 import ifigure
 from ifigure.utils.debug import dprint
@@ -965,9 +964,6 @@ class TreeDict(object):
             if m is not None:
                 lc['book'] = m
 
-            if six.PY2 and isinstance(self._var[name], unicode):
-                if self._var[name].startswith(u'='):
-                    self._var[name] = str(self._var[name])
             if isinstance(self._var[name], str):
                 if name == '':
                     value = self._var0

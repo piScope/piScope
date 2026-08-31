@@ -2,13 +2,8 @@
 import os
 import sys
 import smtplib
-import six
-if six.PY2:
-    from email.Utils import formatdate
-    from email import Encoders    
-else:
-    from email.utils import formatdate
-    from email import encoders as Encoders        
+from email.utils import formatdate
+from email import encoders as Encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText

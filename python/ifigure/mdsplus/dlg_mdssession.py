@@ -2,11 +2,6 @@
 import os
 import weakref
 from collections import OrderedDict
-import six
-if six.PY2:
-    unicode = unicode
-else:
-    unicode = str    
 
 import wx
 import wx.stc as stc
@@ -656,6 +651,9 @@ class DlgMdsSession(DialogWithWindowList):
             p.SetText(txt)
 #            if not mod: p.SetSavePoint()
         except UnicodeDecodeError:
-            p.SetText(unicode(txt, errors='ignore'))
+            if isinstance(txt, bytes):
+                p.SetText(txt.decode(errors='ignore'))
+            else:
+                p.SetText(str(txt))
 #            if not mod: p.SetSavePoint()
         pass

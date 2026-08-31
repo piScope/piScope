@@ -1,4 +1,3 @@
-import six
 import wx
 import collections
 
@@ -75,8 +74,7 @@ class ShotNumberCtrl(wx.stc.StyledTextCtrl):
         
         #dprint1("bbb=", bbb.__repr__())
 
-        if six.PY3:
-            bbb = memoryview(bbb.encode('latin-1'))
+        bbb = memoryview(bbb.encode('latin-1'))
         self.AddStyledText(bbb)
         self.SetCurrentPos(pos)
         self.SetSelection(sel1, sel2)
