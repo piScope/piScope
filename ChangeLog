@@ -1,3 +1,10 @@
+2026 9/1
+	* Improved non-WX mode (using plotting commands from regular python shell)
+	** FigureProxy object is introduced, which allows
+	** v = figure(); v.plot(....), where v is the FigureProxy in non-WX mode.
+	* Added test framework in tests/
+	** tests depend on the improved non-WX mode.
+
 2026 8/30
 	* Unified plotting entry point: ifigure.interactive
 	** added internal backends: ifigure._interactive_gui and ifigure._interactive_nogui

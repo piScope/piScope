@@ -24,9 +24,23 @@ For the above purposes, &pi;Scope is equipped with:
 The following plotting commands are available. These commands are preloaded in the Python shell
 inside piScope GUI. From a script, users need to load them:
 
-```python
-from ifigure.interactive import *
-```
+<table>
+    <tr>
+        <td valign="top" width="58%">
+
+<pre><code>from ifigure.interactive import *
+import numpy as np
+v = figure()
+x = np.linspace(0.0, 2.0*np.pi)
+v.plot(x, np.sin(x))
+</code></pre>
+
+        </td>
+        <td valign="top" width="42%">
+            <img src="example/images/full_cycle_sine.png" alt="piScope output for one full sine cycle" width="100%" />
+        </td>
+    </tr>
+</table>
 
 * Inside a live piScope GUI process, plotting calls use the GUI interactive backend.
 * Outside piScope GUI, plotting calls use the no-GUI client backend. The backend
