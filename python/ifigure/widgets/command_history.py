@@ -26,6 +26,8 @@ class HistoryPopUp(wx.Menu):
 class LinepiScopeSTC(piScopeSTC):
     def __init__(self, *args, **kargs):
         piScopeSTC.__init__(self, *args, **kargs)
+
+        self.set_checking_mode('off') # disable completion/checking
         self.MarkerSetForeground(1, 'GOLD')
         self.MarkerSetBackground(1, 'GOLD')
         self._marker1s = []
