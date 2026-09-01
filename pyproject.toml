@@ -60,4 +60,8 @@ version = { attr = "ifigure.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "quick: reduced plotting regression suite for --quick runs",
+  "full: expanded per-command plotting coverage included in default runs",
+]
 

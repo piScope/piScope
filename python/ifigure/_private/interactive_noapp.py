@@ -46,6 +46,61 @@ from ifigure.utils.cbook import pick_unused_port
 import ifigure.utils.pid_exists
 
 
+_PROXY_MARKER = '__ifigure_proxy__'
+
+
+def _unwrap_proxy(value):
+    if isinstance(value, dict):
+        if _PROXY_MARKER in value and len(value) == 1:
+            return FigureProxy(value[_PROXY_MARKER])
+        return {k: _unwrap_proxy(v) for k, v in value.items()}
+    if isinstance(value, tuple):
+        return tuple(_unwrap_proxy(v) for v in value)
+    if isinstance(value, list):
+        return [_unwrap_proxy(v) for v in value]
+    return value
+
+
+class FigureProxy(object):
+    def __init__(self, object_path):
+        self.object_path = object_path
+
+    def __repr__(self):
+        return 'FigureProxy(%s)' % (self.object_path,)
+
+    def _call(self, name, *args, **kargs):
+        kargs['_object_path'] = self.object_path
+        return _send_message(name, *args, **kargs)
+
+    def _call_g(self, name, *args, **kargs):
+        kargs['_object_path'] = self.object_path
+        kargs['_return_proxy'] = True
+        return _unwrap_proxy(_send_message_g(name, *args, **kargs))
+
+    def get_page(self, ipage=None):
+        return self._call_g('get_page', ipage=ipage)
+
+    def get_axes(self, ipage=None, iaxes=None):
+        return self._call_g('get_axes', ipage=ipage, iaxes=iaxes)
+
+    def ax_getaxes(self, ipage=None, iaxes=None):
+        return self.get_axes(ipage=ipage, iaxes=iaxes)
+
+    def ax_getpage(self, ipage=None):
+        return self.get_page(ipage=ipage)
+
+    def __getattr__(self, name):
+        if name.startswith('_'):
+            raise AttributeError(name)
+
+        def _method(*args, **kargs):
+            return _unwrap_proxy(_send_message_g(
+                name, *args, _object_path=self.object_path,
+                _return_proxy=True, **kargs))
+
+        return _method
+
+
 # async_print
 #
 #  show message in Python interpromt w/o destroying what is shown now.
@@ -289,6 +344,11 @@ class Client(object):
         server_thread.start()
 
 
+def _ensure_connection():
+    if Client.port == 0 or Client.process is None:
+        launch()
+
+
 def launch(exe=None):
     """Launch piScope and return its server port and process ID."""
     return _server_control('launch', exe=exe)
@@ -369,6 +429,7 @@ def _get_random_name():
 
 
 def _send_message(command, *args, **kargs):
+    _ensure_connection()
     try:
         message = pickle.dumps(('f', command, args, kargs))
     except BaseException:
@@ -379,6 +440,7 @@ def _send_message(command, *args, **kargs):
 
 
 def _send_message_g(command, *args, **kargs):
+    _ensure_connection()
     try:
         message = pickle.dumps(('g', command, args, kargs))
     except BaseException:
@@ -388,6 +450,8 @@ def _send_message_g(command, *args, **kargs):
     return c.send(message)
 
 def _send_message_d():
+    if Client.port == 0 or Client.process is None:
+        return None
     try:
         message = pickle.dumps(('d', ))
     except BaseException:
@@ -397,9 +461,20 @@ def _send_message_d():
     return c.send(message)
 
 for name in COMMON_API:
-    def f(*args, _name=name, **kargs):
-        _send_message(_name, *args, **kargs)
+    if name == 'property':
+        def f(*args, _name=name, **kargs):
+            return _send_message_g(_name, *args, **kargs)
+    else:
+        def f(*args, _name=name, **kargs):
+            _send_message(_name, *args, **kargs)
     globals()[name] = f
+
+
+def figure(*args, **kargs):
+    proxy = _send_message_g('figure', *args, _return_proxy=True, **kargs)
+    if proxy is None:
+        return None
+    return _unwrap_proxy(proxy)
 
 
 def server(*args, **kargs):
@@ -443,7 +518,14 @@ def _is_interactive_session():
     return False
 
 
-if _is_interactive_session():
+def _is_main_thread():
+    try:
+        return threading.current_thread() is threading.main_thread()
+    except Exception:
+        return True
+
+
+if _is_interactive_session() and _is_main_thread():
     # launch piScope whne from ifigure.client import * is called.    
     launch()
     install_prompt_tracking()
