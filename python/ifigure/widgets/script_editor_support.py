@@ -433,10 +433,25 @@ class PythonCompletionSyntaxMixin(object):
             return
         if len(names) > 200:
             names = names[:200]
+        self._autocomplete_candidates = names
         self.AutoCompSetIgnoreCase(True)
         self.AutoCompSetAutoHide(True)
         self.AutoCompSetDropRestOfWord(False)
         self.AutoCompShow(len(prefix), " ".join(names))
+
+    def _move_autocomplete_selection(self, offset):
+        """Select the previous or next item in the active completion list."""
+        candidates = getattr(self, '_autocomplete_candidates', ())
+        if not candidates:
+            return False
+
+        current = self.AutoCompGetCurrent()
+        if current < 0:
+            current = 0 if offset > 0 else len(candidates) - 1
+        else:
+            current = (current + offset) % len(candidates)
+        self.AutoCompSelect(candidates[current])
+        return True
 
     def _extract_callable_token(self, txt):
         txt = txt.rstrip()
@@ -503,6 +518,7 @@ class PythonCompletionSyntaxMixin(object):
         if len(matches) > 200:
             matches = matches[:200]
 
+        self._autocomplete_candidates = matches
         self.AutoCompSetIgnoreCase(True)
         self.AutoCompSetAutoHide(True)
         self.AutoCompSetDropRestOfWord(False)

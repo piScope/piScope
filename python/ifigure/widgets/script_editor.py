@@ -677,20 +677,33 @@ class piScopeSTC(PythonCompletionSyntaxMixin, stc.StyledTextCtrl):
             self._ctrl_K = False
             return
 
-        if self.CallTipActive():
-            self.CallTipCancel()
-        if self.AutoCompActive():
-            self.AutoCompCancel()
+
 
         key = event.GetKeyCode()
-        if key == 396:  # press control
-            event.Skip()
+        if key in (wx.WXK_CONTROL, getattr(wx, 'WXK_RAW_CONTROL', -1),
+                   396):  # exit here when control is hit.
+            event.Skip() 
             return
+
         if hasattr(event, 'RawControlDown'):
             controlDown = event.RawControlDown()
         else:
             controlDown = event.ControlDown()
         altDown = event.AltDown()
+
+        if self.CallTipActive():
+            self.CallTipCancel()
+        if self.AutoCompActive():
+            if key in (wx.WXK_UP, wx.WXK_DOWN,
+               wx.WXK_PAGEUP, wx.WXK_PAGEDOWN,
+               wx.WXK_RETURN, wx.WXK_TAB):
+               event.Skip()
+               return
+            if controlDown and key in (ord('P'), ord('N')):
+                offset = -1 if key == ord('P') else 1
+                self._move_autocomplete_selection(offset)
+                return
+            self.AutoCompCancel()
 
         if (self._search != 0 and
             not controlDown and
