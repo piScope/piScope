@@ -35,7 +35,7 @@ def interpret_keycombination(key_evt):
         mod = (key_evt.ControlDown() +
                key_evt.AltDown()*2 +
                key_evt.ShiftDown()*4 +
-               key_evtprev.MetaDown()*8)
+               key_evt.MetaDown()*8)
 
     code = key_evt.GetKeyCode()
 

@@ -602,7 +602,7 @@ class AxisCParam(AxisParam):
         pass
 
     def get_mpl_range(self, a):
-        if isinstalce(a, ScalarMappable):
+        if isinstance(a, ScalarMappable):
             return a.get_clim()
         else:
             return (0, 1)

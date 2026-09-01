@@ -1035,7 +1035,7 @@ class TreeDict(object):
             try:
                 a = self._var[args[0]]
             except KeyError:
-                print(("!!!", self.get_full_path(), " does not have ", name))
+                print(("!!!", self.get_full_path(), " does not have ", args[0]))
                 return
             self._note[args[0]] = args[1]
         if len(args) == 1:
@@ -2316,92 +2316,3 @@ class TopTreeDict(TreeDict):
         '''
         return []
 
-
-#
-#   example
-#
-if __name__ == '__main__':
-    print("Demonstration")
-    ##
-    # Point of this class
-    ##
-    ##     children is stored in OrderedDict
-    # adder need to be implemented to add a
-    # child
-
-    root = TreeDict()
-    root.add_child("test", TreeDict())
-    root.add_child("test2", TreeDict())
-    root.test.add_child("test3", TreeDict())
-
-    print(("root", root))
-    print(("root.test", root.test))
-    print(("root.test.test3", root.test.test3))
-    print(("root.test2", root.test2))
-
-    gen = root.walk_tree()
-    print(gen.next().get_full_path())
-    print(gen.next().get_full_path())
-    print(gen.next().get_full_path())
-    print(gen.next().get_full_path())
-    print(gen.next().get_full_path())
-
-
-if __name__ == '__main__':
-    print("Demonstration")
-    ##
-    # Point of this class
-    ##
-    ##     children is stored in OrderedDict
-    # adder need to be implemented to add a
-    # child
-
-    page = FigPage()
-    page.add_axes('axes_1')
-    page.add_axes('axes_2')
-    page.axes1.add_plot()
-
-    # or you can add this way
-    plot = FigPlot()
-    page.axes1.add_plot("plot_1", plot)
-
-    # in this case you need to apply figobj
-
-    page.axes1.add_figobj("plot2")
-
-    #  attribute setting
-    page.setp('area', [0, 1, 0, 1])
-    print(page.getp("area"))
-
-    # if you do  getp_all, pay attention that
-    # the returned value is the SAME object
-    att = page.getp_all()
-    print(att)
-    att["area"] = [0, 0, 0, 0]
-    a = page.getp("area")
-    print(a)
-
-    ### this generate tree list ###
-    print(page.list_all())
-
-    # can access read-only member
-    # if getter is properly set
-    print(page.axes1.plot.id)
-
-    #   page.axes1.plot.id=100
-    #   this will cause error (read-only)
-
-    print(page.axes1.plot)
-
-    ### this is not allowed
-    #  in other word, all members are read-only
-    #  page.axes1.plot.id2=3
-    #  page.axes1.plot.test.id2=3
-    #
-    # you can still do this but are not supposed to do
-    #  Do not create "_" private member.
-    #  page.axes1._test=3
-    # if you did not the above, the nexe will cause error
-    # print page.axes1._test
-
-   #   print dir(page.axes1.plot)

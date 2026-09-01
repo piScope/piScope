@@ -368,13 +368,6 @@ def _get_random_name():
     return fpath
 
 
-def _save_parameter_file(*args, **kargs):
-    try:
-        return sr
-    except IOError as error:
-        return False
-
-
 def _send_message(command, *args, **kargs):
     try:
         message = pickle.dumps(('f', command, args, kargs))

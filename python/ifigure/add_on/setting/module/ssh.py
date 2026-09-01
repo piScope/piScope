@@ -6,6 +6,7 @@ import wx
 import os
 import shlex
 import socket
+import time
 
 module_name = 'SSH'
 class_name = 'SSH'

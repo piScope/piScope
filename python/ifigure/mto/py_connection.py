@@ -279,7 +279,7 @@ class PyConnection(TreeDict):
             args = command
             kargs = {'shell': True}
         else:
-            command = 'cp ' + src + ' ' + dest_sie
+            command = 'cp ' + src + ' ' + dest_dir
             args = command
             kargs = {"shell": True}
 
