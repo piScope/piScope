@@ -101,8 +101,9 @@ sending commands to its server.
 ### Directories
 
 * ../python/ifigure             core program
-* ../python/ifigure/example              examples
-* ../bin/                        scripts to run &pi;Scope
+* ../python/ifigure/example     examples
+* ../bin/                       scripts to run &pi;Scope
+* ../tests/                     plotting test routines.
 * ../example/                   example data to look in &pi;Scope
 
 ### Reference
