@@ -58,3 +58,6 @@ version = { attr = "ifigure.__version__" }
 "ifigure.resources" = ["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"]
 "ifigure.matplotlib_mod" = ["*.frag", "*.vert", "*.geom"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

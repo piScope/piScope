@@ -1,4 +1,3 @@
-
 import wx
 import sys
 
@@ -17,12 +16,10 @@ try:
 except ImportError:
     haveOpenGL = False
 
-# ----------------------------------------------------------------------
-
 
 buttonDefs = {
-    wx.NewIdRef(count=1): ('CubeCanvas',      'Cube'),
-    wx.NewIdRef(count=1): ('ConeCanvas',      'Cone'),
+    wx.NewIdRef(count=1): ('CubeCanvas', 'Cube'),
+    wx.NewIdRef(count=1): ('ConeCanvas', 'Cone'),
 }
 
 
@@ -40,28 +37,28 @@ class ButtonPanel(wx.Panel):
             box.Add(btn, 0, wx.ALIGN_CENTER | wx.ALL, 15)
             self.Bind(wx.EVT_BUTTON, self.OnButton, btn)
 
-        # ** Enable this to show putting a GLCanvas on the wx.Panel
-        if 1:
-            c = CubeCanvas(self)
-            c.SetMinSize((200, 200))
-            box.Add(c, 0, wx.ALIGN_CENTER | wx.ALL, 15)
+        c = CubeCanvas(self)
+        c.SetMinSize((200, 200))
+        box.Add(c, 0, wx.ALIGN_CENTER | wx.ALL, 15)
 
         self.SetAutoLayout(True)
         self.SetSizer(box)
 
     def OnButton(self, evt):
         if not haveGLCanvas:
-            dlg = wx.MessageDialog(self,
-                                   'The GLCanvas class has not been included with this build of wxPython!',
-                                   'Sorry', wx.OK | wx.ICON_WARNING)
+            dlg = wx.MessageDialog(
+                self,
+                'The GLCanvas class has not been included with this build of wxPython!',
+                'Sorry', wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
 
         elif not haveOpenGL:
-            dlg = wx.MessageDialog(self,
-                                   'The OpenGL package was not found.  You can get it at\n'
-                                   'http://PyOpenGL.sourceforge.net/',
-                                   'Sorry', wx.OK | wx.ICON_WARNING)
+            dlg = wx.MessageDialog(
+                self,
+                'The OpenGL package was not found.  You can get it at\n'
+                'http://PyOpenGL.sourceforge.net/',
+                'Sorry', wx.OK | wx.ICON_WARNING)
             dlg.ShowModal()
             dlg.Destroy()
 
@@ -79,7 +76,6 @@ class MyCanvasBase(glcanvas.GLCanvas):
         self.init = False
         self.context = glcanvas.GLContext(self)
 
-        # initial mouse position
         self.lastx = self.x = 30
         self.lasty = self.y = 30
         self.size = None
@@ -91,7 +87,7 @@ class MyCanvasBase(glcanvas.GLCanvas):
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
 
     def OnEraseBackground(self, event):
-        pass  # Do nothing, to avoid flashing on MSW.
+        pass
 
     def OnSize(self, event):
         wx.CallAfter(self.DoSetViewport)
@@ -103,7 +99,7 @@ class MyCanvasBase(glcanvas.GLCanvas):
         glViewport(0, 0, size.width, size.height)
 
     def OnPaint(self, event):
-        dc = wx.PaintDC(self)
+        wx.PaintDC(self)
         self.SetCurrent(self.context)
         if not self.init:
             self.InitGL()
@@ -126,15 +122,12 @@ class MyCanvasBase(glcanvas.GLCanvas):
 
 class CubeCanvas(MyCanvasBase):
     def InitGL(self):
-        # set viewing projection
         glMatrixMode(GL_PROJECTION)
         glFrustum(-0.5, 0.5, -0.5, 0.5, 1.0, 3.0)
 
-        # position viewer
         glMatrixMode(GL_MODELVIEW)
         glTranslatef(0.0, 0.0, -2.0)
 
-        # position object
         glRotatef(self.y, 1.0, 0.0, 0.0)
         glRotatef(self.x, 0.0, 1.0, 0.0)
 
@@ -143,10 +136,8 @@ class CubeCanvas(MyCanvasBase):
         glEnable(GL_LIGHT0)
 
     def OnDraw(self):
-        # clear color and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        # draw six faces of a cube
         glBegin(GL_QUADS)
         glNormal3f(0.0, 0.0, 1.0)
         glVertex3f(0.5, 0.5, 0.5)
@@ -201,7 +192,6 @@ class CubeCanvas(MyCanvasBase):
 class ConeCanvas(MyCanvasBase):
     def InitGL(self):
         glMatrixMode(GL_PROJECTION)
-        # camera frustrum setup
         glFrustum(-0.5, 0.5, -0.5, 0.5, 1.0, 3.0)
         glMaterial(GL_FRONT, GL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
         glMaterial(GL_FRONT, GL_DIFFUSE, [0.8, 0.8, 0.8, 1.0])
@@ -217,20 +207,13 @@ class ConeCanvas(MyCanvasBase):
         glDepthFunc(GL_LESS)
         glEnable(GL_DEPTH_TEST)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # position viewer
         glMatrixMode(GL_MODELVIEW)
-        # position viewer
         glTranslatef(0.0, 0.0, -2.0)
-        #
         glutInit(sys.argv)
 
     def OnDraw(self):
-        # clear color and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # use a fresh transformation matrix
         glPushMatrix()
-        # position object
-        #glTranslate(0.0, 0.0, -2.0)
         glRotate(30.0, 1.0, 0.0, 0.0)
         glRotate(30.0, 0.0, 1.0, 0.0)
 
@@ -240,11 +223,7 @@ class ConeCanvas(MyCanvasBase):
         glPopMatrix()
         glRotatef((self.y - self.lasty), 0.0, 0.0, 1.0)
         glRotatef((self.x - self.lastx), 1.0, 0.0, 0.0)
-        # push into visible buffer
         self.SwapBuffers()
-
-
-# ----------------------------------------------------------------------
 
 
 def runTest(frame):
@@ -257,10 +236,4 @@ overview = """\
 
 
 if __name__ == '__main__':
-    import sys
-    import os
-    app = wx.App()
-    frame = wx.Frame(None)
-    frame.Show()
-    runTest(frame)
-    app.MainLoop()
+    pass
