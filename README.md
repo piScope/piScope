@@ -53,7 +53,7 @@ to be launched by calling launch().
 
 - `plot`, `oplot`, `loglog`, `semilogx`, `semilogy`, `timetrace`, `plotc`
 - `scatter`, `hist`, `errorbar`, `oerrorbar`, `errorbarc`
-- `triplot`, `ispline`, `contour`, `contourf`, `quiver`, `quiver3d`
+- `triplot`, `ispline`, `contour`, `contourf`, `quiver`
 - `image`, `specgram`, `spec`, `tripcolor`, `tricontour`, `tricontourf`
 - `axline`, `axlinec`, `axspan`, `axspanc`, `fill`, `fill_between`,
   `fill_betweenx`
@@ -61,7 +61,7 @@ to be launched by calling launch().
 
 #### 3D plotting
 
-- `surf`, `surface`, `revolve`, `solid`, `trisurf`
+- `surf`, `surface`, `revolve`, `solid`, `trisurf`, `quiver3d`, `fill_between_3d`
 
 #### Annotation and output
 

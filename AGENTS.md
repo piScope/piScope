@@ -13,3 +13,6 @@ Before adding or editing plotting tests, read:
 - `dev_notes/instruction_to_add_test.md`
 
 Apply those conventions for file naming, quick/full mode intent, and shared test helpers.
+
+## Coding Style
+For coding style, read and follow `dev_notes/instruction_coding_style.md`.
