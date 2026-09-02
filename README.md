@@ -75,11 +75,10 @@ to be launched by calling launch().
 import numpy as np
 
 x = np.linspace(0, 10, 100); y = np.sin(x)
-v = figure(size=(500, 400))  # Create viewer 500x4oo pixel
+v = figure(size=(500, 400))  # Create viewer
 v.plot(x, y)
 v.title("Sine Wave")
-v.xlabel("x-axis")
-v.ylabel("y-axis")
+v.xlabel("x-axis");v.ylabel("y-axis")
 v.legend('curve1')
 v.savefig("sine_wave.pdf") # Save the plot as a PDF
 </code></pre>
