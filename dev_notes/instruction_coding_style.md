@@ -1,18 +1,17 @@
 # Coding Style Guide
-
 This guide reflects the stable pre-2026-08-19 style in piScope and Petra-M.
 
 ## General Rules
 
-- Match the surrounding file. Preserve local conventions instead of normalizing the codebase.
+- Match the surrounding file first. Preserve local conventions instead of normalizing the whole codebase.
 - Prefer small, direct changes over broad refactors.
-- Keep public APIs and behavior stable unless the task asks for a change.
-- Reuse existing helpers, especially for GUI, debug, and model code.
+- Keep public APIs and behavior stable unless the task explicitly asks for a change.
+- Reuse existing project helpers, especially for GUI, debug, and model code.
 
 ## File And Import Style
 
 - Group imports as standard library, third-party, then local project imports.
-- Keep imports explicit; do not add new wildcard imports.
+- Keep imports explicit and readable; do not add new wildcard imports.
 - Use short aliases for heavily used project modules when that is already the local convention, for example `import ifigure.utils.cbook as cbook` or `import petram.debug as debug`.
 - Prefer local imports in optional code paths when a dependency is expensive or optional.
 
@@ -81,4 +80,4 @@ This guide reflects the stable pre-2026-08-19 style in piScope and Petra-M.
 
 ## Practical Rule
 
-- When in doubt, copy the nearest older file in the same subsystem, not the newest edit.
+- When in doubt, copy the style of the nearest older file in the same subsystem, not the newest edit.

@@ -9,19 +9,19 @@ By default, `pytest` runs the full plotting test set.
 - Full run:
 
   ```bash
-  python -m pytest -q
+  python -m pytest
   ```
 
 - Quick run:
 
   ```bash
-  python -m pytest -q --quick
+  python -m pytest --quick
   ```
 
 - Test specific plot command:
 
   ```bash
-  python -m pytest -q tests/test_z01_plot.py
+  python -m pytest tests/test_z01_plot.py
   ```  
 
 ## Developer/LLM Test Conventions
