@@ -24,7 +24,7 @@ dependencies = [
     "h5py",
     "PyPDF2",
     "pdfrw",
-    "wxPython",
+    "wxPython < 4.3",
     "future",
     "autopep8",
     "ruff",
@@ -57,4 +57,11 @@ version = { attr = "ifigure.__version__" }
 [tool.setuptools.package-data]
 "ifigure.resources" = ["*.txt", "*/*/*.png", "*/*.png", "*.png", "pref/*_config", "pref/*_helper", "mdsplus/*"]
 "ifigure.matplotlib_mod" = ["*.frag", "*.vert", "*.geom"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "quick: reduced plotting regression suite for --quick runs",
+  "full: expanded per-command plotting coverage included in default runs",
+]
 

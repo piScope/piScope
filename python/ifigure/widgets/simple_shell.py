@@ -1,5 +1,4 @@
-from __future__ import print_function
-from six.moves.queue import Queue, Empty
+from queue import Queue, Empty
 import wx.py.shell  # (wx4 removed this) wx.lib.shell
 from threading import Timer, Thread
 import time
@@ -322,13 +321,18 @@ class SimpleShell(ShellBase):
                                           InterpClass=MyInterp)
 
         if os.getenv('PYTHONSTARTUP') is not None:
-            file = os.getenv('PYTHONSTARTUP')
-            if os.path.exists(file):
-                dprint1('running startup file', file)
-                txt = 'Running user startup file '+file
+            sfile = os.getenv('PYTHONSTARTUP')
+
+            # VScode specfic (avoid using VScode provided startup, which modifie PS1)
+            is_vscode_pythonrc = (os.path.basename(sfile) == 'pythonrc.py' and
+                                 'ms-python.python' in os.path.normpath(sfile).split(os.sep))
+
+            if sfile and os.path.exists(sfile) and not is_vscode_pythonrc:
+                dprint1('running startup file', sfile)
+                txt = 'Running user startup file '+sfile
                 self.push('print %r' % txt)
                 #self.execfile(file, globals(), self.lvar)
-                self.execStartupScript(file)
+                self.execStartupScript(sfile)
 
         self.SetDropTarget(simple_shell_droptarget(self))
 
@@ -366,7 +370,7 @@ class SimpleShell(ShellBase):
         '''
         this overwrite the origial setBuiltinKeywords
         '''
-        from six.moves import builtins
+        import builtins
         builtins.exit = builtins.quit = \
             self.quit
         builtins.forceexit = builtins.forcequit = \

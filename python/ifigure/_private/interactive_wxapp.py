@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
    ifigure.interactive
@@ -1031,7 +1030,7 @@ def profile_stop(pr, sortby='cumulative'):
              'ncalls', pcalls', 'line', 'name',
              'nfl', stdname', 'time', 'tottime'
     '''
-    from six import StringIO
+    from io import StringIO
     import pstats
     pr.disable()
     # print 'stopped profiler'
@@ -1104,7 +1103,7 @@ def exportv(variables, names, path=''):
           or export subtree.
 
     '''
-    import cPickle as pickle
+    import pickle
     save_dlg = wx.FileDialog(None, message="Enter Data File Name",
                              defaultDir=os.getcwd(),
                              style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)

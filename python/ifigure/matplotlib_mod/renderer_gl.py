@@ -2,10 +2,6 @@
    RendererGL
 
 """
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
-import six
 
 import threading
 import numpy as np
@@ -284,10 +280,9 @@ class RendererGL(RendererBase):
             verbose.report('RendererGL._get_agg_font',
                            'debug-annoying')
         return None
-
+        """
         key = hash(prop)
-        font = RendererAgg._fontd.get(key)
-
+        font = RendererAgg._fontd.get(key)        
         if font is None:
             fname = findfont(prop)
             font = RendererAgg._fontd.get(fname)
@@ -303,6 +298,7 @@ class RendererGL(RendererBase):
         font.set_size(size, self.dpi)
 
         return font
+        """
 
     def points_to_pixels(self, points):
         """
@@ -383,12 +379,13 @@ class RendererGL(RendererBase):
     def start_filter(self):
         return RendererBase.start_filter(self)
         """
-        Start filtering. It simply create a new canvas (the old one is saved).
-        """
+        #Start filtering. It simply create a new canvas (the old one is saved).
+        
         self._filter_renderers.append(self._renderer)
         self._renderer = _RendererAgg(int(self.width), int(self.height),
                                       self.dpi)
         self._update_methods()
+        """
 
     def stop_filter(self, post_processing):
         return RendererBase.stop_filter(self, post_processing)

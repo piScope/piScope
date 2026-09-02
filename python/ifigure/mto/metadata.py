@@ -1,5 +1,4 @@
 from collections import OrderedDict
-import six
 
 # this is assigned to figplot
 default_metadata_keys = ('name',
@@ -54,10 +53,10 @@ class MetadataHolder(object):
         # autofill name,  range
         # if data is not give, try to get it
         metadata = self.getvar('metadata')
-        for k in six.iterkeys(metadata):
+        for k in metadata.keys():
             if k.startswith('data'):
                 dd = metadata[k]
-                for name in six.iterkeys(dd):
+                for name in dd.keys():
                     axisname = name[0]  # x, y, z, c
                     m = 'get_'+axisname+'axisparam'
                     if hasattr(self, m):
@@ -93,7 +92,7 @@ class MetadataHolder(object):
         will be overwritten by subclass
         '''
         def fill_dataset(dd, d):
-            for key in six.iterkeys(d):
+            for key in d.keys():
                 if not key in dd:
                     dd[key] = OrderedDict()
                 for kk in default_metadata_data_keys:

@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
     server thread for ifigure.
@@ -13,7 +12,7 @@ from __future__ import print_function
      't' : execute command in string
            ex.  'tplot(range(10))' : execute plot(range(10))
      'f' : execute command with args and kargs written in file
-           ex.  'fplot:xxxxxxxx'  : read (args, kargs) using cPickle
+           ex.  'fplot:xxxxxxxx'  : read (args, kargs) using pickle
                  from xxxxxxxx and execute plot(*args, **kargs)
 
     history
@@ -30,7 +29,7 @@ import sys
 import threading
 import socket
 import threading
-from six.moves import socketserver
+import socketserver
 import wx
 import ifigure.events
 import binascii
@@ -41,7 +40,10 @@ import subprocess
 import sys
 import shlex
 from ifigure.utils.cbook import pick_unused_port
-import ifigure.utils.pickle_wrapper as pickle
+import pickle
+
+
+_PROXY_MARKER = '__ifigure_proxy__'
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -53,7 +55,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         rfile.close()
         data = pickle.loads(binascii.a2b_hex(response))
 #        data = self.request.recv(1024)
-#        data = cPickle.loads(binascii.a2b_hex(data))
+#        data = pickle.loads(binascii.a2b_hex(data))
         ifig_app = wx.GetApp().TopWindow
         ifig_app.remote_lock.acquire()
 
@@ -83,6 +85,73 @@ class Server(object):
     rhost = ''
 
     records = []
+
+    def _find_viewer_by_path(self, book_path):
+        if book_path in (None, ''):
+            return None
+
+        app = wx.GetApp().TopWindow
+        for viewer in app.viewers:
+            try:
+                if viewer.book.get_full_path() == book_path:
+                    return viewer
+            except Exception:
+                continue
+        return None
+
+    def _find_object_by_path(self, object_path):
+        if object_path in (None, ''):
+            return None
+
+        app = wx.GetApp().TopWindow
+        proj = getattr(app, 'proj', None)
+        if proj is None:
+            return None
+
+        try:
+            return proj.find_by_full_path(object_path)
+        except Exception:
+            return None
+
+    def _get_book_path(self, obj):
+        try:
+            return obj.get_root_parent().get_full_path()
+        except Exception:
+            return None
+
+    def _proxy_value(self, value):
+        book = getattr(value, 'book', None)
+        if book is not None and hasattr(book, 'get_full_path'):
+            try:
+                return {_PROXY_MARKER: book.get_full_path()}
+            except Exception:
+                pass
+        if hasattr(value, 'get_full_path'):
+            try:
+                return {_PROXY_MARKER: value.get_full_path()}
+            except Exception:
+                pass
+        if isinstance(value, list):
+            return [self._proxy_value(v) for v in value]
+        if isinstance(value, tuple):
+            return tuple(self._proxy_value(v) for v in value)
+        if isinstance(value, dict):
+            return {k: self._proxy_value(v) for k, v in value.items()}
+        return value
+
+    def _resolve_value(self, value):
+        object_path = getattr(value, 'object_path', None)
+        if object_path is not None:
+            obj = self._find_object_by_path(object_path)
+            if obj is not None:
+                return obj
+        if isinstance(value, list):
+            return [self._resolve_value(v) for v in value]
+        if isinstance(value, tuple):
+            return tuple(self._resolve_value(v) for v in value)
+        if isinstance(value, dict):
+            return {k: self._resolve_value(v) for k, v in value.items()}
+        return value
 
     def start(self, host=None):
         on, server, HOST, PORT = self.info()
@@ -152,9 +221,27 @@ class Server(object):
             c = command[1]
             args = command[2]
             kargs = command[3]
+            object_path = kargs.pop('_object_path', None)
+            book_path = kargs.pop('_viewer_path', None)
+            obj = self._find_object_by_path(object_path)
+            viewer = self._find_viewer_by_path(book_path)
+            if viewer is None and obj is not None:
+                viewer = self._find_viewer_by_path(self._get_book_path(obj))
+            app = wx.GetApp().TopWindow
+            previous_aviewer = app.aviewer if viewer is not None else None
+            args = tuple(self._resolve_value(arg) for arg in args)
+            kargs = {key: self._resolve_value(value) for key, value in kargs.items()}
+            if viewer is None and c == 'property' and len(args) > 0:
+                viewer = self._find_viewer_by_path(self._get_book_path(args[0]))
+                previous_aviewer = app.aviewer if viewer is not None else None
 
             try:
-                f = getattr(ifigure.interactive, c)
+                if viewer is not None:
+                    app.aviewer = viewer
+                if c != 'property' and obj is not None and hasattr(obj, c):
+                    f = getattr(obj, c)
+                else:
+                    f = getattr(ifigure.interactive, c)
                 f(*args, **kargs)
                 ret = 'ok'
             except:
@@ -164,15 +251,39 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+            finally:
+                if viewer is not None:
+                    app.aviewer = previous_aviewer
 
         elif ctype == 'g':  # execute command and return value
             c = command[1]
             args = command[2]
             kargs = command[3]
+            object_path = kargs.pop('_object_path', None)
+            book_path = kargs.pop('_viewer_path', None)
+            return_proxy = kargs.pop('_return_proxy', False)
+            obj = self._find_object_by_path(object_path)
+            viewer = self._find_viewer_by_path(book_path)
+            if viewer is None and obj is not None:
+                viewer = self._find_viewer_by_path(self._get_book_path(obj))
+            app = wx.GetApp().TopWindow
+            previous_aviewer = app.aviewer if viewer is not None else None
+            args = tuple(self._resolve_value(arg) for arg in args)
+            kargs = {key: self._resolve_value(value) for key, value in kargs.items()}
+            if viewer is None and c == 'property' and len(args) > 0:
+                viewer = self._find_viewer_by_path(self._get_book_path(args[0]))
+                previous_aviewer = app.aviewer if viewer is not None else None
 
             try:
-                f = getattr(ifigure.interactive, c)
+                if viewer is not None:
+                    app.aviewer = viewer
+                if c != 'property' and obj is not None and hasattr(obj, c):
+                    f = getattr(obj, c)
+                else:
+                    f = getattr(ifigure.interactive, c)
                 ret = f(*args, **kargs)
+                if return_proxy:
+                    ret = self._proxy_value(ret)
             except:
                 logging.exception(
                     "error occured during processing remote commmand")
@@ -180,6 +291,9 @@ class Server(object):
                 print(args)
                 print(kargs)
                 ret = None
+            finally:
+                if viewer is not None:
+                    app.aviewer = previous_aviewer
 
         elif ctype == 'h':  # execute text command and return value
             c = command[1]

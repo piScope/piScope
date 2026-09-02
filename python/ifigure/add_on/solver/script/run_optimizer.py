@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   this is a skelton for a optimizer
 #
@@ -10,7 +9,7 @@ from __future__ import print_function
 import wx
 import weakref
 import threading
-from six.moves import queue as Queue
+import queue as Queue
 import ifigure.events
 
 

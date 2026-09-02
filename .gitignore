@@ -13,9 +13,6 @@
 .#*
 #*
 winapplet
-macapplet/build
-macapplet/dist
-macapplet/launch_piscope.app
 mac/applet
 mac/applet
 mac/dist

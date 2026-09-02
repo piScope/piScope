@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :fig_axes
 #
 #          this class to manage matplotlib.axes
@@ -22,7 +21,6 @@ from __future__ import print_function
 import os
 import matplotlib
 import weakref
-import six
 import wx
 import numpy as np
 from matplotlib.lines import Line2D
@@ -1036,7 +1034,7 @@ class FigAxes(FigObj,  AdjustableRangeHolder):
         tstyle = figpage.getp('title_style')
         tsize = figpage.getp('title_size')
 
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             # Don't use this!
             # use viewer.title whenever possible.
             dprint1('set_title is called with string argument. not recommendad')

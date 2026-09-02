@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
    connections is a board game from 80's

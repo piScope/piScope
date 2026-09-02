@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   Obsolete module (use connection module)
 #
@@ -7,6 +6,7 @@ import wx
 import os
 import shlex
 import socket
+import time
 
 module_name = 'SSH'
 class_name = 'SSH'

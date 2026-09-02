@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #
 #  this is a start-up script loaded in
@@ -7,7 +6,6 @@ from __future__ import print_function
 #  help function
 #
 #
-import six
 import numpy as np
 from ifigure.interactive import aviewer
 from ifigure.interactive import plot, timetrace, oplot, plotc, loglog, semilogx, semilogy
@@ -72,11 +70,8 @@ from ifigure.interactive import property
 from ifigure.interactive import view
 from ifigure.interactive import glinfo, savefig, savedata
 
-if six.PY3:
-    from importlib import reload
-    from ifigure.interactive import futurize
-else:
-    from builtins import reload
+from importlib import reload
+from ifigure.interactive import futurize
 
 from ifigure.interactive import has_petra
 if has_petra:

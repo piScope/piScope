@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  description
 #     make_release generate a release version directory

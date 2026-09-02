@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-from __future__ import print_function
 import socket
 import threading
 import os
@@ -9,11 +8,11 @@ import sys
 import time
 import logging
 import traceback
-from six.moves import socketserver
+import socketserver
 #import paramiko
 import binascii
-from six.move import cPickle as pickle
-#import cPickle as pickle
+import pickle
+#import pickle
 from ifigure.utils.daemon import Daemon
 import MDSplus
 from MDSplus import Connection

@@ -1,4 +1,3 @@
-from __future__ import print_function
 ######################################################
 #     sample "run" script for parametric solver
 ######################################################
@@ -34,7 +33,7 @@ from __future__ import print_function
 import wx
 import weakref
 import threading
-from six.moves import queue as Queue
+import queue as Queue
 import ifigure.events
 
 

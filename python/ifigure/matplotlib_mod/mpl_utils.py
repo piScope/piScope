@@ -24,12 +24,7 @@ def reset_color_cycle(axes):
 
 
 def get_color_cycle_list(axes):
-    if parse_version(mpl_version) >= parse_version('1.5'):
-        return [x['color'] for x in mpl.rcParams['axes.prop_cycle']]
-    else:
-        import six
-        color = [six.next(get_color_cycle(axes))
-                 for i in range(nx)]
+    return [x['color'] for x in mpl.rcParams['axes.prop_cycle']]
 
 
 def call_savefig_method(ifigure_canvas, name, *args, **kargs):

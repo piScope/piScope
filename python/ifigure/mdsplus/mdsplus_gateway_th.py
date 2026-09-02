@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
-from __future__ import print_function
 import socket
 import threading
 import os
 import signal
 import sys
 import time
-from six.moves import socketserver
+import socketserver
 import paramiko
 import binascii
 import ifigure.utils.pickle_wrapper as pickle

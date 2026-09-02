@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #         figure_viewer (book viewer)
 #         subset of ifigure_app.

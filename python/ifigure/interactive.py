@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 """
 Public entry point to plotting routines.

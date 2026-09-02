@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ifigure.mto.fig_obj import FigObj, mask_negative
 from ifigure.widgets.canvas.file_structure import *
 from ifigure.mto.axis_user import XUser, YUser

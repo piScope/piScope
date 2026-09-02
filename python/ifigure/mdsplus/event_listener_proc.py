@@ -1,7 +1,6 @@
-from __future__ import print_function
 import multiprocessing as mp
 import threading
-from six.moves import queue as Queue
+import queue as Queue
 import traceback
 import time
 from weakref import WeakKeyDictionary

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import ifigure.widgets.canvas.custom_picker as cpicker
 
 

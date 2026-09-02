@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  Name   : py_fiile
 #
@@ -320,4 +319,4 @@ class PyText(PyFile):
         if ret:
             flag = self.write2shell(lines, new_name)
             app.shell.SendShellEnterEvent()
-        e.Skip()  # call update project tree widget
+        evt.Skip()  # call update project tree widget

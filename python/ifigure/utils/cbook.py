@@ -1,10 +1,8 @@
-from __future__ import print_function
 
 
 #  load image file
 #   this could be widget toolkit dependent
 import sys
-import six
 import os
 import matplotlib.colors
 from ifigure.utils.wx3to4 import menu_Append, wxBitmapFromImage, wxCursorFromImage, menu_AppendItem
@@ -57,16 +55,10 @@ def text_repr(val):
         text = '**data**'
     elif hasattr(val, '__len__'):
         try:
-            if six.PY2:
-                if (len(val) > 10 and not isinstance(val, str) and not isinstance(val, unicode)):
-                    text = '**data**'
-                else:
-                    text = val.__repr__()
+            if (len(val) > 10 and not isinstance(val, str)):
+                text = '**data**'
             else:
-                if (len(val) > 10 and not isinstance(val, str)):
-                    text = '**data**'
-                else:
-                    text = val.__repr__()
+                text = val.__repr__()
         except:
             try:
                 text = val.__repr__()
@@ -394,16 +386,10 @@ def isBinary(filename):
     File is considered to be binary if it contains a NULL byte.
     (This approach incorrectly reports UTF-16 as binary.)
     """
-    if six.PY2:
-        with open(filename, 'rb') as f:
-            for block in f:
-                if '\0' in block:
-                    return True
-    else:
-        with open(filename, 'rb') as f:
-            for block in f:
-                if b'\0' in block:
-                    return True
+    with open(filename, 'rb') as f:
+        for block in f:
+            if b'\0' in block:
+                return True
 
     return False
 
@@ -930,10 +916,7 @@ def isiterable_not_string(obj):
 
 
 def isstringlike(x):
-    if six.PY2:
-        return (isinstance(x, str) or isinstance(x, unicode))
-    else:
-        return isinstance(x, str)
+    return isinstance(x, str)
 
 
 def nd_iter(x):
@@ -1095,12 +1078,8 @@ def tex_escape(text):
         '<': r'\textless',
         '>': r'\textgreater',
     }
-    if six.PY2:
-        regex = re.compile('|'.join(re.escape(unicode(key))
-                                    for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
-    else:
-        regex = re.compile('|'.join(re.escape(key)
-                                    for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
+    regex = re.compile('|'.join(re.escape(key)
+                                for key in sorted(list(conv.keys()), key=lambda item: - len(item))))
 
     return regex.sub(lambda match: conv[match.group()], text)
 

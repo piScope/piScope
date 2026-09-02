@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ifigure.widgets.simple_shell import ShellBase
 import wx
 import os

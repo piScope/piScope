@@ -1,15 +1,14 @@
 #!/usr/bin/python
 
-from __future__ import print_function
 import socket
 import threading
-from six.moves import socketserver
+import socketserver
 import paramiko
 import os
 import MDSplus
 import binascii
 import sys
-import cPickle as pickle
+import pickle
 
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -91,6 +90,6 @@ if __name__ == "__main__":
     usr = get_username()
     print(("Server loop running in thread:", server_thread.name))
 
-    raw_input()
+    input()
 
     server.shutdown()

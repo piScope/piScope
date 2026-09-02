@@ -6,6 +6,8 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import ColorConverter
 cc = ColorConverter()
 
+import ifigure.utils.debug as debug
+dprint1, dprint2, dprint3 = debug.init_dprints('FigTrisurface')
 
 class FigTrisurface(FigSurface):
     def __new__(self, *argc, **kywds):

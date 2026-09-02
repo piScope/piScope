@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :py_solver
 #
 #          various classes for defining solvers

@@ -19,14 +19,21 @@ For the above purposes, &pi;Scope is equipped with:
 
 &pi;Scope is also used for Petra-M finite element analysis platform built on MFEM.
 
+### Install
+
+```
+ pip install piScope
+
+ or
+ 
+ git clone git@github.com:piScope/piScope.git; cd piScope
+ pip install .
+```
+
 ### Plotting commands
 
 The following plotting commands are available. These commands are preloaded in the Python shell
 inside piScope GUI. From a script, users need to load them:
-
-```python
-from ifigure.interactive import *
-```
 
 * Inside a live piScope GUI process, plotting calls use the GUI interactive backend.
 * Outside piScope GUI, plotting calls use the no-GUI client backend. The backend
@@ -46,7 +53,7 @@ to be launched by calling launch().
 
 - `plot`, `oplot`, `loglog`, `semilogx`, `semilogy`, `timetrace`, `plotc`
 - `scatter`, `hist`, `errorbar`, `oerrorbar`, `errorbarc`
-- `triplot`, `ispline`, `contour`, `contourf`, `quiver`, `quiver3d`
+- `triplot`, `ispline`, `contour`, `contourf`, `quiver`
 - `image`, `specgram`, `spec`, `tripcolor`, `tricontour`, `tricontourf`
 - `axline`, `axlinec`, `axspan`, `axspanc`, `fill`, `fill_between`,
   `fill_betweenx`
@@ -54,23 +61,34 @@ to be launched by calling launch().
 
 #### 3D plotting
 
-- `surf`, `surface`, `revolve`, `solid`, `trisurf`
+- `surf`, `surface`, `revolve`, `solid`, `trisurf`, `quiver3d`, `fill_between_3d`
 
 #### Annotation and output
 
 - `property`, `savefig`, `savedata`
 
+#### Example
+<table>
+<tr>
+<td valign="top" width="58%">
+<pre><code>from ifigure.interactive import figure
+import numpy as np
 
-### Install
+x = np.linspace(0, 10, 100); y = np.sin(x)
+v = figure(size=(500, 400))  # Create viewer
+v.plot(x, y)
+v.title("Sine Wave")
+v.xlabel("x-axis");v.ylabel("y-axis")
+v.legend('curve1')
+v.savefig("sine_wave.pdf") # Save the plot as a PDF
+</code></pre>
+</td>
+<td valign="top" width="42%">
+<img src="example/images/demo_sinewave.png" alt="piScope output for one full sine cycle" width="100%" />
+</td>
+</tr>
+</table>
 
-```
- pip install piScope
-
- or
- 
- git clone git@github.com:piScope/piScope.git; cd piScope
- pip install .
-```
 
 ### LLM sessions (experimental)
 
@@ -88,8 +106,9 @@ sending commands to its server.
 ### Directories
 
 * ../python/ifigure             core program
-* ../python/ifigure/example              examples
-* ../bin/                        scripts to run &pi;Scope
+* ../python/ifigure/example     examples
+* ../bin/                       scripts to run &pi;Scope
+* ../tests/                     plotting test routines.
 * ../example/                   example data to look in &pi;Scope
 
 ### Reference

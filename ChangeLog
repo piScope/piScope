@@ -1,3 +1,22 @@
+2026 9/2
+	* GUIfix/cleanup
+	** In ScriptEditor, Completion candidates can now be selected with Up/Down
+	arrows or Ctrl-P/Ctrl-N,
+	** Stopped CommandHistory running yntax-checking.
+	** VS Code's python startup script is now ignored, which was causing noisy
+	   output in Python shell.
+	** Removed the legacy `bin/piscope.sh` launcher and obsolete macOS app
+           launcher templates.
+	* Limited the wxPython dependency to versions earlier than 4.3 pending
+	  compatibility work.
+
+2026 9/1
+	* Improved non-WX mode (using plotting commands from regular python shell)
+	** FigureProxy object is introduced, which allows
+	** v = figure(); v.plot(....), where v is the FigureProxy in non-WX mode.
+	* Added test framework in tests/
+	** tests depend on the improved non-WX mode.
+
 2026 8/30
 	* Unified plotting entry point: ifigure.interactive
 	** added internal backends: ifigure._interactive_gui and ifigure._interactive_nogui

@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   run script for StandardSolver
 #
@@ -6,7 +5,7 @@ from __future__ import print_function
 #   and the thread submit a job, which is started
 #   in a main thread.
 #
-from six.moves import queue as Queue
+import queue as Queue
 import threading
 import weakref
 import wx

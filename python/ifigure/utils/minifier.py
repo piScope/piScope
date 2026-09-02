@@ -1,4 +1,3 @@
-from __future__ import print_function
 # {{{ http://code.activestate.com/recipes/576704/ (r16)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -55,7 +54,7 @@ something is broken.
 
 import sys
 import re
-from six.moves import cStringIO as StringIO
+from io import StringIO
 import tokenize
 from optparse import OptionParser
 

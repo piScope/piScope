@@ -2,7 +2,7 @@
 
 import tempfile
 import weakref
-from six.moves import queue as Queue
+import queue as Queue
 import subprocess
 import time
 import sys

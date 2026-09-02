@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #  example program to connect proxy_efit
 #

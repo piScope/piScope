@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 import os
 import wx
@@ -17,14 +16,14 @@ from ifigure.mto.py_contents import PyContents
 #
 
 
-class PyModuleD(PyContents, pypy_code.PyCode):
+class PyModuleD(PyContents, py_code.PyCode):
     def __init__(self, *args, **kargs):
         self._obj = None
         self._can_have_child = True
         self._first_load = True
         self._args = args
         self._kargs = kargs
-        super(PyModule, self).__init__(*args, **kargs)
+        super(PyModuleD, self).__init__(*args, **kargs)
 
     @classmethod
     def isPyModule(self):
@@ -170,7 +169,7 @@ class PyModuleD(PyContents, pypy_code.PyCode):
                 ('!', None, None),
                 ('!', None, None),
                 ('---', None, None)] + \
-            super(PyModule, self).tree_viewer_menu()
+            super(PyModuleD, self).tree_viewer_menu()
 
     def onDebug0(self, e):
         self._obj.set_debug(0)
@@ -269,7 +268,7 @@ class PyModuleD(PyContents, pypy_code.PyCode):
 
     def rename(self, new):
         oname = self.name
-        super(PyModule, self).rename(new)
+        super(PyModuleD, self).rename(new)
         mode = self.getvar("pathmode")
         if (mode == 'wdir'):
             # 2012. 08. 24  this should not happen.

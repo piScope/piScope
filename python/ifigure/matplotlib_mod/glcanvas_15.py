@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ifigure.matplotlib_mod.canvas_common import *
 # uncomment the following to use wx rather than wxagg
 

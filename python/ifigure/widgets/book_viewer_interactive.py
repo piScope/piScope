@@ -1,7 +1,6 @@
-from __future__ import print_function
 import warnings
 import matplotlib.colors as mcolors
-import six
+from matplotlib.mlab import (specgram, detrend_none, window_hanning)
 import logging
 import numpy as np
 import ifigure
@@ -1160,7 +1159,7 @@ class BookViewerInteractive(object):
     @allow_interactive_call
     def image(self, *args, **kargs):
         if 'use_tri' in kargs and kargs['use_tri']:
-            return tripcolor(*args, **kargs)
+            return self.tripcolor(*args, **kargs)
 
         from ifigure.mto.fig_image import FigImage
         try:
@@ -1197,14 +1196,13 @@ class BookViewerInteractive(object):
             return
         return obj
 
-    import matplotlib.mlab as mlab
-#    @allow_interactive_call
 
+#    @allow_interactive_call
     def specgram(self, x, NFFT=256,
                  Fs=2,
                  Fc=0,
-                 detrend=mlab.detrend_none,
-                 window=mlab.window_hanning,
+                     detrend=detrend_none,
+                     window=window_hanning,
                  noverlap=128,
                  xextent=None,
                  pad_to=None,
@@ -1221,7 +1219,7 @@ class BookViewerInteractive(object):
             raise NoPageError('no page exists')
 
 #        axes = self.get_axes(ipage=None, iaxes=self.isec())
-        Pxx, freqs, bins = mlab.specgram(x, NFFT=NFFT,
+        Pxx, freqs, bins = specgram(x, NFFT=NFFT,
                                          Fs=Fs,
                                          detrend=detrend,
                                          window=window,

@@ -1,4 +1,3 @@
-from __future__ import print_function
 #
 #   ArgsParser
 #
@@ -50,7 +49,6 @@ from __future__ import print_function
 #      flag is True if rule is successfully applied
 #
 from ifigure.utils.cbook import isiterable, isndarray, isdynamic, issequence, isnumber
-import six
 import numpy as np
 import ifigure.utils.debug as debug
 dprint1, dprint2, dprint3 = debug.init_dprints('ArgsParser')
@@ -203,15 +201,9 @@ class ArgsParser(object):
             elif cond == 'sequence':
                 return issequence(value)
             elif cond == 'str':
-                if six.PY2:
-                    return isinstance(value, str) or isinstance(value, unicode)
-                else:
-                    return isinstance(value, str)
+                return isinstance(value, str)
             elif cond == 'nonstr':
-                if six.PY2:                
-                    return not (isinstance(value, str) or isinstance(value, unicode))
-                else:
-                    return not isinstance(value, str)
+                return not isinstance(value, str)
             elif cond == 'int':
                 return isinstance(value, int)
             elif cond == 'float':

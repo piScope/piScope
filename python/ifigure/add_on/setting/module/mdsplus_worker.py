@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 '''
    setting add-on for mds mp/sp workers.

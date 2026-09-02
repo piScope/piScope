@@ -1,4 +1,3 @@
-from __future__ import print_function
 #  Name   :fig_page
 #
 #          this class to manage matplotlib.figure

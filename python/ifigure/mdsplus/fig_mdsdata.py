@@ -1,4 +1,3 @@
-from __future__ import print_function
 import traceback
 import os
 import ifigure

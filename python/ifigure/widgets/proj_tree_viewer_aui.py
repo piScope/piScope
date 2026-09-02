@@ -1,8 +1,6 @@
-from __future__ import print_function
 
 import wx
 import sys
-import six
 import os
 import weakref
 import threading
@@ -1050,7 +1048,7 @@ class ProjTreeViewer(wx.Panel):
             wx.TheClipboard.SetData(data)
             wx.TheClipboard.Close()
 
-        text = t if six.PY3 else unicode(t)
+        text = t
 
         self._changed_flag = False
         tdo = wx.TextDataObject(text)

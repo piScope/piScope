@@ -1,4 +1,3 @@
-from __future__ import print_function
 import ifigure.utils.debug as debug
 from ifigure.widgets.undo_redo_history import UndoRedoAddRemoveArtists, GlobalHistory
 import ifigure.widgets.canvas.custom_picker as cpicke
@@ -417,24 +416,6 @@ class FigQuiver(FigObj, XUser, YUser, CUser):
         x, y, u, v, c = self._eval_xyz()  # this handles "use_var"
         if c is None:
             return crange
-        return crange
-
-        ###
-        if (x is None or
-                y is None):
-            x = np.arange(z.shape[1])
-            y = np.arange(z.shape[0])
-
-        if (xrange[0] is not None and
-            xrange[1] is not None and
-            yrange[0] is not None and
-                yrange[1] is not None):
-            zt = np.ma.masked_array(z)
-            zt[(y < yrange[0]) | (y > yrange[1]), :] = np.ma.masked
-            zt[:, (x < xrange[0]) | (x > xrange[1])] = np.ma.masked
-            if scale == 'log':
-                zt[z <= 0] = np.ma.masked
-            crange = self._update_range(crange, (np.amin(zt), np.amax(zt)))
         return crange
 
     def save_data2(self, data=None):

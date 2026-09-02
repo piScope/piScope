@@ -1,5 +1,3 @@
-import six
-
 import matplotlib as mpl
 from matplotlib.axes import Axes
 from matplotlib.ticker import ScalarFormatter
@@ -65,7 +63,7 @@ class AxesMod(Axes):
         # frame in the foreground. Do this before drawing the axis
         # objects so that the spine has the opportunity to update them.
         if self.axison and self._frameon:
-            artists.extend(six.itervalues(self.spines))
+            artists.extend(self.spines.values())
 
         if self.axison and not inframe:
             if self._axisbelow:

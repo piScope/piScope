@@ -32,7 +32,6 @@
 from matplotlib.backends.backend_pdf import RendererPdf, PdfFile, Name, Op, pdfRepr
 import matplotlib.backends.backend_ps
 from matplotlib.backends.backend_ps import RendererPS
-import six
 import weakref
 import traceback
 
@@ -43,7 +42,6 @@ import ifigure
 import os
 import sys
 import shutil
-from six import itervalues, iteritems
 import subprocess as sp
 import numpy as np
 import ifigure.utils.cbook as cbook
@@ -107,17 +105,17 @@ class PdfFile_plus(PdfFile):
         self.writeFonts()
         #self.writeObject(self.alphaStateObject,
         #                 dict([(val[0], val[1])
-        #                       for val in itervalues(self.alphaStates)]))
+        #                       for val in self.alphaStates.values()]))
         self.writeHatches()
         self.writeGouraudTriangles()
-        xobjects = dict(iter(itervalues(self.images)))
-        for tup in itervalues(self.markers):
+        xobjects = dict(iter(self.images.values()))
+        for tup in self.markers.values():
             xobjects[tup[0]] = tup[1]
-        for name, value in iteritems(self.multi_byte_charprocs):
+        for name, value in self.multi_byte_charprocs.items():
             xobjects[name] = value
         for name, path, trans, ob, join, cap, padding, filled, stroked in self.paths:
             xobjects[name] = ob
-        for tup in itervalues(self.pdfs):
+        for tup in self.pdfs.values():
             xobjects[tup[0]] = tup[1]
         self.writeObject(self.XObjectObject, xobjects)
         self.writeImages()
@@ -226,7 +224,7 @@ class PdfFile_plus(PdfFile):
             self.writePdfResources(pairs)
 
     def writePdfs(self):
-        for pdf, name, ob in six.itervalues(self.pdfs):
+        for pdf, name, ob in self.pdfs.values():
             xobj = pdf.get_xobj()
             dd = {'Type': Name('XObject'), 'Subtype': Name('Form'),
                   'BBox': xobj.BBox, 'FormType': xobj.FormType,
@@ -253,18 +251,18 @@ class PdfFile_plus2(PdfFile_plus):
         self.writeFonts()
         #self.writeObject(self.alphaStateObject,
         #                 dict([(val[0], val[1])
-        #                       for val in six.itervalues(self.alphaStates)]))
+        #                       for val in self.alphaStates.values()]))
         self.writeHatches()
         self.writeGouraudTriangles()
-        xobjects = dict(x[1:] for x in six.itervalues(self._images))
-        for tup in six.itervalues(self.markers):
+        xobjects = dict(x[1:] for x in self._images.values())
+        for tup in self.markers.values():
             xobjects[tup[0]] = tup[1]
-        for name, value in six.iteritems(self.multi_byte_charprocs):
+        for name, value in self.multi_byte_charprocs.items():
             xobjects[name] = value
         for name, path, trans, ob, join, cap, padding, filled, stroked \
                 in self.paths:
             xobjects[name] = ob
-        for pdf, name, ob in six.itervalues(self.pdfs):
+        for pdf, name, ob in self.pdfs.values():
             xobjects[name] = ob
         self.writeObject(self.XObjectObject, xobjects)
         self.writeImages()
@@ -358,7 +356,7 @@ class FigureImageV(FigureImage):
 
             def ps_write(txt):
                 if unicode_file:
-                    ps_write0(unicode(txt))
+                    ps_write0(str(txt))
                 else:
                     ps_write0(txt)
 

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import ifigure
 import os
 import sys

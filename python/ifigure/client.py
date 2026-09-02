@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 """Compatibility layer for the no-app interactive backend which
 uses:
