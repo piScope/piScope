@@ -321,13 +321,18 @@ class SimpleShell(ShellBase):
                                           InterpClass=MyInterp)
 
         if os.getenv('PYTHONSTARTUP') is not None:
-            file = os.getenv('PYTHONSTARTUP')
-            if os.path.exists(file):
-                dprint1('running startup file', file)
-                txt = 'Running user startup file '+file
+            sfile = os.getenv('PYTHONSTARTUP')
+
+            # VScode specfic (avoid using VScode provided startup, which modifie PS1)
+            is_vscode_pythonrc = (os.path.basename(sfile) == 'pythonrc.py' and
+                                 'ms-python.python' in os.path.normpath(sfile).split(os.sep))
+
+            if sfile and os.path.exists(sfile) and not is_vscode_pythonrc:
+                dprint1('running startup file', sfile)
+                txt = 'Running user startup file '+sfile
                 self.push('print %r' % txt)
                 #self.execfile(file, globals(), self.lvar)
-                self.execStartupScript(file)
+                self.execStartupScript(sfile)
 
         self.SetDropTarget(simple_shell_droptarget(self))
 

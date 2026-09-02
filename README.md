@@ -71,15 +71,20 @@ to be launched by calling launch().
 <table>
 <tr>
 <td valign="top" width="58%">
-<pre><code>from ifigure.interactive import *
+<pre><code>from ifigure.interactive import figure
 import numpy as np
-v = figure()
-x = np.linspace(0.0, 2.0*np.pi)
-v.plot(x, np.sin(x))
+
+x = np.linspace(0, 10, 100); y = np.sin(x)
+v = figure(size=(500, 400))  # Create viewer
+v.plot(x, y)
+v.title("Sine Wave")
+v.xlabel("x-axis");v.ylabel("y-axis")
+v.legend('curve1')
+v.savefig("sine_wave.pdf") # Save the plot as a PDF
 </code></pre>
 </td>
 <td valign="top" width="42%">
-<img src="example/images/full_cycle_sine.png" alt="piScope output for one full sine cycle" width="100%" />
+<img src="https://raw.githubusercontent.com/piScope/piScope/master/example/images/demo_sinewave.png" alt="piScope output for one full sine cycle" width="100%" />
 </td>
 </tr>
 </table>
@@ -109,4 +114,3 @@ sending commands to its server.
 ### Reference
 
 (S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python-based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
-
