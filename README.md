@@ -84,7 +84,7 @@ v.savefig("sine_wave.pdf") # Save the plot as a PDF
 </code></pre>
 </td>
 <td valign="top" width="42%">
-<img src="example/images/demo_sinewave.png" alt="piScope output for one full sine cycle" width="100%" />
+<img src="https://raw.githubusercontent.com/piScope/piScope/master/example/images/demo_sinewave.png" alt="piScope output for one full sine cycle" width="100%" />
 </td>
 </tr>
 </table>
@@ -114,4 +114,3 @@ sending commands to its server.
 ### Reference
 
 (S Shiraiwa, T Fredian, J Hillairet, J Stillerman, "&pi;Scope: Python-based scientific workbench with MDSplus data visualization tool", Fusion Engineering and Design 112, 835 (2016) https://doi.org/10.1016/j.fusengdes.2016.06.050)
-
