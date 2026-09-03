@@ -746,12 +746,12 @@ class BitmapButtons(wx.Panel):
                                              'color_' + ffname + '.png')
                     print('Cannot find bitmap for ' + ftitle + '=' + fname)
                 bitmap = wx.Bitmap(imageFile)
-                h, w = bitmap.GetSize()
+                w, h = bitmap.GetSize()
 
                 image = bitmap.ConvertToImage()
                 array = np.frombuffer(bytes(image.GetData()), dtype=np.uint8)
                 array = array.copy()
-                array = array.reshape(w, h, -1)
+                array = array.reshape(h, w, -1)
             else:
                 array = imagearray[name].copy()
 
@@ -768,7 +768,7 @@ class BitmapButtons(wx.Panel):
             array[:, :2, 2] = 0
             array[:, -2:, 2] = 0
 
-            image = wxEmptyImage(h, w)
+            image = wxEmptyImage(w, h)
             image.SetData(array.tobytes())
             bitmap2 = image.ConvertToBitmap()
 
@@ -988,7 +988,7 @@ class PathCollectionEdgeColor(BitmapButtons):
 def colorbutton_bitmap(data):
     v = [int(data[0]*255), int(data[1]*255), int(data[2]*255)]
     w, h = bitmap_size
-    array = np.array([v, ]*w*h, dtype=np.uint8).reshape((w, h, -1))
+    array = np.array([v, ]*w*h, dtype=np.uint8).reshape((h, w, -1))
     image = wxEmptyImage(w, h)
     image.SetData(array.tobytes())
     bitmap = image.ConvertToBitmap()
