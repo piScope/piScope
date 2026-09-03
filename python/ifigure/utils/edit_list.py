@@ -45,6 +45,21 @@ dprint1, dprint2, dprint3 = debug.init_dprints('EditList')
 bitmap_size = (22, 14)
 b64encode = base64.urlsafe_b64encode
 
+
+def _apply_bitmap_button_padding(button, bitmap):
+    """Keep a consistent inset around tiny bitmaps across wx versions."""
+    if hasattr(button, "FromDIP"):
+        pad = button.FromDIP(wx.Size(8, 6))
+        padx, pady = int(pad[0]), int(pad[1])
+    else:
+        padx, pady = 8, 6
+
+    bw, bh = bitmap.GetSize()
+    size = (bw + 2*padx, bh + 2*pady)
+    button.SetMinSize(size)
+    button.SetInitialSize(size)
+
+
 EditorChanged = wx.NewEventType()
 EDITLIST_CHANGED = wx.PyEventBinder(EditorChanged, 1)
 EditorChanging = wx.NewEventType()
@@ -773,6 +788,7 @@ class BitmapButtons(wx.Panel):
             bitmap2 = image.ConvertToBitmap()
 
             btn = wx.BitmapButton(self, bitmap=bitmap)
+            _apply_bitmap_button_padding(btn, bitmap)
             self._btn[i] = btn
             self.gsizer.Add(btn, 0, wx.ALL, 0)
             self.Bind(wx.EVT_BUTTON, self.onEdit, btn)
@@ -1008,6 +1024,7 @@ class ColorSelector(wx.BitmapButton):
                                                  'color_' + nname + '.png')
         wx.BitmapButton.__init__(
             self, *args, bitmap=wx.Bitmap(self.imageFiles['blue']))
+        _apply_bitmap_button_padding(self, wx.Bitmap(self.imageFiles['blue']))
         self.value = 'blue'
         self.Bind(wx.EVT_BUTTON, self.onHit)
 
@@ -1026,6 +1043,7 @@ class ColorSelector(wx.BitmapButton):
             else:
                 bitmap = colorbutton_bitmap(value)
         self.SetBitmapLabel(bitmap)
+        _apply_bitmap_button_padding(self, bitmap)
         self.value = value
 
     def GetValue(self):
@@ -3439,7 +3457,7 @@ class ArrowStylePanel(wx.Panel):
         self.panels["fancy"] = ("head_length", "head_width", "tail_width")
         self.panels["simple"] = ("head_length", "head_width", "tail_width")
         self.panels["wedge"] = ("tail_width", "shrink_factor")
-        self.GetSizer().Add(self.cb)
+        self.GetSizer().Add(self.cb, 0, wx.ALL | wx.ALIGN_LEFT, 2)
         self.mode = '-'
         self._elp_values = {}
         self.cb.SetValue(self.mode)
@@ -3527,7 +3545,7 @@ class ArrowStyleCombobox(wxBitmapComboBox):
         id = args[1]
         value = self.choice_list[3][0]
         super(ArrowStyleCombobox, self).__init__(parent, id,
-                                                 value, (-1, -1), (150, -1),  **kargs)
+                                                 value, (-1, -1), (200, -1),  **kargs)
 
         for n, data in enumerate(self.choice_list):
             name, style = data

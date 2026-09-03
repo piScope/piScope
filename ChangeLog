@@ -1,3 +1,9 @@
+2026 9/3
+	* wxPython 4.3.1 compatibility updates.
+	** Removed extra Freeze() workarounds in AGW ButtonPanel wrappers.
+	** Restored palette bitmap button inset with explicit padding in edit_list.
+	** Set ArrowStyleCombobox width to 200 to avoid clipped arrow preview.
+
 2026 9/2
 	* GUIfix/cleanup
 	** In ScriptEditor, Completion candidates can now be selected with Up/Down
