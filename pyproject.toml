@@ -24,7 +24,7 @@ dependencies = [
     "h5py",
     "PyPDF2",
     "pdfrw",
-    "wxPython < 4.3",
+    "wxPython >= 4.3.1",
     "future",
     "autopep8",
     "ruff",

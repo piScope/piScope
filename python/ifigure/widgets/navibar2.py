@@ -177,10 +177,9 @@ class ButtonPanel(bp.ButtonPanel):
         return s
 
     def Clear(self):
-        # this is necessary for wxpython.2.9....
-        self.Freeze()
-        bp.ButtonPanel.Clear(self)
-        # self.Thaw()
+        # In wxPython 4.3, AGW ButtonPanel.Clear() behavior updated.
+        # No extra Freeze()/Thaw() workaround is needed here.
+        return super(ButtonPanel, self).Clear()
 
     def make_all_normal(self):
         for btn in self._vButtons:
