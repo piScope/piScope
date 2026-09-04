@@ -27,7 +27,7 @@ from ifigure.widgets.shellvar_viewer import ShellVarViewer, ShellVarViewerDropTa
 from ifigure.widgets.var_viewerg2 import VarViewerG, VarViewerGDropTarget
 from ifigure.utils.cbook import ImageFiles, Write2Main, BuildPopUpMenu
 
-use_agw = False
+use_agw = True
 if use_agw:
     import wx.lib.agw.aui as aui
 else:
@@ -461,6 +461,9 @@ class ProjTreeViewer(wx.Panel):
                                        aui.AUI_NB_TAB_FLOAT |
                                        aui.AUI_NB_SCROLL_BUTTONS |
                                        aui.AUI_NB_TAB_EXTERNAL_MOVE)
+            self._mgr = self.nb.GetAuiManager()
+            self._mgr.SetAGWFlags(self._mgr.GetAGWFlags() |
+                                  aui.AUI_MGR_LIVE_RESIZE)
         else:
             self.nb = aui.AuiNotebook(self, style=aui.AUI_NB_TAB_SPLIT |
                                       aui.AUI_NB_TAB_MOVE |
@@ -527,7 +530,7 @@ class ProjTreeViewer(wx.Panel):
         self.nb.AddPage(self.varviewer, 'Tree Variables')
         self.nb.AddPage(self.svarviewer, 'Shell Variables')
 
-        wx.CallAfter(self.nb.Split, 0, wx.TOP)
+        #wx.CallAfter(self._split_project_tree)
         # panel3 (consol)
 
         self.consol = Consol(self.nb)
@@ -568,11 +571,29 @@ class ProjTreeViewer(wx.Panel):
         self._first_click = False
         self.timer = wx.Timer(self, wx.ID_ANY)
 
+        self._project_tree_split = False
+        top = self.GetTopLevelParent()
+        top.Bind(wx.EVT_SHOW, self.onTopShow)
+        #wx.CallLater(100, self._split_project_tree)
+
+    def onTopShow(self, evt):
+        if evt.IsShown() and not self._project_tree_split:
+            self._project_tree_split = True
+            wx.CallAfter(self._split_project_tree)
+        evt.Skip()        
+
+    def _split_project_tree(self):
+        # Split and set minimum height of each segment.
+        self.nb.Split(0, wx.TOP)
+
+        if use_agw:
+            for pane in self._mgr.GetAllPanes():
+                if pane.name != 'dummy':
+                    pane.MinSize(-1, 130)
+            self._mgr.Update()
+
     def onKeyPressed(self, evetn):
         print('process at viewer')
-#    def init_sash_pos(self):
-#        return
-#        #self.splitter.SetSashPosition(200)
 
     def get_command_history(self):
         return self.ch

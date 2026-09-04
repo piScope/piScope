@@ -444,7 +444,7 @@ class ifigure_app(BookViewerFrame):
         self.gui_tree.update_check()
         self.gui_tree.bind_handler(self)
 
-        self.gui_tree.set_splitters()
+        #self.gui_tree.set_splitters()
 
         self.editmenu.AppendSeparator()
         self.add_bookmenus(self.editmenu, self.viewmenu)
@@ -515,7 +515,8 @@ class ifigure_app(BookViewerFrame):
             self.SetSize(val["size"])
             self.gui_tree.set_showhide(val["sh"])
             self.gui_tree.update_check()
-            self.gui_tree.set_splitters()
+
+            #self.gui_tree.set_splitters()
 
             self.Layout()
             self.gui_tree.set_sashposition(val["pos"])
@@ -534,6 +535,8 @@ class ifigure_app(BookViewerFrame):
 
         self.proj_tree_viewer.update_widget()
         self.set_accelerator_table()
+
+        wx.CallAfter(self.gui_tree.set_splitters)
 
     def onUpdateUI(self, evt):
         if evt.GetId() == ID_DETACH_EDITOR:

@@ -325,12 +325,14 @@ class HdfExportWindow(wx.Frame):
         sizer_h.AddStretchSpacer(prop=1)
         sizer_h.Add(self.btn_export, 0, wx.EXPAND | wx.ALL, 1)
 
-        self.Layout()
-        self.Show()
-
-        self.sp.SetMinimumPaneSize(30)
+        
+        self.sp.SetMinimumPaneSize(150)
         self.sp.SplitHorizontally(self.dataviewCtrl, self.grid)
         self.sp.SetSashPosition(300)
+
+        self.Layout()
+        self.Show()
+        
 #        self.Bind(dv.EVT_DATAVIEW_ITEM_VALUE_CHANGED,
 #                  self.onDataChanged, self.dataviewCtrl)
         self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
