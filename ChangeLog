@@ -1,8 +1,16 @@
 2026 9/3
 	* wxPython 4.3.1 compatibility updates.
 	** Removed extra Freeze() workarounds in AGW ButtonPanel wrappers.
+	** Fixed width/height handling in edit_list bitmap generation
+	   (GetSize unpacking and array reshape order).
 	** Restored palette bitmap button inset with explicit padding in edit_list.
 	** Set ArrowStyleCombobox width to 200 to avoid clipped arrow preview.
+	* Addressed some GTK related warnings
+	** Switched Project Tree notebook to wx.lib.agw.aui and enabled live resize.
+	** Deferred Project Tree split initialization until top-level EVT_SHOW.
+	** Deferred gui_tree splitter setup with wx.CallAfter during app startup.
+	** In HDF export window, reordered splitter initialization and raised
+	   minimum pane size to 150.
 
 2026 9/2
 	* GUIfix/cleanup
