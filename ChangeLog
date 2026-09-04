@@ -1,6 +1,8 @@
 2026 9/4
 	* Picked up mpl-311 branch
-	** axes3Dmod::view_init is simplified jus to call baseclass method
+	** axes3Dmod::view_init is simplified just to call baseclass method.
+	** cm.set_over and cm.set_under are replaced by cm.with_extremes.
+	** cm.get_cmap is replaced by colormaps.get_cmap.
 
 2026 9/3
 	* wxPython 4.3.1 compatibility updates.
