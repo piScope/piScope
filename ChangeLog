@@ -1,3 +1,7 @@
+2026 9/4
+	* Picked up mpl-311 branch
+	** axes3Dmod::view_init is simplified jus to call baseclass method
+
 2026 9/3
 	* wxPython 4.3.1 compatibility updates.
 	** Removed extra Freeze() workarounds in AGW ButtonPanel wrappers.
