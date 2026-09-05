@@ -4093,13 +4093,6 @@ class ifigure_canvas(wx.Panel, RangeRequestMaker):
 
         from ifigure.matplotlib_mod.mpl_utils import call_savefig_method
         try:
-            if ((ret[-4:] == '.png' or ret[-5:] == '.jpeg') and
-                    hasattr(self.canvas, 'glcanvas') and
-                    self.canvas.glcanvas is not None):
-                # Ensure figobj artists and GL buffers are both current.
-                self.draw()
-                wx.YieldIfNeeded()
-
             if ret[-4:] == '.png':
                 call_savefig_method(self, 'print_png', ret)
             elif ret[-5:] == '.jpeg':
