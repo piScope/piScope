@@ -129,10 +129,10 @@ def _collect_png_case_specs(module):
 
 @pytest.fixture(scope='module')
 def piscope_session():
-    try:
-        interactive.launch()
-    except Exception as exc:
-        pytest.skip('piScope session could not be launched: {}'.format(exc))
+    #try:
+    #    interactive.launch()
+    #except Exception as exc:
+    #    pytest.skip('piScope session could not be launched: {}'.format(exc))
 
     yield
 
