@@ -203,7 +203,7 @@ def on_off_args(v):
         if v.upper() == 'ON':
             ans = True
         if v.upper() == 'OFF':
-            ans = True
+            ans = False
         if v.upper() == '1':
             ans = True
         if v.upper() == '0':
