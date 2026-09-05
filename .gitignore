@@ -20,3 +20,4 @@ mac/build
 build
 dist
 *.egg-info
+tests/generated_images/
