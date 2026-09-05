@@ -1,0 +1,16 @@
+matplotlib 3.10.9
+tests_dir tests
+project_root .
+project_python python
+ifigure_module python/ifigure/__init__.py
+project_root_in_syspath True
+png_case_count 9
+wrote tests/reference_images/plot/sinewave.png
+wrote tests/reference_images/plot/multiline.png
+wrote tests/reference_images/semilogy/default.png
+wrote tests/reference_images/image/default.png
+wrote tests/reference_images/contourf/default.png
+wrote tests/reference_images/clim/default.png
+wrote tests/reference_images/solid/cube_faces.png
+wrote tests/reference_images/solid/indexed_colored.png
+wrote tests/reference_images/surf/default.png
