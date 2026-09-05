@@ -187,7 +187,7 @@ def test_plotting_commands_3d_all(piscope_session):
     _run_smoke_cases(v, cases)
 
 
-def test_ax():
+def test_ax(piscope_session):
     v = interactive.figure()
     ax = v.get_axes()
     v.plot(np.arange(30))
