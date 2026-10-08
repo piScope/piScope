@@ -719,6 +719,7 @@ WXAPP_API = [
     'ipage', 'newbook', 'profile', 'server',
     'profile_start', 'profile_stop', 'put_shellvar', 'quit',
     'scope', 'scopenw', 'set_aviewer','setupmodel', 'tscope', 'twinc',
+    'has_petra',
 ]
 
 try:
