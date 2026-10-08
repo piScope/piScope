@@ -716,10 +716,17 @@ WXAPP_API = [
     'autoplay', 'aviewer', 'check_aviewer', 'clear', 'debug', 'delaunay',
     'draw', 'edit', 'exportv', 'futurize', 'get_axes', 'get_page',
     'get_shellvar', 'get_topwindow', 'glinfo', 'has_petra', 'importv',
-    'ipage', 'newbook', 'petram', 'profile', 'server',
+    'ipage', 'newbook', 'profile', 'server',
     'profile_start', 'profile_stop', 'put_shellvar', 'quit',
     'scope', 'scopenw', 'set_aviewer','setupmodel', 'tscope', 'twinc',
 ]
+
+try:
+    import petram
+    WXAPP_API.append('petram')
+except:
+    pass
+
 
 NOAPP_API = [
     'check_connection', 'connect', 'detach', 'execute',  'launch', 'shutdown'
