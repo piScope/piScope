@@ -1,4 +1,4 @@
-__version__ = '26.9.3'
+__version__ = '26.10.8'
 
 from .piscope import piscope
 from .llmrun import llmrun
