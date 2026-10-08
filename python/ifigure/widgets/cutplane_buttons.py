@@ -254,7 +254,7 @@ class CutPlaneBar(bp.ButtonPanel):
 
     def Clear(self):
         self.allbinfo = []
-        self.Freeze()
+        #self.Freeze()
         bp.ButtonPanel.Clear(self)
 
     '''

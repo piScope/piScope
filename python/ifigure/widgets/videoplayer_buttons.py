@@ -117,7 +117,7 @@ class VideoplayerBar(bp.ButtonPanel):
 
     def Clear(self):
         self.allbinfo = []
-        self.Freeze()
+        #self.Freeze()
         bp.ButtonPanel.Clear(self)
 
     def set_toggle(self, btask):

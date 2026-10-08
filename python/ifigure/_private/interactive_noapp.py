@@ -218,7 +218,9 @@ class Client(object):
             if exe is None:
                 exe = sys.executable
 
-            command = [exe, '-m', 'ifigure', '-s', '-q', '-d', '-n']
+            # -d option increase pytest failour rate.
+            #command = [exe, '-m', 'ifigure', '-s', '-q', '-d', '-n']
+            command = [exe, '-m', 'ifigure', '-s', '-q', '-n']
             if os.altsep is not None:
                 command = command.replace(os.sep, os.altsep)
             p = subprocess.Popen(command, #shlex.split(command),  # shell = True,

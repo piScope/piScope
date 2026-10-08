@@ -572,9 +572,26 @@ class ProjTreeViewer(wx.Panel):
         self.timer = wx.Timer(self, wx.ID_ANY)
 
         self._project_tree_split = False
-        top = self.GetTopLevelParent()
-        top.Bind(wx.EVT_SHOW, self.onTopShow)
+        self._top_parent_for_show = self.GetTopLevelParent()
+        self._top_parent_for_show.Bind(wx.EVT_SHOW, self.onTopShow)
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.onDestroy)
         #wx.CallLater(100, self._split_project_tree)
+
+    def onDestroy(self, evt):
+        # Ensure we do not accumulate top-level EVT_SHOW handlers when
+        # ProjTreeViewer instances are recreated.
+        if evt.GetEventObject() is not self:
+            evt.Skip()
+            return
+
+        top = getattr(self, '_top_parent_for_show', None)
+        if top is not None:
+            try:
+                top.Unbind(wx.EVT_SHOW, handler=self.onTopShow)
+            except RuntimeError:
+                # Top-level wx object may already be destroyed during shutdown.
+                pass
+        evt.Skip()
 
     def onTopShow(self, evt):
         if evt.IsShown() and not self._project_tree_split:

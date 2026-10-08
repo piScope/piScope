@@ -632,17 +632,17 @@ class AxisCParam(AxisParam):
 
         if self._cm is None:
             self._cm = get_cmap(self.cmap, 256)
-        cm = self._cm
+        base_cm = self._cm
 
         if self.clip[0][0]:
-            cm.set_under(self.clip[0][1])
+            under = self.clip[0][1]
         else:
-            cm.set_under(cm(0))
+            under = base_cm(0)
         if self.clip[1][0]:
-            cm.set_over(self.clip[1][1])
+            over = self.clip[1][1]
         else:
-            cm.set_over(cm(cm.N - 1))
-        a2.set_cmap(cm)
+            over = base_cm(base_cm.N - 1)
+        a2.set_cmap(base_cm.with_extremes(under=under, over=over))
 
         if self.scale == 'linear':
             a2.set_norm(Normalize(self.range[0],

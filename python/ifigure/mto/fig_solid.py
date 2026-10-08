@@ -9,14 +9,15 @@ import ifigure.widgets.canvas.custom_picker as cpicker
 import numpy as np
 import weakref
 import logging
-from ifigure.utils.cbook import ProcessKeywords, LoadImageFile, isdynamic
+import matplotlib
 from matplotlib.tri import Triangulation
-from ifigure.matplotlib_mod.triplot_mod import triplot
-from ifigure.utils.args_parser import ArgsParser
-from matplotlib import cm
 from matplotlib.colors import Normalize, colorConverter, LightSource
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import ColorConverter
+from ifigure.utils.cbook import ProcessKeywords, LoadImageFile, isdynamic
+from ifigure.matplotlib_mod.triplot_mod import triplot
+from ifigure.utils.args_parser import ArgsParser
+
 cc = ColorConverter()
 dprint1, dprint2, dprint3 = debug.init_dprints('FigSolid')
 
@@ -320,7 +321,7 @@ class FigSolid(GLCompound, FigObj, XUser, YUser, ZUser, CUser):
                 a.figobj_hl = []
 
     def set_cmap(self, value, a):
-        a.set_cmap(cm.get_cmap(value))
+        a.set_cmap(matplotlib.colormaps.get_cmap(value))
         self.setp('cmap', value)
         ca = self.get_caxisparam()
         ca.set_cmap(value)

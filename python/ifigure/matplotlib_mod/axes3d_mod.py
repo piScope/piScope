@@ -292,11 +292,19 @@ class Axes3DMod(Axes3D):
             return (0, 0, 1)
 
     def view_init(self, elev=None, azim=None, roll=None, vertical_axis="z"):
+
+        Axes3D.view_init(self,
+                         elev=elev,
+                         azim=azim,
+                         roll=roll,
+                         vertical_axis=vertical_axis)
+
         """
         Copied form Axes3D to play with self.dist
         """
         # self._dist = camera_distance
 
+        '''
         if elev is None:
             self.elev = self.initial_elev
         else:
@@ -313,9 +321,13 @@ class Axes3DMod(Axes3D):
             self.roll = roll
 
         from matplotlib import _api
-        self._vertical_axis = _api.check_getitem(
-            dict(x=0, y=1, z=2), vertical_axis=vertical_axis
-        )
+        #self._vertical_axis = _api.check_getitem(
+        #    dict(x=0, y=1, z=2), vertical_axis=vertical_axis
+        #)
+        self._vertical_axis = _api.getitem_checked(
+            {name: idx for idx, name in enumerate(self._axis_names)},
+            vertical_axis=vertical_axis,)
+        '''
 
     def gl_hit_test(self, x, y, artist, radius=3):
         #
