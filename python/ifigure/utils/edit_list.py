@@ -4447,7 +4447,7 @@ class EditListCore(object):
                     setting = {}
                 noexpand = setting.pop('noexpand', False)
                 w = TextCtrlCopyPaste(parent[-1], wx.ID_ANY, '',
-                                      style=wx.TE_PROCESS_ENTER,
+                                      style=setting.pop('style', wx.TE_PROCESS_ENTER),
                                       **setting)
                 if val[1] is not None:
                     w.SetValue(val[1])
