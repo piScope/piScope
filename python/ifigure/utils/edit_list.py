@@ -5250,8 +5250,11 @@ class EditListDialog(wx.Dialog):
     def _myRefresh(self, size=(-1, -1)):
         win = self.GetTopLevelParent()
 #        win.SetSizeHints(win)
-        if size[0] == -1 and size[1] == -1:
+        if size[0] == -1 or size[1] == -1:
             win.Fit()
+            fitted_size = win.GetSize()
+            win.SetSize((fitted_size[0] if size[0] == -1 else size[0],
+                         fitted_size[1] if size[1] == -1 else size[1]))
         win.Layout()
 
 
